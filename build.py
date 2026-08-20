@@ -52,20 +52,28 @@ def copy_tree(src, dst):
     shutil.copytree(src, dst, dirs_exist_ok=True)
 
 
+def standalone():
+    """Le depot autonome (piratesdice) n'a pas `static/` : le jeu y est deja
+    assemble dans www/. On ne refait donc que ce qui peut changer la-bas —
+    les fichiers propres au mobile et l'adresse du serveur."""
+    return not os.path.isdir(STATIC)
+
+
 def build(server, build_id):
     # ⚠️ On VIDE www/ sans le supprimer : un serveur de test ou un editeur pose
     # dessus tient le dossier ouvert, et `rmtree` echoue alors sur Windows
     # (WinError 32) — le build s'arretait pour une raison sans rapport avec lui.
     os.makedirs(WWW, exist_ok=True)
-    for name in os.listdir(WWW):
-        path = os.path.join(WWW, name)
-        if os.path.isdir(path):
-            shutil.rmtree(path, ignore_errors=True)
-        else:
-            try:
-                os.remove(path)
-            except OSError:
-                pass
+    if not standalone():
+        for name in os.listdir(WWW):
+            path = os.path.join(WWW, name)
+            if os.path.isdir(path):
+                shutil.rmtree(path, ignore_errors=True)
+            else:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
 
     # 1. ce qui est propre au mobile
     for name in os.listdir(APP):
@@ -76,7 +84,15 @@ def build(server, build_id):
         elif name != "index.html":
             shutil.copy2(src, dst)
 
-    # 2. le jeu, copie tel quel depuis le tool
+    # 2. le jeu, copie tel quel depuis le tool — sauf dans le depot autonome,
+    #    ou il est deja la et ou `static/` n'existe pas.
+    if standalone():
+        page = open(os.path.join(APP, "index.html"), encoding="utf-8").read()
+        page = page.replace("__PD_SERVER__", server).replace("__PD_BUILD__", build_id)
+        open(os.path.join(WWW, "index.html"), "w", encoding="utf-8",
+             newline=chr(10)).write(page)
+        return page
+
     for src, rel in SHARED_FILES:
         dst = os.path.join(WWW, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -149,7 +165,8 @@ def main():
 
     if not args.check:
         build(args.server.rstrip("/"), args.build)
-        print("www/ assemble  (serveur : %s)" % args.server)
+        print("www/ assemble  (serveur : %s)%s"
+              % (args.server, "  [depot autonome]" if standalone() else ""))
 
     problems = check()
     if problems:
