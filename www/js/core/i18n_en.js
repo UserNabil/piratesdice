@@ -93,6 +93,12 @@ export const EN = {
   'shop.opening': 'Opening the crates…',
   'shop.owned': 'owned: {n}',
   'shop.bought': 'bought — it is in your hold',
+  'shop.B001.name': 'Reroll the die',
+  'shop.B001.desc': 'Roll your die again — the value you did not want is gone.',
+  'shop.B002.name': 'Clear one of my dice',
+  'shop.B002.desc': 'Remove a die from your own board to reshape a column.',
+  'shop.B003.name': 'Blast an enemy die',
+  'shop.B003.desc': 'Remove a die from your opponent board.',
 
   'ladder.title': "Captains' ladder",
   'ladder.reading': 'Reading the log book…',

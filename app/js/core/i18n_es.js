@@ -76,6 +76,12 @@ export const ES = {
   'shop.opening': 'Abriendo las cajas…',
   'shop.owned': 'en bodega: {n}',
   'shop.bought': 'comprado — está en tu bodega',
+  'shop.B001.name': 'Repetir la tirada',
+  'shop.B001.desc': 'Vuelve a tirar tu dado — el valor que no querías desaparece.',
+  'shop.B002.name': 'Vaciar una casilla mía',
+  'shop.B002.desc': 'Quita un dado tuyo para rehacer una columna.',
+  'shop.B003.name': 'Destruir un dado rival',
+  'shop.B003.desc': 'Quita un dado del tablero de tu rival.',
 
   'ladder.title': 'Clasificación de capitanes',
   'ladder.reading': 'Leyendo el cuaderno de bitácora…',

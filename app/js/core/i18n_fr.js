@@ -77,6 +77,12 @@ export const FR = {
   'shop.opening': 'On ouvre les caisses…',
   'shop.owned': 'en cale : {n}',
   'shop.bought': 'acheté — c’est dans votre cale',
+  'shop.B001.name': 'Relancer le dé',
+  'shop.B001.desc': 'Relancez votre dé — la valeur dont vous ne vouliez pas disparaît.',
+  'shop.B002.name': 'Vider une de mes cases',
+  'shop.B002.desc': 'Retirez un de vos dés pour refaire une colonne.',
+  'shop.B003.name': 'Détruire un dé adverse',
+  'shop.B003.desc': 'Retirez un dé du plateau de votre adversaire.',
 
   'ladder.title': 'Classement des capitaines',
   'ladder.reading': 'On lit le livre de bord…',

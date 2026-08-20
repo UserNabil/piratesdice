@@ -678,6 +678,42 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .pd-ask-card,
 .pd-first-card { margin: auto; max-height: none; }
 
+/* ============================================================================
+   ... NI DEBORDER SUR LE COTE.
+
+   `width: min(420px, 100%)` ne suffit pas : une carte est un ELEMENT DE GRILLE,
+   et sa taille minimale automatique vaut `min-content`. Cette borne PASSE AVANT
+   la largeur demandee — la carte grossit donc jusqu'a tenir sa ligne la plus
+   large, quoi qu'on ait ecrit. Mesure sur un 360 px en francais : la carte des
+   reglages occupait 14..390, soit 30 px hors de l'ecran, cote droit coupe.
+
+   L'anglais tenait, le francais non : « Effacer mes donnees et mon compte » et
+   « Conditions d'utilisation et confidentialite » sont plus longs. C'est pour
+   cela que la campagne de mesure precedente n'avait rien vu — elle mesurait en
+   anglais. Une largeur ne se verifie que dans la langue la plus bavarde.
+
+   On leve donc le plancher (`min-width: 0`), on plafonne a l'ecran, et on rend
+   les lignes capables de passer a la ligne au lieu de pousser.
+   ============================================================================ */
+
+#dicewrap .dc-bet-card,
+#dicewrap .dc-over-card,
+.pd-ask-card,
+.pd-first-card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pd-row { flex-wrap: wrap; }
+.pd-row-lbl { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.pd-row-val { flex: 1 1 auto; min-width: 0; }
+.pd-row > .pd-toggle,
+.pd-row > .pd-select,
+.pd-row > .pd-link { flex: 0 0 auto; }
+.pd-row-btns .dc-btn,
+.pd-ask-row .dc-btn { min-width: 0; flex: 1 1 140px; }
+
 /* ── les ecrans tres etroits (320 px : le plancher Android) ───────────────── */
 
 @media (max-width: 359px) {
@@ -689,3 +725,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .pd-glyph { font-size: 16px; }
   #dicewrap .dc-coins { font-size: 14px; }
 }
+
+
+/* Un telephone n'a pas de touche Espace : la ligne des raccourcis clavier des
+   regles n'y veut rien dire, et elle debordait en bas de la feuille. */
+#dicewrap .dc-keys { display: none; }

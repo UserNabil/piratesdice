@@ -23,10 +23,22 @@ export function renderRules(body) {
       <li>${t('rules.5', { n: S.rules.maxBonusPerMatch })}</li>
       <li>${t('rules.6', { n: S.rules.winReward })}</li>
     </ol>
-    <p class="dc-dim">${t('rules.shortcuts', {
+    <p class="dc-dim dc-keys">${t('rules.shortcuts', {
       space: '<kbd>Space</kbd>', one: '<kbd>1</kbd>', two: '<kbd>2</kbd>',
       three: '<kbd>3</kbd>', esc: '<kbd>Esc</kbd>',
     })}</p>`;
+}
+
+/* Le nom et la description des bonus viennent de la BASE, en anglais : le
+   serveur ne parle pas la langue du joueur et n'a pas a la connaitre. On les
+   traduit donc ici, par identifiant, et on retombe sur le texte du serveur si
+   un produit nouveau arrive avant sa traduction — mieux vaut un mot anglais
+   qu'une case vide. (Vu a l'ecran le 2026-08-20 : boutique anglaise dans une
+   interface francaise.) */
+function shopText(identify, part, secours) {
+  const key = 'shop.' + identify + '.' + part;
+  const texte = t(key);
+  return texte === key ? secours : texte;
 }
 
 export async function renderShop(body) {
@@ -47,8 +59,8 @@ export async function renderShop(body) {
       <div class="dc-shop-item">
         <img src="${bonusArt(p.identify)}" alt="">
         <div class="dc-shop-txt">
-          <b>${esc(p.name)}</b>
-          <span>${esc(p.description)}</span>
+          <b>${esc(shopText(p.identify, 'name', p.name))}</b>
+          <span>${esc(shopText(p.identify, 'desc', p.description))}</span>
           <em>${esc(t('shop.owned', { n: have.get(p.identify) || 0 }))}</em>
         </div>
         <button class="dc-btn dc-btn-sm" data-buy="${esc(p.identify)}"
