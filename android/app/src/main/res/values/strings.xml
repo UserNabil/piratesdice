@@ -4,4 +4,8 @@
     <string name="title_activity_main">The Pirate\'s Dice</string>
     <string name="package_name">com.nabil.piratesdice</string>
     <string name="custom_url_scheme">com.nabil.piratesdice</string>
+    <!-- Le numero de projet Play Games : la partie avant le tiret de
+         l'identifiant client OAuth. Sans lui, l'application refuse de
+         demarrer des que le SDK Games s'initialise. -->
+    <string name="game_services_project_id">975326394375</string>
 </resources>

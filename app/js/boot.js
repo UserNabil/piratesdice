@@ -16,7 +16,7 @@ import { startMotion, motionEnabled, setMotionEnabled, motionAvailable } from '.
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
 
-const TERMS_URL = 'https://updates.edenreforged.com/piratesdice/privacy.html';
+const TERMS_URL = 'https://usernabil.github.io/piratesdice/privacy.html';
 
 /* ⚠️ Les boites vivent DANS #dicewrap. La menuiserie (.pd-panel, .dc-btn) est
    ecrite sous `#dicewrap ...` : posee sur <body>, une carte de reglages
