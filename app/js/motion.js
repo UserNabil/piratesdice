@@ -4,34 +4,38 @@
    Secouer  -> on lance le de.
    Pencher a droite / a gauche / vers l'avant -> on le pose dans cette colonne.
 
+   ⛔ CE QUE LE VRAI TELEPHONE A APPRIS (2026-08-20)
+
+   La premiere version lisait `accelerationIncludingGravity`. Sur l'appareil de
+   l'admin : **pencher a droite posait a GAUCHE**, le centre etait inatteignable,
+   et le halo restait allume. Ce n'etait pas un seuil mal regle, c'etait le
+   CAPTEUR : le signe de ce vecteur n'est garanti par aucune specification, et le
+   meme geste rend +x sur un appareil, -x sur un autre. Un modele bati dessus ne
+   pouvait pas marcher partout.
+
+   On lit donc `deviceorientation`, dont la convention est ecrite noir sur blanc :
+     gamma = inclinaison laterale, POSITIF quand le cote DROIT descend ;
+     beta  = inclinaison avant/arriere, 90 = telephone dresse, 0 = a plat.
+   Plus aucun signe a deviner.
+
    Trois principes, sans quoi ce genre de commande est insupportable :
-
-   1. UNE INTENTION, PAS UNE MESURE. Un telephone tenu en main bouge tout le
-      temps. On n'agit donc pas sur un seuil franchi, mais sur un geste MAINTENU
-      (l'inclinaison doit tenir 350 ms) ou franc (la secousse doit depasser
-      largement le bruit de la main).
-   2. UN GESTE, UNE ACTION. Apres chaque action, tout est verrouille jusqu'a ce
-      que le telephone revienne au repos : sans cela une seule inclinaison
-      poserait les trois des d'affilee.
-   3. ON MONTRE CE QU'ON COMPREND. La colonne visee s'allume avant que le de ne
-      tombe — sinon le joueur ne sait pas ce que le telephone a cru voir.
-
-   Le capteur n'existe pas sur un poste de bureau : le module s'installe alors en
-   silence et ne fait rien. Il est aussi pilotable a la main (`window.__pdMotion`)
-   pour que les tests puissent rejouer un geste sans secouer une machine.
+   1. UNE INTENTION, PAS UNE MESURE : un geste doit etre TENU (350 ms), ou franc.
+   2. UN GESTE, UNE ACTION : tout est verrouille jusqu'au retour au repos.
+   3. ON MONTRE CE QU'ON COMPREND : la colonne visee s'allume AVANT la pose —
+      et s'eteint des que le jeu n'attend plus rien.
    ============================================================================ */
 
 import { t } from './core/i18n.js';
 
 const KEY = 'pd.motion';
 
-/* Seuils. Regles en g (1 g = 9,81 m/s²) et en degres, pas en unites brutes. */
+/* Seuils : des degres d'orientation, et des g pour la secousse. */
 const SHAKE_G = 1.9;          // au-dela, c'est un vrai coup de poignet
-const REST_G = 1.25;          // en dessous, le telephone est considere calme
-const TILT_SIDE = 25;         // degres de roulis pour viser une colonne laterale
-const TILT_FRONT = 52;        // degres de bascule vers l'avant pour viser le centre
-const REST_ROLL = 14;         // fenetre de repos : le telephone tenu normalement
-const REST_LEAN = 34;
+const REST_G = 1.25;          // en dessous, le telephone est calme
+const TILT_SIDE = 20;         // gamma : pencher a droite ou a gauche
+const FRONT_BETA = 42;        // beta : sous cette valeur, le telephone est couche vers l'avant
+const REST_GAMMA = 12;        // fenetre laterale du repos
+const REST_BETA = 52;         // au-dessus, le telephone est tenu normalement
 const TILT_HOLD = 350;        // il faut tenir la pose : un a-coup ne compte pas
 const REARM_MS = 700;         // temps mort apres une action
 
@@ -40,6 +44,8 @@ let armed = true;
 let tiltSince = 0;
 let tiltAim = -1;
 let lastAction = 0;
+let lastShake = 1;
+let aimShown = -1;
 let hooks = { canRoll: () => false, canPlace: () => false, roll() {}, place() {}, aim() {} };
 
 export function motionEnabled() {
@@ -49,15 +55,23 @@ export function motionEnabled() {
 export function setMotionEnabled(value) {
   localStorage.setItem(KEY, value ? '1' : '0');
   on = !!value;
+  if (!on) showAim(-1);
   return on;
 }
 
-/** Le capteur repond-il vraiment ? (un poste de bureau n'en a pas) */
 export function motionAvailable() {
-  return typeof window.DeviceMotionEvent !== 'undefined';
+  return typeof window.DeviceOrientationEvent !== 'undefined'
+      || typeof window.DeviceMotionEvent !== 'undefined';
 }
 
 function now() { return Date.now(); }
+
+/** Le halo ne bouge que s'il change VRAIMENT : sinon on repeint soixante fois par seconde. */
+function showAim(column) {
+  if (aimShown === column) return;
+  aimShown = column;
+  hooks.aim(column);
+}
 
 function rest() {
   armed = true;
@@ -66,76 +80,84 @@ function rest() {
 }
 
 /**
- * Le roulis et la BASCULE, en degres.
- *
- * ⚠️ Le tangage brut ne veut rien dire ici : un telephone tenu droit affiche
- * deja 80 a 90 degres, si bien qu'un seuil naif le croyait « penche en avant »
- * en permanence — et le repos n'etait jamais atteint, donc plus rien ne se
- * declenchait apres la premiere secousse (mesure le 2026-08-20). On mesure donc
- * l'ecart A LA VERTICALE : 0 = tenu droit, 90 = a plat, ecran vers le ciel.
- */
-function angles(g) {
-  const roll = Math.atan2(g.x, Math.sqrt(g.y * g.y + g.z * g.z)) * 180 / Math.PI;
-  const upright = Math.atan2(-g.y, Math.sqrt(g.x * g.x + g.z * g.z)) * 180 / Math.PI;
-  return { roll, lean: 90 - upright };
-}
-
-/**
- * Traite une mesure. Exportee pour que les tests puissent la nourrir :
+ * Une mesure d'orientation. Exportee pour que les tests puissent la nourrir :
  * un vrai capteur ne se simule pas dans un navigateur de bureau.
  */
 export function feed(sample) {
   if (!on) return;
-  const g = sample.gravity;
-  const shakeG = sample.shake;
+  if (typeof sample.shake === 'number') lastShake = sample.shake;
 
   /* ── la secousse : lancer ─────────────────────────────────────────────── */
-  if (shakeG >= SHAKE_G && armed && now() - lastAction > REARM_MS && hooks.canRoll()) {
+  if (lastShake >= SHAKE_G && armed && now() - lastAction > REARM_MS && hooks.canRoll()) {
     armed = false;
     lastAction = now();
+    lastShake = 1;
+    showAim(-1);
     hooks.roll();
     return;
   }
 
-  /* Le retour au calme REARME. Sans cela, un telephone laisse penche
-     declencherait une action par mesure, soixante fois par seconde. */
-  const at = angles(g);
-  if (shakeG < REST_G && Math.abs(at.roll) < REST_ROLL && at.lean < REST_LEAN) {
+  if (!Number.isFinite(sample.gamma) || !Number.isFinite(sample.beta)) return;
+  const gamma = sample.gamma;
+  const beta = sample.beta;
+
+  /* Le retour au calme REARME : sans lui, un telephone laisse penche
+     declencherait une action a chaque mesure. */
+  if (lastShake < REST_G && Math.abs(gamma) < REST_GAMMA && beta > REST_BETA) {
     rest();
   }
 
-  if (!hooks.canPlace()) return;
+  /* ⚠️ Si le jeu n'attend plus de pose, le halo doit S'ETEINDRE. Sans ce
+     nettoyage il restait allume sur la derniere colonne visee — vu a l'ecran. */
+  if (!hooks.canPlace()) {
+    showAim(-1);
+    tiltSince = 0;
+    tiltAim = -1;
+    return;
+  }
 
   /* ── l'inclinaison : poser ────────────────────────────────────────────── */
-  const { roll, lean } = at;
   let aim = -1;
-  if (roll >= TILT_SIDE) aim = 2;              // penche a droite -> colonne droite
-  else if (roll <= -TILT_SIDE) aim = 0;        // penche a gauche -> colonne gauche
-  else if (lean >= TILT_FRONT) aim = 1;        // bascule vers l'avant -> centre
+  if (gamma >= TILT_SIDE) aim = 2;             // cote droit vers le bas -> colonne droite
+  else if (gamma <= -TILT_SIDE) aim = 0;       // cote gauche vers le bas -> colonne gauche
+  else if (beta <= FRONT_BETA) aim = 1;        // couche vers l'avant -> colonne du centre
 
-  if (aim < 0) { tiltSince = 0; tiltAim = -1; hooks.aim(-1); return; }
+  if (aim < 0) {
+    tiltSince = 0;
+    tiltAim = -1;
+    showAim(-1);
+    return;
+  }
 
-  if (aim !== tiltAim) { tiltAim = aim; tiltSince = now(); hooks.aim(aim); return; }
-  hooks.aim(aim);
+  if (aim !== tiltAim) {
+    tiltAim = aim;
+    tiltSince = now();
+    showAim(aim);
+    return;
+  }
+  showAim(aim);
 
   if (armed && now() - tiltSince >= TILT_HOLD && now() - lastAction > REARM_MS) {
     armed = false;
     lastAction = now();
     tiltSince = 0;
-    hooks.aim(-1);
+    showAim(-1);
     hooks.place(aim);
   }
 }
 
-function onDeviceMotion(ev) {
-  const g = ev.accelerationIncludingGravity;
-  if (!g || g.x === null) return;
-  const norm = Math.sqrt(g.x * g.x + g.y * g.y + g.z * g.z) / 9.81;
+/** L'orientation donne la direction ; la secousse se lit sur l'accelerometre. */
+function onOrientation(ev) {
+  if (ev.gamma === null && ev.beta === null) return;
+  feed({ gamma: ev.gamma, beta: ev.beta });
+}
+
+function onMotion(ev) {
   const acc = ev.acceleration && ev.acceleration.x !== null ? ev.acceleration : null;
-  const shake = acc
-    ? Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z) / 9.81 + 1
-    : norm;
-  feed({ gravity: { x: g.x, y: g.y, z: g.z }, shake });
+  const raw = acc || ev.accelerationIncludingGravity;
+  if (!raw || raw.x === null) return;
+  const norm = Math.sqrt(raw.x * raw.x + raw.y * raw.y + raw.z * raw.z) / 9.81;
+  feed({ gamma: NaN, beta: NaN, shake: acc ? norm + 1 : norm });
 }
 
 /**
@@ -146,9 +168,16 @@ export function startMotion(handlers) {
   hooks = Object.assign(hooks, handlers || {});
   on = motionEnabled();
   window.__pdMotion = { feed, hooks, setMotionEnabled };
-  if (!motionAvailable()) return false;
-  window.addEventListener('devicemotion', onDeviceMotion);
-  return true;
+  let branche = false;
+  if (typeof window.DeviceOrientationEvent !== 'undefined') {
+    window.addEventListener('deviceorientation', onOrientation);
+    branche = true;
+  }
+  if (typeof window.DeviceMotionEvent !== 'undefined') {
+    window.addEventListener('devicemotion', onMotion);
+    branche = true;
+  }
+  return branche;
 }
 
 export function motionLabel() {

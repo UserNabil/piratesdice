@@ -46,6 +46,11 @@ function wireBackButton() {
       if (fire()) return;
       const tab = document.querySelector('#dicewrap .dc-tab.on');
       if (tab) { tab.click(); return; }
+      /* ⚠️ RETOUR sur une partie TERMINEE laissait le joueur devant un plateau
+         mort, sans aucune sortie : la carte de resultat s'etait fermee et rien
+         ne la ramenait. Le retour renvoie donc au pont. */
+      const back = document.getElementById('dc-back');
+      if (back) { back.click(); return; }
       const close = document.getElementById('dc-close');
       if (close) close.click();
     });

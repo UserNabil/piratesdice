@@ -26,9 +26,17 @@ const MAX_CELL = 66;
 
 function apply() {
   const wrap = document.getElementById('dicewrap');
+  if (!wrap) return;
+
+  /* ⚠️ L'echelle du texte se pose TOUJOURS, meme hors partie. Elle etait
+     calculee apres le plateau — qui n'existe qu'en cours de jeu : le menu, la
+     boutique et les reglages gardaient donc la taille par defaut sur tous les
+     ecrans. Mesure a 320, 360, 412, 480, 740 et 800 px : echelle 1 partout. */
+  scaleText(wrap);
+
   const arena = document.querySelector('#dicewrap .dc-arena');
   const boards = document.querySelector('#dicewrap .dc-boards');
-  if (!wrap || !arena || !boards) return;
+  if (!arena || !boards) return;
 
   const portrait = window.matchMedia('(orientation: portrait), (max-width: 820px)').matches;
   if (!portrait) { wrap.style.removeProperty('--dc-cell'); return; }
@@ -59,6 +67,29 @@ function apply() {
   wrap.style.setProperty('--dc-cell', cell + 'px');
 }
 
+/*
+ * LA TAILLE DU TEXTE SUIT L'ECRAN — LES DEUX COTES.
+ *
+ * Des tailles en pixels tiennent sur l'appareil ou on les a reglees, et nulle
+ * part ailleurs : sur un petit ecran le texte deborde, sur une tablette il
+ * flotte. Une echelle en `vw` seule ne vaut pas mieux — un ecran large et court
+ * (telephone couche, ecran pliant ouvert) grossirait le texte au moment precis
+ * ou la place manque en hauteur.
+ *
+ * On prend donc la PLUS PETITE des deux dimensions comme reference, bornee : en
+ * dessous de 360 px de cote on ne descend plus (illisible), au-dela de 520 on ne
+ * monte plus (une tablette n'a pas besoin d'un texte de titre partout).
+ */
+const BASE_SIDE = 412;                       // l'ecran de reference
+const MIN_SCALE = 0.86;
+const MAX_SCALE = 1.22;
+
+function scaleText(wrap) {
+  const side = Math.min(window.innerWidth, window.innerHeight * 0.52);
+  const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, side / BASE_SIDE));
+  wrap.style.setProperty('--pd-ui', scale.toFixed(3));
+}
+
 let pending = 0;
 
 function schedule() {
@@ -77,6 +108,8 @@ export function startFitting() {
 
   if (window.ResizeObserver) {
     const watch = new ResizeObserver(schedule);
+    const body = document.querySelector('#dicewrap .dc-body');
+    if (body) watch.observe(body);
     const arena = document.querySelector('#dicewrap .dc-arena');
     if (arena) watch.observe(arena);
     for (const side of document.querySelectorAll('#dicewrap .dc-side')) watch.observe(side);

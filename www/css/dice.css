@@ -1353,3 +1353,17 @@
   box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6),
               0 2px 6px rgba(0, 0, 0, .5);
 }
+
+/* Ma ligne, quand je ne suis pas dans les dix premiers : detachee du bloc, pour
+   qu'on comprenne qu'il y a un saut de rangs entre les deux. */
+#dicewrap .dc-ladder-far td {
+  border-top: 2px solid rgba(201, 162, 39, .45);
+  padding-top: 12px;
+}
+
+#dicewrap .dc-ladder-far td:first-child::before {
+  content: '⋯';
+  display: block;
+  color: #8d7f66;
+  margin-bottom: 2px;
+}

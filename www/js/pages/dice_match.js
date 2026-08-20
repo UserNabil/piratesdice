@@ -16,6 +16,7 @@ import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl } from './dice_state.js';
 import { t } from '../core/i18n.js';
+import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
 
@@ -174,6 +175,7 @@ function paint(full, frozen, settle) {
   renderPlayerCard('#dc-pc-foe', st, foe, false);
   stageBoards(st);
   renderTurn(st);
+  renderExit(st);
   renderCup(st);
   renderBonusRack();
   renderTargeting(st);
@@ -239,6 +241,27 @@ function renderPlayerCard(sel, st, seat, isMe) {
     <div class="dc-pc-total" data-v="${st.totals[seat]}">${st.totals[seat]}</div>
     <div class="dc-pc-lbl">${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}</div>
     ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}`;
+}
+
+/*
+ * Une partie finie doit TOUJOURS avoir une sortie visible. La carte de resultat
+ * peut etre fermee (bouton RETOUR d'Android), et le joueur se retrouvait alors
+ * devant un plateau mort — vu sur le telephone de l'admin. Le bouton de la
+ * barre laterale change donc de role a la fin : il ramene au pont.
+ */
+function renderExit(st) {
+  const quit = $('#dc-quit');
+  if (!quit) return;
+  const over = st.phase === 'over';
+  quit.textContent = t(over ? 'over.back' : 'game.leave');
+  quit.classList.toggle('dc-btn-ghost', !over);
+  /* ⚠️ Sur telephone ce bouton est masque pendant la partie (la barre laterale
+     n'existe pas) : il doit REAPPARAITRE a la fin, sinon la sortie reste
+     invisible la ou le probleme a ete constate. */
+  quit.classList.toggle('dc-quit-exit', over);
+  quit.onclick = over
+    ? () => { if (UI.leaveMatch) UI.leaveMatch(); else UI.showMenu(); }
+    : () => UI.requestClose();
 }
 
 function renderTurn(st) {
@@ -335,57 +358,3 @@ function rain(el) {
   el.classList.add('dc-rain');
 }
 
-/*
- * LES MONTANTS PRETS. Sur un telephone, taper un nombre ouvre le clavier, qui
- * recouvre la moitie de l'ecran au moment precis ou le joueur veut juste dire
- * « je mise 50 ». Quatre jetons couvrent tous les cas usuels ; le champ reste
- * la pour qui veut un montant exact.
- */
-function betChips(purse) {
-  const out = [{ value: 0, label: t('bet.none') }];
-  for (const value of [10, 50, 100, 250]) {
-    if (value <= purse) out.push({ value, label: String(value) });
-  }
-  if (purse > 0) out.push({ value: purse, label: t('bet.all') });
-  return out;
-}
-
-function renderBet(st, full) {
-  const bet = $('#dc-bet');
-  if (!bet) return;
-  if (st.phase !== 'betting') { bet.classList.remove('on'); return; }
-  bet.classList.add('on');
-
-  if (!full && bet.dataset.ready === '1') return;
-  bet.dataset.ready = '1';
-  const purse = S.me ? S.me.coins : 0;
-  bet.innerHTML = `
-    <div class="dc-bet-card pd-panel">
-      <img class="dc-bet-art" src="${ASSETS}img/ornament_stake.png" alt="">
-      <h3>${esc(t('bet.title'))}</h3>
-      <p>${esc(t('bet.hint'))}</p>
-      <div class="dc-bet-chips">${betChips(purse).map((c) => `
-        <button class="dc-chip" data-bet="${c.value}">${esc(c.label)}</button>`).join('')}
-      </div>
-      <div class="dc-bet-row">
-        <input type="number" id="dc-bet-input" min="0" step="10" value="0" max="${purse}" aria-label="stake">
-        <span class="dc-bet-max">${esc(t('bet.of', { n: purse }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></span>
-      </div>
-      <button class="dc-btn" id="dc-bet-go">${esc(t('bet.lock'))}</button>
-      <div class="dc-bet-wait"></div>
-    </div>`;
-  const field = $('#dc-bet-input');
-  bet.querySelectorAll('.dc-chip').forEach((chip) => {
-    chip.onclick = () => {
-      field.value = chip.dataset.bet;
-      bet.querySelectorAll('.dc-chip').forEach((c) => c.classList.toggle('on', c === chip));
-    };
-  });
-
-  $('#dc-bet-go').onclick = () => {
-    const value = parseInt($('#dc-bet-input').value, 10);
-    S.net.send({ t: 'bet', value: Number.isFinite(value) ? value : 0 });
-    $('#dc-bet-go').disabled = true;
-    bet.querySelector('.dc-bet-wait').textContent = t('bet.waiting');
-  };
-}

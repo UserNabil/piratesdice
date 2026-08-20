@@ -322,6 +322,7 @@ function refreshPanel() {
 
 export function initDice() {
   UI.showMenu = showMenu;
+  UI.leaveMatch = () => { S.state = null; S.seat = -1; showMenu(); };
   UI.renderWallet = renderWallet;
   UI.requestClose = requestClose;
 }

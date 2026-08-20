@@ -74,11 +74,22 @@ export async function renderShop(body) {
   });
 }
 
+/* Un panneau qu'on ouvre et referme trois fois de suite ne doit pas frapper le
+   reseau trois fois. Trente secondes suffisent a couvrir ce va-et-vient sans
+   jamais montrer un classement perime. */
+const LADDER_TTL = 30000;
+let ladderCache = null;
+
 export async function renderRanking(body) {
   body.innerHTML = '<h3>' + esc(t('ladder.title')) + '</h3><div class="dc-loading">'
     + esc(t('ladder.reading')) + '</div>';
   try {
-    const rows = (await S.net.rest('/api/leaderboard?limit=25')).players || [];
+    if (!ladderCache || Date.now() - ladderCache.at > LADDER_TTL) {
+      ladderCache = { at: Date.now(), data: await S.net.rest('/api/leaderboard?limit=10') };
+    }
+    const rows = ladderCache.data.players || [];
+    const mine = ladderCache.data.me;
+    const inTop = mine && rows.some((p) => p.pseudo === mine.pseudo);
     body.innerHTML = '<h3>' + esc(t('ladder.title')) + '</h3>' + (rows.length
       ? `<table class="dc-ladder">
           <thead><tr><th>#</th><th>${esc(t('ladder.captain'))}</th><th>${esc(t('ladder.elo'))}</th>
@@ -87,7 +98,12 @@ export async function renderRanking(body) {
             <tr class="${S.me && p.pseudo === S.me.pseudo ? 'dc-ladder-me' : ''}">
               <td>${i + 1}</td><td>${esc(p.display_name || p.pseudo)}</td>
               <td><b>${p.rating}</b></td><td>${p.wins}</td><td>${p.losses}</td><td>${p.draws}</td>
-            </tr>`).join('')}</tbody></table>`
+            </tr>`).join('')}
+          ${mine && !inTop ? `<tr class="dc-ladder-me dc-ladder-far">
+              <td>${mine.rang}</td><td>${esc(mine.display_name || mine.pseudo)}</td>
+              <td><b>${mine.rating}</b></td><td>${mine.wins}</td><td>${mine.losses}</td>
+              <td>${mine.draws}</td></tr>` : ''}
+          </tbody></table>`
       : '<p class="dc-dim">' + esc(t('ladder.empty')) + '</p>');
   } catch (e) {
     body.innerHTML = `<h3>${esc(t('ladder.title'))}</h3><p class="dc-err">${esc(e.message)}</p>`;
