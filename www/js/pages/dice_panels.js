@@ -22,6 +22,7 @@ export function renderRules(body) {
       <li>${t('rules.4')}</li>
       <li>${t('rules.5', { n: S.rules.maxBonusPerMatch })}</li>
       <li>${t('rules.6', { n: S.rules.winReward })}</li>
+      <li>${t('rules.7')}</li>
     </ol>
     <p class="dc-dim dc-keys">${t('rules.shortcuts', {
       space: '<kbd>Space</kbd>', one: '<kbd>1</kbd>', two: '<kbd>2</kbd>',

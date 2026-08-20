@@ -3,6 +3,44 @@
 export const FR = {
   'app.title': 'The Pirate’s Dice',
 
+  'menu.friend': 'Jouer avec un ami',
+
+  'cap.choose': 'Choisissez votre capitaine',
+  'cap.read.name': 'Mary Read',
+  'cap.read.trait': 'Une relance gratuite par partie.',
+  'cap.teach.name': 'Barbe-Noire',
+  'cap.teach.trait': 'Sa première pose emporte aussi les dés adverses de la valeur juste au-dessus — un 6 emporte les 1.',
+  'cap.ching.name': 'Ching Shih',
+  'cap.ching.trait': 'Voit le prochain dé de son adversaire.',
+  'cap.omalley.name': 'Grace O’Malley',
+  'cap.omalley.trait': 'Ses colonnes de trois dés identiques valent 15 % de plus.',
+  'cap.jack.name': 'Calico Jack',
+  'cap.jack.trait': 'Commence la partie avec un dé déjà posé.',
+  'cap.trait.reroll': 'Relance gratuite',
+  'cap.trait.above': 'La valeur au-dessus !',
+  'cap.trait.headstart': 'Un dé déjà en place',
+
+  'fx.broadside': 'Bordée ! {n} dés',
+  'fx.foeTrait': '{name} : {trait}',
+  'fx.aiBonus': '{name} a joué {bonus}',
+  'fx.next': 'prochain',
+  'bonus.free': 'offert',
+
+  'room.title': 'Jouer avec un ami',
+  'room.hint': 'Entrez le code que votre ami vous a donné.',
+  'room.placeholder': 'CODE',
+  'room.join': 'Rejoindre',
+  'room.or': 'ou',
+  'room.create': 'Ouvrir une table',
+  'room.waiting': 'On attend votre ami',
+  'room.share': 'Donnez ce code à votre ami — la partie démarre dès qu’il l’entre.',
+  'room.expires': 'Le code expire au bout de quinze minutes.',
+  'room.copied': 'Code copié',
+  'room.badCode': 'Un code fait cinq lettres ou chiffres',
+  'room.unknown': 'Aucune table à ce code',
+  'room.gone': 'Votre ami a quitté la table',
+  'room.own': 'C’est votre propre table',
+
   'hdr.mute': 'Couper le son',
   'hdr.unmute': 'Remettre le son',
   'hdr.roll': 'Lancer le dé',
@@ -95,7 +133,7 @@ export const FR = {
 
   'rules.title': 'Les règles de la table',
   'rules.1': 'À votre tour, lancez le dé, puis posez-le dans une de vos trois colonnes.',
-  'rules.2': 'Une colonne vaut <b>valeur × occurrences²</b> : trois 4 dans une colonne valent 48, pas 12.',
+  'rules.2': 'Une colonne vaut <b>valeur × occurrences²</b> : trois 4 dans une colonne valent 36, pas 12.',
   'rules.3': 'Poser un dé <b>détruit tous les dés adverses de cette valeur dans la même colonne</b> — '
     + 'gêner l’autre rapporte plus que construire.',
   'rules.4': 'La partie s’arrête dès qu’un plateau est plein. Le plus haut total gagne.',
@@ -103,6 +141,7 @@ export const FR = {
     + 'relancer le dé, vider une de vos cases, ou détruire un dé adverse.',
   'rules.6': 'Gagner rend la mise plus {n} pièces ; perdre coûte la mise. '
     + 'Seules les parties entre joueurs bougent votre Elo.',
+  'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer — une relance offerte, une ouverture qui emporte la valeur au-dessus, un œil sur le prochain dé, des triples plus riches, ou un dé déjà posé. Choisissez le vôtre sur le pont.',
   'rules.shortcuts': 'Raccourcis : {space} lance, {one} {two} {three} posent dans une colonne, {esc} ferme.',
 
   'away.taken': '{name} s’est absenté — l’IA du bord a joué ce tour',

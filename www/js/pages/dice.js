@@ -22,6 +22,7 @@ import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js'
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking } from './dice_panels.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby } from './dice_lobby.js';
 
 function shellMarkup() {
   return `
@@ -134,9 +135,12 @@ async function connect() {
       S.me = m.me; S.inventory = m.inventory || [];
       renderWallet(); refreshPanel(); renderBonusRack();
     },
+    captains: () => { /* la liste du serveur : le client a deja la sienne */ },
     queued: () => { S.queued = true; showMenu(); },
     idle: () => { S.queued = false; S.seat = -1; S.state = null; showMenu(); },
-    match: onMatch,
+    room: (m) => onRoom(m, $('#dc-screen-menu')),
+    roomfail: onRoomFail,
+    match: (m) => { resetLobby(); onMatch(m); },
     state: onState,
     over: onOver,
     error: (m) => toast(m.msg || 'refused', 'warn'),
@@ -258,38 +262,10 @@ function renderWallet() {
       <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>`;
 }
 
+/* Le pont vit dans dice_lobby.js : choix du capitaine et salon prive y sont
+   deux ecrans a part entiere, et ce fichier n'a pas a les porter. */
 function showMenu() {
-  screen('menu');
-  const el = $('#dc-screen-menu');
-
-  if (S.queued) {
-    el.innerHTML = `
-      <div class="dc-menu"><div class="dc-menu-card pd-panel">
-        <div class="dc-wheel"></div>
-        <h3>${esc(t('menu.waiting'))}</h3>
-        <p>${esc(t('menu.waitingHint'))}</p>
-        <button class="dc-btn dc-btn-ghost" id="dc-unqueue">${esc(t('menu.cancel'))}</button>
-      </div></div>`;
-    $('#dc-unqueue').onclick = () => S.net.send({ t: 'cancel' });
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="dc-menu"><div class="dc-menu-card pd-panel">
-      <h2>${esc(t('menu.title'))}</h2>
-      <p>${esc(t('menu.pitch'))}</p>
-      <div class="dc-menu-btns">
-        <button class="dc-btn dc-btn-big" id="dc-solo">${esc(t('menu.solo'))}</button>
-        <button class="dc-btn dc-btn-big dc-btn-alt" id="dc-multi">${esc(t('menu.multi'))}</button>
-      </div>
-      <div class="dc-menu-stats">
-        <span><b>${S.me ? S.me.games : 0}</b> ${esc(t('menu.matches'))}</span>
-        <span><b>${S.me ? S.me.rating : 0}</b> ${esc(t('menu.elo'))}</span>
-        <span><b>${S.me ? S.me.coins : 0}</b> ${esc(t('menu.coins'))}</span>
-      </div>
-    </div></div>`;
-  $('#dc-solo').onclick = () => { S.sfx.play('start', 0.25); S.net.send({ t: 'play', mode: 'solo' }); };
-  $('#dc-multi').onclick = () => S.net.send({ t: 'play', mode: 'multi' });
+  renderMenu($('#dc-screen-menu'));
 }
 
 /* ─────────────────────────────────────────────── shop / ranking / rules ── */

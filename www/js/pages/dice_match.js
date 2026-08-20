@@ -19,6 +19,8 @@ import { t } from '../core/i18n.js';
 import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
+import { announce, renderForesee } from './dice_fx.js';
+import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
 export function onMatch(m) {
   S.queued = false;
@@ -154,6 +156,10 @@ export function onState(msg) {
     }, settleIn);
   }
 
+  /* Les annonces passent APRES le dessin : un mot ne doit jamais arriver avant
+     l'image qu'il commente. */
+  announce(fx);
+
   /* ⛔ PAS D'ANIMATION DE CHANGEMENT DE TOUR. Elle a ete essayee (vague sur la
      barre, puis sur les plateaux, puis en voile sombre sur toute la zone) :
      elle n'apporte rien, elle coupe le rythme, et elle masquait la destruction.
@@ -215,26 +221,23 @@ function popChangedScores(st) {
   }
 }
 
-/* Le meme adversaire garde TOUJOURS le meme visage : on tire le portrait de son
-   nom, pas du hasard, sinon « Bobby » changerait de tete a chaque partie. */
-function portraitOf(player) {
-  if (!player || !player.ai) return 'avatar_player.png';
-  const name = player.name || '';
-  let sum = 0;
-  for (let i = 0; i < name.length; i++) sum = (sum * 31 + name.charCodeAt(i)) % 997;
-  return 'avatar_ai_' + (1 + (sum % 4)) + '.png';
-}
-
+/*
+ * Le portrait EST le capitaine choisi : le medaillon porte le liseré, le liseré
+ * porte le trait. Un adversaire ne se reconnait plus a un visage tire de son
+ * nom, mais a la facon dont il joue — ce qui est le sujet.
+ */
 function renderPlayerCard(sel, st, seat, isMe) {
   const p = st.players[seat] || {};
   const el = $(sel);
   if (!el) return;
   const active = st.turn === seat && st.phase === 'playing';
+  const cap = st.captains ? st.captains[seat] : null;
   el.className = 'dc-pc pd-panel' + (active ? ' dc-pc-active' : '');
   el.innerHTML = `
     <div class="dc-pc-portrait">
-      <img class="dc-pc-face" src="${ASSETS}img/${portraitOf(p)}" alt="">
+      <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       ${active ? '<span class="dc-pc-ring"></span>' : ''}
+      <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
@@ -293,27 +296,37 @@ function renderCup(st) {
     badge.innerHTML = dieFace(foeDie);
     foeCard.appendChild(badge);
   }
+  renderForesee(st, dieFace);
 }
 
 export function renderBonusRack() {
   const rack = $('#dc-bonus');
   if (!rack || !S.state) return;
   const left = S.state.bonusLeft ? S.state.bonusLeft[S.seat] : 0;
+  /* La relance de Mary Read ne coute rien : elle apparait dans le ratelier meme
+     sans jeton en cale, sinon le trait resterait invisible a qui n'a rien achete. */
+  const gratuite = !!(S.state.freeReroll && S.state.freeReroll[S.seat]);
   const owned = S.inventory.filter((i) => i.quantity > 0);
 
-  if (!owned.length) {
+  if (!owned.length && !gratuite) {
     rack.innerHTML = '<div class="dc-bonus-empty">' + esc(t('bonus.empty')) + '</div>';
     return;
   }
-  rack.innerHTML = `<div class="dc-bonus-hd">${esc(t('bonus.head'))} <span>${esc(t('bonus.left', { n: left }))}</span></div>` +
-    owned.map((i) => `
+  const boutons = owned.filter((i) => !(gratuite && i.identify === 'B001'));
+  rack.innerHTML = `<div class="dc-bonus-hd">${esc(t('bonus.head'))} <span>${esc(t('bonus.left', { n: left }))}</span></div>`
+    + (gratuite ? `
+      <button class="dc-bonus-btn dc-bonus-free" data-id="B001" title="${esc(t('cap.read.trait'))}">
+        <img src="${bonusArt('B001')}" alt="">
+        <span class="dc-bonus-qty">${esc(t('bonus.free'))}</span>
+      </button>` : '')
+    + boutons.map((i) => `
       <button class="dc-bonus-btn" data-id="${esc(i.identify)}" title="${esc(i.description)}">
         <img src="${bonusArt(i.identify)}" alt="">
         <span class="dc-bonus-qty">${i.quantity}</span>
       </button>`).join('');
 
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
-    b.disabled = !myTurn() || left <= 0;
+    b.disabled = !myTurn() || (left <= 0 && !b.classList.contains('dc-bonus-free'));
     b.onclick = () => S.net.send({ t: 'bonus', identify: b.dataset.id });
   });
 }

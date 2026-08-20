@@ -2,6 +2,44 @@
 export const ES = {
   'app.title': 'The Pirate’s Dice',
 
+  'menu.friend': 'Jugar con un amigo',
+
+  'cap.choose': 'Elige tu capitán',
+  'cap.read.name': 'Mary Read',
+  'cap.read.trait': 'Una tirada repetida gratis por partida.',
+  'cap.teach.name': 'Barbanegra',
+  'cap.teach.trait': 'Su primera colocación se lleva también los dados rivales del valor justo superior — un 6 se lleva los 1.',
+  'cap.ching.name': 'Ching Shih',
+  'cap.ching.trait': 'Ve el próximo dado que tirará su rival.',
+  'cap.omalley.name': 'Grace O’Malley',
+  'cap.omalley.trait': 'Sus columnas de tres dados iguales valen un 15 % más.',
+  'cap.jack.name': 'Calico Jack',
+  'cap.jack.trait': 'Empieza la partida con un dado ya colocado.',
+  'cap.trait.reroll': 'Tirada gratis',
+  'cap.trait.above': '¡El valor superior!',
+  'cap.trait.headstart': 'Un dado ya colocado',
+
+  'fx.broadside': '¡Andanada! {n} dados',
+  'fx.foeTrait': '{name}: {trait}',
+  'fx.aiBonus': '{name} ha jugado {bonus}',
+  'fx.next': 'próximo',
+  'bonus.free': 'gratis',
+
+  'room.title': 'Jugar con un amigo',
+  'room.hint': 'Escribe el código que te dio tu amigo.',
+  'room.placeholder': 'CÓDIGO',
+  'room.join': 'Entrar',
+  'room.or': 'o',
+  'room.create': 'Abrir una mesa',
+  'room.waiting': 'Esperando a tu amigo',
+  'room.share': 'Dale este código a tu amigo — la partida empieza en cuanto lo escriba.',
+  'room.expires': 'El código caduca a los quince minutos.',
+  'room.copied': 'Código copiado',
+  'room.badCode': 'Un código son cinco letras o cifras',
+  'room.unknown': 'No hay ninguna mesa con ese código',
+  'room.gone': 'Tu amigo ha dejado la mesa',
+  'room.own': 'Esa es tu propia mesa',
+
   'hdr.mute': 'Silenciar',
   'hdr.unmute': 'Activar el sonido',
   'hdr.roll': 'Tirar el dado',
@@ -94,7 +132,7 @@ export const ES = {
 
   'rules.title': 'Las reglas de la mesa',
   'rules.1': 'En tu turno, tira el dado y colócalo en una de tus tres columnas.',
-  'rules.2': 'Una columna vale <b>valor × repeticiones²</b>: tres 4 valen 48, no 12.',
+  'rules.2': 'Una columna vale <b>valor × repeticiones²</b>: tres 4 valen 36, no 12.',
   'rules.3': 'Colocar un dado <b>destruye todos los dados rivales de ese valor en la misma columna</b> — '
     + 'estorbar al rival da más que construir.',
   'rules.4': 'La partida acaba en cuanto un tablero se llena. Gana el total más alto.',
@@ -102,6 +140,7 @@ export const ES = {
     + 'vaciar una casilla propia o destruir un dado rival.',
   'rules.6': 'Ganar devuelve la apuesta más {n} monedas; perder cuesta la apuesta. '
     + 'Solo las partidas entre jugadores mueven tu Elo.',
+  'rules.7': 'Tu <b>capitán</b> cambia tu forma de jugar — una tirada gratis, una apertura que se lleva el valor superior, un vistazo al próximo dado, triples más ricos o un dado ya colocado. Elige el tuyo en cubierta.',
   'rules.shortcuts': 'Atajos: {space} tira, {one} {two} {three} colocan en una columna, {esc} cierra.',
 
   'away.taken': '{name} se ausentó — la IA de a bordo jugó ese turno',

@@ -45,6 +45,8 @@ const STILL_FILES = [
   'die_1_hot.png', 'die_2_hot.png', 'die_3_hot.png', 'die_4_hot.png',
   'die_5_hot.png', 'die_6_hot.png',
   'avatar_ai_1.png', 'avatar_ai_2.png', 'avatar_ai_3.png', 'avatar_ai_4.png',
+  'cap_read.png', 'cap_teach.png', 'cap_ching.png', 'cap_omalley.png', 'cap_jack.png',
+  'trait_read.png', 'trait_teach.png', 'trait_ching.png', 'trait_omalley.png', 'trait_jack.png',
 ];
 
 const FX_BLOBS = new Map();

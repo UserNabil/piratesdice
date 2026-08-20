@@ -12,6 +12,44 @@
 export const EN = {
   'app.title': "The Pirate's Dice",
 
+  'menu.friend': 'Play with a friend',
+
+  'cap.choose': 'Choose your captain',
+  'cap.read.name': 'Mary Read',
+  'cap.read.trait': 'One free reroll per match.',
+  'cap.teach.name': 'Blackbeard',
+  'cap.teach.trait': 'His first placement also takes the enemy dice one value above — a 6 takes the 1s.',
+  'cap.ching.name': 'Ching Shih',
+  'cap.ching.trait': 'Sees the next die her opponent will roll.',
+  'cap.omalley.name': "Grace O'Malley",
+  'cap.omalley.trait': 'Her columns of three matching dice are worth 15% more.',
+  'cap.jack.name': 'Calico Jack',
+  'cap.jack.trait': 'Starts the match with one die already placed.',
+  'cap.trait.reroll': 'Free reroll',
+  'cap.trait.above': 'One value above!',
+  'cap.trait.headstart': 'A die already on the board',
+
+  'fx.broadside': 'Broadside! {n} dice',
+  'fx.foeTrait': '{name}: {trait}',
+  'fx.aiBonus': '{name} played {bonus}',
+  'fx.next': 'next',
+  'bonus.free': 'free',
+
+  'room.title': 'Play with a friend',
+  'room.hint': 'Enter the code your friend gave you.',
+  'room.placeholder': 'CODE',
+  'room.join': 'Join',
+  'room.or': 'or',
+  'room.create': 'Open a table',
+  'room.waiting': 'Waiting for your friend',
+  'room.share': 'Give this code to your friend — the match starts as soon as they enter it.',
+  'room.expires': 'The code expires after fifteen minutes.',
+  'room.copied': 'Code copied',
+  'room.badCode': 'A code is five letters or digits',
+  'room.unknown': 'No table with that code',
+  'room.gone': 'The host has left the table',
+  'room.own': 'That is your own table',
+
   'hdr.mute': 'Mute the sound',
   'hdr.unmute': 'Unmute the sound',
   'hdr.full': 'Full screen',
@@ -111,7 +149,7 @@ export const EN = {
 
   'rules.title': 'The rules of the table',
   'rules.1': 'On your turn, roll the die, then drop it into one of your three columns.',
-  'rules.2': 'A column scores <b>value × count²</b>: three 4s in one column are worth 48, not 12.',
+  'rules.2': 'A column scores <b>value × count²</b>: three 4s in one column are worth 36, not 12.',
   'rules.3': 'Dropping a die <b>destroys every enemy die of that value in the same column</b> — '
     + 'denying your opponent matters more than building.',
   'rules.4': 'The match ends the moment one board is full. Highest total wins.',
@@ -119,6 +157,7 @@ export const EN = {
     + 'clear one of your own dice, or blast an enemy one.',
   'rules.6': 'Winning pays your stake back plus {n} coins; losing costs the stake. '
     + 'Only player-versus-player matches move your Elo.',
+  'rules.7': 'Your <b>captain</b> changes how you play — one free reroll, an opening that clears the value above, a look at the next die, richer triples, or a die already on the board. Pick yours on the deck.',
   'rules.shortcuts': 'Shortcuts: {space} rolls, {one} {two} {three} drop into a column, {esc} closes.',
 
   'away.taken': '{name} was away — the ship’s AI played that turn',

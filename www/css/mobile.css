@@ -730,3 +730,47 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 /* Un telephone n'a pas de touche Espace : la ligne des raccourcis clavier des
    regles n'y veut rien dire, et elle debordait en bas de la feuille. */
 #dicewrap .dc-keys { display: none; }
+
+/* ============================================================================
+   LE PONT SUR UN TELEPHONE
+
+   Le menu porte maintenant cinq medaillons, une fiche de capitaine et trois
+   boutons : c'est le plus haut de tous les ecrans. Sur un 320x640 il ne tient
+   pas — il doit donc DEFILER, et les medaillons se serrer.
+   ============================================================================ */
+
+@media (orientation: portrait), (max-width: 820px) {
+  #dicewrap .dc-menu {
+    align-items: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 10px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  }
+  #dicewrap .dc-menu-card { margin: auto; }
+
+  #dicewrap .dc-caps { margin-bottom: 14px; padding-top: 12px; }
+  #dicewrap .dc-caps-head { font-size: calc(11px * var(--pd-ui, 1)); margin-bottom: 9px; }
+  #dicewrap .dc-caps-row { gap: 5px; }
+  #dicewrap .dc-cap { width: 15.5vw; height: 15.5vw; max-width: 64px; max-height: 64px; }
+  #dicewrap .dc-cap-card { gap: 9px; padding: 8px 11px; min-height: 54px; }
+  #dicewrap .dc-cap-trait { width: 32px; height: 32px; }
+  #dicewrap .dc-cap-txt b { font-size: calc(13px * var(--pd-ui, 1)); }
+  #dicewrap .dc-cap-txt span { font-size: calc(12px * var(--pd-ui, 1)); }
+
+  /* Sur telephone le medaillon est petit : le lisere deborde un peu dessous,
+     la ou il n'y a que du bois. */
+  #dicewrap .dc-pc-trait { width: 54%; height: 54%; inset-inline-start: -6px; inset-block-end: -6px; }
+  #dicewrap .dc-foresee { inset-block-end: 6px; inset-inline-end: 6px; padding: 2px 7px 2px 5px; }
+  #dicewrap .dc-foresee img { width: 18px; height: 18px; }
+
+  #dicewrap .dc-shout { font-size: calc(21px * var(--pd-ui, 1)); }
+  #dicewrap .dc-room-join { gap: 8px; }
+  #dicewrap .dc-room-input { flex: 1 1 130px; }
+}
+
+@media (max-width: 359px) {
+  #dicewrap .dc-cap { width: 46px; height: 46px; }
+  #dicewrap .dc-caps-row { gap: 4px; }
+  #dicewrap .dc-room-code { letter-spacing: 5px; padding-left: 15px; font-size: 28px; }
+}

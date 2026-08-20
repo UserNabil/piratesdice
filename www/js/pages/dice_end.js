@@ -9,6 +9,7 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { S, UI, ASSETS, fxUrl } from './dice_state.js';
+import { captainArt, captainTrait } from './dice_lobby.js';
 
 /*
  * LES MONTANTS PRETS. Sur un telephone, taper un nombre ouvre le clavier, qui
@@ -85,7 +86,11 @@ export function onOver(m) {
       <img class="dc-over-seal" src="${ASSETS}img/${seal}.png" alt="">
       <h2>${verdict}</h2>
       <div class="dc-over-score">${m.scores[0]} <span>—</span> ${m.scores[1]}</div>
-      <div class="dc-over-line">${esc(t('over.against', { name: m.opponent }))}</div>
+      <div class="dc-over-line dc-over-foe">
+        <img class="dc-over-cap" src="${captainArt(m.opponentCaptain)}" alt=""
+             title="${esc(captainTrait(m.opponentCaptain))}">
+        ${esc(t('over.against', { name: m.opponent }))}
+      </div>
       ${rating}
       <div class="dc-over-line">${esc(t('over.coins', { delta: (m.coinDelta >= 0 ? '+' : '') + m.coinDelta }))}
         <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
