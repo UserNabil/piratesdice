@@ -470,3 +470,86 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   text-overflow: ellipsis; white-space: nowrap; }
 #dicewrap .dc-tabs, #dicewrap .dc-acts { flex: none; }
 #dicewrap .dc-brand { flex: none; }
+
+/* ============================================================================
+   L'ENTETE, APRES AUDIT.
+
+   Mesure du 2026-08-20 sur un ecran de 360 px : HUIT boutons en ligne, quatre
+   blocs pour 353 px utiles, et le nom du joueur tronque. Trop de choses se
+   disputaient la meme barre.
+
+   Ce qu'un joueur regarde vraiment pendant une partie, dans l'ordre :
+   ses PIECES (il les mise et les depense), puis les trois feuilles (boutique,
+   classement, regles). Son nom et son avatar ne servent a rien pendant le jeu :
+   ils vivent desormais dans les reglages, avec le son et les mouvements.
+
+   Quatre boutons au lieu de huit, et plus rien de tronque.
+   ============================================================================ */
+
+@media (max-width: 820px) {
+  #dicewrap .dc-brand { display: none; }
+  #dicewrap .dc-avatar,
+  #dicewrap .dc-wallet-txt { display: none; }
+  #dicewrap #dc-mute { display: none; }
+
+  /* La bourse devient un compteur de pieces, et rien d'autre. */
+  #dicewrap .dc-wallet {
+    padding: 4px 14px;
+    gap: 6px;
+    flex: none;
+  }
+
+  #dicewrap .dc-coins {
+    margin: 0;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 16px;
+    color: #f3dc93;
+  }
+
+  #dicewrap .dc-tabs { margin-left: auto; gap: 6px; }
+  /* 48 px : la cible tactile que Google recommande, et qu'on mesure. */
+  #dicewrap .dc-tab { min-width: 48px; min-height: 48px; padding: 8px 10px; }
+  #dicewrap .dc-tab img { width: 22px; height: 22px; }
+  #dicewrap .dc-icon { width: 48px; height: 48px; }
+  #dicewrap .dc-top { gap: 10px; padding: 6px 10px; }
+}
+
+/* ── Les feuilles se ferment d'un geste visible ──────────────────────────── */
+
+.pd-sheet-bar {
+  position: sticky;
+  top: -16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -16px -16px 12px;
+  padding: 10px 14px 8px;
+  background: linear-gradient(180deg, rgba(27, 18, 8, .98), rgba(27, 18, 8, .82));
+}
+
+.pd-grab {
+  width: 44px; height: 5px;
+  border-radius: 999px;
+  background: rgba(232, 200, 106, .5);
+  margin: 0 auto;
+}
+
+.pd-sheet-close {
+  width: 40px; height: 40px;
+  flex: none;
+  display: grid; place-items: center;
+  border: 0;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  color: #e8c86a;
+  cursor: pointer;
+  background: rgba(0, 0, 0, .4);
+  box-shadow: inset 0 0 0 2px #8a5c17;
+}
+
+.pd-sheet-spacer { width: 40px; flex: none; }
+
+.pd-hint { margin: -4px 0 10px; font-size: 12px; color: #a08f74; line-height: 1.4; }

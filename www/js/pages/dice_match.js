@@ -334,6 +334,21 @@ function rain(el) {
   el.classList.add('dc-rain');
 }
 
+/*
+ * LES MONTANTS PRETS. Sur un telephone, taper un nombre ouvre le clavier, qui
+ * recouvre la moitie de l'ecran au moment precis ou le joueur veut juste dire
+ * « je mise 50 ». Quatre jetons couvrent tous les cas usuels ; le champ reste
+ * la pour qui veut un montant exact.
+ */
+function betChips(purse) {
+  const out = [{ value: 0, label: t('bet.none') }];
+  for (const value of [10, 50, 100, 250]) {
+    if (value <= purse) out.push({ value, label: String(value) });
+  }
+  if (purse > 0) out.push({ value: purse, label: t('bet.all') });
+  return out;
+}
+
 function renderBet(st, full) {
   const bet = $('#dc-bet');
   if (!bet) return;
@@ -348,6 +363,9 @@ function renderBet(st, full) {
       <img class="dc-bet-art" src="${ASSETS}img/ornament_stake.png" alt="">
       <h3>${esc(t('bet.title'))}</h3>
       <p>${esc(t('bet.hint'))}</p>
+      <div class="dc-bet-chips">${betChips(purse).map((c) => `
+        <button class="dc-chip" data-bet="${c.value}">${esc(c.label)}</button>`).join('')}
+      </div>
       <div class="dc-bet-row">
         <input type="number" id="dc-bet-input" min="0" step="10" value="0" max="${purse}" aria-label="stake">
         <span class="dc-bet-max">${esc(t('bet.of', { n: purse }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></span>
@@ -355,6 +373,14 @@ function renderBet(st, full) {
       <button class="dc-btn" id="dc-bet-go">${esc(t('bet.lock'))}</button>
       <div class="dc-bet-wait"></div>
     </div>`;
+  const field = $('#dc-bet-input');
+  bet.querySelectorAll('.dc-chip').forEach((chip) => {
+    chip.onclick = () => {
+      field.value = chip.dataset.bet;
+      bet.querySelectorAll('.dc-chip').forEach((c) => c.classList.toggle('on', c === chip));
+    };
+  });
+
   $('#dc-bet-go').onclick = () => {
     const value = parseInt($('#dc-bet-input').value, 10);
     S.net.send({ t: 'bet', value: Number.isFinite(value) ? value : 0 });

@@ -56,6 +56,8 @@ export const FR = {
   'bet.title': 'Fixez votre mise',
   'bet.hint': 'Gagner rend la mise et une bourse en plus. Perdre la fait disparaître.',
   'bet.of': 'sur {n}',
+  'bet.none': 'Sans mise',
+  'bet.all': 'Tout miser',
   'bet.lock': 'Bloquer la mise',
   'bet.waiting': 'On attend votre adversaire…',
 

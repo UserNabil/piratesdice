@@ -1302,3 +1302,41 @@
   #dicewrap .dc-menu-card p { margin-bottom: 16px; }
   #dicewrap .dc-menu-stats { margin-top: 14px; }
 }
+
+/* ── LES MONTANTS PRETS DE LA MISE ───────────────────────────────────────────
+   Taper un nombre au clavier est le pire moment d'une partie sur telephone :
+   le clavier recouvre l'ecran juste quand le joueur veut dire « 50 ». */
+#dicewrap .dc-bet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 0 14px;
+}
+
+#dicewrap .dc-chip {
+  min-width: 62px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 14px;
+  color: var(--parch);
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-md) 58%, var(--wood-lo));
+  box-shadow: inset 0 0 0 2px var(--brass-lo), inset 0 1px 0 rgba(255, 226, 170, .18),
+              0 2px 5px rgba(0, 0, 0, .45);
+  transition: filter .12s, transform .09s;
+}
+
+#dicewrap .dc-chip:hover:not(.on) { filter: brightness(1.18); }
+#dicewrap .dc-chip:active { transform: translateY(1px); }
+
+#dicewrap .dc-chip.on {
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md) 55%, var(--brass-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6),
+              0 2px 6px rgba(0, 0, 0, .5);
+}

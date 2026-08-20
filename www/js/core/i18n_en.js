@@ -73,6 +73,8 @@ export const EN = {
   'bet.hint': 'Win and you take the stake back plus a purse. Lose and it is gone.',
   'bet.of': 'of {n}',
   'bet.lock': 'Lock the stake',
+  'bet.none': 'No stake',
+  'bet.all': 'All in',
   'bet.waiting': 'Waiting for your opponent…',
 
   'over.victory': 'Victory',

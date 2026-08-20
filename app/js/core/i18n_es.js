@@ -55,6 +55,8 @@ export const ES = {
   'bet.title': 'Fija tu apuesta',
   'bet.hint': 'Ganar devuelve la apuesta y una bolsa más. Perder se la lleva.',
   'bet.of': 'de {n}',
+  'bet.none': 'Sin apuesta',
+  'bet.all': 'Todo',
   'bet.lock': 'Fijar la apuesta',
   'bet.waiting': 'Esperando a tu rival…',
 

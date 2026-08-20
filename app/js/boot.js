@@ -76,6 +76,10 @@ function settingsMarkup() {
       ${row(t('set.sound'), `<button class="pd-toggle${muted ? '' : ' on'}" data-sound
               aria-pressed="${!muted}">${t(muted ? 'set.soundOff' : 'set.soundOn')}</button>`)}
 
+      ${motionAvailable() ? row(t('set.motion'), `<button class="pd-toggle${
+        motionEnabled() ? ' on' : ''}" data-motion>${t(motionEnabled() ? 'set.soundOn' : 'set.soundOff')}</button>`)
+        + `<p class="pd-hint">${t('set.motionHelp')}</p>` : ''}
+
       ${row(t('set.account'), `<span class="pd-row-val">${who}</span>`)}
       <div class="pd-row pd-row-btns">${button}
         <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger" data-erase>${t('set.erase')}</button>
@@ -113,6 +117,16 @@ function openSettings() {
     sound.setAttribute('aria-pressed', String(!off));
   };
 
+  const motion = wrap.querySelector('[data-motion]');
+  if (motion) {
+    motion.onclick = () => {
+      const now = setMotionEnabled(!motionEnabled());
+      motion.classList.toggle('on', now);
+      motion.textContent = t(now ? 'set.soundOn' : 'set.soundOff');
+      toast(t(now ? 'motion.on' : 'motion.off'), now ? 'ok' : undefined);
+    };
+  }
+
   wrap.querySelector('[data-lang]').onchange = (ev) => {
     setLang(ev.target.value);
     location.reload();                       // le jeu se redessine dans la langue choisie
@@ -144,23 +158,6 @@ function addHeaderButtons() {
   const acts = document.querySelector('#dicewrap .dc-acts');
   if (!acts || document.getElementById('pd-settings-btn')) return;
 
-  /* Le mouvement se coupe d'un geste, depuis l'entete : c'est une commande de
-     JEU, pas un reglage de telephone — et on veut pouvoir la couper en pleine
-     partie sans ouvrir un ecran par-dessus la table. */
-  if (motionAvailable()) {
-    const tilt = document.createElement('button');
-    tilt.className = 'dc-icon pd-tilt' + (motionEnabled() ? ' on' : '');
-    tilt.id = 'pd-motion-btn';
-    tilt.title = t('set.motion');
-    tilt.innerHTML = '<span class="pd-glyph">&#8635;</span>';
-    tilt.onclick = () => {
-      const now = setMotionEnabled(!motionEnabled());
-      tilt.classList.toggle('on', now);
-      toast(t(now ? 'motion.on' : 'motion.off'), now ? 'ok' : undefined);
-    };
-    acts.appendChild(tilt);
-  }
-
   const gear = document.createElement('button');
   gear.className = 'dc-icon';
   gear.id = 'pd-settings-btn';
@@ -168,6 +165,25 @@ function addHeaderButtons() {
   gear.innerHTML = '<span class="pd-glyph">&#9881;</span>';
   gear.onclick = openSettings;
   acts.appendChild(gear);
+}
+
+/* ── les feuilles : une barre de fermeture visible ────────────────────────
+   Une feuille qui monte du bas doit dire comment elle se ferme. Sans repere,
+   il fallait deviner qu'un second appui sur l'onglet la refermait — ou
+   connaitre le bouton RETOUR d'Android. */
+
+function addSheetBar() {
+  const panel = document.getElementById('dc-panel');
+  if (!panel || panel.querySelector('.pd-sheet-bar')) return;
+  const bar = document.createElement('div');
+  bar.className = 'pd-sheet-bar';
+  bar.innerHTML = '<span class="pd-sheet-spacer"></span><span class="pd-grab"></span>'
+    + '<button class="pd-sheet-close" aria-label="' + t('set.close') + '">&times;</button>';
+  bar.querySelector('.pd-sheet-close').onclick = () => {
+    const tab = document.querySelector('#dicewrap .dc-tab.on');
+    if (tab) tab.click();
+  };
+  panel.insertBefore(bar, panel.firstChild);
 }
 
 /* ── les mouvements : le module ne connait pas le jeu, on lui explique ───── */
@@ -203,6 +219,7 @@ async function start() {
   await signIn({ interactive: false });
   await openDice();
   addHeaderButtons();
+  addSheetBar();
   startFitting();
   wireMotion();
 }
