@@ -38,13 +38,12 @@ const FX_FILES = ['fx_burst.png', 'fx_place.png', 'fx_roll.png', 'fx_win.png'];
 
 const STILL_FILES = [
   'bg.jpg', 'die_unknown.png', 'cup.png', 'cup_active.png', 'brand_mark.png',
-  'avatar.png', 'avatar_player.png', 'icon_coin.png', 'icon_anchor.png',
+  'avatar.png', 'icon_coin.png', 'icon_anchor.png',
   'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
   'bonus_reroll.png', 'bonus_clear_own.png', 'bonus_blast_enemy.png',
   'die_1.png', 'die_2.png', 'die_3.png', 'die_4.png', 'die_5.png', 'die_6.png',
   'die_1_hot.png', 'die_2_hot.png', 'die_3_hot.png', 'die_4_hot.png',
   'die_5_hot.png', 'die_6_hot.png',
-  'avatar_ai_1.png', 'avatar_ai_2.png', 'avatar_ai_3.png', 'avatar_ai_4.png',
   'cap_read.png', 'cap_teach.png', 'cap_ching.png', 'cap_omalley.png', 'cap_jack.png',
   'trait_read.png', 'trait_teach.png', 'trait_ching.png', 'trait_omalley.png', 'trait_jack.png',
 ];

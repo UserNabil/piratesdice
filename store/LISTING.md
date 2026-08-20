@@ -35,7 +35,7 @@ The Pirate's Dice
 
 **Description courte** (80 car. max)
 ```
-Roll, place, destroy. A pirate dice duel where denying your rival wins the purse.
+Roll, place, destroy: a pirate dice duel where denying your rival wins.
 ```
 
 **Description complète** (4000 car. max)

@@ -94,3 +94,39 @@ vous dirai où il est, **à sauvegarder ailleurs qu'ici**.
   applications publiées : cette contrainte ne devrait pas s'appliquer, mais la
   console le dira.
 - Chaque envoi passe une revue : quelques heures à trois jours.
+
+---
+
+## Retirer un pays du ciblage — ça ne passe PAS par l'API (2026-08-21)
+
+Google a signalé le 2026-08-20 que l'app **simule un jeu d'argent** (l'écran de mise)
+et l'a retirée de **Corée du Sud**. L'app reste approuvée partout ailleurs ; seule la
+Corée est concernée, et l'avis reste 90 jours sur la page « Statut des règles ».
+
+**Ce qui a été vérifié, mesure à l'appui :**
+
+| Piste | Ciblage pays |
+|---|---|
+| `internal` | `400 Track internal does not support country availability` — la piste interne n'a pas de ciblage, elle n'est donc pas la cause |
+| `alpha` (test fermé) | **176 pays**, `restOfWorld=true`, **KR inclus** — c'est là que ça se joue |
+| `production` | vide (l'app n'y est pas encore) |
+
+**L'API de publication ne sait pas le corriger.** `countryAvailability` est en
+**lecture seule** (pas de méthode d'écriture), et poser `countryTargeting` sur la
+version d'une piste est refusé :
+
+```
+400 Country targeting is only supported for staged releases.
+```
+
+Une version `completed` n'accepte donc aucun ciblage. Une commande `--untarget` a été
+écrite puis **retirée** : livrer une commande qui échoue est pire que ne rien livrer.
+
+**Le seul chemin : la console.**
+Play Console → *Test* → *Test fermé* → la piste → onglet **Pays/régions** → décocher
+**Corée du Sud** → *Enregistrer* → *Aperçu de la publication* → envoyer à la révision.
+
+⚠️ **Le point qui compte davantage pour la production** : le questionnaire de
+**classification du contenu** doit déclarer le **jeu d'argent simulé**. L'API ne permet
+pas de lire la réponse donnée. Si elle est « non », c'est un problème plus sérieux que
+la Corée — à vérifier avant toute promotion en production.
