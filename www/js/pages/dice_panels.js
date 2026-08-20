@@ -63,7 +63,7 @@ export async function renderShop(body) {
         const out = await S.net.rest('/api/purchase', 'POST', { identify: b.dataset.buy, quantity: 1 });
         S.inventory = out.inventory || S.inventory;
         if (S.me) S.me.coins = out.coins;
-        S.sfx.play('drop', 0.35);
+        S.sfx.play('coin', 0.35);
         toast(t('shop.bought'), 'ok');
         if (UI.renderWallet) UI.renderWallet(); renderBonusRack(); renderShop(body);
       } catch (e) {

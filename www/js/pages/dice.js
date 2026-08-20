@@ -60,8 +60,11 @@ function build() {
   wrap.innerHTML = shellMarkup();
 
   S.sfx = new Sfx(ASSETS + 'sfx/');
-  S.sfx.load('roll', 'diceDrop.mp3');
-  S.sfx.load('drop', 'dropCoin.mp3');
+  /* ⚠️ `coin` est le son des PIECES (achat, gain), `dice` celui du DE. La pose
+     d'un de jouait dropCoin.mp3 : on entendait de la monnaie tomber sur le
+     plateau. Les noms disent maintenant ce qu'ils sont. */
+  S.sfx.load('dice', 'diceDrop.mp3');
+  S.sfx.load('coin', 'dropCoin.mp3');
   S.sfx.load('boom', 'boom.mp3');
   S.sfx.load('start', 'begin.mp3');
   S.sfx.load('open', 'rulesBookSound.mp3');

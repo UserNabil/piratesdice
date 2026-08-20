@@ -267,13 +267,19 @@ export class Sfx {
     this.cache.set(name, audio);
   }
 
-  play(name, volume) {
+  /**
+   * `rate` change la hauteur ET la duree : c'est ce qui permet de tirer deux
+   * bruits differents d'un seul echantillon. Le jeu n'a qu'un son de de ; joue
+   * plus vite et plus fort, il devient le claquement sec d'un de qui se pose.
+   */
+  play(name, volume, rate) {
     if (this.muted) return;
     const source = this.cache.get(name);
     if (!source) return;
     try {
       const voice = source.cloneNode();
       voice.volume = volume === undefined ? 0.35 : volume;
+      if (rate) voice.playbackRate = rate;
       const p = voice.play();
       if (p && p.catch) p.catch(() => { /* autoplay policy — not worth a message */ });
     } catch (_) { /* no audio device */ }

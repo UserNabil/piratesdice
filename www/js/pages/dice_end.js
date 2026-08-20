@@ -42,7 +42,7 @@ export function onOver(m) {
   el.classList.remove('dc-rain');
   if (m.outcome === 'win') rain(el);
   el.classList.add('on');
-  S.sfx.play(m.outcome === 'win' ? 'drop' : 'shut', 0.3);
+  S.sfx.play(m.outcome === 'win' ? 'coin' : 'shut', 0.3);
 
   const leave = () => { el.classList.remove('on'); S.state = null; S.seat = -1; UI.showMenu(); };
   const mode = m.rated ? 'multi' : 'solo';

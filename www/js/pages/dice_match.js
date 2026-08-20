@@ -121,7 +121,7 @@ export function onState(msg) {
   }
 
   if (fx.some((f) => f.kind === 'start')) S.sfx.play('start', 0.22);
-  if (rolled) S.sfx.play('roll', 0.3);
+  if (rolled) S.sfx.play('dice', 0.3);
 
   /* ⚠️ LE DE NE DOIT PAS APPARAITRE AVANT D'AVOIR ROULE. `paint()` ecrivait la
      face definitive dans le gobelet des l'arrivee de l'etat, et le roulement
@@ -138,7 +138,8 @@ export function onState(msg) {
     else S.rolling = false;
   }
 
-  if (placed) { S.sfx.play('drop', 0.25); markPlaced(boardOf(placed.seat), placed.cell); }
+  /* La pose : le MEME de, joue plus sec et plus haut que le lancer. */
+  if (placed) { S.sfx.play('dice', 0.42, 1.28); markPlaced(boardOf(placed.seat), placed.cell); }
 
   let settleIn = 0;
   if (destroyed.length) {
