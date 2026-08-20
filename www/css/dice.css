@@ -742,14 +742,26 @@
 }
 
 #dicewrap .dc-board-slot { display: flex; align-items: center; }
-#dicewrap .dc-boardwrap { display: flex; flex-direction: column; align-items: center; gap: 6px; transition: filter .4s ease, opacity .4s ease; }
+/* ⚠️ La rangee de plaques doit avoir EXACTEMENT la geometrie du plateau, sinon
+   les chiffres ne tombent pas sous leur colonne. Mesure le 2026-08-20 : la
+   rangee faisait 258 px pour un plateau de 240, d'ou des ecarts de 6 px de part
+   et d'autre. Le cadre hugge le plateau (`max-content`) et les plaques
+   reprennent son rembourrage (--pd-frame) et ses ecarts. */
+#dicewrap .dc-boardwrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: max-content;
+  gap: 6px;
+  transition: filter .4s ease, opacity .4s ease;
+}
 #dicewrap .dc-boardwrap.dc-idle { filter: brightness(.62) saturate(.72); opacity: .92; }
 #dicewrap .dc-boardwrap.dc-live { filter: none; opacity: 1; }
 
 #dicewrap .dc-board {
   --pd-plank: 26px;
   display: grid;
-  grid-template-columns: repeat(3, auto);
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(6px, .8vw, 11px);
   --pd-frame: clamp(10px, 1.4vh, 16px);
   --pd-rim: 3px;
@@ -772,8 +784,9 @@
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(6px, .8vw, 11px);
   width: 100%;
+  box-sizing: border-box;
   justify-items: center;
-  padding: 0 clamp(10px, 1.4vh, 16px);
+  padding: 0 var(--pd-frame, 14px);
 }
 
 #dicewrap .dc-col { display: flex; flex-direction: column; align-items: center; gap: 6px; border-radius: 9px; padding: 2px; }
