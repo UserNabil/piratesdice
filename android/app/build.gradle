@@ -1,0 +1,93 @@
+apply plugin: 'com.android.application'
+
+/*
+ * LA SIGNATURE VIENT DE DEUX ENDROITS, ET D'AUCUN AUTRE.
+ *
+ *  - en local : ../signing/keystore.properties (jamais commite) ;
+ *  - dans GitHub Actions : des variables d'environnement, ecrites depuis les
+ *    secrets du depot.
+ *
+ * Si ni l'un ni l'autre n'est la, le build RELEASE echoue franchement au lieu
+ * de produire un paquet non signe que Play refuserait sans expliquer pourquoi.
+ */
+def signingProps = new Properties()
+def signingFile = rootProject.file('../signing/keystore.properties')
+if (signingFile.exists()) {
+    signingFile.withInputStream { signingProps.load(it) }
+}
+
+def storeFilePath = System.getenv('ANDROID_KEYSTORE_PATH') ?:
+        (signingProps['storeFile'] ? rootProject.file('../signing/' + signingProps['storeFile']).absolutePath : null)
+def storePw = System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: signingProps['storePassword']
+def keyAliasName = System.getenv('ANDROID_KEY_ALIAS') ?: signingProps['keyAlias']
+def keyPw = System.getenv('ANDROID_KEY_PASSWORD') ?: signingProps['keyPassword']
+def canSign = storeFilePath != null && storePw != null && keyAliasName != null && keyPw != null
+
+android {
+    namespace "com.nabil.piratesdice"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.nabil.piratesdice"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        // Le numero de compilation fait le versionCode : Play refuse deux envois
+        // avec le meme, et un numero tenu a la main finit toujours par etre
+        // oublie une fois. En local il vaut 1, ce qui suffit pour un APK d'essai.
+        versionCode (project.findProperty('versionCode') ?: '1').toString().toInteger()
+        versionName "1.0." + (project.findProperty('versionCode') ?: '0')
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (canSign) {
+            release {
+                storeFile file(storeFilePath)
+                storePassword storePw
+                keyAlias keyAliasName
+                keyPassword keyPw
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (canSign) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

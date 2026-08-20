@@ -1,0 +1,1304 @@
+/* ============================================================================
+   css/dice.css — "The Pirate's Dice".
+
+   La menuiserie est en CSS PUR : bois, laiton, feutre, cordage. Aucune image
+   n'habille plus un panneau, un cadre, un bouton, une plaque ou un logement.
+   Ne restent en image que les DES (et le gobelet), leurs effets, les portraits,
+   les sceaux, les icones et le decor peint.
+
+   Trois recettes portent tout : .pd-panel (bois cercle de laiton), .pd-plate
+   (plaque de laiton gravee), .pd-socket (creux de feutre).
+   ============================================================================ */
+
+#dicewrap {
+  --wood: #3b281c;
+  --wood-hi: #6a4530;
+  --wood-md: #2b1c10;
+  --wood-lo: #1b1208;
+  --wood-dk: #100b06;
+
+  --brass: #c9a227;
+  --brass-hi: #f3dc93;
+  --brass-md: #b9862a;
+  --brass-lo: #8a5c17;
+  --brass-dk: #462c08;
+
+  --felt: #1f3823;
+  --felt-hi: #33513a;
+  --felt-lo: #0d1f12;
+
+  --rope: #a9793a;
+  --rope-lo: #5a3410;
+
+  --parch: #f0e3c2;
+  --parch-dim: #cdbb92;
+  --ink: #241503;
+  --wax: #a5332a;
+  --verd: #4e8a6a;
+
+  --dc-parch: var(--parch);
+  --dc-brass: var(--brass);
+  --dc-brass2: var(--brass-hi);
+  --dc-cell: clamp(44px, min(6.4vh, 8vw), 62px);
+
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  place-items: center;
+  background: rgba(14, 9, 4, .76);
+  backdrop-filter: blur(3px);
+  font-family: "Spectral", Georgia, serif;
+  color: var(--parch);
+}
+
+#dicewrap.open { display: grid; }
+#dicewrap.dc-full { --dc-cell: clamp(56px, min(9vh, 7vw), 104px); }
+
+/* ============================================================================
+   LES TROIS RECETTES
+   ============================================================================ */
+
+/* ── .pd-panel : une planche de bois cerclee de laiton ────────────────────── */
+#dicewrap .pd-panel {
+  position: relative;
+  border-radius: var(--pd-round, 10px);
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, .34) 0 1px, rgba(255, 226, 176, .05) 1px 2px, rgba(0, 0, 0, 0) 2px var(--pd-plank, 46px)),
+    repeating-linear-gradient(1.4deg,
+      rgba(0, 0, 0, .1) 0 2px, rgba(255, 228, 180, .03) 2px 4px, rgba(0, 0, 0, 0) 4px 13px),
+    repeating-linear-gradient(-1.1deg,
+      rgba(0, 0, 0, .07) 0 1px, rgba(0, 0, 0, 0) 1px 27px),
+    linear-gradient(178deg, var(--wood-hi) 0%, var(--wood) 14%, var(--wood-md) 62%, var(--wood-lo) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 222, 170, .16),
+    inset 0 -2px 0 rgba(0, 0, 0, .55),
+    inset 0 0 30px rgba(0, 0, 0, .5),
+    0 12px 30px rgba(0, 0, 0, .55);
+  color: var(--parch);
+}
+
+#dicewrap .pd-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: var(--pd-rim, 3px);
+  background: linear-gradient(157deg,
+    var(--brass-hi) 0%, var(--brass) 26%, var(--brass-dk) 47%,
+    var(--brass-lo) 63%, var(--brass-hi) 86%, var(--brass-lo) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Les ferrures d'angle : quatre rivets poses, jamais repetes. */
+#dicewrap .pd-panel::after {
+  content: '';
+  position: absolute;
+  inset: var(--pd-rivet-in, 9px);
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
+    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
+    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
+    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%);
+  background-size: var(--pd-rivet, 9px) var(--pd-rivet, 9px);
+  background-position: 0 0, 100% 0, 0 100%, 100% 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6));
+}
+
+#dicewrap .pd-panel--norivet::after { content: none; }
+#dicewrap .pd-panel--thin { --pd-rim: 2px; --pd-rivet: 7px; --pd-rivet-in: 6px; }
+#dicewrap .pd-panel--pill { --pd-round: 999px; --pd-rivet-in: 10px 26px; }
+
+/* Le feutre du plateau : deuxieme couche de fond, bornee a la boite de contenu.
+   La largeur du cadre de bois EST le padding — rien a aligner a la main. */
+#dicewrap .pd-panel--felt {
+  padding: var(--pd-frame, 14px);
+  background:
+    radial-gradient(118% 118% at 50% 38%, var(--felt-hi) 0%, var(--felt) 44%, var(--felt-lo) 100%) content-box,
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, .34) 0 1px, rgba(255, 226, 176, .05) 1px 2px, rgba(0, 0, 0, 0) 2px var(--pd-plank, 46px)) border-box,
+    repeating-linear-gradient(1.4deg,
+      rgba(0, 0, 0, .1) 0 2px, rgba(255, 228, 180, .03) 2px 4px, rgba(0, 0, 0, 0) 4px 13px) border-box,
+    linear-gradient(178deg, var(--wood-hi) 0%, var(--wood) 14%, var(--wood-md) 62%, var(--wood-lo) 100%) border-box;
+}
+
+/* ── .pd-plate : une plaque de laiton gravee ──────────────────────────────── */
+#dicewrap .pd-plate,
+#dicewrap .dc-btn {
+  position: relative;
+  border: 0;
+  border-radius: var(--pd-round, 7px);
+  color: var(--ink);
+  background:
+    linear-gradient(180deg,
+      var(--brass-hi) 0%, #ddb44e 16%, var(--brass-md) 50%,
+      var(--brass-lo) 82%, #c99a3a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 218, .8),
+    inset 0 -2px 0 rgba(58, 33, 4, .55),
+    inset 0 0 0 1px rgba(70, 42, 8, .6),
+    0 3px 7px rgba(0, 0, 0, .5);
+  text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
+}
+
+/* Deux rivets, un a chaque bout : c'est ce qui fait « plaque vissee ». */
+#dicewrap .pd-plate--riveted {
+  background-image:
+    radial-gradient(circle closest-side at 50% 45%, #fff3c8 0 20%, var(--brass-lo) 55%, var(--brass-dk) 100%),
+    radial-gradient(circle closest-side at 50% 45%, #fff3c8 0 20%, var(--brass-lo) 55%, var(--brass-dk) 100%),
+    linear-gradient(180deg, var(--brass-hi) 0%, #ddb44e 16%, var(--brass-md) 50%, var(--brass-lo) 82%, #c99a3a 100%);
+  background-size: 7px 7px, 7px 7px, auto;
+  background-position: 9px 50%, calc(100% - 9px) 50%, 0 0;
+  background-repeat: no-repeat;
+}
+
+/* ── .pd-socket : un creux de feutre ──────────────────────────────────────── */
+#dicewrap .pd-socket {
+  position: relative;
+  border-radius: var(--pd-round, 9px);
+  background: radial-gradient(104% 104% at 50% 26%, var(--felt-hi) 0%, var(--felt) 46%, #081a0e 100%);
+  box-shadow:
+    inset 0 4px 9px rgba(0, 0, 0, .8),
+    inset 0 -2px 3px rgba(0, 0, 0, .55),
+    inset 0 0 0 1px rgba(0, 0, 0, .6),
+    0 1px 0 rgba(255, 226, 170, .1);
+}
+
+#dicewrap .pd-socket::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .55);
+  background:
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, .035) 0 2px, rgba(255, 255, 255, .011) 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .03) 0 2px, rgba(255, 255, 255, .009) 2px 4px);
+  opacity: .6;
+}
+
+/* ============================================================================
+   LA COQUE
+   ============================================================================ */
+
+#dicewrap .dc-shell {
+  position: relative;
+  width: min(1060px, 92vw);
+  height: min(760px, 90vh);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  --pd-rim: 4px;
+  --pd-rivet: 11px;
+  --pd-rivet-in: 12px;
+  background: linear-gradient(180deg, var(--wood-md), var(--wood-dk));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, .72), 0 0 0 1px rgba(0, 0, 0, .8);
+}
+
+#dicewrap.dc-full .dc-shell {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+}
+
+#dicewrap.dc-full .dc-shell::before,
+#dicewrap.dc-full .dc-shell::after { content: none; }
+
+/* ── l'entete : une barre de pont ─────────────────────────────────────────── */
+
+#dicewrap .dc-top {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.4vw, 16px);
+  padding: 9px clamp(12px, 1.6vw, 20px);
+  background:
+    repeating-linear-gradient(1.2deg,
+      rgba(0, 0, 0, .14) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 12px),
+    linear-gradient(180deg, var(--wood) 0%, var(--wood-md) 60%, var(--wood-lo) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 222, 170, .14),
+    0 3px 10px rgba(0, 0, 0, .5);
+}
+
+#dicewrap .dc-top::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi) 22%, var(--brass-lo) 50%, var(--brass-hi) 78%, var(--brass-lo));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+
+#dicewrap .dc-brand {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(14px, 1.5vw, 18px);
+  letter-spacing: .6px;
+  color: var(--brass-hi);
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .8), 0 0 14px rgba(201, 162, 39, .3);
+}
+
+#dicewrap .dc-brand-mark { height: 30px; width: auto; vertical-align: -8px; margin-right: 4px; }
+#dicewrap .dc-tab img { width: 16px; height: 16px; object-fit: contain; vertical-align: -3px; margin-right: 5px; }
+#dicewrap .dc-coin { height: 1.05em; width: auto; vertical-align: -.15em; margin-left: 2px; }
+
+#dicewrap .dc-wallet {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 3px 12px 3px 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .28));
+  box-shadow:
+    inset 0 0 0 1px var(--brass-lo),
+    inset 0 1px 0 rgba(255, 226, 170, .12),
+    0 2px 5px rgba(0, 0, 0, .45);
+}
+
+#dicewrap .dc-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 0 0 2px var(--brass-lo), 0 0 0 3px rgba(0, 0, 0, .6);
+}
+
+#dicewrap .dc-wallet-txt { display: flex; flex-direction: column; line-height: 1.15; }
+#dicewrap .dc-wallet-txt b { font-size: 14px; }
+#dicewrap .dc-wallet-txt span { font-size: 12px; color: var(--parch-dim); }
+#dicewrap .dc-coins { font-size: 15px; color: var(--brass-hi); font-weight: 600; margin-left: 4px; }
+
+#dicewrap .dc-tabs { display: flex; gap: 6px; margin-left: auto; }
+
+#dicewrap .dc-tab {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 13px;
+  letter-spacing: .4px;
+  color: var(--parch);
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 15px;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-md) 55%, var(--wood-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 226, 170, .16),
+    inset 0 0 0 1px rgba(0, 0, 0, .55),
+    0 2px 4px rgba(0, 0, 0, .45);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  transition: filter .12s, transform .1s, color .12s;
+}
+
+#dicewrap .dc-tab:hover { filter: brightness(1.16); color: var(--brass-hi); }
+#dicewrap .dc-tab:active { transform: translateY(1px); }
+
+#dicewrap .dc-tab.on {
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md) 55%, var(--brass-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6), 0 2px 5px rgba(0, 0, 0, .5);
+}
+
+#dicewrap .dc-acts { display: flex; gap: 6px; }
+
+#dicewrap .dc-icon {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 36% 28%, var(--wood-hi), var(--wood-md) 58%, #120c06 100%);
+  box-shadow:
+    inset 0 0 0 2px var(--brass-lo),
+    inset 0 1px 0 rgba(255, 226, 170, .2),
+    0 2px 5px rgba(0, 0, 0, .55);
+  transition: filter .12s, transform .1s, box-shadow .12s;
+}
+
+#dicewrap .dc-icon img {
+  width: 24px; height: 24px; object-fit: contain;
+  filter: brightness(1.6) contrast(1.08)
+          drop-shadow(0 0 3px rgba(255, 210, 130, .5))
+          drop-shadow(0 1px 2px rgba(0, 0, 0, .9));
+}
+
+#dicewrap .dc-icon:hover { box-shadow: inset 0 0 0 2px var(--brass), inset 0 1px 0 rgba(255, 226, 170, .28), 0 3px 8px rgba(0, 0, 0, .55); transform: translateY(-1px); }
+#dicewrap .dc-icon:active { transform: translateY(1px); }
+#dicewrap .dc-icon-off img { filter: grayscale(1) brightness(.7); }
+
+/* ============================================================================
+   LES ECRANS
+   ============================================================================ */
+
+#dicewrap .dc-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: url('/dice/img/bg.jpg') center / cover no-repeat;
+}
+
+#dicewrap .dc-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .34));
+}
+
+#dicewrap .dc-bgvideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#dicewrap .dc-screen { position: absolute; inset: 0; display: none; z-index: 1; }
+#dicewrap .dc-screen.on { display: flex; }
+
+/* ── les boutons ──────────────────────────────────────────────────────────── */
+
+/* ── LES BOUTONS : des plaques BOULONNEES, pas des degrades ────────────────
+   Une plaque de laiton martele, cerclee de fer, tenue par deux rivets, avec de
+   l'epaisseur sous elle (le `0 4px 0` fait la tranche) : c'est ce qui fait
+   qu'on a envie d'appuyer dessus. A l'appui, la plaque s'enfonce DANS le bois
+   et sa tranche disparait. */
+#dicewrap .dc-btn {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  padding: 12px 30px;
+  cursor: pointer;
+  --pd-round: 8px;
+  --pd-rivet-x: 13px;
+  color: #2c1a05;
+  background:
+    radial-gradient(circle closest-side at 50% 45%, #fff8dc 0 14%, #dfb452 40%, #6b4610 66%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
+    radial-gradient(circle closest-side at 50% 45%, #fff8dc 0 14%, #dfb452 40%, #6b4610 66%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
+    radial-gradient(130% 150% at 50% -34%, rgba(255, 252, 232, .55) 0 20%, rgba(255, 252, 232, 0) 62%),
+    linear-gradient(180deg,
+      #f6e0a4 0%, #dcb254 15%, #b7871f 46%, #8a5c17 74%, #d3a641 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 222, .85),
+    inset 0 -2px 0 rgba(52, 29, 4, .55),
+    inset 0 0 0 2px rgba(48, 29, 6, .5),
+    0 4px 0 rgba(32, 18, 5, .6),
+    0 7px 14px rgba(0, 0, 0, .5);
+  text-shadow: 0 1px 0 rgba(255, 248, 214, .6), 0 -1px 0 rgba(74, 44, 8, .4);
+  transition: filter .12s, transform .08s, box-shadow .12s;
+}
+
+#dicewrap .dc-btn:hover:not(:disabled) {
+  filter: brightness(1.06) saturate(1.05);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 222, .9),
+    inset 0 -2px 0 rgba(52, 29, 4, .55),
+    inset 0 0 0 2px rgba(48, 29, 6, .5),
+    0 5px 0 rgba(32, 18, 5, .6),
+    0 9px 20px rgba(0, 0, 0, .5),
+    0 0 22px rgba(255, 199, 104, .3);
+}
+
+#dicewrap .dc-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 3px 7px rgba(48, 27, 4, .6),
+    inset 0 0 0 2px rgba(48, 29, 6, .55),
+    0 1px 0 rgba(32, 18, 5, .6),
+    0 2px 5px rgba(0, 0, 0, .45);
+}
+
+#dicewrap .dc-btn:disabled { filter: grayscale(.55) brightness(.6); cursor: not-allowed; }
+#dicewrap .dc-btn-sm { padding: 8px 20px; font-size: 12.5px; --pd-rivet-x: 9px; background-size: 7px 7px, 7px 7px, auto, auto; }
+#dicewrap .dc-btn-big { padding: 16px 38px; font-size: 18px; letter-spacing: 1.4px; --pd-rivet-x: 16px; background-size: 11px 11px, 11px 11px, auto, auto; }
+
+/* Le bouton de bois : une planche cerclee de fer, memes rivets. */
+#dicewrap .dc-btn-ghost {
+  color: var(--parch);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .85);
+  background:
+    radial-gradient(circle closest-side at 50% 45%, #f8ecc4 0 14%, var(--brass-md) 40%, #4a2f0c 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
+    radial-gradient(circle closest-side at 50% 45%, #f8ecc4 0 14%, var(--brass-md) 40%, #4a2f0c 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
+    repeating-linear-gradient(1.2deg,
+      rgba(0, 0, 0, .13) 0 2px, rgba(255, 228, 180, .045) 2px 4px, rgba(0, 0, 0, 0) 4px 10px),
+    linear-gradient(180deg, var(--wood-hi), var(--wood-md) 58%, var(--wood-lo));
+  box-shadow:
+    inset 0 0 0 2px var(--brass-lo),
+    inset 0 0 0 3px rgba(0, 0, 0, .45),
+    inset 0 1px 0 rgba(255, 226, 170, .18),
+    0 4px 0 rgba(22, 14, 6, .6),
+    0 7px 14px rgba(0, 0, 0, .5);
+}
+
+#dicewrap .dc-btn-ghost:hover:not(:disabled) {
+  filter: brightness(1.18);
+  box-shadow:
+    inset 0 0 0 2px var(--brass),
+    inset 0 0 0 3px rgba(0, 0, 0, .45),
+    inset 0 1px 0 rgba(255, 226, 170, .22),
+    0 5px 0 rgba(22, 14, 6, .6),
+    0 9px 18px rgba(0, 0, 0, .5),
+    0 0 18px rgba(255, 199, 104, .22);
+}
+
+#dicewrap .dc-btn-ghost:active:not(:disabled) {
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, .7),
+    inset 0 0 0 2px var(--brass-lo),
+    0 1px 0 rgba(22, 14, 6, .6);
+}
+
+/* Le bronze vert-de-grise : le second choix du menu, meme ferronnerie. */
+#dicewrap .dc-btn-alt {
+  color: #0c1f14;
+  text-shadow: 0 1px 0 rgba(206, 244, 220, .5), 0 -1px 0 rgba(10, 40, 24, .35);
+  background:
+    radial-gradient(circle closest-side at 50% 45%, #f0fdf5 0 14%, #79b795 40%, #24503a 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
+    radial-gradient(circle closest-side at 50% 45%, #f0fdf5 0 14%, #79b795 40%, #24503a 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
+      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
+    radial-gradient(130% 150% at 50% -34%, rgba(236, 250, 232, .42) 0 20%, rgba(236, 250, 232, 0) 62%),
+    linear-gradient(180deg, #9fcdae 0%, #69a884 15%, var(--verd) 46%, #27523c 76%, #5f9a7c 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(230, 255, 240, .8),
+    inset 0 -2px 0 rgba(10, 36, 22, .55),
+    inset 0 0 0 2px rgba(14, 44, 28, .5),
+    0 4px 0 rgba(9, 30, 19, .6),
+    0 7px 14px rgba(0, 0, 0, .5);
+}
+
+#dicewrap .dc-btn-alt:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(230, 255, 240, .85),
+    inset 0 -2px 0 rgba(10, 36, 22, .55),
+    inset 0 0 0 2px rgba(14, 44, 28, .5),
+    0 5px 0 rgba(9, 30, 19, .6),
+    0 9px 20px rgba(0, 0, 0, .5),
+    0 0 22px rgba(140, 235, 185, .22);
+}
+
+#dicewrap .dc-dim { color: var(--parch-dim); font-size: 13.5px; }
+#dicewrap .dc-err { color: #ff9a90; }
+
+#dicewrap kbd {
+  font-family: ui-monospace, monospace; font-size: 12.5px;
+  color: var(--brass-hi);
+  border-radius: 4px; padding: 1px 6px;
+  background: rgba(0, 0, 0, .45);
+  box-shadow: inset 0 0 0 1px var(--brass-lo), 0 1px 0 rgba(0, 0, 0, .5);
+}
+
+#dicewrap code {
+  font-family: ui-monospace, monospace; font-size: 13px;
+  background: rgba(0, 0, 0, .42); padding: 1px 6px; border-radius: 4px; color: var(--brass-hi);
+}
+
+/* ── connexion / menu ─────────────────────────────────────────────────────── */
+
+#dicewrap .dc-connect,
+#dicewrap .dc-menu { margin: auto; text-align: center; padding: 24px; }
+
+/* La roue de barre, en CSS : huit rayons et huit poignees. */
+#dicewrap .dc-wheel {
+  position: relative;
+  width: 62px; height: 62px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  animation: dc-spin 5.5s linear infinite;
+  background:
+    repeating-conic-gradient(from 0deg,
+      var(--wood-hi) 0deg 6deg, rgba(0, 0, 0, 0) 6deg 45deg),
+    radial-gradient(circle at 50% 50%,
+      var(--brass-md) 0 12%, var(--wood) 12% 17%, rgba(0, 0, 0, 0) 17% 68%,
+      var(--wood-hi) 68% 84%, var(--wood-lo) 84% 90%, rgba(0, 0, 0, 0) 90%);
+  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, .6));
+}
+
+#dicewrap .dc-wheel::after {
+  content: '';
+  position: absolute;
+  inset: -9%;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%);
+  background-size: 13px 13px;
+  background-position: 50% 0, 50% 100%, 0 50%, 100% 50%;
+  background-repeat: no-repeat;
+}
+
+@keyframes dc-spin { to { transform: rotate(360deg); } }
+
+#dicewrap .dc-connect-bad { max-width: 580px; }
+#dicewrap .dc-connect-icon { width: 74px; height: 74px; object-fit: contain; margin: 0 auto 10px; display: block; }
+#dicewrap .dc-connect h3 { font-family: "Cinzel", Georgia, serif; color: var(--brass-hi); margin: 0 0 10px; font-size: 20px; }
+#dicewrap .dc-connect-why { color: #ff9a90; margin: 0 0 8px; }
+#dicewrap .dc-connect-where,
+#dicewrap .dc-connect-fix { font-size: 14px; color: var(--parch-dim); margin: 0 0 10px; }
+
+#dicewrap .dc-menu-card {
+  max-width: min(560px, 92vw);
+  padding: clamp(22px, 3.4vh, 34px) clamp(24px, 3vw, 40px);
+  --pd-rim: 4px;
+  --pd-rivet: 11px;
+  --pd-rivet-in: 13px;
+}
+
+#dicewrap .dc-menu-card h2,
+#dicewrap .dc-menu-card h3 {
+  font-family: "Cinzel", Georgia, serif;
+  color: var(--brass-hi);
+  margin: 0 0 14px;
+  font-size: clamp(19px, 2.3vw, 26px);
+  letter-spacing: .5px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .75), 0 0 18px rgba(201, 162, 39, .25);
+}
+
+#dicewrap .dc-menu-card p {
+  color: var(--parch);
+  font-size: clamp(14px, 1.4vw, 15.5px);
+  margin: 0 0 22px;
+  line-height: 1.68;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .7);
+}
+
+#dicewrap .dc-menu-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+#dicewrap .dc-menu-stats {
+  display: flex;
+  gap: clamp(16px, 3vw, 34px);
+  justify-content: center;
+  margin-top: 24px;
+  font-size: 12.5px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--parch-dim);
+}
+
+#dicewrap .dc-menu-stats b {
+  color: var(--brass-hi);
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 21px;
+  display: block;
+  text-transform: none;
+  letter-spacing: 0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .8);
+}
+
+/* ============================================================================
+   L'ARENE
+   ============================================================================ */
+
+#dicewrap .dc-arena {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(130px, 178px) 1fr minmax(130px, 178px);
+  gap: clamp(8px, 1.4vw, 20px);
+  padding: clamp(8px, 1.6vh, 20px) clamp(10px, 1.6vw, 26px);
+  align-items: stretch;
+  min-height: 0;
+}
+
+#dicewrap .dc-side { display: flex; flex-direction: column; justify-content: center; gap: 12px; min-width: 0; }
+#dicewrap .dc-side-foe { justify-content: flex-start; padding-top: 6px; }
+#dicewrap .dc-side-me { justify-content: flex-end; padding-bottom: 6px; }
+
+/* ── la carte joueur ──────────────────────────────────────────────────────── */
+
+#dicewrap .dc-pc {
+  --pd-plank: 30px;
+  text-align: center;
+  padding: clamp(10px, 1.4vh, 16px) clamp(10px, 1vw, 16px) clamp(12px, 1.6vh, 18px);
+  --pd-rim: 3px;
+  --pd-rivet: 8px;
+  --pd-rivet-in: 8px;
+  transition: filter .2s;
+}
+
+#dicewrap .dc-pc-portrait { position: relative; width: clamp(48px, 6vh, 74px); height: clamp(48px, 6vh, 74px); margin: 0 auto; }
+#dicewrap .dc-pc-face {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 2px var(--brass-lo),
+    0 0 0 3px rgba(0, 0, 0, .65),
+    inset 0 -6px 12px rgba(0, 0, 0, .5),
+    0 3px 8px rgba(0, 0, 0, .6);
+}
+
+/* Le cerclage du joueur qui a la main : un cordage torsade et son jonc de
+   laiton, dessines ici — l'anneau livre en image ne se calait sur aucun
+   portrait et portait son propre decor. */
+#dicewrap .dc-pc-ring {
+  position: absolute;
+  inset: -17%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    /* la section du cordage : sombre aux deux bords, eclairee au milieu du brin */
+    radial-gradient(closest-side,
+      rgba(0, 0, 0, 0) 0 73%, rgba(0, 0, 0, .6) 76%,
+      rgba(255, 226, 176, .3) 84%, rgba(0, 0, 0, .55) 93%, rgba(0, 0, 0, 0) 96%),
+    /* les brins torsades : fondus doux, jamais d'arete — sinon c'est un engrenage */
+    repeating-conic-gradient(from 10deg,
+      #24130400 0deg, var(--rope-lo) 4deg, var(--rope) 8deg,
+      #e0bb85 11deg, var(--rope) 14deg, var(--rope-lo) 17deg, #241304 20deg);
+  -webkit-mask: radial-gradient(closest-side, #0000 0 72%, #000 77%, #000 94%, #0000 99%);
+          mask: radial-gradient(closest-side, #0000 0 72%, #000 77%, #000 94%, #0000 99%);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .7));
+  animation: dc-ring 2.6s ease-in-out infinite;
+}
+
+/* Le jonc de laiton qui pince le cordage contre le portrait. */
+#dicewrap .dc-pc-ring::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px var(--brass-lo),
+    0 0 0 1px rgba(0, 0, 0, .55),
+    0 0 16px rgba(232, 200, 106, .4);
+}
+
+@keyframes dc-ring {
+  0%, 100% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .65)); }
+  50% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 10px rgba(255, 205, 110, .75)); }
+}
+
+#dicewrap .dc-pc-name {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(12.5px, 1.2vw, 15px);
+  margin-top: 8px;
+  color: var(--parch);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  overflow-wrap: anywhere;
+}
+
+#dicewrap .dc-pc-name em {
+  font-style: normal; font-size: 9.5px; color: #0d2016;
+  background: linear-gradient(180deg, #a8dcbd, var(--verd));
+  border-radius: 4px; padding: 1px 5px; vertical-align: middle;
+  box-shadow: inset 0 0 0 1px rgba(16, 48, 32, .5);
+}
+
+#dicewrap .dc-pc-elo { font-size: 11.5px; color: var(--parch-dim); margin-top: 2px; }
+
+#dicewrap .dc-pc-total {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(24px, 3vh, 38px);
+  margin-top: 8px;
+  color: var(--brass-hi);
+  line-height: 1.1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .7), 0 0 18px rgba(201, 162, 39, .3);
+}
+
+#dicewrap .dc-pc-lbl {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: #a08f74; margin-top: 3px;
+}
+
+#dicewrap .dc-pc-bet { margin-top: 7px; font-size: 12.5px; color: var(--brass-hi); }
+#dicewrap .dc-foe-die { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; z-index: 2; }
+
+/* ── les plateaux ─────────────────────────────────────────────────────────── */
+
+#dicewrap .dc-boards {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  gap: clamp(4px, .8vh, 10px);
+  justify-items: center;
+  align-content: center;
+  min-height: 0;
+  padding-bottom: clamp(40px, 6vh, 62px);
+}
+
+#dicewrap .dc-board-slot { display: flex; align-items: center; }
+#dicewrap .dc-boardwrap { display: flex; flex-direction: column; align-items: center; gap: 6px; transition: filter .4s ease, opacity .4s ease; }
+#dicewrap .dc-boardwrap.dc-idle { filter: brightness(.62) saturate(.72); opacity: .92; }
+#dicewrap .dc-boardwrap.dc-live { filter: none; opacity: 1; }
+
+#dicewrap .dc-board {
+  --pd-plank: 26px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: clamp(6px, .8vw, 11px);
+  --pd-frame: clamp(10px, 1.4vh, 16px);
+  --pd-rim: 3px;
+  --pd-rivet: 9px;
+  --pd-rivet-in: 7px;
+  --pd-round: 12px;
+}
+
+#dicewrap .dc-boardwrap.dc-live .dc-board {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 222, 170, .18),
+    inset 0 -2px 0 rgba(0, 0, 0, .55),
+    inset 0 0 30px rgba(0, 0, 0, .5),
+    0 12px 30px rgba(0, 0, 0, .55),
+    0 -4px 26px rgba(255, 198, 110, .2);
+}
+
+#dicewrap .dc-scores {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, .8vw, 11px);
+  width: 100%;
+  justify-items: center;
+  padding: 0 clamp(10px, 1.4vh, 16px);
+}
+
+#dicewrap .dc-col { display: flex; flex-direction: column; align-items: center; gap: 6px; border-radius: 9px; padding: 2px; }
+#dicewrap .dc-stack { display: flex; flex-direction: column; gap: clamp(5px, .7vw, 9px); }
+#dicewrap .dc-board-top .dc-stack { flex-direction: column-reverse; }
+
+#dicewrap .dc-colscore {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 800;
+  font-size: clamp(14px, 1.5vw, 19px);
+  min-width: clamp(46px, 5vw, 72px);
+  min-height: clamp(24px, 3vh, 34px);
+  line-height: clamp(24px, 3vh, 34px);
+  padding: 0 8px;
+  text-align: center;
+  --pd-round: 5px;
+}
+
+#dicewrap .dc-colscore:empty {
+  background: none;
+  box-shadow: none;
+  min-height: 8px;
+  min-width: 0;
+  padding: 0;
+}
+
+#dicewrap .dc-colscore:empty::before,
+#dicewrap .dc-colscore:empty::after { content: none; }
+
+#dicewrap .dc-cell {
+  position: relative;
+  width: var(--dc-cell);
+  height: var(--dc-cell);
+  display: grid;
+  place-items: center;
+  --pd-round: clamp(6px, .9vw, 10px);
+}
+
+/* Les faces sont normalisees : le CORPS du de occupe 208 px d'une toile de 256
+   (mesure, pas a l'oeil — die_6_hot etait 40 % plus petit que die_6). L'image
+   peut donc remplir la case : la marge transparente fait le liseret du logement,
+   et tous les des ont exactement la meme taille apparente. */
+#dicewrap .dc-cell > .dc-face { width: 100%; height: 100%; position: relative; z-index: 1; }
+
+#dicewrap .dc-face {
+  width: 100%; height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .6));
+  -webkit-user-drag: none;
+}
+
+/* La case visee par un bonus : jonc de laiton vif, meme creux. */
+#dicewrap .dc-target .dc-cell-filled {
+  box-shadow:
+    inset 0 4px 9px rgba(0, 0, 0, .7),
+    inset 0 0 0 2px var(--brass),
+    0 0 12px rgba(232, 200, 106, .55);
+}
+
+#dicewrap .dc-pair .dc-face { animation: dc-pair 2.2s ease-in-out infinite; }
+
+@keyframes dc-pair {
+  50% { filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .55)) drop-shadow(0 0 9px rgba(255, 140, 40, .9)); }
+}
+
+#dicewrap .dc-board:not(.dc-board-top) .dc-col { cursor: pointer; transition: background .12s; }
+#dicewrap .dc-board:not(.dc-board-top) .dc-col:hover { background: rgba(232, 200, 106, .14); }
+
+#dicewrap .dc-targeting .dc-board:not(.dc-target) { opacity: .55; pointer-events: none; }
+#dicewrap .dc-targeting .dc-target { outline: 2px solid var(--brass); outline-offset: 2px; }
+#dicewrap .dc-targeting .dc-target .dc-col { cursor: default; }
+#dicewrap .dc-targeting .dc-target .dc-cell-filled { cursor: crosshair; animation: dc-pair 1.2s ease-in-out infinite; }
+
+/* ── la barre du lancer ───────────────────────────────────────────────────── */
+
+#dicewrap .dc-mid {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: 4px clamp(12px, 1.6vw, 22px);
+  min-height: 0;
+  --pd-rim: 2px;
+  --pd-round: 999px;
+  --pd-rivet: 6px;
+  --pd-rivet-in: 5px 16px;
+  --pd-plank: 22px;
+  overflow: visible;
+}
+
+#dicewrap .dc-turn {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(12px, 1.1vw, 14.5px);
+  white-space: nowrap;
+  color: var(--parch);
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  position: relative;
+  z-index: 2;
+}
+
+#dicewrap .dc-turn-mine { color: #ffe6a8; text-shadow: 0 0 12px rgba(255, 190, 90, .55), 0 1px 2px rgba(0, 0, 0, .8); }
+
+#dicewrap .dc-cup {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  width: calc(var(--dc-cell) * .82);
+  height: calc(var(--dc-cell) * .82);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform .12s;
+}
+
+#dicewrap .dc-cup:disabled { opacity: .4; cursor: default; }
+#dicewrap .dc-cup-art { width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: brightness(1.15) drop-shadow(0 4px 7px rgba(0, 0, 0, .6)); }
+#dicewrap .dc-cup-ready { animation: dc-cup 1.4s ease-in-out infinite; }
+#dicewrap .dc-cup-ready:hover { transform: scale(1.07); }
+#dicewrap .dc-cup-armed .dc-face { filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .55)) drop-shadow(0 0 8px rgba(232, 200, 106, .8)); }
+
+@keyframes dc-cup {
+  50% { filter: drop-shadow(0 0 12px rgba(232, 200, 106, .9)); }
+}
+
+/* ── le ratelier de bonus ─────────────────────────────────────────────────── */
+
+#dicewrap .dc-bonus {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(4px, 1vh, 10px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 28px;
+  z-index: 4;
+  pointer-events: none;
+  --pd-rim: 2px;
+  --pd-round: 999px;
+  --pd-rivet: 7px;
+  --pd-rivet-in: 8px 16px;
+}
+
+#dicewrap .dc-bonus-hd { font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: #a08f74; line-height: 1.25; }
+#dicewrap .dc-bonus-hd span { display: block; color: var(--brass-hi); letter-spacing: 0; text-transform: none; font-size: 12px; }
+#dicewrap .dc-bonus-empty { font-size: 12.5px; color: var(--parch-dim); line-height: 1.35; max-width: 260px; text-align: center; }
+
+#dicewrap .dc-bonus-btn {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  width: 46px; height: 46px;
+  padding: 7px;
+  border: 0;
+  cursor: pointer;
+  --pd-round: 10px;
+  background: radial-gradient(104% 104% at 50% 26%, var(--felt-hi) 0%, var(--felt) 46%, #081a0e 100%);
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, .75),
+    inset 0 0 0 2px var(--brass-lo),
+    0 2px 5px rgba(0, 0, 0, .5);
+  border-radius: 10px;
+  transition: filter .12s, transform .12s, box-shadow .12s;
+}
+
+#dicewrap .dc-bonus-btn img { width: 100%; height: 100%; object-fit: contain; }
+#dicewrap .dc-bonus-btn:hover:not(:disabled) { filter: brightness(1.14); transform: translateY(-2px); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass), 0 4px 9px rgba(0, 0, 0, .5); }
+#dicewrap .dc-bonus-btn:disabled { filter: saturate(.3) brightness(.62); cursor: not-allowed; }
+
+#dicewrap .dc-bonus-qty {
+  position: absolute; right: -5px; bottom: -5px;
+  min-width: 19px; height: 19px; line-height: 19px;
+  font-size: 11.5px; font-weight: 800;
+  color: var(--ink);
+  border-radius: 999px; padding: 0 4px;
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md));
+  box-shadow: inset 0 0 0 1px rgba(70, 42, 8, .7), 0 1px 3px rgba(0, 0, 0, .6);
+}
+
+#dicewrap .dc-quit { align-self: center; white-space: nowrap; font-size: 12px; padding: 8px 14px; }
+#dicewrap.dc-full .dc-quit { font-size: 13px; padding: 9px 18px; }
+
+/* ============================================================================
+   MISE / FIN DE PARTIE
+   ============================================================================ */
+
+#dicewrap .dc-bet,
+#dicewrap .dc-over {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(10, 6, 3, .74);
+  z-index: 5;
+}
+
+#dicewrap .dc-bet.on,
+#dicewrap .dc-over.on { display: grid; }
+
+#dicewrap .dc-bet-card,
+#dicewrap .dc-over-card {
+  position: relative;
+  z-index: 2;
+  width: min(500px, 90%);
+  padding: clamp(20px, 3vh, 30px) clamp(24px, 3vw, 38px) clamp(22px, 3vh, 32px);
+  text-align: center;
+  --pd-rim: 4px;
+  --pd-rivet: 11px;
+  --pd-rivet-in: 13px;
+}
+
+#dicewrap .dc-bet-art { width: clamp(120px, 26%, 170px); margin: 0 auto 8px; display: block; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .6)); }
+#dicewrap .dc-over-seal { width: clamp(92px, 22%, 124px); margin: 0 auto 6px; display: block; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .6)); }
+
+#dicewrap .dc-bet-card h3,
+#dicewrap .dc-over-card h2 {
+  font-family: "Cinzel", Georgia, serif;
+  color: var(--brass-hi);
+  margin: 0 0 12px;
+  font-size: clamp(20px, 2.3vw, 26px);
+  letter-spacing: .5px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .75);
+}
+
+#dicewrap .dc-bet-card p { font-size: 14px; color: var(--parch); margin: 0 0 18px; line-height: 1.6; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+#dicewrap .dc-bet-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; }
+
+#dicewrap .dc-bet-row input {
+  width: 150px;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 22px;
+  text-align: center;
+  color: var(--brass-hi);
+  background: rgba(0, 0, 0, .5);
+  border: 0;
+  border-radius: 8px;
+  padding: 9px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass-lo);
+}
+
+#dicewrap .dc-bet-row input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass); }
+#dicewrap .dc-bet-max { font-size: 13.5px; color: var(--parch-dim); }
+#dicewrap .dc-bet-wait { margin-top: 14px; font-size: 13.5px; color: var(--parch-dim); min-height: 18px; }
+
+#dicewrap .dc-over-score {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(34px, 5vw, 50px);
+  color: var(--parch);
+  margin: 6px 0 12px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .7);
+}
+
+#dicewrap .dc-over-score span { color: #8d7f66; font-size: .55em; }
+#dicewrap .dc-over-line { font-size: 15px; color: var(--parch); margin: 5px 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+#dicewrap .dc-over-btns { display: flex; gap: 14px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+#dicewrap .dc-over-win { box-shadow: inset 0 1px 0 rgba(255, 222, 170, .16), inset 0 0 30px rgba(0, 0, 0, .45), 0 0 60px rgba(201, 162, 39, .3), 0 12px 34px rgba(0, 0, 0, .6); }
+#dicewrap .dc-over-win h2 { color: var(--brass-hi); }
+#dicewrap .dc-over-loss h2 { color: #ff9a90; }
+
+/* ============================================================================
+   LE PANNEAU LATERAL
+   ============================================================================ */
+
+#dicewrap .dc-panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(430px, 94%);
+  padding: 20px 22px;
+  overflow: auto;
+  z-index: 6;
+  transform: translateX(102%);
+  transition: transform .22s ease;
+  --pd-round: 0;
+  --pd-rim: 0px;
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, .45) 0 1px, rgba(255, 226, 176, .06) 1px 2px, rgba(0, 0, 0, 0) 2px 46px),
+    repeating-linear-gradient(1.2deg,
+      rgba(0, 0, 0, .12) 0 2px, rgba(255, 228, 180, .035) 2px 4px, rgba(0, 0, 0, 0) 4px 11px),
+    linear-gradient(180deg, rgba(48, 33, 20, .985), rgba(24, 16, 9, .99));
+  box-shadow: inset 8px 0 20px rgba(0, 0, 0, .55), -22px 0 54px rgba(0, 0, 0, .6);
+}
+
+#dicewrap .dc-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 4px;
+  padding: 0;
+  background: linear-gradient(180deg, var(--brass-lo), var(--brass-hi) 24%, var(--brass-lo) 52%, var(--brass-hi) 80%, var(--brass-lo));
+  -webkit-mask: none;
+          mask: none;
+  z-index: 2;
+}
+
+#dicewrap .dc-panel::after { content: none; }
+#dicewrap .dc-panel.on { transform: none; }
+
+#dicewrap .dc-panel h3 {
+  font-family: "Cinzel", Georgia, serif;
+  color: var(--brass-hi);
+  font-size: 20px;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  letter-spacing: .5px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .8);
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, var(--brass-lo), var(--brass), rgba(0, 0, 0, 0)) 1;
+}
+
+#dicewrap .dc-loading { color: var(--parch-dim); font-size: 14px; }
+
+#dicewrap .dc-rules { margin: 0; padding-left: 22px; color: var(--parch); font-size: 14.5px; line-height: 1.75; }
+#dicewrap .dc-rules li { margin-bottom: 9px; }
+#dicewrap .dc-rules li::marker { color: var(--brass); font-family: "Cinzel", Georgia, serif; }
+#dicewrap .dc-rules b { color: var(--brass-hi); }
+
+#dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
+
+#dicewrap .dc-shop-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(1.2deg,
+      rgba(0, 0, 0, .12) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 10px),
+    linear-gradient(180deg, var(--wood), var(--wood-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 226, 170, .12),
+    inset 0 0 0 1px var(--brass-lo),
+    0 3px 8px rgba(0, 0, 0, .45);
+}
+
+#dicewrap .dc-shop-item > img { width: 56px; height: 56px; object-fit: contain; flex: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); }
+#dicewrap .dc-shop-txt { flex: 1; display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
+#dicewrap .dc-shop-txt b { font-size: 14.5px; color: var(--parch); }
+#dicewrap .dc-shop-txt span { font-size: 13px; color: var(--parch-dim); }
+#dicewrap .dc-shop-txt em { font-style: normal; font-size: 12.5px; color: var(--brass-hi); margin-top: 4px; }
+
+#dicewrap .dc-ladder { width: 100%; border-collapse: collapse; font-size: 14px; }
+#dicewrap .dc-ladder th {
+  text-align: left; font-family: "Cinzel", Georgia, serif; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: .8px; color: #a08f74;
+  border-bottom: 1px solid var(--brass-lo); padding: 6px;
+}
+#dicewrap .dc-ladder td { padding: 8px 6px; border-bottom: 1px solid rgba(201, 162, 39, .14); color: var(--parch); }
+#dicewrap .dc-ladder td b { color: var(--brass-hi); }
+#dicewrap .dc-ladder-me td { background: rgba(201, 162, 39, .14); }
+
+/* ============================================================================
+   LA MATIERE — ce qui separe « une image apparait » de « un de tombe »
+   ============================================================================ */
+
+/* ⚠️ C'EST LE DE QUI TOMBE, PAS LE LOGEMENT. La classe est posee sur la CASE
+   (c'est elle que le rendu connait), mais animer la case faisait bouger le creux
+   de feutre lui-meme : le trou du plateau descendait avec le de et la grille
+   avait l'air de se disloquer. Filme image par image le 2026-08-19. */
+#dicewrap .dc-drop > .dc-face {
+  animation: dc-fall .62s cubic-bezier(.34, 1.5, .64, 1);
+  transform-origin: 50% 80%;
+}
+
+@keyframes dc-fall {
+  0%   { transform: translateY(-90px) rotate(-16deg) scale(.82); opacity: 0; }
+  55%  { transform: translateY(4px) rotate(3deg) scale(1.06); opacity: 1; }
+  72%  { transform: translateY(-5px) rotate(-1deg) scale(.98); }
+  100% { transform: none; }
+}
+
+/* Le de qui se tasse dans la case liberee : il tombe de la case du dessus.
+   Meme regle que la pose : on anime le DE, pas son logement. */
+#dicewrap .dc-settled > .dc-face { animation: dc-settled .5s cubic-bezier(.3, 1.4, .5, 1); }
+
+@keyframes dc-settled {
+  0% { transform: translateY(-72%) scale(.94); opacity: .35; }
+  62% { transform: translateY(3%) scale(1.03); opacity: 1; }
+  100% { transform: none; }
+}
+
+#dicewrap .dc-thud { animation: dc-thud .26s ease-out; }
+@keyframes dc-thud { 35% { transform: translateY(2px) scale(.997); } 100% { transform: none; } }
+
+#dicewrap .dc-quake { animation: dc-quake .45s ease-out; }
+@keyframes dc-quake {
+  0%, 100% { transform: none; }
+  12% { transform: translate(-4px, 2px) rotate(-.35deg); }
+  28% { transform: translate(4px, -2px) rotate(.3deg); }
+  46% { transform: translate(-3px, 1px) rotate(-.2deg); }
+  64% { transform: translate(2px, -1px) rotate(.12deg); }
+  82% { transform: translate(-1px, 0) rotate(-.05deg); }
+}
+
+#dicewrap .dc-tumbling { animation: dc-shake .34s linear infinite; }
+@keyframes dc-shake {
+  0%, 100% { transform: rotate(-7deg) translateY(0); }
+  25% { transform: rotate(6deg) translateY(-4px); }
+  50% { transform: rotate(-5deg) translateY(2px); }
+  75% { transform: rotate(7deg) translateY(-3px); }
+}
+
+#dicewrap .dc-settle { animation: dc-settle .34s cubic-bezier(.2, 1.5, .4, 1); }
+@keyframes dc-settle {
+  0% { transform: scale(1.35) rotate(-10deg); }
+  60% { transform: scale(.94) rotate(3deg); }
+  100% { transform: none; }
+}
+
+#dicewrap .dc-ghost {
+  position: absolute;
+  inset: 14%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .42;
+  animation: dc-ghost 1.3s ease-in-out infinite;
+}
+
+#dicewrap .dc-ghost .dc-face { width: 100%; height: 100%; filter: none; }
+@keyframes dc-ghost { 50% { opacity: .72; transform: translateY(-3px); } }
+
+#dicewrap .dc-landing { box-shadow: inset 0 4px 9px rgba(0, 0, 0, .7), inset 0 0 0 2px rgba(255, 200, 90, .7), 0 0 14px rgba(255, 200, 90, .35); }
+
+#dicewrap .dc-plaque-pop { animation: dc-pop .42s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes dc-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.24); filter: brightness(1.45); }
+  100% { transform: scale(1); }
+}
+
+#dicewrap .dc-pc-active { animation: dc-breathe 2.4s ease-in-out infinite; }
+@keyframes dc-breathe {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(201, 162, 39, .3)); }
+  50% { filter: drop-shadow(0 0 22px rgba(255, 205, 110, .55)); }
+}
+
+/* ── les cinq APNG livres : places, jamais retouches ──────────────────────── */
+
+#dicewrap .dc-blast {
+  position: absolute;
+  inset: -75%;
+  background: url('/dice/img/fx_burst.png') center / contain no-repeat;
+  pointer-events: none;
+  z-index: 3;
+}
+
+#dicewrap .dc-dust {
+  position: absolute;
+  inset: -45%;
+  background: url('/dice/img/fx_place.png') center / contain no-repeat;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#dicewrap .dc-rollfx {
+  position: absolute;
+  inset: -30%;
+  background: url('/dice/img/fx_roll.png') center / contain no-repeat;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* La pluie de doublons dure 4,1 s (33 images) et s'eteint en fondu. Portee par un
+   PSEUDO-ELEMENT de l'ecran de fin : un enfant se faisait emporter par le rendu
+   de la carte au bout d'une seconde. */
+#dicewrap .dc-over.dc-rain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--dc-win-img);
+  background-position: center top;
+  background-size: auto 100%;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 1;
+  animation: dc-winrain 4.3s ease-out forwards;
+}
+
+@keyframes dc-winrain {
+  0% { opacity: 0; }
+  6% { opacity: .95; }
+  80% { opacity: .95; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-drop > .dc-face, #dicewrap .dc-thud, #dicewrap .dc-quake, #dicewrap .dc-tumbling,
+  #dicewrap .dc-settle, #dicewrap .dc-plaque-pop, #dicewrap .dc-pc-active,
+  #dicewrap .dc-ghost, #dicewrap .dc-wheel, #dicewrap .dc-pc-ring,
+  #dicewrap .dc-settled > .dc-face { animation: none; }
+  #dicewrap .dc-blast, #dicewrap .dc-dust, #dicewrap .dc-rollfx,
+  #dicewrap .dc-over.dc-rain::before { display: none; }
+  #dicewrap .dc-boardwrap { transition: none; }
+}
+
+/* ============================================================================
+   LES FENETRES ETROITES ET BASSES
+   ============================================================================ */
+
+@media (max-width: 1000px) {
+  #dicewrap .dc-arena { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  #dicewrap .dc-side { flex-direction: row; justify-content: center; align-items: stretch; }
+  #dicewrap .dc-pc { flex: 1; max-width: 230px; }
+  #dicewrap .dc-side-me { flex-direction: row-reverse; }
+  #dicewrap .dc-mid { flex-wrap: wrap; justify-content: center; --pd-round: 20px; }
+}
+
+@media (max-width: 720px) {
+  #dicewrap .dc-brand span, #dicewrap .dc-tab span { display: none; }
+  #dicewrap .dc-tabs { gap: 4px; }
+  #dicewrap .dc-tab { padding: 7px 10px; font-size: 12px; }
+  #dicewrap .dc-wallet-txt span { display: none; }
+  #dicewrap .dc-menu-btns { flex-direction: column; align-items: stretch; }
+  #dicewrap .dc-bonus { position: static; transform: none; margin: 0 auto; }
+  #dicewrap .dc-boards { padding-bottom: 8px; }
+}
+
+@media (max-height: 640px) {
+  #dicewrap .dc-pc-portrait { width: 44px; height: 44px; }
+  #dicewrap .dc-pc-lbl { display: none; }
+  #dicewrap .dc-menu-card p { margin-bottom: 16px; }
+  #dicewrap .dc-menu-stats { margin-top: 14px; }
+}

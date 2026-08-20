@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">The Pirate\'s Dice</string>
+    <string name="title_activity_main">The Pirate\'s Dice</string>
+    <string name="package_name">com.nabil.piratesdice</string>
+    <string name="custom_url_scheme">com.nabil.piratesdice</string>
+</resources>

@@ -1,0 +1,472 @@
+/* ============================================================================
+   css/mobile.css — la couche telephone, posee PAR-DESSUS dice.css.
+
+   dice.css n'est pas touche : c'est le meme fichier que dans Reforged Studio, et
+   il doit le rester (une seule source pour la menuiserie). Ici on ne fait que ce
+   que le telephone impose : plein ecran, encoches, portrait, et des cases assez
+   grandes pour un pouce.
+
+   La regle de taille tient en une ligne : une case ne peut depasser NI le tiers
+   de la largeur utile, NI le sixieme de la hauteur restante (deux plateaux).
+   ============================================================================ */
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #0d0906;
+  color: #f0e3c2;
+  font-family: "Spectral", Georgia, serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+/* ── la coque prend tout l'ecran ─────────────────────────────────────────── */
+
+#dicewrap {
+  position: fixed;
+  inset: 0;
+  display: grid !important;
+  place-items: stretch;
+  background: #0d0906;
+  backdrop-filter: none;
+  z-index: 1;
+}
+
+#dicewrap .dc-shell {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+#dicewrap .dc-shell::before,
+#dicewrap .dc-shell::after { content: none; }
+
+/* Le tool a besoin de « fermer » et de « plein ecran » ; une application, non. */
+#dicewrap #dc-close,
+#dicewrap #dc-full { display: none; }
+
+/* ── l'entete, en une seule ligne lisible ────────────────────────────────── */
+
+#dicewrap .dc-top {
+  gap: 8px;
+  padding: 7px 10px;
+  flex-wrap: nowrap;
+}
+
+#dicewrap .dc-brand { font-size: 0; }
+#dicewrap .dc-brand-mark { height: 26px; margin: 0; vertical-align: middle; }
+#dicewrap .dc-wallet { padding: 2px 9px 2px 2px; gap: 7px; min-width: 0; }
+#dicewrap .dc-avatar { width: 26px; height: 26px; }
+#dicewrap .dc-wallet-txt b { font-size: 12.5px; max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dicewrap .dc-wallet-txt span { display: none; }
+#dicewrap .dc-coins { font-size: 13px; }
+#dicewrap .dc-tabs { gap: 4px; margin-left: auto; }
+#dicewrap .dc-tab { padding: 8px 9px; font-size: 0; min-width: 40px; min-height: 38px; }
+#dicewrap .dc-tab img { width: 19px; height: 19px; margin: 0; vertical-align: middle; }
+#dicewrap .dc-acts { gap: 4px; }
+#dicewrap .dc-icon { width: 38px; height: 38px; }
+
+/* ── l'arene en portrait : adversaire en haut, moi en bas ────────────────── */
+
+@media (orientation: portrait), (max-width: 820px) {
+  #dicewrap {
+    /* ni plus du tiers de la largeur, ni plus du sixieme de la hauteur utile */
+    /* 420 px, ce n'est pas un chiffre en l'air : entete 50 + deux bandeaux 120 +
+       barre du lancer 54 + ratelier 72 + deux rangees de plaques 52 + cadres et
+       ecarts 72. Mesure sur un 360x740, ou l'ancienne valeur (372) faisait
+       deborder les plateaux PAR-DESSUS les bandeaux. */
+    --dc-cell: min(
+      calc((100vw - 2 * env(safe-area-inset-left, 0px) - 76px) / 3),
+      calc((100dvh - 420px) / 6),
+      66px
+    );
+  }
+
+  /* Un enfant de grille refuse de retrecir sous son contenu tant qu'on ne le lui
+     dit pas : sans ces `min-height: 0`, le plateau pousse la mise en page dehors
+     au lieu de se contenter de la place qu'il a. */
+  #dicewrap .dc-shell,
+  #dicewrap .dc-body,
+  #dicewrap .dc-screen,
+  #dicewrap .dc-arena,
+  #dicewrap .dc-boards,
+  #dicewrap .dc-board-slot { min-height: 0; }
+  /* Pas d'`overflow: hidden` ici : il masquerait un debordement au lieu de le
+     montrer, et c'est justement ce qu'on veut voir. La taille est mesuree par
+     js/fit.js — si elle se trompe, ca doit se voir. */
+
+  /* Le ratelier est FIXE en bas (zone du pouce) : l'arene lui reserve sa place,
+     sinon il recouvrait la carte du joueur — vu a l'ecran le 2026-08-20. */
+  #dicewrap .dc-arena {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 6px;
+    padding: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 72px);
+  }
+
+  #dicewrap .dc-side { flex-direction: row; gap: 8px; padding: 0; }
+  #dicewrap .dc-side-foe { justify-content: center; }
+  #dicewrap .dc-side-me { justify-content: center; flex-direction: row; }
+
+  /* La carte joueur devient un BANDEAU : portrait a gauche, score a droite. */
+  #dicewrap .dc-pc {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    padding: 6px 12px;
+    --pd-rivet: 6px;
+    --pd-rivet-in: 5px 8px;
+  }
+
+  #dicewrap .dc-pc-portrait { width: 42px; height: 42px; grid-row: span 2; }
+  #dicewrap .dc-pc-name { margin: 0; font-size: 13px; line-height: 1.2; }
+  #dicewrap .dc-pc-elo { font-size: 10.5px; grid-column: 2; }
+  #dicewrap .dc-pc-total { grid-column: 3; grid-row: 1 / span 2; margin: 0; font-size: 26px; }
+  #dicewrap .dc-pc-lbl { display: none; }
+  #dicewrap .dc-pc-bet { grid-column: 2; font-size: 11px; margin: 0; }
+  #dicewrap .dc-foe-die { top: 50%; right: 68px; transform: translateY(-50%); width: 26px; height: 26px; }
+
+  #dicewrap .dc-boards { gap: 4px; padding-bottom: 0; }
+  #dicewrap .dc-board { gap: 6px; --pd-frame: 9px; }
+  #dicewrap .dc-scores { gap: 6px; padding: 0 9px; }
+  #dicewrap .dc-colscore { min-width: 44px; width: auto; min-height: 24px; line-height: 24px;
+    font-size: 13.5px; padding: 0 10px; }
+
+  /* La barre du lancer : le gobelet doit rester le plus gros objet touchable. */
+  #dicewrap .dc-mid { gap: 12px; padding: 4px 16px; --pd-rivet-in: 4px 12px; }
+  #dicewrap .dc-turn { font-size: 12.5px; }
+  #dicewrap .dc-cup { width: calc(var(--dc-cell) * 1.15); height: calc(var(--dc-cell) * 1.15); }
+
+  /* Le ratelier de bonus : une barre d'action, au pouce, au-dessus de l'encoche. */
+  #dicewrap .dc-bonus {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+    transform: translateX(-50%);
+    gap: 10px;
+    padding: 7px 18px;
+    max-width: calc(100vw - 24px);
+  }
+
+  #dicewrap .dc-bonus-btn { width: 50px; height: 50px; }
+  #dicewrap .dc-bonus-hd { font-size: 10px; }
+  #dicewrap .dc-quit { display: none; }
+}
+
+/* ── les panneaux deviennent des feuilles qui montent du bas ─────────────── */
+
+@media (orientation: portrait), (max-width: 820px) {
+  #dicewrap .dc-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 78dvh;
+    border-radius: 18px 18px 0 0;
+    transform: translateY(102%);
+    padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    box-shadow: 0 -18px 44px rgba(0, 0, 0, .65);
+  }
+
+  #dicewrap .dc-panel::before {
+    top: 0; bottom: auto; left: 0; right: 0;
+    width: auto; height: 4px;
+    background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi) 30%, var(--brass-lo) 70%, var(--brass-hi));
+  }
+
+  #dicewrap .dc-panel.on { transform: none; }
+  #dicewrap .dc-shop-item { padding: 12px; }
+  #dicewrap .dc-shop-item > img { width: 48px; height: 48px; }
+  #dicewrap .dc-btn-sm { min-height: 44px; }
+}
+
+/* ── la mise et la fin de partie tiennent dans l'ecran ───────────────────── */
+
+@media (max-width: 820px) {
+  #dicewrap .dc-bet-card,
+  #dicewrap .dc-over-card { width: min(430px, 92vw); padding: 18px 18px 20px; }
+  #dicewrap .dc-over-seal { width: 86px; }
+  #dicewrap .dc-bet-art { width: 116px; }
+  #dicewrap .dc-over-score { font-size: 38px; }
+  #dicewrap .dc-menu-card { padding: 22px 20px; }
+  #dicewrap .dc-menu-btns { flex-direction: column; }
+  #dicewrap .dc-btn { min-height: 48px; }
+}
+
+/* ── ce qui n'existe que sur telephone ───────────────────────────────────── */
+
+#pd-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: #0d0906;
+  transition: opacity .4s ease;
+}
+
+#pd-splash.gone { opacity: 0; pointer-events: none; }
+#pd-splash p { font-family: "Cinzel", Georgia, serif; color: #e8c86a; letter-spacing: 1px; margin-top: 14px; }
+#pd-splash .dc-wheel { margin: 0 auto; }
+
+.pd-first,
+.pd-ask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(8, 5, 3, .8);
+  opacity: 0;
+  transition: opacity .24s ease;
+}
+
+.pd-first.on,
+.pd-ask.on { opacity: 1; }
+
+.pd-first-card,
+.pd-ask-card {
+  width: min(420px, 100%);
+  padding: 24px 22px;
+  text-align: center;
+  --pd-rim: 4px;
+  --pd-rivet: 10px;
+  --pd-rivet-in: 12px;
+}
+
+.pd-first-card h1 {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 24px;
+  color: #f3dc93;
+  margin: 0 0 12px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .75);
+}
+
+.pd-ask-card h3 {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 19px;
+  color: #f3dc93;
+  margin: 0 0 12px;
+}
+
+.pd-first-card p,
+.pd-ask-card p { color: #f0e3c2; font-size: 14.5px; line-height: 1.6; margin: 0 0 18px; }
+.pd-first-note { font-size: 12.5px !important; color: #cdbb92 !important; margin: 14px 0 0 !important; }
+
+.pd-first-card input,
+.pd-field input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 18px;
+  text-align: center;
+  color: #f3dc93;
+  background: rgba(0, 0, 0, .5);
+  border: 0;
+  border-radius: 9px;
+  padding: 13px;
+  margin-bottom: 18px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px #8a5c17;
+}
+
+.pd-first-card input:focus,
+.pd-field input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px #c9a227; }
+
+.pd-field { display: block; text-align: left; font-size: 12px; letter-spacing: .8px;
+  text-transform: uppercase; color: #a08f74; }
+.pd-field input { font-size: 15px; text-align: left; margin-top: 6px; }
+
+.pd-ask-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.pd-ask-row .dc-btn { flex: 1; min-width: 120px; }
+
+#pd-toasts {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.pd-toast {
+  max-width: 100%;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  color: #f0e3c2;
+  background: linear-gradient(180deg, rgba(59, 40, 28, .97), rgba(27, 18, 8, .97));
+  box-shadow: inset 0 0 0 2px #8a5c17, 0 6px 18px rgba(0, 0, 0, .6);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.pd-toast.on { opacity: 1; transform: none; }
+.pd-toast-warn { box-shadow: inset 0 0 0 2px #a5332a, 0 6px 18px rgba(0, 0, 0, .6); }
+.pd-toast-ok { box-shadow: inset 0 0 0 2px #4e8a6a, 0 6px 18px rgba(0, 0, 0, .6); }
+
+/* ── paysage : on garde la composition du bureau, en plus serre ──────────── */
+
+@media (orientation: landscape) and (min-width: 700px) {
+  #dicewrap { --dc-cell: min(calc((100dvh - 190px) / 6), calc((100vw - 420px) / 3), 78px); }
+  #dicewrap .dc-arena { padding: 6px 10px; gap: 10px; }
+}
+
+/* La roue crantee des reglages : un glyphe, pas une image de plus. */
+.pd-gear {
+  font-size: 20px;
+  line-height: 1;
+  color: #e8c86a;
+  text-shadow: 0 0 6px rgba(255, 210, 130, .5), 0 1px 2px rgba(0, 0, 0, .9);
+}
+
+/* ── les tres petits ecrans (360 px de large et moins) ───────────────────── */
+
+@media (max-width: 400px) {
+  #dicewrap .dc-top { gap: 5px; padding: 6px 7px; }
+  #dicewrap .dc-brand-mark { height: 22px; }
+  #dicewrap .dc-wallet { gap: 5px; padding: 2px 7px 2px 2px; }
+  #dicewrap .dc-wallet-txt b { max-width: 62px; font-size: 11.5px; }
+  #dicewrap .dc-avatar { width: 23px; height: 23px; }
+  #dicewrap .dc-coins { font-size: 11.5px; margin-left: 2px; }
+  #dicewrap .dc-tab { min-width: 34px; min-height: 34px; padding: 6px; border-radius: 6px; }
+  #dicewrap .dc-tab img { width: 17px; height: 17px; }
+  #dicewrap .dc-icon { width: 34px; height: 34px; }
+  #dicewrap .dc-icon img { width: 20px; height: 20px; }
+  #dicewrap .pd-gear { font-size: 17px; }
+  #dicewrap .dc-pc { padding: 5px 9px; gap: 8px; }
+  #dicewrap .dc-pc-portrait { width: 36px; height: 36px; }
+  #dicewrap .dc-pc-total { font-size: 22px; }
+  #dicewrap .dc-pc-name { font-size: 12px; }
+  #dicewrap .dc-bonus-btn { width: 46px; height: 46px; }
+}
+
+/* ============================================================================
+   LES REGLAGES : son, compte, langue, conditions. Rien d'autre.
+   ============================================================================ */
+
+.pd-set { text-align: start; }
+.pd-set h3 { text-align: center; }
+
+.pd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 2px;
+  border-bottom: 1px solid rgba(201, 162, 39, .18);
+}
+
+.pd-row:last-of-type { border-bottom: 0; }
+.pd-row-btns { justify-content: stretch; flex-wrap: wrap; }
+.pd-row-btns .dc-btn { flex: 1; min-width: 130px; }
+.pd-row-lbl { font-size: 14px; color: #cdbb92; }
+.pd-row-val { font-size: 14px; color: #f0e3c2; text-align: end; overflow-wrap: anywhere; }
+
+.pd-toggle {
+  min-width: 92px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13.5px;
+  color: #cdbb92;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .3));
+  box-shadow: inset 0 0 0 2px #8a5c17, inset 0 2px 5px rgba(0, 0, 0, .6);
+}
+
+.pd-toggle.on {
+  color: #241503;
+  background: linear-gradient(180deg, #f3dc93, #b9862a);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6);
+}
+
+.pd-select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  color: #f3dc93;
+  background: rgba(0, 0, 0, .5);
+  box-shadow: inset 0 0 0 2px #8a5c17;
+}
+
+.pd-link {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  color: #f3dc93;
+  text-decoration: none;
+  font-size: 18px;
+  background: rgba(0, 0, 0, .4);
+  box-shadow: inset 0 0 0 2px #8a5c17;
+}
+
+.pd-danger { color: #ff9a90 !important; }
+.pd-glyph { font-size: 19px; line-height: 1; color: #e8c86a;
+  text-shadow: 0 0 6px rgba(255, 210, 130, .45), 0 1px 2px rgba(0, 0, 0, .9); }
+#dicewrap .pd-tilt.on { box-shadow: inset 0 0 0 2px #c9a227, 0 0 12px rgba(232, 200, 106, .5); }
+#dicewrap .pd-tilt.on .pd-glyph { color: #fff3c8; }
+
+/* La colonne visee par l'inclinaison : on montre AVANT de poser, sinon le
+   joueur ne sait pas ce que le telephone a compris. */
+#dicewrap .dc-col.pd-aim {
+  background: rgba(232, 200, 106, .18);
+  box-shadow: inset 0 0 0 2px var(--brass), 0 0 16px rgba(232, 200, 106, .35);
+  border-radius: 10px;
+}
+
+/* ============================================================================
+   L'ARABE — dir="rtl" est pose par core/i18n.js sur <html>.
+   Le plateau, lui, ne s'inverse PAS : les colonnes 1-2-3 restent dans l'ordre
+   du jeu (les deux joueurs doivent voir la meme table), et l'inclinaison a
+   droite doit rester la colonne de droite.
+   ============================================================================ */
+
+[dir="rtl"] body { font-family: "Spectral", "Noto Naskh Arabic", Georgia, serif; }
+[dir="rtl"] #dicewrap .dc-turn { text-align: start; }
+[dir="rtl"] #dicewrap .dc-pc { text-align: start; }
+[dir="rtl"] #dicewrap .dc-board,
+[dir="rtl"] #dicewrap .dc-scores,
+[dir="rtl"] #dicewrap .dc-boards { direction: ltr; }
+[dir="rtl"] .pd-row-val { text-align: start; }
+[dir="rtl"] #dicewrap .dc-rules { padding-left: 0; padding-right: 22px; }
+
+/* L'entete ne doit jamais se chevaucher : la bourse cede la place aux onglets. */
+/* La bourse cede la place aux onglets, mais le NOM ne doit pas disparaitre :
+   `overflow: hidden` seul l'ecrasait a zero (vu a l'ecran le 2026-08-20). */
+#dicewrap .dc-wallet { min-width: 0; flex: 0 1 auto; }
+#dicewrap .dc-wallet-txt { min-width: 46px; flex: 1 1 auto; }
+#dicewrap .dc-wallet-txt b { display: block; max-width: 100%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+#dicewrap .dc-tabs, #dicewrap .dc-acts { flex: none; }
+#dicewrap .dc-brand { flex: none; }

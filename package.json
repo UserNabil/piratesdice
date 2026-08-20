@@ -1,0 +1,22 @@
+{
+  "name": "pirates-dice-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Pirate's Dice — l'application Android. Le jeu est celui du tool, assemble par build.py.",
+  "scripts": {
+    "build": "python build.py",
+    "sync": "python build.py && cap sync android",
+    "open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.0.0"
+  }
+}

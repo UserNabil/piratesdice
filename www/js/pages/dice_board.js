@@ -1,0 +1,281 @@
+/* ============================================================================
+   pages/dice_board.js — everything that DRAWS the dice game.
+
+   Two notes on deliberate choices:
+
+   • The dice faces are SVG, not images. The original game pulled every face from
+     an external CDN (imagekit.io); a tool that must work on a closed LAN cannot
+     depend on that, and pips drawn as circles stay crisp at any board size.
+
+   • The boards are built once and then UPDATED in place. The server sends a full
+     authoritative state after every action, so rendering is a diff against what
+     is already on screen — that is what makes the animations possible (we know
+     which cell just changed) and what removes the desync the original had.
+   ============================================================================ */
+
+import { fxUrl } from './dice_state.js';
+
+const ART = '/dice/img/';
+
+/*
+ * Les des sont des IMAGES peintes (pack_dice / pack_dice_hot), plus des pips SVG.
+ * `hot` est une VRAIE image, pas un filtre : un de qui rougeoie de l'interieur ne
+ * s'obtient pas en teintant un de blanc.
+ */
+export function dieFace(value, hot) {
+  const file = 'die_' + value + (hot ? '_hot' : '') + '.png';
+  return '<img class="dc-face" src="' + ART + file + '" alt="" draggable="false">';
+}
+
+/** Le gobelet, au repos ou pret a lancer. */
+export function cupArt(ready) {
+  return '<img class="dc-cup-art" src="' + ART + (ready ? 'cup_active.png' : 'cup.png')
+       + '" alt="" draggable="false">';
+}
+
+const COLUMNS = 3;
+const COLUMN_SIZE = 3;
+const CELLS = 9;
+
+function cellsOfColumn(col) {
+  const base = col * COLUMN_SIZE;
+  return [base, base + 1, base + 2];
+}
+
+/**
+ * Construit un plateau vide pour un siege. `mirrored` empile les des vers le
+ * centre de la table.
+ *
+ * ⚠️ Les plaques de score vivent HORS du plateau, dans une rangee a part : posees
+ * dedans, elles tombaient sur le cadre. Le cadre est maintenant en CSS et sa
+ * largeur est connue (`--pd-frame`), mais la rangee a part reste plus lisible.
+ */
+export function buildBoard(seat, mirrored) {
+  const wrap = document.createElement('div');
+  wrap.className = 'dc-boardwrap' + (mirrored ? ' dc-boardwrap-top' : '');
+
+  const scores = document.createElement('div');
+  scores.className = 'dc-scores';
+
+  const board = document.createElement('div');
+  board.className = 'dc-board pd-panel pd-panel--felt' + (mirrored ? ' dc-board-top' : '');
+  board.dataset.seat = String(seat);
+
+  for (let col = 0; col < COLUMNS; col++) {
+    const plaque = document.createElement('div');
+    plaque.className = 'dc-colscore pd-plate';
+    plaque.dataset.col = String(col);
+    scores.appendChild(plaque);
+
+    const column = document.createElement('div');
+    column.className = 'dc-col';
+    column.dataset.col = String(col);
+
+    const stack = document.createElement('div');
+    stack.className = 'dc-stack';
+    for (const cell of cellsOfColumn(col)) {
+      const box = document.createElement('div');
+      box.className = 'dc-cell pd-socket';
+      box.dataset.cell = String(cell);
+      stack.appendChild(box);
+    }
+    column.appendChild(stack);
+    board.appendChild(column);
+  }
+
+  if (mirrored) { wrap.appendChild(board); wrap.appendChild(scores); }
+  else { wrap.appendChild(scores); wrap.appendChild(board); }
+
+  wrap.board = board;
+  return wrap;
+}
+
+/**
+ * Ecrit une grille sur un plateau. Une seule passe : l'etat « braise » depend du
+ * nombre d'occurrences dans la colonne, et il change l'IMAGE du de — le calculer
+ * apres coup obligerait a repasser sur toutes les cases.
+ */
+export function renderBoard(board, grid, colScores, settle) {
+  for (let col = 0; col < COLUMNS; col++) {
+    const cells = cellsOfColumn(col);
+    const counts = new Map();
+    for (const cell of cells) {
+      const v = grid[cell];
+      if (v !== null) counts.set(v, (counts.get(v) || 0) + 1);
+    }
+
+    for (const cell of cells) {
+      const box = board.querySelector('.dc-cell[data-cell="' + cell + '"]');
+      if (!box) continue;
+      const value = grid[cell];
+      const hot = value !== null && counts.get(value) > 1;
+      const want = value === null ? '' : (value + (hot ? 'h' : ''));
+      const before = box.dataset.face;
+      if (before === want) continue;
+      const wasEmpty = !before;
+      box.dataset.face = want;
+      box.innerHTML = value === null ? '' : dieFace(value, hot);
+      box.classList.toggle('dc-cell-filled', value !== null);
+      box.classList.toggle('dc-pair', hot);
+      // Le tassement d'une colonne : les des survivants TOMBENT dans les cases
+      // liberees. Sans cette chute, un de « apparaissait » a la fin de la salve
+      // et se lisait comme un de ressuscite.
+      if (settle && wasEmpty && value !== null) {
+        box.classList.remove('dc-settled');
+        void box.offsetWidth;
+        box.classList.add('dc-settled');
+        setTimeout(() => box.classList.remove('dc-settled'), 620);
+      }
+    }
+
+    const label = board.parentNode
+      && board.parentNode.querySelector('.dc-colscore[data-col="' + col + '"]');
+    if (label) label.textContent = colScores[col] > 0 ? String(colScores[col]) : '';
+  }
+}
+
+/*
+ * LA POSE D'UN DE. Un `transition` generique ne dit rien : un de a un poids, il
+ * tombe, il rebondit une fois, il souleve de la poussiere et le plateau accuse le
+ * coup. Les trois choses arrivent ensemble, sinon ca reste une image qui apparait.
+ */
+export function markPlaced(board, cell) {
+  const box = board.querySelector('.dc-cell[data-cell="' + cell + '"]');
+  if (!box) return;
+  box.classList.remove('dc-drop');
+  void box.offsetWidth;
+  box.classList.add('dc-drop');
+
+  // fx_place : 30 images. Horodate pour repartir de la premiere a chaque pose.
+  const dust = document.createElement('span');
+  dust.className = 'dc-dust';
+  dust.style.backgroundImage = "url('" + fxUrl('fx_place.png', 1400) + "')";
+  box.appendChild(dust);
+  setTimeout(() => dust.remove(), 1100);
+
+  board.classList.remove('dc-thud');
+  void board.offsetWidth;
+  board.classList.add('dc-thud');
+  setTimeout(() => board.classList.remove('dc-thud'), 300);
+}
+
+/**
+ * LE LANCER. Le de ne doit pas simplement apparaitre : on fait rouler les faces
+ * quelques dixiemes de seconde avant de s'arreter sur la vraie. C'est ce qui
+ * donne l'impression qu'il a ete jete, et non pioche.
+ */
+export function tumble(el, finalValue, done) {
+  // 14 x 95 ms = 1,33 s : la duree de fx_roll (36 images). A 385 ms on ne
+  // voyait qu'un clignotement illisible.
+  let ticks = 0;
+  const total = 14;
+  el.classList.add('dc-tumbling');
+  const shake = document.createElement('span');
+  shake.className = 'dc-rollfx';
+  shake.style.backgroundImage = "url('" + fxUrl('fx_roll.png', 1800) + "')";
+  el.appendChild(shake);
+  setTimeout(() => shake.remove(), 1400);
+  const timer = setInterval(() => {
+    ticks++;
+    if (ticks >= total) {
+      clearInterval(timer);
+      el.classList.remove('dc-tumbling');
+      el.innerHTML = dieFace(finalValue);
+      el.classList.remove('dc-settle');
+      void el.offsetWidth;
+      el.classList.add('dc-settle');
+      if (done) done();
+      return;
+    }
+    el.innerHTML = dieFace(1 + Math.floor(Math.random() * 6));
+  }, 95);
+}
+
+/** L'apercu de la case ou le de tomberait : on montre AVANT de cliquer. */
+export function showLanding(board, cell, value) {
+  clearLanding(board);
+  const box = board.querySelector('.dc-cell[data-cell="' + cell + '"]');
+  if (!box) return;
+  const ghost = document.createElement('span');
+  ghost.className = 'dc-ghost';
+  ghost.innerHTML = dieFace(value);
+  box.appendChild(ghost);
+  box.classList.add('dc-landing');
+}
+
+export function clearLanding(board) {
+  board.querySelectorAll('.dc-ghost').forEach((g) => g.remove());
+  board.querySelectorAll('.dc-landing').forEach((b) => b.classList.remove('dc-landing'));
+}
+
+/** La premiere case libre d'une colonne, ou -1. */
+export function freeCellOf(grid, col) {
+  for (const cell of cellsOfColumn(col)) if (grid[cell] === null) return cell;
+  return -1;
+}
+
+const BLAST_STEP = 210;
+const BLAST_LIFE = 1250;                // duree de fx_burst (35 images fournies)
+const BLAST_SETTLE = 520;               // le plateau se tasse PENDANT l'explosion
+
+/**
+ * Plays the explosion over each destroyed cell. Returns when the board may be
+ * redrawn — la ou la derniere explosion a pris son elan, PAS a sa fin : le
+ * tassement doit se lire comme la consequence du souffle, pas comme un
+ * evenement separe une seconde et demie plus tard.
+ */
+export function blastCells(board, cells, onEachBoom) {
+  board.classList.remove('dc-quake');
+  void board.offsetWidth;
+  board.classList.add('dc-quake');
+  setTimeout(() => board.classList.remove('dc-quake'), 480);
+
+  cells.forEach((cell, index) => {
+    setTimeout(() => {
+      const box = board.querySelector(`.dc-cell[data-cell="${cell}"]`);
+      if (!box) return;
+      if (onEachBoom) onEachBoom();
+      // Le de part AVEC son explosion, pas a la fin de la salve. Sinon la
+      // premiere case redevenait visible pendant que les suivantes explosaient
+      // encore : le de « reapparaissait » avant d'etre efface par le repaint.
+      box.innerHTML = '';
+      box.dataset.face = '';
+      box.classList.remove('dc-cell-filled', 'dc-pair');
+      const flash = document.createElement('span');
+      flash.className = 'dc-blast';
+      // Recree a chaque fois ET horodate : sans le parametre, le navigateur
+      // rejouerait l'APNG depuis son cache a la position ou il l'avait laissee.
+      flash.style.backgroundImage = "url('" + fxUrl('fx_burst.png', BLAST_LIFE + 400) + "')";
+      box.appendChild(flash);
+      setTimeout(() => flash.remove(), BLAST_LIFE);
+    }, index * BLAST_STEP);
+  });
+  return cells.length ? (cells.length - 1) * BLAST_STEP + BLAST_SETTLE : 0;
+}
+
+/** Small sound bank. Silent by default is NOT an error: audio may be blocked. */
+export class Sfx {
+  constructor(base) {
+    this.base = base;
+    this.muted = false;
+    this.cache = new Map();
+  }
+
+  load(name, file) {
+    const audio = new Audio(this.base + file);
+    audio.preload = 'auto';
+    this.cache.set(name, audio);
+  }
+
+  play(name, volume) {
+    if (this.muted) return;
+    const source = this.cache.get(name);
+    if (!source) return;
+    try {
+      const voice = source.cloneNode();
+      voice.volume = volume === undefined ? 0.35 : volume;
+      const p = voice.play();
+      if (p && p.catch) p.catch(() => { /* autoplay policy — not worth a message */ });
+    } catch (_) { /* no audio device */ }
+  }
+}

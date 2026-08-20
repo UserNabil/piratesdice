@@ -1,0 +1,21 @@
+{
+  "appId": "com.nabil.piratesdice",
+  "appName": "The Pirate's Dice",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0d0906"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "backgroundColor": "#0d0906",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#16100a"
+    }
+  }
+}
