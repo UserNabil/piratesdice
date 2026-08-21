@@ -1000,21 +1000,21 @@
   --pd-round: 0;
   --pd-rim: 0px;
   background:
-    repeating-linear-gradient(0deg,
-      rgba(0, 0, 0, .45) 0 1px, rgba(255, 226, 176, .06) 1px 2px, rgba(0, 0, 0, 0) 2px 46px),
-    repeating-linear-gradient(1.2deg,
-      rgba(0, 0, 0, .12) 0 2px, rgba(255, 228, 180, .035) 2px 4px, rgba(0, 0, 0, 0) 4px 11px),
-    linear-gradient(180deg, rgba(48, 33, 20, .985), rgba(24, 16, 9, .99));
-  box-shadow: inset 8px 0 20px rgba(0, 0, 0, .55), -22px 0 54px rgba(0, 0, 0, .6);
+    var(--trame),
+    var(--vitesse),
+    linear-gradient(170deg, var(--violet) 0%, var(--violet-lo) 62%, var(--violet-dk) 100%);
+  background-size: var(--trame-taille), auto, auto;
+  box-shadow: -22px 0 54px rgba(0, 0, 0, .5);
 }
 
+/* Le bord de la feuille est un LISERE BLANC, comme tout le reste. */
 #dicewrap .dc-panel::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0; left: 0;
-  width: 4px;
+  width: 5px;
   padding: 0;
-  background: linear-gradient(180deg, var(--gold-lo), var(--gold-hi) 24%, var(--gold-lo) 52%, var(--gold-hi) 80%, var(--gold-lo));
+  background: var(--blanc);
   -webkit-mask: none;
           mask: none;
   z-index: 2;
