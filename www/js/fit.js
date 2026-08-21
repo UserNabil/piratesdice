@@ -22,7 +22,15 @@ const BAR_PAD = 14;     // le rembourrage de la barre du lancer
 const CUP_RATIO = 1.15; // le gobelet, en multiples de la case
 const STACK_GAP = 4;    // entre plateau, plaques et barre
 const MIN_CELL = 32;
-const MAX_CELL = 66;
+/* ⚠️ LE PLAFOND ETAIT UN PLAFOND DE TELEPHONE. A 66 px, une tablette de
+   800x1280 affichait deux plateaux minuscules separes par un grand vide : la
+   case etait bornee par une constante, pas par la place disponible. Capture a
+   l'appui (7 pouces, 2026-08-21). On laisse desormais la MESURE decider — elle
+   sait deja tenir compte de la hauteur, de la largeur et des bandeaux — et on
+   ne garde qu'un plafond de confort : au-dela, un de occupe l'ecran sans rien
+   apporter. Sur telephone rien ne bouge : c'est la hauteur qui contraint, bien
+   en dessous. */
+const MAX_CELL = 104;
 
 function apply() {
   const wrap = document.getElementById('dicewrap');
