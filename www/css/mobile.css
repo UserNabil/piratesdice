@@ -117,7 +117,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     padding: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 72px);
   }
 
-  #dicewrap .dc-side { flex-direction: row; gap: 8px; padding: 0; }
+  /* ⚠️ `flex-wrap` N'EST PAS DECORATIF ICI. La barre du bas est une rangee qui
+     porte le bandeau du joueur ET, en fin de partie, le bouton de sortie. Sans
+     retour a la ligne, un bouton en pleine largeur ecrase le bandeau a cote de
+     lui — « quand on gagne et qu'on reste sur le resultat, le menu du bas
+     s'ecrase a cause du bouton ». */
+  #dicewrap .dc-side { flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 0; }
   #dicewrap .dc-side-foe { justify-content: center; }
   #dicewrap .dc-side-me { justify-content: center; flex-direction: row; }
 
@@ -175,6 +180,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      carte de resultat a ete fermee par le bouton RETOUR. */
   #dicewrap .dc-quit.dc-quit-exit {
     display: block;
+    flex: 1 0 100%;
     width: 100%;
     margin-top: 4px;
     font-size: 14px;

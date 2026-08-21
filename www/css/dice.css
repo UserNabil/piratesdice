@@ -653,44 +653,58 @@
     0 3px 8px rgba(0, 0, 0, .6);
 }
 
-/* Le cerclage du joueur qui a la main : un cordage torsade et son jonc de
-   laiton, dessines ici — l'anneau livre en image ne se calait sur aucun
-   portrait et portait son propre decor. */
-#dicewrap .dc-pc-ring {
+/* ============================================================================
+   LE CERCLE AUTOUR DU PORTRAIT NE DECORE PLUS : IL COMPTE LE TEMPS.
+
+   Il y avait ici un cordage torsade dessine en CSS, cale a -17 % autour d'un
+   portrait ROND. Depuis les capitaines, le medaillon porte son propre anneau,
+   peint dans l'image et decentre differemment pour chacun : les deux cercles ne
+   coincidaient plus. Retour du telephone, mot pour mot — « les cercles sont mal
+   places, on ne sait pas vraiment qui est le joueur en cours ».
+
+   Un seul cercle desormais, et il veut dire quelque chose : le temps qui reste
+   avant que l'IA joue a la place de celui qui n'a rien fait. Le meme pixel
+   repond donc aux deux reproches — le cercle en trop, et la minuterie qui
+   manquait.
+   ============================================================================ */
+
+#dicewrap .dc-pc-clock {
   position: absolute;
-  inset: -17%;
+  inset: -9%;
   border-radius: 50%;
   pointer-events: none;
-  background:
-    /* la section du cordage : sombre aux deux bords, eclairee au milieu du brin */
-    radial-gradient(closest-side,
-      rgba(0, 0, 0, 0) 0 73%, rgba(0, 0, 0, .6) 76%,
-      rgba(255, 226, 176, .3) 84%, rgba(0, 0, 0, .55) 93%, rgba(0, 0, 0, 0) 96%),
-    /* les brins torsades : fondus doux, jamais d'arete — sinon c'est un engrenage */
-    repeating-conic-gradient(from 10deg,
-      #24130400 0deg, var(--rope-lo) 4deg, var(--rope) 8deg,
-      #e0bb85 11deg, var(--rope) 14deg, var(--rope-lo) 17deg, #241304 20deg);
-  -webkit-mask: radial-gradient(closest-side, #0000 0 72%, #000 77%, #000 94%, #0000 99%);
-          mask: radial-gradient(closest-side, #0000 0 72%, #000 77%, #000 94%, #0000 99%);
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .7));
-  animation: dc-ring 2.6s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity .25s ease;
+  /* `--pd-clock` va de 1 a 0 : la part encore peinte, c'est le temps restant. */
+  background: conic-gradient(var(--brass-hi) calc(var(--pd-clock, 1) * 360deg),
+                             rgba(0, 0, 0, .45) 0);
+  -webkit-mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
+          mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
 }
 
-/* Le jonc de laiton qui pince le cordage contre le portrait. */
-#dicewrap .dc-pc-ring::before {
-  content: '';
-  position: absolute;
-  inset: 14%;
-  border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 2px var(--brass-lo),
-    0 0 0 1px rgba(0, 0, 0, .55),
-    0 0 16px rgba(232, 200, 106, .4);
+#dicewrap .dc-pc-timed .dc-pc-clock { opacity: 1; }
+#dicewrap .dc-pc-urgent .dc-pc-clock {
+  background: conic-gradient(#ff7a6a calc(var(--pd-clock, 1) * 360deg), rgba(0, 0, 0, .45) 0);
+  animation: dc-clock-urgent 1s ease-in-out infinite;
 }
 
-@keyframes dc-ring {
-  0%, 100% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .65)); }
-  50% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .65)) drop-shadow(0 0 10px rgba(255, 205, 110, .75)); }
+@keyframes dc-clock-urgent {
+  0%, 100% { filter: none; }
+  50% { filter: drop-shadow(0 0 8px rgba(255, 122, 106, .8)); }
+}
+
+/* ── QUI JOUE, SANS AVOIR A CHERCHER ──────────────────────────────────────
+   La seule marque etait un halo qui respirait sur toute la carte : trop discret
+   pour trancher entre deux bandeaux identiques. Le principe de la planche de
+   radoub s'applique — UNE chose importante a la fois : celui qui a la main est
+   net et cercle de laiton, l'autre RECULE. */
+#dicewrap .dc-pc-idle {
+  filter: saturate(.55) brightness(.72);
+  transition: filter .25s ease;
+}
+
+#dicewrap .dc-pc-active .dc-pc-face {
+  filter: drop-shadow(0 0 10px rgba(232, 200, 106, .55));
 }
 
 #dicewrap .dc-pc-name {
@@ -1222,7 +1236,10 @@
   100% { transform: scale(1); }
 }
 
-#dicewrap .dc-pc-active { animation: dc-breathe 2.4s ease-in-out infinite; }
+#dicewrap .dc-pc-active {
+  animation: dc-breathe 2.4s ease-in-out infinite;
+  box-shadow: 0 0 0 2px var(--brass) inset;
+}
 @keyframes dc-breathe {
   0%, 100% { filter: drop-shadow(0 0 10px rgba(201, 162, 39, .3)); }
   50% { filter: drop-shadow(0 0 22px rgba(255, 205, 110, .55)); }
@@ -1280,7 +1297,7 @@
 @media (prefers-reduced-motion: reduce) {
   #dicewrap .dc-drop > .dc-face, #dicewrap .dc-thud, #dicewrap .dc-quake, #dicewrap .dc-tumbling,
   #dicewrap .dc-settle, #dicewrap .dc-plaque-pop, #dicewrap .dc-pc-active,
-  #dicewrap .dc-ghost, #dicewrap .dc-wheel, #dicewrap .dc-pc-ring,
+  #dicewrap .dc-ghost, #dicewrap .dc-wheel, #dicewrap .dc-pc-urgent .dc-pc-clock,
   #dicewrap .dc-settled > .dc-face { animation: none; }
   #dicewrap .dc-blast, #dicewrap .dc-dust, #dicewrap .dc-rollfx,
   #dicewrap .dc-over.dc-rain::before { display: none; }

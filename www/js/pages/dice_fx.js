@@ -88,6 +88,49 @@ export function announce(fx) {
   }
 }
 
+/*
+ * LA PENDULE DU TOUR.
+ *
+ * Passe un delai, l'IA joue a la place de celui qui n'a rien fait. Le serveur
+ * l'annoncait deja (`state.awayMs`), mais l'ecran ne le montrait pas : le
+ * joueur voyait un de tomber tout seul sans comprendre — retour du telephone,
+ * « il nous faut une sorte de timer pour savoir si ca va passer en auto ».
+ *
+ * L'etat n'arrive qu'a chaque coup ; la jauge, elle, doit descendre en continu.
+ * On interpole donc localement a partir de l'instant de reception, et on
+ * s'arrete des que le tour change — une pendule qui continue apres coup ment
+ * plus qu'elle n'informe.
+ */
+let clockTimer = 0;
+
+function stopClock() {
+  if (clockTimer) { clearInterval(clockTimer); clockTimer = 0; }
+  const game = $('#dc-screen-game');
+  if (game) game.querySelectorAll('.dc-pc').forEach((c) => c.classList.remove('dc-pc-timed'));
+}
+
+export function startClock(st) {
+  stopClock();
+  const total = (S.rules && S.rules.awayMs) || 0;
+  if (!total || st.phase !== 'playing' || st.awayMs === null || st.awayMs === undefined) return;
+
+  const carte = $(st.turn === S.seat ? '#dc-pc-me' : '#dc-pc-foe');
+  if (!carte) return;
+  const fin = Date.now() + st.awayMs;
+  const tour = st.turn;
+  carte.classList.add('dc-pc-timed');
+
+  const peindre = () => {
+    if (!S.state || S.state.phase !== 'playing' || S.state.turn !== tour) { stopClock(); return; }
+    const reste = Math.max(0, fin - Date.now());
+    carte.style.setProperty('--pd-clock', (reste / total).toFixed(3));
+    carte.classList.toggle('dc-pc-urgent', reste < 8000);
+    if (reste <= 0) stopClock();
+  };
+  peindre();
+  clockTimer = setInterval(peindre, 200);
+}
+
 /* ─────────────────────────────────── ce que Ching Shih voit avant les autres ── */
 
 /**

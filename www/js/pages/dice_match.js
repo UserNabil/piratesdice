@@ -19,7 +19,7 @@ import { t } from '../core/i18n.js';
 import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
-import { announce, renderForesee } from './dice_fx.js';
+import { announce, renderForesee, startClock } from './dice_fx.js';
 import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
 export function onMatch(m) {
@@ -179,6 +179,7 @@ function paint(full, frozen, settle) {
   popChangedScores(st);
   renderPlayerCard('#dc-pc-me', st, S.seat, true);
   renderPlayerCard('#dc-pc-foe', st, foe, false);
+  startClock(st);
   stageBoards(st);
   renderTurn(st);
   renderExit(st);
@@ -232,12 +233,18 @@ function renderPlayerCard(sel, st, seat, isMe) {
   if (!el) return;
   const active = st.turn === seat && st.phase === 'playing';
   const cap = st.captains ? st.captains[seat] : null;
-  el.className = 'dc-pc pd-panel' + (active ? ' dc-pc-active' : '');
+  /* ⚠️ L'ANNEAU DECORATIF EST PARTI. C'etait un cordage dessine en CSS, cale a
+     -17 % autour d'un portrait rond — mais le medaillon porte MAINTENANT son
+     propre anneau, peint dans l'image. Les deux cercles ne coincidaient pas :
+     « les cercles sont mal places », et on ne savait toujours pas qui jouait.
+     A la place, un seul cercle, et il VEUT DIRE quelque chose : c'est le temps
+     qu'il reste avant que l'IA prenne la main. */
+  el.className = 'dc-pc pd-panel' + (active ? ' dc-pc-active' : ' dc-pc-idle');
   el.innerHTML = `
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
-      ${active ? '<span class="dc-pc-ring"></span>' : ''}
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
+      <span class="dc-pc-clock" aria-hidden="true"></span>
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
