@@ -21,6 +21,28 @@ const TERMS_URL = 'https://usernabil.github.io/piratesdice/privacy.html';
 /* ⚠️ Les boites vivent DANS #dicewrap. La menuiserie (.pd-panel, .dc-btn) est
    ecrite sous `#dicewrap ...` : posee sur <body>, une carte de reglages
    n'heritait de RIEN — fond transparent, boutons gris. Vu a l'ecran. */
+/**
+ * La barre d'etat ne doit pas recouvrir l'entete.
+ *
+ * ⚠️ Trouve sur un Android 16 REEL, pas dans la documentation : depuis que
+ * l'application vise l'API 36, le systeme impose le bord a bord et dessine son
+ * heure et son signal PAR-DESSUS la page. `env(safe-area-inset-top)` etait deja
+ * en place et valait zero — sur Android, la WebView ne recoit pas ces valeurs
+ * d'elle-meme.
+ */
+async function reglerBarreEtat() {
+  const cap = window.Capacitor;
+  const bar = cap && cap.Plugins && cap.Plugins.StatusBar;
+  if (!bar) return;
+  try {
+    await bar.setOverlaysWebView({ overlay: false });
+    await bar.setBackgroundColor({ color: '#241C33' });
+    await bar.setStyle({ style: 'DARK' });        // DARK = fond sombre, texte clair
+  } catch (e) {
+    /* Un navigateur de bureau n'a pas de barre d'etat : ce n'est pas une panne. */
+  }
+}
+
 function host() {
   return document.getElementById('dicewrap') || document.body;
 }
@@ -228,6 +250,7 @@ function wireMotion() {
 async function start() {
   initDice();
   wireBackButton();
+  await reglerBarreEtat();
   splashOff();
   /* La connexion se fait SEULE : c'est la promesse de la fiche. Si Google n'est
      pas joignable (appareil sans services Play, ou refus), on retombe sur le

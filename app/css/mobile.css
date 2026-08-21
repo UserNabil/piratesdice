@@ -45,8 +45,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   max-height: none;
   border-radius: 0;
   box-shadow: none;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: max(env(safe-area-inset-top), 26px);
+  padding-bottom: max(env(safe-area-inset-bottom), 10px);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
@@ -251,7 +251,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    joue tout seul, il n'y a rien a piloter. */
 #pd-splash .pd-splash-in { text-align: center; }
 #pd-splash-anim {
-  width: min(220px, 52vw);
+  /* ⚠️ 150 px, PAS 220. L'animation est dessinee a 160x166 : affichee a 220 sur
+     un ecran a 3x, elle est agrandie quatre fois et le crane devient mou — vu
+     sur un Android 16 reel. A 150 on reste sous 3x, et c'est net.
+     Agrandir la SOURCE a ete essaye et mesure : 2,9 -> 9,4 Mo pour un ecran de
+     deux secondes et demie. Refuse. Si on la veut plus grande un jour, c'est au
+     graphiste de la rendre en 320x332. */
+  width: min(150px, 42vw);
   height: auto;
   image-rendering: auto;
   filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .6));
