@@ -1,26 +1,34 @@
-/* Cinzel et Spectral, embarquees : une application doit s'ouvrir sans reseau.
-   Les deux polices sont sous SIL Open Font License 1.1 (voir fonts/OFL.txt). */
+/* Les polices sont EMBARQUEES : une application doit s'ouvrir sans reseau.
+
+   Depuis le passage au comic pop-art, deux nouvelles familles :
+     Luckiest Guy — les titres, les boutons, les scores. C'est elle qui porte le
+                    ton ; sans elle on retombe sur un jeu de societe poli.
+     Baloo 2      — le texte courant. Arrondie, elle s'accorde aux formes
+                    epaisses du kit la ou une serif jurerait.
+
+   ⚠️ Baloo 2 est une police VARIABLE : le meme fichier sert du 400 au 800, d'ou
+   la plage dans `font-weight`. En declarant deux @font-face vers le meme fichier
+   on l'aurait simplement telechargee deux fois.
+
+   ⚠️ Ni l'une ni l'autre ne couvre l'ARABE. La pile de repli s'en charge, comme
+   avant : le systeme rend l'arabe avec sa propre police, et la mise en page RTL
+   reste correcte — c'est deja ce qui se passait avec Cinzel et Spectral.
+
+   Licences : Luckiest Guy sous Apache License 2.0, Baloo 2 sous SIL Open Font
+   License 1.1. Les deux sont redistribuables (voir fonts/OFL.txt). */
 
 @font-face {
-  font-family: 'Cinzel';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../fonts/Cinzel-700.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Spectral';
+  font-family: 'Luckiest Guy';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('../fonts/Spectral-400.woff2') format('woff2');
+  src: url('../fonts/LuckiestGuy-400.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: 'Spectral';
+  font-family: 'Baloo 2';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400 800;
   font-display: swap;
-  src: url('../fonts/Spectral-600.woff2') format('woff2');
+  src: url('../fonts/Baloo2-400.woff2') format('woff2');
 }

@@ -38,7 +38,8 @@ const FX_FILES = ['fx_burst.png', 'fx_place.png', 'fx_roll.png', 'fx_win.png'];
 
 const STILL_FILES = [
   'bg.jpg', 'die_unknown.png', 'cup.png', 'cup_active.png', 'brand_mark.png',
-  'avatar.png', 'icon_coin.png', 'icon_anchor.png',
+  'icon_coin.png', 'icon_anchor.png', 'icon_bell.png', 'icon_settings.png',
+  'icon_shop.png', 'icon_ranking.png', 'icon_rules.png', 'icon_duel.png',
   'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
   'bonus_reroll.png', 'bonus_clear_own.png', 'bonus_blast_enemy.png',
   'die_1.png', 'die_2.png', 'die_3.png', 'die_4.png', 'die_5.png', 'die_6.png',

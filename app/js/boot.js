@@ -25,11 +25,22 @@ function host() {
   return document.getElementById('dicewrap') || document.body;
 }
 
+/* L'animation du splash dure 2,47 s. Sur une bonne connexion l'application est
+   prete en moins d'une seconde : sans ce plancher, le crane disparaissait avant
+   d'avoir fini de se former, ce qui donne l'impression d'un bug plutot que d'une
+   marque. On ne fait attendre personne au-dela — si l'ouverture prend plus
+   longtemps, le splash s'en va des qu'elle est finie. */
+const SPLASH_MS = 2500;
+const splashDepuis = Date.now();
+
 function splashOff() {
   const splash = document.getElementById('pd-splash');
   if (!splash) return;
-  splash.classList.add('gone');
-  setTimeout(() => splash.remove(), 420);
+  const reste = Math.max(0, SPLASH_MS - (Date.now() - splashDepuis));
+  setTimeout(() => {
+    splash.classList.add('gone');
+    setTimeout(() => splash.remove(), 420);
+  }, reste);
 }
 
 /* ── le bouton RETOUR d'Android ──────────────────────────────────────────── */
@@ -167,7 +178,7 @@ function addHeaderButtons() {
   gear.className = 'dc-icon';
   gear.id = 'pd-settings-btn';
   gear.title = t('set.title');
-  gear.innerHTML = '<span class="pd-glyph">&#9881;</span>';
+  gear.innerHTML = '<img src="dice/img/icon_settings.png" alt="">';
   gear.onclick = openSettings;
   acts.appendChild(gear);
 }

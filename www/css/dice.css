@@ -1,44 +1,69 @@
 /* ============================================================================
    css/dice.css — "The Pirate's Dice".
 
-   La menuiserie est en CSS PUR : bois, laiton, feutre, cordage. Aucune image
-   n'habille plus un panneau, un cadre, un bouton, une plaque ou un logement.
-   Ne restent en image que les DES (et le gobelet), leurs effets, les portraits,
-   les sceaux, les icones et le decor peint.
+   COMIC POP-ART. La grammaire vient du kit fourni par l'admin, et elle tient en
+   six gestes : un LISERE BLANC epais autour de tout, une trame de points, des
+   lignes de vitesse, des formes legerement bancales, une ombre DURE (jamais
+   floue), et un neutre qui n'est pas gris mais violet.
 
-   Trois recettes portent tout : .pd-panel (bois cercle de laiton), .pd-plate
-   (plaque de laiton gravee), .pd-socket (creux de feutre).
+   ⛔ La menuiserie bois-laiton-feutre d'aout 2026 est morte. Elle etait ecrite
+   ici en CSS pur et fonctionnait ; elle ne pouvait simplement pas cohabiter avec
+   un panneau comic — on aurait obtenu un troisieme style, celui de personne.
+
+   Trois recettes portent tout : .pd-panel (le panneau cerne de blanc),
+   .pd-plate (le bouton bombe a ombre dure), .pd-socket (l'alveole creusee).
+   Les images ne servent plus qu'aux sujets DESSINES : des, gobelet, capitaines,
+   icones, sceaux, bonus, marque. Tout ce qui s'etire est du CSS — un panneau
+   dessine ne s'etire pas sans deformer son lisere.
    ============================================================================ */
 
 #dicewrap {
-  --wood: #3b281c;
-  --wood-hi: #6a4530;
-  --wood-md: #2b1c10;
-  --wood-lo: #1b1208;
-  --wood-dk: #100b06;
+  /* Le violet est la couleur du panneau, l'or celle de l'action. */
+  --violet-hi: #A472FF;
+  --violet: #8850F8;
+  --violet-md: #7A3FE4;
+  --violet-lo: #9830D8;
+  --violet-dk: #4B1F8C;
 
-  --brass: #c9a227;
-  --brass-hi: #f3dc93;
-  --brass-md: #b9862a;
-  --brass-lo: #8a5c17;
-  --brass-dk: #462c08;
+  --gold-hi: #FFE479;
+  --gold: #F8D040;
+  --gold-md: #FCA212;
+  --gold-lo: #E08A05;
+  --gold-dk: #8A5203;
 
-  --felt: #1f3823;
-  --felt-hi: #33513a;
-  --felt-lo: #0d1f12;
+  --mer-hi: #7FD2FF;
+  --mer: #5B9CF8;
+  --mer-lo: #60C0F8;
 
-  --rope: #a9793a;
-  --rope-lo: #5a3410;
+  /* Le creux d'une alveole : un violet tres sombre, jamais du noir. */
+  --deep-hi: #3A2A63;
+  --deep: #2A1D4A;
+  --deep-lo: #1B1233;
 
-  --parch: #f0e3c2;
-  --parch-dim: #cdbb92;
-  --ink: #241503;
-  --wax: #a5332a;
-  --verd: #4e8a6a;
+  --blanc: #FFFFFF;
+  --os: #F6EFD8;
+  --txt: #FFFFFF;
+  --txt-dim: #C9BCEA;
+  --ink: #2A1A00;
+  --rouge: #E5252F;
+  --rouge-lo: #8E1218;
+  --vert: #7CC832;
+  --vert-lo: #246C06;
 
-  --dc-parch: var(--parch);
-  --dc-brass: var(--brass);
-  --dc-brass2: var(--brass-hi);
+  /* La trame de points et les lignes de vitesse : deux fonds reutilises partout. */
+  --trame: radial-gradient(circle, rgba(0, 0, 0, .14) 1.4px, transparent 1.5px);
+  --trame-taille: 9px 9px;
+  /* ⚠️ TRES DOUX, ET C'EST VOULU. A 15 % les rayons passaient derriere le
+     texte des panneaux : la capture etait illisible. Le kit s'en sert pour
+     donner du mouvement au FOND, pas pour decorer une zone de lecture. */
+  --vitesse: repeating-conic-gradient(from 0deg at 50% 30%,
+    rgba(255, 255, 255, .055) 0deg 1.2deg, transparent 1.2deg 9deg);
+
+  --liseré: 4px;
+
+  --dc-parch: var(--txt);
+  --dc-brass: var(--gold);
+  --dc-brass2: var(--gold-hi);
   --dc-cell: clamp(44px, min(6.4vh, 8vw), 62px);
 
   position: fixed;
@@ -46,10 +71,10 @@
   z-index: 60;
   display: none;
   place-items: center;
-  background: rgba(14, 9, 4, .76);
+  background: rgba(20, 14, 34, .82);
   backdrop-filter: blur(3px);
-  font-family: "Spectral", Georgia, serif;
-  color: var(--parch);
+  font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+  color: var(--txt);
 }
 
 #dicewrap.open { display: grid; }
@@ -59,131 +84,97 @@
    LES TROIS RECETTES
    ============================================================================ */
 
-/* ── .pd-panel : une planche de bois cerclee de laiton ────────────────────── */
+/* ── .pd-panel : un panneau comic cerne de blanc ──────────────────────────── */
 #dicewrap .pd-panel {
   position: relative;
-  border-radius: var(--pd-round, 10px);
+  border: var(--liseré) solid var(--blanc);
+  /* Des coins INEGAUX : c'est ce qui fait « dessine a la main » plutot que
+     « calcule ». Quatre valeurs identiques et le panneau redevient un widget. */
+  border-radius: 26px 22px 28px 24px;
   background:
-    repeating-linear-gradient(0deg,
-      rgba(0, 0, 0, .34) 0 1px, rgba(255, 226, 176, .05) 1px 2px, rgba(0, 0, 0, 0) 2px var(--pd-plank, 46px)),
-    repeating-linear-gradient(1.4deg,
-      rgba(0, 0, 0, .1) 0 2px, rgba(255, 228, 180, .03) 2px 4px, rgba(0, 0, 0, 0) 4px 13px),
-    repeating-linear-gradient(-1.1deg,
-      rgba(0, 0, 0, .07) 0 1px, rgba(0, 0, 0, 0) 1px 27px),
-    linear-gradient(178deg, var(--wood-hi) 0%, var(--wood) 14%, var(--wood-md) 62%, var(--wood-lo) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 222, 170, .16),
-    inset 0 -2px 0 rgba(0, 0, 0, .55),
-    inset 0 0 30px rgba(0, 0, 0, .5),
-    0 12px 30px rgba(0, 0, 0, .55);
-  color: var(--parch);
+    var(--trame),
+    var(--vitesse),
+    linear-gradient(160deg, var(--pd-c1, var(--violet)), var(--pd-c2, var(--violet-lo)));
+  background-size: var(--trame-taille), auto, auto;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .34), 0 14px 28px rgba(0, 0, 0, .45);
+  color: var(--txt);
 }
 
-#dicewrap .pd-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: inherit;
-  padding: var(--pd-rim, 3px);
-  background: linear-gradient(157deg,
-    var(--brass-hi) 0%, var(--brass) 26%, var(--brass-dk) 47%,
-    var(--brass-lo) 63%, var(--brass-hi) 86%, var(--brass-lo) 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
-}
+/* Les variantes ne changent que les deux couleurs du fond. */
+#dicewrap .pd-panel--mer { --pd-c1: var(--mer); --pd-c2: var(--mer-lo); }
+#dicewrap .pd-panel--or { --pd-c1: var(--gold); --pd-c2: var(--gold-md); color: var(--ink); }
+#dicewrap .pd-panel--nuit { --pd-c1: #453A63; --pd-c2: #2A2140; }
+#dicewrap .pd-panel--norivet { }
+#dicewrap .pd-panel--thin { --liseré: 3px; border-radius: 18px 15px 19px 16px; }
+#dicewrap .pd-panel--pill { border-radius: 999px; }
 
-/* Les ferrures d'angle : quatre rivets poses, jamais repetes. */
-#dicewrap .pd-panel::after {
-  content: '';
-  position: absolute;
-  inset: var(--pd-rivet-in, 9px);
-  z-index: 1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
-    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
-    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%),
-    radial-gradient(circle closest-side at 50% 45%, var(--brass-hi) 0 22%, var(--brass-md) 42%, var(--brass-dk) 72%, rgba(0, 0, 0, .5) 100%);
-  background-size: var(--pd-rivet, 9px) var(--pd-rivet, 9px);
-  background-position: 0 0, 100% 0, 0 100%, 100% 100%;
-  background-repeat: no-repeat;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6));
-}
-
-#dicewrap .pd-panel--norivet::after { content: none; }
-#dicewrap .pd-panel--thin { --pd-rim: 2px; --pd-rivet: 7px; --pd-rivet-in: 6px; }
-#dicewrap .pd-panel--pill { --pd-round: 999px; --pd-rivet-in: 10px 26px; }
-
-/* Le feutre du plateau : deuxieme couche de fond, bornee a la boite de contenu.
-   La largeur du cadre de bois EST le padding — rien a aligner a la main. */
-#dicewrap .pd-panel--felt {
+/* Le plateau : le meme panneau, mais son interieur est creuse. */
+#dicewrap .pd-panel--deep {
   padding: var(--pd-frame, 14px);
   background:
-    radial-gradient(118% 118% at 50% 38%, var(--felt-hi) 0%, var(--felt) 44%, var(--felt-lo) 100%) content-box,
-    repeating-linear-gradient(0deg,
-      rgba(0, 0, 0, .34) 0 1px, rgba(255, 226, 176, .05) 1px 2px, rgba(0, 0, 0, 0) 2px var(--pd-plank, 46px)) border-box,
-    repeating-linear-gradient(1.4deg,
-      rgba(0, 0, 0, .1) 0 2px, rgba(255, 228, 180, .03) 2px 4px, rgba(0, 0, 0, 0) 4px 13px) border-box,
-    linear-gradient(178deg, var(--wood-hi) 0%, var(--wood) 14%, var(--wood-md) 62%, var(--wood-lo) 100%) border-box;
+    linear-gradient(180deg, var(--deep-lo), var(--deep)) content-box,
+    var(--trame) border-box,
+    var(--vitesse) border-box,
+    linear-gradient(160deg, var(--pd-c1, var(--violet)), var(--pd-c2, var(--violet-lo))) border-box;
+  background-size: auto, var(--trame-taille), auto, auto;
 }
 
-/* ── .pd-plate : une plaque de laiton gravee ──────────────────────────────── */
+/* ── .pd-plate : un bouton bombe, a ombre DURE ────────────────────────────── */
 #dicewrap .pd-plate,
 #dicewrap .dc-btn {
   position: relative;
-  border: 0;
-  border-radius: var(--pd-round, 7px);
+  border: var(--liseré) solid var(--blanc);
+  border-radius: var(--pd-round, 18px);
   color: var(--ink);
-  background:
-    linear-gradient(180deg,
-      var(--brass-hi) 0%, #ddb44e 16%, var(--brass-md) 50%,
-      var(--brass-lo) 82%, #c99a3a 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 248, 218, .8),
-    inset 0 -2px 0 rgba(58, 33, 4, .55),
-    inset 0 0 0 1px rgba(70, 42, 8, .6),
-    0 3px 7px rgba(0, 0, 0, .5);
-  text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  letter-spacing: .5px;
+  background: linear-gradient(180deg, var(--b1, var(--gold-hi)), var(--b2, var(--gold)));
+  /* L'ombre est un BLOC decale, pas un flou : c'est elle qui donne l'epaisseur,
+     et c'est sur elle que le bouton s'enfonce quand on le presse. */
+  box-shadow: 0 6px 0 var(--b3, var(--gold-lo)), 0 10px 16px rgba(0, 0, 0, .4);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, .45);
+  transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
 }
 
-/* Deux rivets, un a chaque bout : c'est ce qui fait « plaque vissee ». */
-#dicewrap .pd-plate--riveted {
-  background-image:
-    radial-gradient(circle closest-side at 50% 45%, #fff3c8 0 20%, var(--brass-lo) 55%, var(--brass-dk) 100%),
-    radial-gradient(circle closest-side at 50% 45%, #fff3c8 0 20%, var(--brass-lo) 55%, var(--brass-dk) 100%),
-    linear-gradient(180deg, var(--brass-hi) 0%, #ddb44e 16%, var(--brass-md) 50%, var(--brass-lo) 82%, #c99a3a 100%);
-  background-size: 7px 7px, 7px 7px, auto;
-  background-position: 9px 50%, calc(100% - 9px) 50%, 0 0;
-  background-repeat: no-repeat;
+#dicewrap .dc-btn:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--b3, var(--gold-lo)), 0 4px 8px rgba(0, 0, 0, .4);
 }
 
-/* ── .pd-socket : un creux de feutre ──────────────────────────────────────── */
+#dicewrap .dc-btn-alt {
+  --b1: var(--violet-hi); --b2: var(--violet); --b3: var(--violet-lo);
+  color: var(--txt); text-shadow: 0 2px 0 rgba(0, 0, 0, .35);
+}
+#dicewrap .dc-btn-ghost {
+  --b1: #6A5E8E; --b2: #4A3F6E; --b3: #2E2648;
+  color: var(--txt); text-shadow: 0 2px 0 rgba(0, 0, 0, .35);
+}
+#dicewrap .dc-btn:disabled {
+  --b1: #9A94A8; --b2: #6E6880; --b3: #46414F;
+  color: #EDEAF4; text-shadow: none; cursor: default;
+}
+
+#dicewrap .pd-plate--riveted { }
+
+/* ── .pd-socket : une alveole creusee dans le panneau ─────────────────────── */
 #dicewrap .pd-socket {
   position: relative;
-  border-radius: var(--pd-round, 9px);
-  background: radial-gradient(104% 104% at 50% 26%, var(--felt-hi) 0%, var(--felt) 46%, #081a0e 100%);
+  border-radius: var(--pd-round, 14px);
+  background: linear-gradient(180deg, var(--deep-lo), var(--deep-hi));
   box-shadow:
-    inset 0 4px 9px rgba(0, 0, 0, .8),
-    inset 0 -2px 3px rgba(0, 0, 0, .55),
-    inset 0 0 0 1px rgba(0, 0, 0, .6),
-    0 1px 0 rgba(255, 226, 170, .1);
+    inset 0 0 0 3px rgba(255, 255, 255, .5),
+    inset 0 6px 12px rgba(0, 0, 0, .5);
 }
 
+/* Une alveole est un CREUX : elle ne porte ni trame ni rayon, sinon les neuf
+   cases deviennent un damier bruyant derriere les des. Seulement de l'ombre. */
 #dicewrap .pd-socket::after {
   content: '';
   position: absolute;
-  inset: 2px;
+  inset: 3px;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .55);
-  background:
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, .035) 0 2px, rgba(255, 255, 255, .011) 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .03) 0 2px, rgba(255, 255, 255, .009) 2px 4px);
-  opacity: .6;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, .55);
 }
 
 /* ============================================================================
@@ -201,7 +192,7 @@
   --pd-rim: 4px;
   --pd-rivet: 11px;
   --pd-rivet-in: 12px;
-  background: linear-gradient(180deg, var(--wood-md), var(--wood-dk));
+  background: linear-gradient(180deg, var(--violet-md), var(--deep-lo));
   box-shadow: 0 34px 100px rgba(0, 0, 0, .72), 0 0 0 1px rgba(0, 0, 0, .8);
 }
 
@@ -227,7 +218,7 @@
   background:
     repeating-linear-gradient(1.2deg,
       rgba(0, 0, 0, .14) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 12px),
-    linear-gradient(180deg, var(--wood) 0%, var(--wood-md) 60%, var(--wood-lo) 100%);
+    linear-gradient(180deg, var(--violet) 0%, var(--violet-md) 60%, var(--violet-dk) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 222, 170, .14),
     0 3px 10px rgba(0, 0, 0, .5);
@@ -238,15 +229,15 @@
   position: absolute;
   left: 0; right: 0; bottom: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--brass-lo), var(--brass-hi) 22%, var(--brass-lo) 50%, var(--brass-hi) 78%, var(--brass-lo));
+  background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi) 22%, var(--gold-lo) 50%, var(--gold-hi) 78%, var(--gold-lo));
   box-shadow: 0 1px 3px rgba(0, 0, 0, .6);
 }
 
 #dicewrap .dc-brand {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(14px, 1.5vw, 18px);
   letter-spacing: .6px;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   white-space: nowrap;
   text-shadow: 0 1px 0 rgba(0, 0, 0, .8), 0 0 14px rgba(201, 162, 39, .3);
 }
@@ -263,7 +254,7 @@
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .28));
   box-shadow:
-    inset 0 0 0 1px var(--brass-lo),
+    inset 0 0 0 1px var(--gold-lo),
     inset 0 1px 0 rgba(255, 226, 170, .12),
     0 2px 5px rgba(0, 0, 0, .45);
 }
@@ -273,26 +264,26 @@
   border-radius: 50%;
   object-fit: cover;
   background: #000;
-  box-shadow: 0 0 0 2px var(--brass-lo), 0 0 0 3px rgba(0, 0, 0, .6);
+  box-shadow: 0 0 0 2px var(--gold-lo), 0 0 0 3px rgba(0, 0, 0, .6);
 }
 
 #dicewrap .dc-wallet-txt { display: flex; flex-direction: column; line-height: 1.15; }
 #dicewrap .dc-wallet-txt b { font-size: 14px; }
-#dicewrap .dc-wallet-txt span { font-size: 12px; color: var(--parch-dim); }
-#dicewrap .dc-coins { font-size: 15px; color: var(--brass-hi); font-weight: 600; margin-left: 4px; }
+#dicewrap .dc-wallet-txt span { font-size: 12px; color: var(--txt-dim); }
+#dicewrap .dc-coins { font-size: 15px; color: var(--gold-hi); font-weight: 600; margin-left: 4px; }
 
 #dicewrap .dc-tabs { display: flex; gap: 6px; margin-left: auto; }
 
 #dicewrap .dc-tab {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 13px;
   letter-spacing: .4px;
-  color: var(--parch);
+  color: var(--txt);
   border: 0;
   border-radius: 7px;
   padding: 7px 15px;
   cursor: pointer;
-  background: linear-gradient(180deg, var(--wood-hi), var(--wood-md) 55%, var(--wood-lo));
+  background: linear-gradient(180deg, var(--violet-hi), var(--violet-md) 55%, var(--violet-dk));
   box-shadow:
     inset 0 1px 0 rgba(255, 226, 170, .16),
     inset 0 0 0 1px rgba(0, 0, 0, .55),
@@ -301,13 +292,13 @@
   transition: filter .12s, transform .1s, color .12s;
 }
 
-#dicewrap .dc-tab:hover { filter: brightness(1.16); color: var(--brass-hi); }
+#dicewrap .dc-tab:hover { filter: brightness(1.16); color: var(--gold-hi); }
 #dicewrap .dc-tab:active { transform: translateY(1px); }
 
 #dicewrap .dc-tab.on {
   color: var(--ink);
   text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
-  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md) 55%, var(--brass-lo));
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-md) 55%, var(--gold-lo));
   box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6), 0 2px 5px rgba(0, 0, 0, .5);
 }
 
@@ -321,9 +312,9 @@
   border-radius: 50%;
   cursor: pointer;
   background:
-    radial-gradient(circle at 36% 28%, var(--wood-hi), var(--wood-md) 58%, #120c06 100%);
+    radial-gradient(circle at 36% 28%, var(--violet-hi), var(--violet-md) 58%, #120c06 100%);
   box-shadow:
-    inset 0 0 0 2px var(--brass-lo),
+    inset 0 0 0 2px var(--gold-lo),
     inset 0 1px 0 rgba(255, 226, 170, .2),
     0 2px 5px rgba(0, 0, 0, .55);
   transition: filter .12s, transform .1s, box-shadow .12s;
@@ -336,7 +327,7 @@
           drop-shadow(0 1px 2px rgba(0, 0, 0, .9));
 }
 
-#dicewrap .dc-icon:hover { box-shadow: inset 0 0 0 2px var(--brass), inset 0 1px 0 rgba(255, 226, 170, .28), 0 3px 8px rgba(0, 0, 0, .55); transform: translateY(-1px); }
+#dicewrap .dc-icon:hover { box-shadow: inset 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255, 226, 170, .28), 0 3px 8px rgba(0, 0, 0, .55); transform: translateY(-1px); }
 #dicewrap .dc-icon:active { transform: translateY(1px); }
 #dicewrap .dc-icon-off img { filter: grayscale(1) brightness(.7); }
 
@@ -344,11 +335,21 @@
    LES ECRANS
    ============================================================================ */
 
+/* ⛔ LE DECOR PEINT EST PARTI. La taverne a l'huile etait le fond du jeu
+   precedent ; derriere des panneaux comic elle donnait deux mondes empiles, et
+   c'est la premiere chose qu'on voyait sur la capture. Le fond est desormais du
+   CSS : un ciel violet, sa trame de points, et des rayons TRES doux qui partent
+   de haut. Il pese zero octet et suit la palette si elle bouge. */
 #dicewrap .dc-body {
   position: relative;
   flex: 1;
   min-height: 0;
-  background: url('/dice/img/bg.jpg') center / cover no-repeat;
+  background:
+    var(--trame),
+    repeating-conic-gradient(from 0deg at 50% 8%,
+      rgba(255, 255, 255, .05) 0deg 1.6deg, transparent 1.6deg 9deg),
+    radial-gradient(120% 90% at 50% 4%, #6A3BC4 0%, #3C2170 46%, #241C33 100%);
+  background-size: 14px 14px, auto, auto;
 }
 
 #dicewrap .dc-body::after {
@@ -375,145 +376,45 @@
 
 /* ── les boutons ──────────────────────────────────────────────────────────── */
 
-/* ── LES BOUTONS : des plaques BOULONNEES, pas des degrades ────────────────
-   Une plaque de laiton martele, cerclee de fer, tenue par deux rivets, avec de
-   l'epaisseur sous elle (le `0 4px 0` fait la tranche) : c'est ce qui fait
-   qu'on a envie d'appuyer dessus. A l'appui, la plaque s'enfonce DANS le bois
-   et sa tranche disparait. */
+/* ── LES BOUTONS ───────────────────────────────────────────────────────────
+   Leur apparence entiere vient de la recette `.pd-plate` : degrade, lisere
+   blanc, ombre DURE. Ici, seulement la taille et le texte.
+
+   ⛔ Il y avait a cet endroit une SECONDE definition de `.dc-btn`, en plaque de
+   laiton boulonnee. Ecrite plus bas et de meme specificite, elle gagnait la
+   cascade : la recette comic etait bien la, et on voyait quand meme des rivets
+   a l'ecran. Une refonte n'est finie que quand l'ancienne regle ne peut plus
+   gagner. */
 #dicewrap .dc-btn {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  padding: 12px 30px;
+  letter-spacing: .6px;
+  padding: 12px 28px 10px;
   cursor: pointer;
-  --pd-round: 8px;
-  --pd-rivet-x: 13px;
-  color: #2c1a05;
-  background:
-    radial-gradient(circle closest-side at 50% 45%, #fff8dc 0 14%, #dfb452 40%, #6b4610 66%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
-    radial-gradient(circle closest-side at 50% 45%, #fff8dc 0 14%, #dfb452 40%, #6b4610 66%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
-    radial-gradient(130% 150% at 50% -34%, rgba(255, 252, 232, .55) 0 20%, rgba(255, 252, 232, 0) 62%),
-    linear-gradient(180deg,
-      #f6e0a4 0%, #dcb254 15%, #b7871f 46%, #8a5c17 74%, #d3a641 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 250, 222, .85),
-    inset 0 -2px 0 rgba(52, 29, 4, .55),
-    inset 0 0 0 2px rgba(48, 29, 6, .5),
-    0 4px 0 rgba(32, 18, 5, .6),
-    0 7px 14px rgba(0, 0, 0, .5);
-  text-shadow: 0 1px 0 rgba(255, 248, 214, .6), 0 -1px 0 rgba(74, 44, 8, .4);
-  transition: filter .12s, transform .08s, box-shadow .12s;
+  --pd-round: 18px;
 }
 
 #dicewrap .dc-btn:hover:not(:disabled) {
-  filter: brightness(1.06) saturate(1.05);
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 250, 222, .9),
-    inset 0 -2px 0 rgba(52, 29, 4, .55),
-    inset 0 0 0 2px rgba(48, 29, 6, .5),
-    0 5px 0 rgba(32, 18, 5, .6),
-    0 9px 20px rgba(0, 0, 0, .5),
-    0 0 22px rgba(255, 199, 104, .3);
+  filter: brightness(1.06) saturate(1.04);
 }
 
-#dicewrap .dc-btn:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow:
-    inset 0 3px 7px rgba(48, 27, 4, .6),
-    inset 0 0 0 2px rgba(48, 29, 6, .55),
-    0 1px 0 rgba(32, 18, 5, .6),
-    0 2px 5px rgba(0, 0, 0, .45);
-}
+#dicewrap .dc-btn-sm { padding: 8px 18px 6px; font-size: 13px; border-radius: 14px; }
+#dicewrap .dc-btn-big { padding: 15px 34px 12px; font-size: 19px; letter-spacing: .8px; }
 
-#dicewrap .dc-btn:disabled { filter: grayscale(.55) brightness(.6); cursor: not-allowed; }
-#dicewrap .dc-btn-sm { padding: 8px 20px; font-size: 12.5px; --pd-rivet-x: 9px; background-size: 7px 7px, 7px 7px, auto, auto; }
-#dicewrap .dc-btn-big { padding: 16px 38px; font-size: 18px; letter-spacing: 1.4px; --pd-rivet-x: 16px; background-size: 11px 11px, 11px 11px, auto, auto; }
-
-/* Le bouton de bois : une planche cerclee de fer, memes rivets. */
-#dicewrap .dc-btn-ghost {
-  color: var(--parch);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .85);
-  background:
-    radial-gradient(circle closest-side at 50% 45%, #f8ecc4 0 14%, var(--brass-md) 40%, #4a2f0c 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
-    radial-gradient(circle closest-side at 50% 45%, #f8ecc4 0 14%, var(--brass-md) 40%, #4a2f0c 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
-    repeating-linear-gradient(1.2deg,
-      rgba(0, 0, 0, .13) 0 2px, rgba(255, 228, 180, .045) 2px 4px, rgba(0, 0, 0, 0) 4px 10px),
-    linear-gradient(180deg, var(--wood-hi), var(--wood-md) 58%, var(--wood-lo));
-  box-shadow:
-    inset 0 0 0 2px var(--brass-lo),
-    inset 0 0 0 3px rgba(0, 0, 0, .45),
-    inset 0 1px 0 rgba(255, 226, 170, .18),
-    0 4px 0 rgba(22, 14, 6, .6),
-    0 7px 14px rgba(0, 0, 0, .5);
-}
-
-#dicewrap .dc-btn-ghost:hover:not(:disabled) {
-  filter: brightness(1.18);
-  box-shadow:
-    inset 0 0 0 2px var(--brass),
-    inset 0 0 0 3px rgba(0, 0, 0, .45),
-    inset 0 1px 0 rgba(255, 226, 170, .22),
-    0 5px 0 rgba(22, 14, 6, .6),
-    0 9px 18px rgba(0, 0, 0, .5),
-    0 0 18px rgba(255, 199, 104, .22);
-}
-
-#dicewrap .dc-btn-ghost:active:not(:disabled) {
-  box-shadow:
-    inset 0 3px 8px rgba(0, 0, 0, .7),
-    inset 0 0 0 2px var(--brass-lo),
-    0 1px 0 rgba(22, 14, 6, .6);
-}
-
-/* Le bronze vert-de-grise : le second choix du menu, meme ferronnerie. */
-#dicewrap .dc-btn-alt {
-  color: #0c1f14;
-  text-shadow: 0 1px 0 rgba(206, 244, 220, .5), 0 -1px 0 rgba(10, 40, 24, .35);
-  background:
-    radial-gradient(circle closest-side at 50% 45%, #f0fdf5 0 14%, #79b795 40%, #24503a 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      var(--pd-rivet-x) 50% / 9px 9px no-repeat,
-    radial-gradient(circle closest-side at 50% 45%, #f0fdf5 0 14%, #79b795 40%, #24503a 68%, rgba(0, 0, 0, .6) 88%, rgba(0, 0, 0, 0) 96%)
-      calc(100% - var(--pd-rivet-x)) 50% / 9px 9px no-repeat,
-    radial-gradient(130% 150% at 50% -34%, rgba(236, 250, 232, .42) 0 20%, rgba(236, 250, 232, 0) 62%),
-    linear-gradient(180deg, #9fcdae 0%, #69a884 15%, var(--verd) 46%, #27523c 76%, #5f9a7c 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(230, 255, 240, .8),
-    inset 0 -2px 0 rgba(10, 36, 22, .55),
-    inset 0 0 0 2px rgba(14, 44, 28, .5),
-    0 4px 0 rgba(9, 30, 19, .6),
-    0 7px 14px rgba(0, 0, 0, .5);
-}
-
-#dicewrap .dc-btn-alt:hover:not(:disabled) {
-  box-shadow:
-    inset 0 1px 0 rgba(230, 255, 240, .85),
-    inset 0 -2px 0 rgba(10, 36, 22, .55),
-    inset 0 0 0 2px rgba(14, 44, 28, .5),
-    0 5px 0 rgba(9, 30, 19, .6),
-    0 9px 20px rgba(0, 0, 0, .5),
-    0 0 22px rgba(140, 235, 185, .22);
-}
-
-#dicewrap .dc-dim { color: var(--parch-dim); font-size: 13.5px; }
+#dicewrap .dc-dim { color: #D9CEF5; font-size: 13.5px; }
 #dicewrap .dc-err { color: #ff9a90; }
 
 #dicewrap kbd {
   font-family: ui-monospace, monospace; font-size: 12.5px;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   border-radius: 4px; padding: 1px 6px;
   background: rgba(0, 0, 0, .45);
-  box-shadow: inset 0 0 0 1px var(--brass-lo), 0 1px 0 rgba(0, 0, 0, .5);
+  box-shadow: inset 0 0 0 1px var(--gold-lo), 0 1px 0 rgba(0, 0, 0, .5);
 }
 
 #dicewrap code {
   font-family: ui-monospace, monospace; font-size: 13px;
-  background: rgba(0, 0, 0, .42); padding: 1px 6px; border-radius: 4px; color: var(--brass-hi);
+  background: rgba(0, 0, 0, .42); padding: 1px 6px; border-radius: 4px; color: var(--gold-hi);
 }
 
 /* ── connexion / menu ─────────────────────────────────────────────────────── */
@@ -530,10 +431,10 @@
   animation: dc-spin 5.5s linear infinite;
   background:
     repeating-conic-gradient(from 0deg,
-      var(--wood-hi) 0deg 6deg, rgba(0, 0, 0, 0) 6deg 45deg),
+      var(--violet-hi) 0deg 6deg, rgba(0, 0, 0, 0) 6deg 45deg),
     radial-gradient(circle at 50% 50%,
-      var(--brass-md) 0 12%, var(--wood) 12% 17%, rgba(0, 0, 0, 0) 17% 68%,
-      var(--wood-hi) 68% 84%, var(--wood-lo) 84% 90%, rgba(0, 0, 0, 0) 90%);
+      var(--gold-md) 0 12%, var(--violet) 12% 17%, rgba(0, 0, 0, 0) 17% 68%,
+      var(--violet-hi) 68% 84%, var(--violet-dk) 84% 90%, rgba(0, 0, 0, 0) 90%);
   filter: drop-shadow(0 3px 7px rgba(0, 0, 0, .6));
 }
 
@@ -543,10 +444,10 @@
   inset: -9%;
   border-radius: 50%;
   background-image:
-    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
-    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
-    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%),
-    radial-gradient(circle, var(--rope) 0 40%, var(--rope-lo) 55%, rgba(0, 0, 0, 0) 72%);
+    radial-gradient(circle, var(--gold-md) 0 40%, var(--gold-dk) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--gold-md) 0 40%, var(--gold-dk) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--gold-md) 0 40%, var(--gold-dk) 55%, rgba(0, 0, 0, 0) 72%),
+    radial-gradient(circle, var(--gold-md) 0 40%, var(--gold-dk) 55%, rgba(0, 0, 0, 0) 72%);
   background-size: 13px 13px;
   background-position: 50% 0, 50% 100%, 0 50%, 100% 50%;
   background-repeat: no-repeat;
@@ -556,10 +457,10 @@
 
 #dicewrap .dc-connect-bad { max-width: 580px; }
 #dicewrap .dc-connect-icon { width: 74px; height: 74px; object-fit: contain; margin: 0 auto 10px; display: block; }
-#dicewrap .dc-connect h3 { font-family: "Cinzel", Georgia, serif; color: var(--brass-hi); margin: 0 0 10px; font-size: 20px; }
+#dicewrap .dc-connect h3 { font-family: "Luckiest Guy", "Baloo 2", cursive; color: var(--gold-hi); margin: 0 0 10px; font-size: 20px; }
 #dicewrap .dc-connect-why { color: #ff9a90; margin: 0 0 8px; }
 #dicewrap .dc-connect-where,
-#dicewrap .dc-connect-fix { font-size: 14px; color: var(--parch-dim); margin: 0 0 10px; }
+#dicewrap .dc-connect-fix { font-size: 14px; color: var(--txt-dim); margin: 0 0 10px; }
 
 #dicewrap .dc-menu-card {
   max-width: min(560px, 92vw);
@@ -571,8 +472,8 @@
 
 #dicewrap .dc-menu-card h2,
 #dicewrap .dc-menu-card h3 {
-  font-family: "Cinzel", Georgia, serif;
-  color: var(--brass-hi);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi);
   margin: 0 0 14px;
   font-size: clamp(19px, 2.3vw, 26px);
   letter-spacing: .5px;
@@ -580,7 +481,7 @@
 }
 
 #dicewrap .dc-menu-card p {
-  color: var(--parch);
+  color: var(--txt);
   font-size: clamp(14px, 1.4vw, 15.5px);
   margin: 0 0 22px;
   line-height: 1.68;
@@ -597,12 +498,12 @@
   font-size: 12.5px;
   letter-spacing: .6px;
   text-transform: uppercase;
-  color: var(--parch-dim);
+  color: var(--txt-dim);
 }
 
 #dicewrap .dc-menu-stats b {
-  color: var(--brass-hi);
-  font-family: "Cinzel", Georgia, serif;
+  color: var(--gold-hi);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 21px;
   display: block;
   text-transform: none;
@@ -631,6 +532,8 @@
 
 /* ── la carte joueur ──────────────────────────────────────────────────────── */
 
+#dicewrap #dc-pc-foe { --pd-c1: var(--mer); --pd-c2: var(--mer-lo); }
+
 #dicewrap .dc-pc {
   --pd-plank: 30px;
   text-align: center;
@@ -647,7 +550,7 @@
   border-radius: 50%;
   object-fit: cover;
   box-shadow:
-    0 0 0 2px var(--brass-lo),
+    0 0 0 2px var(--gold-lo),
     0 0 0 3px rgba(0, 0, 0, .65),
     inset 0 -6px 12px rgba(0, 0, 0, .5),
     0 3px 8px rgba(0, 0, 0, .6);
@@ -676,7 +579,7 @@
   opacity: 0;
   transition: opacity .25s ease;
   /* `--pd-clock` va de 1 a 0 : la part encore peinte, c'est le temps restant. */
-  background: conic-gradient(var(--brass-hi) calc(var(--pd-clock, 1) * 360deg),
+  background: conic-gradient(var(--gold-hi) calc(var(--pd-clock, 1) * 360deg),
                              rgba(0, 0, 0, .45) 0);
   -webkit-mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
           mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
@@ -708,30 +611,34 @@
 }
 
 #dicewrap .dc-pc-name {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(12.5px, 1.2vw, 15px);
   margin-top: 8px;
-  color: var(--parch);
+  color: var(--txt);
   text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
   overflow-wrap: anywhere;
 }
 
 #dicewrap .dc-pc-name em {
   font-style: normal; font-size: 9.5px; color: #0d2016;
-  background: linear-gradient(180deg, #a8dcbd, var(--verd));
+  background: linear-gradient(180deg, #a8dcbd, var(--vert));
   border-radius: 4px; padding: 1px 5px; vertical-align: middle;
   box-shadow: inset 0 0 0 1px rgba(16, 48, 32, .5);
 }
 
-#dicewrap .dc-pc-elo { font-size: 11.5px; color: var(--parch-dim); margin-top: 2px; }
+#dicewrap .dc-pc-elo { font-size: 11.5px; color: var(--txt-dim); margin-top: 2px; }
 
+/* Le score est LE chiffre du jeu : blanc, cerne, et gros. En or sur violet il
+   se noyait dans le panneau — vu a l'ecran. */
 #dicewrap .dc-pc-total {
-  font-family: "Cinzel", Georgia, serif;
-  font-size: clamp(24px, 3vh, 38px);
-  margin-top: 8px;
-  color: var(--brass-hi);
-  line-height: 1.1;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, .7), 0 0 18px rgba(201, 162, 39, .3);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(28px, 3.6vh, 44px);
+  margin-top: 6px;
+  color: var(--blanc);
+  line-height: 1.05;
+  -webkit-text-stroke: 5px var(--deep-lo);
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, .5);
 }
 
 #dicewrap .dc-pc-lbl {
@@ -739,7 +646,7 @@
   color: #a08f74; margin-top: 3px;
 }
 
-#dicewrap .dc-pc-bet { margin-top: 7px; font-size: 12.5px; color: var(--brass-hi); }
+#dicewrap .dc-pc-bet { margin-top: 7px; font-size: 12.5px; color: var(--gold-hi); }
 #dicewrap .dc-foe-die { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; z-index: 2; }
 
 /* ── les plateaux ─────────────────────────────────────────────────────────── */
@@ -769,7 +676,9 @@
   gap: 6px;
   transition: filter .4s ease, opacity .4s ease;
 }
-#dicewrap .dc-boardwrap.dc-idle { filter: brightness(.62) saturate(.72); opacity: .92; }
+/* ⚠️ Assombrir jusqu'a .62 donnait un plateau qui semble desactive, pas en
+   attente. Il recule, il ne s'eteint pas. */
+#dicewrap .dc-boardwrap.dc-idle { filter: brightness(.82) saturate(.85); opacity: .95; }
 #dicewrap .dc-boardwrap.dc-live { filter: none; opacity: 1; }
 
 #dicewrap .dc-board {
@@ -808,9 +717,15 @@
 #dicewrap .dc-board-top .dc-stack { flex-direction: column-reverse; }
 
 #dicewrap .dc-colscore {
-  font-family: "Cinzel", Georgia, serif;
-  font-weight: 800;
-  font-size: clamp(14px, 1.5vw, 19px);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-weight: 400;
+  color: var(--ink);
+  border: 3px solid var(--blanc);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: 0 4px 0 var(--gold-lo), 0 6px 10px rgba(0, 0, 0, .4);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  font-size: clamp(15px, 1.7vw, 21px);
   min-width: clamp(46px, 5vw, 72px);
   min-height: clamp(24px, 3vh, 34px);
   line-height: clamp(24px, 3vh, 34px);
@@ -819,8 +734,13 @@
   --pd-round: 5px;
 }
 
+/* Une colonne sans point n'a pas de plaque. ⚠️ Il fallait aussi retirer la
+   BORDURE : depuis que la plaque porte un lisere blanc, `background: none` ne
+   suffisait plus et laissait trois batonnets blancs sous chaque plateau — vu a
+   l'ecran. Une regle qui annule un fond doit annuler tout ce qui dessine. */
 #dicewrap .dc-colscore:empty {
   background: none;
+  border: 0;
   box-shadow: none;
   min-height: 8px;
   min-width: 0;
@@ -857,7 +777,7 @@
 #dicewrap .dc-target .dc-cell-filled {
   box-shadow:
     inset 0 4px 9px rgba(0, 0, 0, .7),
-    inset 0 0 0 2px var(--brass),
+    inset 0 0 0 2px var(--gold),
     0 0 12px rgba(232, 200, 106, .55);
 }
 
@@ -871,7 +791,7 @@
 #dicewrap .dc-board:not(.dc-board-top) .dc-col:hover { background: rgba(232, 200, 106, .14); }
 
 #dicewrap .dc-targeting .dc-board:not(.dc-target) { opacity: .55; pointer-events: none; }
-#dicewrap .dc-targeting .dc-target { outline: 2px solid var(--brass); outline-offset: 2px; }
+#dicewrap .dc-targeting .dc-target { outline: 2px solid var(--gold); outline-offset: 2px; }
 #dicewrap .dc-targeting .dc-target .dc-col { cursor: default; }
 #dicewrap .dc-targeting .dc-target .dc-cell-filled { cursor: crosshair; animation: dc-pair 1.2s ease-in-out infinite; }
 
@@ -893,10 +813,10 @@
 }
 
 #dicewrap .dc-turn {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(12px, 1.1vw, 14.5px);
   white-space: nowrap;
-  color: var(--parch);
+  color: var(--txt);
   text-align: right;
   text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
   position: relative;
@@ -949,8 +869,8 @@
 }
 
 #dicewrap .dc-bonus-hd { font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: #a08f74; line-height: 1.25; }
-#dicewrap .dc-bonus-hd span { display: block; color: var(--brass-hi); letter-spacing: 0; text-transform: none; font-size: 12px; }
-#dicewrap .dc-bonus-empty { font-size: 12.5px; color: var(--parch-dim); line-height: 1.35; max-width: 260px; text-align: center; }
+#dicewrap .dc-bonus-hd span { display: block; color: var(--gold-hi); letter-spacing: 0; text-transform: none; font-size: 12px; }
+#dicewrap .dc-bonus-empty { font-size: 12.5px; color: var(--txt-dim); line-height: 1.35; max-width: 260px; text-align: center; }
 
 #dicewrap .dc-bonus-btn {
   position: relative;
@@ -961,17 +881,17 @@
   border: 0;
   cursor: pointer;
   --pd-round: 10px;
-  background: radial-gradient(104% 104% at 50% 26%, var(--felt-hi) 0%, var(--felt) 46%, #081a0e 100%);
+  background: radial-gradient(104% 104% at 50% 26%, var(--deep-hi) 0%, var(--deep) 46%, #081a0e 100%);
   box-shadow:
     inset 0 3px 7px rgba(0, 0, 0, .75),
-    inset 0 0 0 2px var(--brass-lo),
+    inset 0 0 0 2px var(--gold-lo),
     0 2px 5px rgba(0, 0, 0, .5);
   border-radius: 10px;
   transition: filter .12s, transform .12s, box-shadow .12s;
 }
 
 #dicewrap .dc-bonus-btn img { width: 100%; height: 100%; object-fit: contain; }
-#dicewrap .dc-bonus-btn:hover:not(:disabled) { filter: brightness(1.14); transform: translateY(-2px); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass), 0 4px 9px rgba(0, 0, 0, .5); }
+#dicewrap .dc-bonus-btn:hover:not(:disabled) { filter: brightness(1.14); transform: translateY(-2px); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold), 0 4px 9px rgba(0, 0, 0, .5); }
 #dicewrap .dc-bonus-btn:disabled { filter: saturate(.3) brightness(.62); cursor: not-allowed; }
 
 #dicewrap .dc-bonus-qty {
@@ -980,7 +900,7 @@
   font-size: 11.5px; font-weight: 800;
   color: var(--ink);
   border-radius: 999px; padding: 0 4px;
-  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md));
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-md));
   box-shadow: inset 0 0 0 1px rgba(70, 42, 8, .7), 0 1px 3px rgba(0, 0, 0, .6);
 }
 
@@ -1021,47 +941,47 @@
 
 #dicewrap .dc-bet-card h3,
 #dicewrap .dc-over-card h2 {
-  font-family: "Cinzel", Georgia, serif;
-  color: var(--brass-hi);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi);
   margin: 0 0 12px;
   font-size: clamp(20px, 2.3vw, 26px);
   letter-spacing: .5px;
   text-shadow: 0 2px 0 rgba(0, 0, 0, .75);
 }
 
-#dicewrap .dc-bet-card p { font-size: 14px; color: var(--parch); margin: 0 0 18px; line-height: 1.6; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+#dicewrap .dc-bet-card p { font-size: 14px; color: var(--txt); margin: 0 0 18px; line-height: 1.6; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
 #dicewrap .dc-bet-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; }
 
 #dicewrap .dc-bet-row input {
   width: 150px;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 22px;
   text-align: center;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   background: rgba(0, 0, 0, .5);
   border: 0;
   border-radius: 8px;
   padding: 9px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass-lo);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold-lo);
 }
 
-#dicewrap .dc-bet-row input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass); }
-#dicewrap .dc-bet-max { font-size: 13.5px; color: var(--parch-dim); }
-#dicewrap .dc-bet-wait { margin-top: 14px; font-size: 13.5px; color: var(--parch-dim); min-height: 18px; }
+#dicewrap .dc-bet-row input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold); }
+#dicewrap .dc-bet-max { font-size: 13.5px; color: var(--txt-dim); }
+#dicewrap .dc-bet-wait { margin-top: 14px; font-size: 13.5px; color: var(--txt-dim); min-height: 18px; }
 
 #dicewrap .dc-over-score {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(34px, 5vw, 50px);
-  color: var(--parch);
+  color: var(--txt);
   margin: 6px 0 12px;
   text-shadow: 0 2px 0 rgba(0, 0, 0, .7);
 }
 
 #dicewrap .dc-over-score span { color: #8d7f66; font-size: .55em; }
-#dicewrap .dc-over-line { font-size: 15px; color: var(--parch); margin: 5px 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+#dicewrap .dc-over-line { font-size: 15px; color: var(--txt); margin: 5px 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
 #dicewrap .dc-over-btns { display: flex; gap: 14px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
 #dicewrap .dc-over-win { box-shadow: inset 0 1px 0 rgba(255, 222, 170, .16), inset 0 0 30px rgba(0, 0, 0, .45), 0 0 60px rgba(201, 162, 39, .3), 0 12px 34px rgba(0, 0, 0, .6); }
-#dicewrap .dc-over-win h2 { color: var(--brass-hi); }
+#dicewrap .dc-over-win h2 { color: var(--gold-hi); }
 #dicewrap .dc-over-loss h2 { color: #ff9a90; }
 
 /* ============================================================================
@@ -1094,7 +1014,7 @@
   top: 0; bottom: 0; left: 0;
   width: 4px;
   padding: 0;
-  background: linear-gradient(180deg, var(--brass-lo), var(--brass-hi) 24%, var(--brass-lo) 52%, var(--brass-hi) 80%, var(--brass-lo));
+  background: linear-gradient(180deg, var(--gold-lo), var(--gold-hi) 24%, var(--gold-lo) 52%, var(--gold-hi) 80%, var(--gold-lo));
   -webkit-mask: none;
           mask: none;
   z-index: 2;
@@ -1104,23 +1024,23 @@
 #dicewrap .dc-panel.on { transform: none; }
 
 #dicewrap .dc-panel h3 {
-  font-family: "Cinzel", Georgia, serif;
-  color: var(--brass-hi);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi);
   font-size: 20px;
   margin: 0 0 16px;
   padding-bottom: 10px;
   letter-spacing: .5px;
   text-shadow: 0 1px 0 rgba(0, 0, 0, .8);
   border-bottom: 2px solid transparent;
-  border-image: linear-gradient(90deg, var(--brass-lo), var(--brass), rgba(0, 0, 0, 0)) 1;
+  border-image: linear-gradient(90deg, var(--gold-lo), var(--gold), rgba(0, 0, 0, 0)) 1;
 }
 
-#dicewrap .dc-loading { color: var(--parch-dim); font-size: 14px; }
+#dicewrap .dc-loading { color: var(--txt-dim); font-size: 14px; }
 
-#dicewrap .dc-rules { margin: 0; padding-left: 22px; color: var(--parch); font-size: 14.5px; line-height: 1.75; }
+#dicewrap .dc-rules { margin: 0; padding-left: 22px; color: var(--txt); font-size: 14.5px; line-height: 1.75; }
 #dicewrap .dc-rules li { margin-bottom: 9px; }
-#dicewrap .dc-rules li::marker { color: var(--brass); font-family: "Cinzel", Georgia, serif; }
-#dicewrap .dc-rules b { color: var(--brass-hi); }
+#dicewrap .dc-rules li::marker { color: var(--gold); font-family: "Luckiest Guy", "Baloo 2", cursive; }
+#dicewrap .dc-rules b { color: var(--gold-hi); }
 
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
 
@@ -1133,28 +1053,28 @@
   background:
     repeating-linear-gradient(1.2deg,
       rgba(0, 0, 0, .12) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 10px),
-    linear-gradient(180deg, var(--wood), var(--wood-lo));
+    linear-gradient(180deg, var(--violet), var(--violet-dk));
   box-shadow:
     inset 0 1px 0 rgba(255, 226, 170, .12),
-    inset 0 0 0 1px var(--brass-lo),
+    inset 0 0 0 1px var(--gold-lo),
     0 3px 8px rgba(0, 0, 0, .45);
 }
 
 #dicewrap .dc-shop-item > img { width: 56px; height: 56px; object-fit: contain; flex: none;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); }
 #dicewrap .dc-shop-txt { flex: 1; display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
-#dicewrap .dc-shop-txt b { font-size: 14.5px; color: var(--parch); }
-#dicewrap .dc-shop-txt span { font-size: 13px; color: var(--parch-dim); }
-#dicewrap .dc-shop-txt em { font-style: normal; font-size: 12.5px; color: var(--brass-hi); margin-top: 4px; }
+#dicewrap .dc-shop-txt b { font-size: 14.5px; color: var(--txt); }
+#dicewrap .dc-shop-txt span { font-size: 13px; color: var(--txt-dim); }
+#dicewrap .dc-shop-txt em { font-style: normal; font-size: 12.5px; color: var(--gold-hi); margin-top: 4px; }
 
 #dicewrap .dc-ladder { width: 100%; border-collapse: collapse; font-size: 14px; }
 #dicewrap .dc-ladder th {
-  text-align: left; font-family: "Cinzel", Georgia, serif; font-size: 11.5px;
+  text-align: left; font-family: "Luckiest Guy", "Baloo 2", cursive; font-size: 11.5px;
   text-transform: uppercase; letter-spacing: .8px; color: #a08f74;
-  border-bottom: 1px solid var(--brass-lo); padding: 6px;
+  border-bottom: 1px solid var(--gold-lo); padding: 6px;
 }
-#dicewrap .dc-ladder td { padding: 8px 6px; border-bottom: 1px solid rgba(201, 162, 39, .14); color: var(--parch); }
-#dicewrap .dc-ladder td b { color: var(--brass-hi); }
+#dicewrap .dc-ladder td { padding: 8px 6px; border-bottom: 1px solid rgba(201, 162, 39, .14); color: var(--txt); }
+#dicewrap .dc-ladder td b { color: var(--gold-hi); }
 #dicewrap .dc-ladder-me td { background: rgba(201, 162, 39, .14); }
 
 /* ============================================================================
@@ -1238,7 +1158,7 @@
 
 #dicewrap .dc-pc-active {
   animation: dc-breathe 2.4s ease-in-out infinite;
-  box-shadow: 0 0 0 2px var(--brass) inset;
+  box-shadow: 0 0 0 2px var(--gold) inset;
 }
 @keyframes dc-breathe {
   0%, 100% { filter: drop-shadow(0 0 10px rgba(201, 162, 39, .3)); }
@@ -1350,12 +1270,12 @@
   padding: 0 14px;
   border: 0;
   border-radius: 999px;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 14px;
-  color: var(--parch);
+  color: var(--txt);
   cursor: pointer;
-  background: linear-gradient(180deg, var(--wood-hi), var(--wood-md) 58%, var(--wood-lo));
-  box-shadow: inset 0 0 0 2px var(--brass-lo), inset 0 1px 0 rgba(255, 226, 170, .18),
+  background: linear-gradient(180deg, var(--violet-hi), var(--violet-md) 58%, var(--violet-dk));
+  box-shadow: inset 0 0 0 2px var(--gold-lo), inset 0 1px 0 rgba(255, 226, 170, .18),
               0 2px 5px rgba(0, 0, 0, .45);
   transition: filter .12s, transform .09s;
 }
@@ -1366,7 +1286,7 @@
 #dicewrap .dc-chip.on {
   color: var(--ink);
   text-shadow: 0 1px 0 rgba(255, 246, 210, .6);
-  background: linear-gradient(180deg, var(--brass-hi), var(--brass-md) 55%, var(--brass-lo));
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-md) 55%, var(--gold-lo));
   box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6),
               0 2px 6px rgba(0, 0, 0, .5);
 }
@@ -1400,25 +1320,33 @@
 }
 
 #dicewrap .dc-caps-head {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(11px, 1.3vw, 13px);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--parch-dim);
+  color: var(--gold-hi);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .4);
   margin: 0 0 12px;
   font-weight: 600;
 }
 
+/* ⚠️ LES CINQ CAPITAINES TIENNENT SUR UNE LIGNE, TOUJOURS. En autorisant le
+   retour a la ligne, le cinquieme se retrouvait seul en dessous : on lisait
+   quatre choix et un orphelin, alors qu'il faut lire un ETALAGE. Ils se serrent
+   donc — la largeur est partagee, pas debordee. */
 #dicewrap .dc-caps-row {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: clamp(6px, 1.4vw, 14px);
+  flex-wrap: nowrap;
+  gap: clamp(4px, 1.2vw, 12px);
 }
 
 #dicewrap .dc-cap {
-  width: clamp(52px, 8.4vw, 76px);
-  height: clamp(52px, 8.4vw, 76px);
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 84px;
+  aspect-ratio: 1;
+  height: auto;
   padding: 0;
   border: 0;
   background: none;
@@ -1462,14 +1390,14 @@
 #dicewrap .dc-cap-txt { min-width: 0; }
 #dicewrap .dc-cap-txt b {
   display: block;
-  font-family: "Cinzel", Georgia, serif;
-  color: var(--brass-hi);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi);
   font-size: clamp(13px, 1.5vw, 15px);
   letter-spacing: .4px;
 }
 #dicewrap .dc-cap-txt span {
   display: block;
-  color: var(--parch-dim);
+  color: #EDE6FF;
   font-size: clamp(12px, 1.4vw, 13.5px);
   line-height: 1.45;
 }
@@ -1507,11 +1435,11 @@
 }
 #dicewrap .dc-foresee img { width: 22px; height: 22px; display: block; }
 #dicewrap .dc-foresee-lbl {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: 9.5px;
   letter-spacing: .8px;
   text-transform: uppercase;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
 }
 
 /* ── la banniere de coup ─────────────────────────────────────────────────── */
@@ -1523,11 +1451,11 @@
   z-index: 8;
   text-align: center;
   pointer-events: none;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(20px, 3.6vw, 34px);
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 22px rgba(232, 200, 106, .55);
   animation: dc-shout 1.5s cubic-bezier(.2, .9, .25, 1) forwards;
 }
@@ -1552,17 +1480,17 @@
 /* ── le salon prive ──────────────────────────────────────────────────────── */
 
 #dicewrap .dc-room-code {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(30px, 7vw, 52px);
   font-weight: 700;
   letter-spacing: clamp(6px, 1.8vw, 14px);
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   text-shadow: 0 2px 0 rgba(0, 0, 0, .8), 0 0 24px rgba(232, 200, 106, .35);
   margin: 14px auto 16px;
   padding: 12px 10px 12px calc(clamp(6px, 1.8vw, 14px) + 10px);
   border-radius: 12px;
   background: rgba(0, 0, 0, .42);
-  box-shadow: inset 0 0 0 2px var(--brass-lo);
+  box-shadow: inset 0 0 0 2px var(--gold-lo);
   cursor: copy;
   user-select: all;
 }
@@ -1573,22 +1501,22 @@
   min-width: 0;
   max-width: 240px;
   box-sizing: border-box;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(18px, 3.4vw, 24px);
   letter-spacing: clamp(3px, 1vw, 7px);
   text-align: center;
   text-transform: uppercase;
-  color: var(--brass-hi);
+  color: var(--gold-hi);
   background: rgba(0, 0, 0, .5);
   border: 0;
   border-radius: 9px;
   padding: 10px 8px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass-lo);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold-lo);
 }
-#dicewrap .dc-room-input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--brass); }
+#dicewrap .dc-room-input:focus { outline: 0; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold); }
 #dicewrap .dc-room-or {
   margin: 10px 0;
-  color: var(--parch-dim);
+  color: var(--txt-dim);
   font-size: 12.5px;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -1596,7 +1524,7 @@
 
 /* Le bonus offert par le trait : on doit voir qu'il ne coute rien. */
 #dicewrap .dc-bonus-free .dc-bonus-qty {
-  background: var(--verd);
+  background: var(--vert);
   color: #06120b;
   font-size: 8.5px;
   letter-spacing: .4px;

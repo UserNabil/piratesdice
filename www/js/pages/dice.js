@@ -22,7 +22,7 @@ import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js'
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking } from './dice_panels.js';
-import { renderMenu, onRoom, onRoomFail, resetLobby } from './dice_lobby.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby, captainArt } from './dice_lobby.js';
 
 function shellMarkup() {
   return `
@@ -36,16 +36,14 @@ function shellMarkup() {
         <button class="dc-tab" data-panel="rules"><img src="${ASSETS}img/icon_rules.png" alt=""> ${esc(t('tab.rules'))}</button>
       </nav>
       <div class="dc-acts">
-        <button class="dc-icon" id="dc-mute" title="${esc(t('hdr.mute'))}"><img src="${ASSETS}img/icon_sound.png" alt=""></button>
+        <button class="dc-icon" id="dc-mute" title="${esc(t('hdr.mute'))}"><img src="${ASSETS}img/icon_bell.png" alt=""></button>
         <button class="dc-icon" id="dc-full" title="${esc(t('hdr.full'))}"><img src="${ASSETS}img/icon_expand.png" alt=""></button>
         <button class="dc-icon dc-icon-close" id="dc-close" title="${esc(t('hdr.close'))}"><img src="${ASSETS}img/icon_close.png" alt=""></button>
       </div>
     </header>
     <div class="dc-body">
-      <video class="dc-bgvideo" id="dc-bgvideo" poster="${ASSETS}img/bg.jpg"
-             muted loop playsinline preload="auto" tabindex="-1" aria-hidden="true">
-        <source src="${ASSETS}img/bg.mp4" type="video/mp4">
-      </video>
+      <!-- ⛔ Plus de video de fond : le decor est du CSS. Elle decodait 536 Ko en
+           boucle pour une taverne qui n'existe plus. -->
       <section class="dc-screen" id="dc-screen-connect"></section>
       <section class="dc-screen" id="dc-screen-menu"></section>
       <section class="dc-screen" id="dc-screen-game"></section>
@@ -85,23 +83,6 @@ function build() {
   S.built = true;
 }
 
-/**
- * Le fond anime ne tourne QUE pendant qu'on joue. Sans ca, un tool laisse ouvert
- * decode une video en boucle toute la journee pour un ecran que personne ne
- * regarde. `prefers-reduced-motion` le laisse sur son image fixe (le poster).
- */
-function playBackdrop(on) {
-  const video = $('#dc-bgvideo');
-  if (!video) return;
-  const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (on && !still) {
-    const p = video.play();
-    if (p && p.catch) p.catch(() => { /* lecture refusee : le poster fait le fond */ });
-  } else {
-    try { video.pause(); } catch (_) { /* deja arrete */ }
-  }
-}
-
 /* ────────────────────────────────────────────────────────── open / close ── */
 
 export async function openDice() {
@@ -113,7 +94,6 @@ export async function openDice() {
   wrap.classList.add('open');
   wrap.setAttribute('aria-hidden', 'false');
   S.open = true;
-  playBackdrop(true);
   if (S.net && S.net.ready) { showMenu(); return; }
   await connect();
 }
@@ -191,7 +171,6 @@ function closeDice() {
   wrap.classList.remove('open');
   wrap.setAttribute('aria-hidden', 'true');
   S.open = false;
-  playBackdrop(false);
   S.panel = null;
   S.state = null;
   S.seat = -1;
@@ -253,7 +232,7 @@ function syncFull() {
 function renderWallet() {
   if (!S.me) return;
   $('#dc-wallet').innerHTML = `
-    <img class="dc-avatar" src="${ASSETS}img/avatar.png" alt="">
+    <img class="dc-avatar" src="${captainArt(S.me.captain)}" alt="">
     <div class="dc-wallet-txt">
       <b>${esc(S.me.name)}</b>
       <span>${esc(t('hdr.record', { rating: S.me.rating, wins: S.me.wins, losses: S.me.losses, draws: S.me.draws }))}</span>

@@ -57,8 +57,13 @@ export function buildBoard(seat, mirrored) {
   const scores = document.createElement('div');
   scores.className = 'dc-scores';
 
+  /* Le camp d'en face est BLEU, le mien VIOLET. Les deux plateaux etaient du
+     meme violet et ne se distinguaient que par la luminosite : sur la capture,
+     on cherchait lequel etait le sien. Une couleur repond a la question avant
+     qu'on se la pose. */
   const board = document.createElement('div');
-  board.className = 'dc-board pd-panel pd-panel--felt' + (mirrored ? ' dc-board-top' : '');
+  board.className = 'dc-board pd-panel pd-panel--felt'
+    + (mirrored ? ' dc-board-top pd-panel--mer' : '');
   board.dataset.seat = String(seat);
 
   for (let col = 0; col < COLUMNS; col++) {
@@ -215,7 +220,11 @@ export function freeCellOf(grid, col) {
 }
 
 const BLAST_STEP = 210;
-const BLAST_LIFE = 1250;                // duree de fx_burst (35 images fournies)
+const BLAST_LIFE = 1750;                // duree reelle de fx_burst : 103 images, 1717 ms
+/* ⚠️ Une planche livree change de duree sans prevenir. L'ancienne faisait 35
+   images et 1250 ms ; celle du 2026-08-21 en fait 103 pour 1717 ms. Garder
+   l'ancienne valeur coupait l'explosion en plein milieu — mesure a la lecture
+   des metadonnees de l'APNG, pas au jugé. */
 const BLAST_SETTLE = 520;               // le plateau se tasse PENDANT l'explosion
 
 /**
