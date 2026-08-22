@@ -11,9 +11,9 @@ export const FR = {
   'cap.teach.name': 'Barbe-Noire',
   'cap.teach.trait': 'Sa première pose emporte aussi les dés adverses de la valeur juste au-dessus — un 6 emporte les 1.',
   'cap.ching.name': 'Ching Shih',
-  'cap.ching.trait': 'Voit le prochain dé de son adversaire.',
+  'cap.ching.trait': 'Un regard par partie sur le dé que son adversaire va lancer.',
   'cap.omalley.name': 'Grace O’Malley',
-  'cap.omalley.trait': 'Ses colonnes de trois dés identiques valent 15 % de plus.',
+  'cap.omalley.trait': 'Une colonne bénie par partie : elle rapporte 15 % de plus.',
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Commence la partie avec un dé déjà posé.',
   'cap.trait.reroll': 'Relance gratuite',
@@ -22,8 +22,37 @@ export const FR = {
 
   'fx.broadside': 'Bordée ! {n} dés',
   'fx.foeTrait': '{name} : {trait}',
-  'fx.aiBonus': '{name} a joué {bonus}',
   'fx.next': 'prochain',
+  'fx.bonusYou': 'Vous jouez',
+  'shop.B004.name': 'Longue-vue',
+  'shop.B004.desc': 'Voir le dé que l’adversaire s’apprête à lancer.',
+  'shop.B005.name': 'Colonne bénie',
+  'shop.B005.desc': 'Une de vos colonnes rapporte 15 % de plus jusqu’à la fin.',
+  'fx.boost': 'Colonne bénie : +15 % jusqu’à la fin',
+  'resume.done': 'Partie reprise — on vous attendait.',
+  'game.paused': 'En attente de l’autre joueur…',
+
+  'mood.hint': 'Reste appuyé sur ton portrait pour parler',
+
+  'taunt.broadside.0': 'Par-dessus bord, matelot !',
+  'taunt.broadside.1': "Deux d'un coup. J'arrête ?",
+  'taunt.broadside.2': 'Voilà comment on fait.',
+  'taunt.broadside.3': 'Ton pont se vide.',
+
+  'taunt.sting.0': 'Un de moins pour toi.',
+  'taunt.sting.1': 'Oups.',
+  'taunt.sting.2': 'Il me fallait la place.',
+  'taunt.sting.3': 'Rien de personnel.',
+
+  'taunt.blast.0': 'Feu !',
+  'taunt.blast.1': 'Un cadeau, de ma cale.',
+  'taunt.blast.2': "Tu étais trop à l'aise.",
+  'taunt.blast.3': 'Pièces bien dépensées.',
+
+  'taunt.lead.0': 'Repassé devant.',
+  'taunt.lead.1': "C'était ton meilleur ?",
+  'taunt.lead.2': 'La marée tourne.',
+  'taunt.lead.3': 'Suis le rythme, capitaine.',
   'bonus.free': 'offert',
 
   'room.title': 'Jouer avec un ami',
@@ -55,6 +84,7 @@ export const FR = {
   'connect.boarding': 'On monte à bord…',
   'connect.outOfReach': 'Le serveur du jeu est injoignable',
   'connect.tried': 'Essayé {url}',
+  'connect.retryingIn': 'Nouvelle tentative dans {n} s…',
   'connect.retry': 'Réessayer',
 
   'menu.title': 'Jouez la bourse du capitaine',
@@ -147,15 +177,10 @@ export const FR = {
   'away.taken': '{name} s’est absenté — l’IA du bord a joué ce tour',
   'away.you': 'Vous étiez absent : l’IA a joué pour vous',
 
-  'motion.on': 'Mouvements activés : secouez pour lancer, penchez pour poser',
-  'motion.off': 'Mouvements désactivés',
-
   'set.title': 'Réglages',
   'set.sound': 'Son',
   'set.soundOn': 'Activé',
   'set.soundOff': 'Coupé',
-  'set.motion': 'Jouer aux mouvements',
-  'set.motionHelp': 'Secouer pour lancer · pencher à gauche, à droite ou vers l’avant pour poser',
   'set.account': 'Compte',
   'set.signedInAs': 'Connecté en tant que {name}',
   'set.signIn': 'Se connecter avec Google',
@@ -168,4 +193,19 @@ export const FR = {
   'set.terms': 'Conditions d’utilisation et confidentialité',
   'set.close': 'Fermer',
   'set.guest': 'Invité (ce téléphone)',
+
+  /* Ces sept-la manquaient : la fiche du serveur injoignable et les
+     infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
+     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+  'hdr.close': 'Fermer (Échap)',
+  'hdr.full': 'Plein écran',
+  'hdr.exitFull': 'Quitter le plein écran',
+  'connect.viaSsh': ' (par le tunnel SSH du tool)',
+  'connect.noSsh': ' — et le tunnel SSH n’a pas pu s’ouvrir non plus',
+  'connect.fixTool': 'Relancez-le avec {cmd} ({logs} lit son journal).',
+  'connect.fixSsh': 'Hors du réseau du bureau, le jeu emprunte le tunnel SSH du tool : vérifiez que la machine répond.',
+  'skin.appearance': 'Apparence seulement — aucun effet sur le jeu',
+  'skin.owned': 'En cale',
+  'skin.wear': 'Jouer avec',
+  'skin.remove': 'Revenir aux dés d’origine',
 };

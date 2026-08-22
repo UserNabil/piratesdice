@@ -15,9 +15,60 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
-import { S } from './dice_state.js';
+import { S, ASSETS, bonusArt, skinOf } from './dice_state.js';
 
-const BANNIERE_MS = 1500;
+/**
+ * Combien de temps laisser un message a l'ecran ?
+ *
+ * ⚠️ UNE DUREE FIXE EST FORCEMENT FAUSSE POUR QUELQU'UN. « Feu ! » et
+ * « Tu etais trop a l'aise » ne se lisent pas dans le meme temps, et une valeur
+ * unique est soit trop longue pour l'un, soit trop courte pour l'autre — le
+ * retour de l'admin portait sur le second cas.
+ *
+ * On compte donc les caracteres. Le socle couvre le temps de REMARQUER le
+ * message : c'est l'essentiel du cout quand on regardait ailleurs. Puis 55 ms
+ * par caractere, ce qui correspond a une lecture tranquille de dix-huit signes
+ * par seconde — plus lent qu'une lecture attentive, parce qu'on lit d'un oeil.
+ * Les bornes evitent les deux extremes : un mot seul reste visible, un pave ne
+ * squatte pas l'ecran.
+ */
+const LIRE_SOCLE = 1900;
+const LIRE_PAR_SIGNE = 55;
+const LIRE_MIN = 2400;
+const LIRE_MAX = 7000;
+
+function tempsDeLecture(texte) {
+  const n = (texte || '').length;
+  return Math.max(LIRE_MIN, Math.min(LIRE_MAX, LIRE_SOCLE + n * LIRE_PAR_SIGNE));
+}
+
+/**
+ * Poser un message : il part de lui-meme, ou des qu'on le touche.
+ *
+ * ⚠️ « ATTENDRE QUE CA PARTE » EST UNE ATTENTE IMPOSEE. Un joueur qui a lu veut
+ * revoir son plateau tout de suite ; sans moyen de chasser le message, la seule
+ * option est de patienter devant une phrase deja comprise. Un appui suffit —
+ * et comme ces panneaux etaient jusqu'ici transparents aux clics
+ * (`pointer-events: none`), il faut le leur rendre explicitement.
+ */
+function poser(el, texte) {
+  el.style.pointerEvents = 'auto';
+  el.style.cursor = 'pointer';
+  let fini = false;
+  const chasser = () => {
+    if (fini) return;
+    fini = true;
+    clearTimeout(minuterie);
+    el.classList.add('dc-msg-part');
+    /* On laisse le fondu se jouer : retirer le noeud sous le doigt donne
+       l'impression d'un raté plutot que d'un geste. */
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 160);
+  };
+  el.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); chasser(); });
+  const minuterie = setTimeout(chasser, tempsDeLecture(texte));
+  return chasser;
+}
+
 let derniere = 0;
 
 /* Une banniere ne se rejoue pas sur elle-meme : deux coups rapproches se
@@ -33,7 +84,7 @@ function banner(texte, ton) {
   el.className = 'dc-shout' + (ton ? ' dc-shout-' + ton : '');
   el.textContent = texte;
   arene.appendChild(el);
-  setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, BANNIERE_MS);
+  poser(el, texte);
 }
 
 /** La table tremble : une bordee, ca se sent avant de se lire. */
@@ -58,12 +109,68 @@ function nomDuSiege(seat) {
   return (p && p.name) || t('game.opponent');
 }
 
+/* ─────────────────────────────────────────────── la table se parle ─────── */
+
+/**
+ * LES CINQ HUMEURS. Le serveur ne connait que leurs NUMEROS : changer un glyphe
+ * ici ne perime aucune version de serveur, et aucun texte libre ne circule entre
+ * les joueurs — il n'y a donc rien a moderer.
+ *
+ * Cinq etats qui couvrent ce qu'on ressent a cette table : on se moque, on rage,
+ * on encaisse, on salue, on doute. Six en ferait un clavier ; quatre laisserait
+ * un trou.
+ */
+export const MOODS = ['😂', '😡', '😱', '👏', '🤔'];
+
+/**
+ * Une bulle au-dessus d'un portrait.
+ *
+ * ⚠️ UNE SEULE BULLE PAR SIEGE A LA FOIS. Sans ce remplacement, deux repliques
+ * rapprochees se superposent et deviennent illisibles — et un joueur qui martele
+ * son portrait pourrait couvrir le plateau. La bulle du siege du haut descend,
+ * celle du bas monte : chacune s'ouvre vers le plateau, jamais vers le bord.
+ */
+function bubble(seat, contenu, classe) {
+  const carte = $(seat === S.seat ? '#dc-pc-me' : '#dc-pc-foe');
+  if (!carte) return;
+  const ancienne = carte.querySelector('.dc-bulle');
+  if (ancienne) ancienne.remove();
+
+  const el = document.createElement('div');
+  el.className = 'dc-bulle ' + (seat === S.seat ? 'dc-bulle-me' : 'dc-bulle-foe')
+               + (classe ? ' ' + classe : '');
+  el.textContent = contenu;
+  carte.appendChild(el);
+  /* Une humeur se saisit d'un coup d'oeil : on lui compte deux signes, pas les
+     deux octets de son glyphe. Une replique, elle, se lit vraiment. */
+  poser(el, classe === 'dc-bulle-mood' ? '..' : contenu);
+}
+
+/** Envoyer son humeur. Le serveur decide si elle passe — ici on ne fait qu'oser. */
+export function sendMood(index) {
+  if (S.net) S.net.send({ t: 'mood', mood: index });
+}
+
 /**
  * Passe la liste d'effets en revue et dit ce qu'il faut dire.
  * Appele APRES le dessin, pour qu'un mot n'arrive jamais avant son image.
  */
 export function announce(fx) {
   for (const f of fx) {
+    if (f.kind === 'mood') {
+      bubble(f.seat, MOODS[f.mood] || MOODS[0], 'dc-bulle-mood');
+      continue;
+    }
+
+    if (f.kind === 'taunt') {
+      /* La replique est choisie par le SERVEUR : les deux joueurs voient la
+         meme, chacun dans sa langue. Un tirage cote client donnerait deux
+         phrases differentes pour un seul evenement. */
+      const dit = t('taunt.' + f.key + '.' + f.line);
+      if (dit && !dit.startsWith('taunt.')) bubble(f.seat, dit);
+      continue;
+    }
+
     if (f.kind === 'broadside') {
       banner(t('fx.broadside', { n: f.count }), f.seat === S.seat ? 'good' : 'bad');
       shake();
@@ -79,13 +186,67 @@ export function announce(fx) {
       continue;
     }
 
-    if (f.kind === 'aibonus') {
-      toast(t('fx.aiBonus', { name: nomDuSiege(f.seat), bonus: t('shop.' + f.identify + '.name') }), 'warn');
+    if (f.kind === 'bonus') {
+      annonceBonus(f);
+      continue;
+    }
+
+    if (f.kind === 'boost') {
+      /* Le camp qui benit doit voir OU. Les deux ecrans l'apprennent : c'est une
+         information publique, elle change le calcul de l'adversaire aussi. */
+      banner(t('fx.boost'), f.seat === S.seat ? 'good' : 'bad');
+      continue;
+    }
+
+    if (f.kind === 'peek') {
+      /* Seul celui qui regarde a besoin de le savoir : prevenir l'adversaire
+         qu'on vient de lire son prochain de lui donnerait l'information en
+         retour, et le trait se retournerait contre son porteur. */
+      if (f.seat === S.seat) toast(t('fx.next'), 'ok');
       continue;
     }
 
     if (f.kind === 'place' && f.seat === S.seat) buzz(18);
   }
+}
+
+/**
+ * « ON NE SAIT PAS CE QUI S'EST PASSE. »
+ *
+ * Un effet joue ne se voyait que par ses consequences : un de qui disparait, un
+ * de qui change de valeur. L'IA avait bien une petite notification, mais elle
+ * partait avec la destruction — donc trop vite pour etre lue — et un adversaire
+ * HUMAIN, lui, jouait son canon en silence complet.
+ *
+ * L'annonce est desormais un panneau plein cadre : l'image de l'effet, qui l'a
+ * joue, et ce qu'il fait. Elle tient 2,6 s, soit deux fois la duree de
+ * l'explosion qu'elle explique, et elle est cerclee de rouge quand elle vise le
+ * joueur — la couleur dit « ca te concerne » avant meme qu'on ait lu.
+ */
+
+function annonceBonus(f) {
+  const arene = document.querySelector('#dc-screen-game .dc-arena');
+  if (!arene) return;
+  const ancienne = arene.querySelector('.dc-cast');
+  if (ancienne) ancienne.remove();
+
+  const mien = f.seat === S.seat;
+  const contreMoi = !mien && f.target === S.seat;
+  const nom = t('shop.' + f.identify + '.name');
+  const quoi = nom.startsWith('shop.') ? f.identify : nom;
+  const qui = mien ? t('fx.bonusYou') : nomDuSiege(f.seat);
+
+  const el = document.createElement('div');
+  el.className = 'dc-cast' + (mien ? ' dc-cast-me' : contreMoi ? ' dc-cast-vs' : '');
+  el.innerHTML = '<img class="dc-cast-art" src="' + bonusArt(f.identify) + '" alt="">'
+    + '<div class="dc-cast-txt"><b>' + esc(qui) + '</b><span>' + esc(quoi) + '</span></div>';
+  barre.appendChild(el);
+
+  /* Une secousse et une vibration seulement quand on ENCAISSE : signaler de la
+     meme facon ce qu'on inflige et ce qu'on subit revient a ne rien signaler. */
+  if (contreMoi) { shake(); buzz([0, 30, 50, 80]); }
+
+  poser(el, qui + ' ' + quoi);
 }
 
 /*
@@ -134,22 +295,30 @@ export function startClock(st) {
 /* ─────────────────────────────────── ce que Ching Shih voit avant les autres ── */
 
 /**
- * Le prochain de de l'adversaire, montre a cote de sa carte.
+ * Le prochain de de l'adversaire, quand on a paye pour le voir.
  *
- * ⚠️ C'est le SERVEUR qui decide de l'envoyer : `state.foresee` vaut null pour
- * qui n'a pas le trait. Le client ne fait que l'afficher — s'il calculait ce
- * droit lui-meme, il suffirait de le modifier pour tricher.
+ * ⚠️ LE BOUTON A DISPARU D'ICI. Il vivait seul dans le coin du bandeau adverse,
+ * avec son propre dessin et son propre compteur : une commande a apprendre, a
+ * cote d'un ratelier ou vivaient deja toutes les autres. La longue-vue est
+ * l'effet B004 — meme place, meme dessin, meme geste. Il ne reste ici que
+ * l'AFFICHAGE de ce qu'elle revele.
+ *
+ * ⚠️ C'est le SERVEUR qui envoie la valeur, et seulement quand la longue-vue
+ * est ouverte : si le client decidait de ce droit, il suffirait de le modifier
+ * pour voir tout le temps.
  */
 export function renderForesee(st, dieFace) {
   const carte = $('#dc-pc-foe');
   if (!carte) return;
   const ancien = carte.querySelector('.dc-foresee');
   if (ancien) ancien.remove();
-  if (st.foresee === null || st.foresee === undefined || st.phase !== 'playing') return;
+  if (st.phase !== 'playing') return;
+  if (st.foresee === null || st.foresee === undefined) return;
 
   const el = document.createElement('div');
-  el.className = 'dc-foresee';
+  el.className = 'dc-foresee dc-foresee-on';
   el.title = t('cap.ching.trait');
-  el.innerHTML = '<span class="dc-foresee-lbl">' + esc(t('fx.next')) + '</span>' + dieFace(st.foresee);
+  el.innerHTML = '<span class="dc-foresee-lbl">' + esc(t('fx.next')) + '</span>'
+    + dieFace(st.foresee, false, skinOf(1 - S.seat));
   carte.appendChild(el);
 }

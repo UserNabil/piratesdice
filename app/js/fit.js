@@ -19,7 +19,16 @@ const GAP = 6;          // entre deux cases
 const FRAME = 9;        // le cadre de bois du plateau (--pd-frame en portrait)
 const PLATE = 26;       // une rangee de plaques de score
 const BAR_PAD = 14;     // le rembourrage de la barre du lancer
-const CUP_RATIO = 1.15; // le gobelet, en multiples de la case
+/* ⚠️ LE GOBELET N'A PLUS BESOIN D'AUTANT. Il partageait sa barre avec le
+   ratelier de bonus, qui l'a quittee pour le bandeau du bas : la barre a maigri,
+   et lui reserver 1,15 case de hauteur revenait a garder de la place pour
+   quelque chose qui n'y est plus. Chaque dixieme rendu ici passe dans la
+   taille des cases, donc dans la largeur du plateau. */
+const CUP_RATIO = 0.95; // le gobelet, en multiples de la case
+/* ⚠️ LA MEME VALEUR EST ECRITE DANS css/mobile.css (`.dc-cup`). Les deux
+   doivent bouger ENSEMBLE : ici on retranche la place, la-bas on la dessine.
+   Elles ont diverge une fois — 0,95 reserve pour 1,15 dessine — et le gobelet
+   prenait 12 px aux plateaux a chaque partie sans que rien ne le signale. */
 const STACK_GAP = 4;    // entre plateau, plaques et barre
 const MIN_CELL = 32;
 /* ⚠️ LE PLAFOND ETAIT UN PLAFOND DE TELEPHONE. A 66 px, une tablette de

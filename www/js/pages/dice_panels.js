@@ -12,6 +12,28 @@ import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, bonusArt } from './dice_state.js';
 import { renderBonusRack } from './dice_match.js';
 
+/**
+ * Un appel a l'API du jeu, qui ne plante pas quand la socket est tombee.
+ *
+ * ⚠️ LES TROIS PANNEAUX APPELAIENT `S.net.rest(...)` DIRECTEMENT. Des que la
+ * connexion etait fermee — en quittant une partie, par exemple — `S.net` valait
+ * null et le simple fait d'ouvrir le classement rendait « cannot read properties
+ * of null (reading 'rest') » a la figure du joueur. Un panneau qui ne peut pas
+ * charger doit le DIRE, pas casser l'application.
+ */
+async function api(chemin, methode, corps) {
+  if (!S.net || typeof S.net.rest !== 'function') {
+    toast(t('connect.outOfReach'), 'warn');
+    return null;
+  }
+  try {
+    return await S.net.rest(chemin, methode, corps);
+  } catch (e) {
+    toast((e && e.message) || t('connect.outOfReach'), 'warn');
+    return null;
+  }
+}
+
 export function renderRules(body) {
   body.innerHTML = `
     <h3>${esc(t('rules.title'))}</h3>
@@ -47,7 +69,7 @@ export async function renderShop(body) {
     + esc(t('shop.opening')) + '</div>';
   let products = S.shop;
   try {
-    if (!products.length) products = (await S.net.rest('/api/shop')).products || [];
+    if (!products.length) products = ((await api('/api/shop')) || {}).products || [];
     S.shop = products;
   } catch (e) {
     body.innerHTML = `<h3>${esc(t('shop.title'))}</h3><p class="dc-err">${esc(e.message)}</p>`;
@@ -58,22 +80,30 @@ export async function renderShop(body) {
   body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>
     <div class="dc-shop">${products.map((p) => `
       <div class="dc-shop-item">
-        <img src="${bonusArt(p.identify)}" alt="">
+        <img src="${vignette(p)}" alt="">
         <div class="dc-shop-txt">
           <b>${esc(shopText(p.identify, 'name', p.name))}</b>
           <span>${esc(shopText(p.identify, 'desc', p.description))}</span>
-          <em>${esc(t('shop.owned', { n: have.get(p.identify) || 0 }))}</em>
+          <em>${esc(estParure(p)
+            ? (have.get(p.identify) ? t('skin.owned') : t('skin.appearance'))
+            : t('shop.owned', { n: have.get(p.identify) || 0 }))}</em>
         </div>
-        <button class="dc-btn dc-btn-sm" data-buy="${esc(p.identify)}"
-                ${S.me && S.me.coins < p.basic_price ? 'disabled' : ''}>${p.basic_price}
-          <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></button>
+        ${bouton(p, have)}
       </div>`).join('')}</div>`;
+
+  body.querySelectorAll('[data-skin]').forEach((b) => {
+    b.onclick = () => {
+      /* Une chaine vide veut dire « retirer » : le serveur remet les des
+         d'origine, et n'a donc rien a verifier. */
+      if (S.net) S.net.send({ t: 'skin', skin: b.dataset.skin || null });
+    };
+  });
 
   body.querySelectorAll('[data-buy]').forEach((b) => {
     b.onclick = async () => {
       b.disabled = true;
       try {
-        const out = await S.net.rest('/api/purchase', 'POST', { identify: b.dataset.buy, quantity: 1 });
+        const out = await api('/api/purchase', 'POST', { identify: b.dataset.buy, quantity: 1 });
         S.inventory = out.inventory || S.inventory;
         if (S.me) S.me.coins = out.coins;
         S.sfx.play('coin', 0.35);
@@ -90,6 +120,38 @@ export async function renderShop(body) {
 /* Un panneau qu'on ouvre et referme trois fois de suite ne doit pas frapper le
    reseau trois fois. Trente secondes suffisent a couvrir ce va-et-vient sans
    jamais montrer un classement perime. */
+/**
+ * Une parure se possede une fois, puis se PORTE — elle ne se consomme pas.
+ *
+ * ⚠️ LE MEME BOUTON NE PEUT PAS DIRE LES DEUX. « 600 pieces » pour un objet
+ * deja acquis n'a aucun sens, et « porter » pour un objet qu'on n'a pas non plus.
+ * Le bouton change donc de role selon ce que le joueur possede : acheter, porter,
+ * ou retirer si c'est deja celle qu'il a aux mains.
+ */
+function estParure(p) {
+  return p && p.category === 'Skin';
+}
+
+/** L'image d'un article : la face 5 de la parure, ou l'icone de l'effet. */
+function vignette(p) {
+  if (!estParure(p)) return bonusArt(p.identify);
+  return ASSETS + 'img/skins/' + p.identify + '/die_5.png';
+}
+
+function bouton(p, have) {
+  const possede = (have.get(p.identify) || 0) > 0;
+  if (estParure(p) && possede) {
+    const portee = S.me && S.me.skin === p.identify;
+    return '<button class="dc-btn dc-btn-sm' + (portee ? ' dc-btn-ghost' : '') + '"'
+      + ' data-skin="' + esc(portee ? '' : p.identify) + '">'
+      + esc(t(portee ? 'skin.remove' : 'skin.wear')) + '</button>';
+  }
+  const trop = S.me && S.me.coins < p.basic_price;
+  return '<button class="dc-btn dc-btn-sm" data-buy="' + esc(p.identify) + '"'
+    + (trop ? ' disabled' : '') + '>' + p.basic_price
+    + '<img class="dc-coin" src="' + ASSETS + 'img/icon_coin.png" alt=""></button>';
+}
+
 const LADDER_TTL = 30000;
 let ladderCache = null;
 
@@ -98,10 +160,19 @@ export async function renderRanking(body) {
     + esc(t('ladder.reading')) + '</div>';
   try {
     if (!ladderCache || Date.now() - ladderCache.at > LADDER_TTL) {
-      ladderCache = { at: Date.now(), data: await S.net.rest('/api/leaderboard?limit=10') };
+      const recu = await api('/api/leaderboard?limit=10');
+      /* ⚠️ ON NE MET PAS UN ECHEC EN CACHE. Ranger `null` ici, c'est promettre
+         trente secondes de classement vide meme si le reseau revient dans la
+         seconde — et c'est aussi ce qui faisait planter la ligne suivante. */
+      if (!recu) {
+        body.innerHTML = '<h3>' + esc(t('ladder.title')) + '</h3><p class="dc-err">'
+          + esc(t('connect.outOfReach')) + '</p>';
+        return;
+      }
+      ladderCache = { at: Date.now(), data: recu };
     }
-    const rows = ladderCache.data.players || [];
-    const mine = ladderCache.data.me;
+    const rows = (ladderCache.data && ladderCache.data.players) || [];
+    const mine = ladderCache.data && ladderCache.data.me;
     const inTop = mine && rows.some((p) => p.pseudo === mine.pseudo);
     body.innerHTML = '<h3>' + esc(t('ladder.title')) + '</h3>' + (rows.length
       ? `<table class="dc-ladder">

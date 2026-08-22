@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Le violet profond du jeu. Il sert de fond au rideau natif : sans lui,
+         Android peint son propre fond clair et le logo flotte sur du blanc. -->
+    <color name="pd_violet">#241C33</color>
+</resources>

@@ -8,11 +8,11 @@
    ============================================================================ */
 
 import { initDice, openDice } from './pages/dice.js';
-import { S, myTurn } from './pages/dice_state.js';
+import { S, UI, myTurn } from './pages/dice_state.js';
 import { signIn, signOut, account, eraseAccount } from './identity.js';
 import { startFitting } from './fit.js';
 import { t, LANGS, lang, setLang } from './core/i18n.js';
-import { startMotion, motionEnabled, setMotionEnabled, motionAvailable } from './motion.js';
+import { startMotion } from './motion.js';
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
 
@@ -47,22 +47,28 @@ function host() {
   return document.getElementById('dicewrap') || document.body;
 }
 
-/* L'animation du splash dure 2,47 s. Sur une bonne connexion l'application est
-   prete en moins d'une seconde : sans ce plancher, le crane disparaissait avant
-   d'avoir fini de se former, ce qui donne l'impression d'un bug plutot que d'une
-   marque. On ne fait attendre personne au-dela — si l'ouverture prend plus
-   longtemps, le splash s'en va des qu'elle est finie. */
-const SPLASH_MS = 2500;
-const splashDepuis = Date.now();
-
-function splashOff() {
-  const splash = document.getElementById('pd-splash');
-  if (!splash) return;
-  const reste = Math.max(0, SPLASH_MS - (Date.now() - splashDepuis));
-  setTimeout(() => {
-    splash.classList.add('gone');
-    setTimeout(() => splash.remove(), 420);
-  }, reste);
+/**
+ * L'ecran d'ouverture est celui du SYSTEME, et lui seul.
+ *
+ * Il y avait ici une animation jouee dans la page. Deux defauts : dessinee en
+ * 160 pixels, elle etait agrandie quatre fois sur un ecran moderne ; et surtout
+ * elle laissait voir l'application se remplir — la bourse apparaissait vide puis
+ * se garnissait une seconde plus tard.
+ *
+ * Le splash natif, lui, couvre TOUT le demarrage : on le garde affiche
+ * (`launchAutoHide: false`) et on ne le retire qu'une fois les donnees en main.
+ * Hors application — dans un navigateur — il n'y en a pas, et il n'y a rien a
+ * cacher : la fonction ne fait alors rien.
+ */
+async function splashOff() {
+  const cap = window.Capacitor;
+  const ecran = cap && cap.Plugins && cap.Plugins.SplashScreen;
+  if (!ecran) return;
+  try {
+    await ecran.hide({ fadeOutDuration: 260 });
+  } catch (e) {
+    /* Pas de greffon : rien a cacher. */
+  }
 }
 
 /* ── le bouton RETOUR d'Android ──────────────────────────────────────────── */
@@ -114,9 +120,9 @@ function settingsMarkup() {
       ${row(t('set.sound'), `<button class="pd-toggle${muted ? '' : ' on'}" data-sound
               aria-pressed="${!muted}">${t(muted ? 'set.soundOff' : 'set.soundOn')}</button>`)}
 
-      ${motionAvailable() ? row(t('set.motion'), `<button class="pd-toggle${
-        motionEnabled() ? ' on' : ''}" data-motion>${t(motionEnabled() ? 'set.soundOn' : 'set.soundOff')}</button>`)
-        + `<p class="pd-hint">${t('set.motionHelp')}</p>` : ''}
+      <!-- Plus de reglage « jouer aux mouvements ». Secouer pour lancer est
+           desormais toujours actif : un geste cache derriere un interrupteur
+           n'est jamais decouvert, donc jamais utilise. -->
 
       ${row(t('set.account'), `<span class="pd-row-val">${who}</span>`)}
       <div class="pd-row pd-row-btns">${button}
@@ -154,16 +160,6 @@ function openSettings() {
     sound.classList.toggle('on', !off);
     sound.setAttribute('aria-pressed', String(!off));
   };
-
-  const motion = wrap.querySelector('[data-motion]');
-  if (motion) {
-    motion.onclick = () => {
-      const now = setMotionEnabled(!motionEnabled());
-      motion.classList.toggle('on', now);
-      motion.textContent = t(now ? 'set.soundOn' : 'set.soundOff');
-      toast(t(now ? 'motion.on' : 'motion.off'), now ? 'ok' : undefined);
-    };
-  }
 
   wrap.querySelector('[data-lang]').onchange = (ev) => {
     setLang(ev.target.value);
@@ -227,31 +223,26 @@ function addSheetBar() {
 /* ── les mouvements : le module ne connait pas le jeu, on lui explique ───── */
 
 function wireMotion() {
-  const board = () => document.querySelector('#dc-slot-me .dc-board');
-
+  /* Secouer lance le de, rien d'autre. La pose se fait au doigt : plus rapide,
+     et elle ne rate jamais la colonne visee. */
   startMotion({
     canRoll: () => !!(myTurn() && S.state && S.state.dice[S.seat] === null),
-    canPlace: () => !!(myTurn() && S.state && S.state.dice[S.seat] !== null
-      && !(S.state.pending && S.state.pending.seat === S.seat)),
     roll: () => { if (S.net) S.net.send({ t: 'roll' }); },
-    place: (column) => { if (S.net) S.net.send({ t: 'place', column }); },
-    aim: (column) => {
-      const b = board();
-      if (!b) return;
-      b.querySelectorAll('.dc-col').forEach((col, i) => {
-        col.classList.toggle('pd-aim', i === column);
-      });
-    },
   });
 }
 
 /* ── demarrage ──────────────────────────────────────────────────────────── */
 
 async function start() {
+  /* ⚠️ CE DRAPEAU DECIDE DE CE QUE VEUT DIRE « QUITTER ». Dans le tool, le jeu
+     est une surcouche qu'on referme pour revenir au back-office. Ici il EST
+     l'application : la refermer laissait un ecran fige, sans menu et sans
+     socket — et le moindre onglet touche ensuite plantait. Autonome, on revient
+     au pont. */
+  UI.standalone = true;
   initDice();
   wireBackButton();
   await reglerBarreEtat();
-  splashOff();
   /* La connexion se fait SEULE : c'est la promesse de la fiche. Si Google n'est
      pas joignable (appareil sans services Play, ou refus), on retombe sur le
      compte invite de ce telephone plutot que de bloquer le joueur devant un mur. */
@@ -261,14 +252,110 @@ async function start() {
   addSheetBar();
   startFitting();
   wireMotion();
+  /* ⚠️ LE RIDEAU SE LEVE EN DERNIER, ET C'EST TOUT L'INTERET.
+     Il partait juste apres la barre d'etat, donc AVANT la connexion et avant
+     l'ouverture de la partie : on voyait la bourse vide se remplir une seconde
+     plus tard, ce que l'admin a decrit comme « la zone monnaie toute rabougrie ».
+     Une image de plus a l'ecran coute moins qu'une interface qui se monte sous
+     les yeux du joueur. */
+  await pretAAfficher();
+  splashOff();
 }
 
-start().catch((e) => {
-  splashOff();
-  const box = document.createElement('div');
-  box.className = 'pd-first on';
-  box.innerHTML = `<div class="pd-first-card pd-panel"><h1>${t('connect.outOfReach')}</h1>
+/**
+ * Attend que la premiere image soit REELLEMENT peinte.
+ *
+ * `openDice()` rend la main quand les donnees sont en memoire, pas quand elles
+ * sont a l'ecran : il reste une passe de mise en page et une passe de peinture.
+ * Deux `requestAnimationFrame` imbriques placent la reprise apres la premiere
+ * peinture — la seconde image existe donc deja quand le rideau se leve.
+ * `document.fonts.ready` evite en prime le sursaut du texte quand « Luckiest
+ * Guy » arrive apres coup.
+ */
+function pretAAfficher() {
+  const polices = (document.fonts && document.fonts.ready) || Promise.resolve();
+  const peint = polices.catch(() => {}).then(() => new Promise((ok) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => ok()));
+  }));
+  /* ⛔ UNE ATTENTE SANS PLAFOND EST UN ECRAN NOIR.
+     Le rideau natif ne part plus tout seul : si `fonts.ready` ne se resout
+     jamais — police absente, moteur en veille — l'application resterait bloquee
+     sur l'ecran d'ouverture, sans message et sans recours. Trois secondes de
+     plafond : passe ce delai on montre ce qu'on a, quitte a ce qu'une police
+     arrive apres coup. Mieux vaut une interface imparfaite qu'aucune. */
+  return Promise.race([peint, new Promise((ok) => setTimeout(ok, 3000))]);
+}
+
+/**
+ * Le serveur ne repond pas : on le rappelle, tout seul.
+ *
+ * ⚠️ CE N'EST PAS AU JOUEUR DE REESSAYER. L'ecran affichait « serveur
+ * injoignable » et un bouton : dans un ascenseur, un tunnel, un changement de
+ * wifi, la connexion revient d'elle-meme trente secondes plus tard — et
+ * l'application restait plantee sur son message jusqu'a ce qu'on pense a taper.
+ * Une panne de reseau se resout en attendant, pas en cliquant.
+ *
+ * L'attente s'allonge a chaque echec (1, 2, 4… jusqu'a 15 s) : marteler un
+ * serveur qui redemarre le ralentit, et vide la batterie pour rien. Elle
+ * REPART A ZERO des que le telephone retrouve le reseau ou que l'application
+ * revient au premier plan — ce sont les deux instants ou une nouvelle tentative
+ * a le plus de chances d'aboutir.
+ */
+const RETENTE_MIN = 1000;
+const RETENTE_MAX = 15000;
+let retente = RETENTE_MIN;
+let retenteTimer = 0;
+let carteEchec = null;
+
+function direEchec(e, dansMs) {
+  if (!carteEchec) {
+    carteEchec = document.createElement('div');
+    carteEchec.className = 'pd-first on';
+    document.body.appendChild(carteEchec);
+  }
+  carteEchec.innerHTML = `<div class="pd-first-card pd-panel">
+    <h1>${t('connect.outOfReach')}</h1>
     <p>${(e && e.message) || ''}</p>
-    <button class="dc-btn" onclick="location.reload()">${t('connect.retry')}</button></div>`;
-  document.body.appendChild(box);
+    <p class="pd-hint" id="pd-retry-in">${t('connect.retryingIn', { n: Math.ceil(dansMs / 1000) })}</p>
+    <button class="dc-btn" id="pd-retry-now">${t('connect.retry')}</button></div>`;
+  const bouton = document.getElementById('pd-retry-now');
+  if (bouton) bouton.onclick = () => relancer(0);
+  /* Le compte a rebours descend a l'ecran : une attente muette ressemble a un
+     blocage, et c'est precisement ce qu'on essaie de faire disparaitre. */
+  const ligne = document.getElementById('pd-retry-in');
+  let reste = Math.ceil(dansMs / 1000);
+  const tic = setInterval(() => {
+    reste -= 1;
+    if (reste <= 0 || !document.body.contains(ligne)) { clearInterval(tic); return; }
+    ligne.textContent = t('connect.retryingIn', { n: reste });
+  }, 1000);
+}
+
+function relancer(dans) {
+  if (retenteTimer) { clearTimeout(retenteTimer); retenteTimer = 0; }
+  retenteTimer = setTimeout(() => {
+    retenteTimer = 0;
+    essayer();
+  }, Math.max(0, dans));
+}
+
+function essayer() {
+  return start().then(() => {
+    if (carteEchec) { carteEchec.remove(); carteEchec = null; }
+    retente = RETENTE_MIN;
+  }).catch((e) => {
+    splashOff();
+    direEchec(e, retente);
+    relancer(retente);
+    retente = Math.min(RETENTE_MAX, retente * 2);
+  });
+}
+
+/* Deux evenements valent mieux qu'une minuterie : le retour du reseau et le
+   retour au premier plan sont les deux instants ou une tentative aboutit. */
+window.addEventListener('online', () => { retente = RETENTE_MIN; relancer(0); });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && carteEchec) { retente = RETENTE_MIN; relancer(0); }
 });
+
+essayer();

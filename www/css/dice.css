@@ -102,22 +102,8 @@
 
 /* Les variantes ne changent que les deux couleurs du fond. */
 #dicewrap .pd-panel--mer { --pd-c1: var(--mer); --pd-c2: var(--mer-lo); }
-#dicewrap .pd-panel--or { --pd-c1: var(--gold); --pd-c2: var(--gold-md); color: var(--ink); }
-#dicewrap .pd-panel--nuit { --pd-c1: #453A63; --pd-c2: #2A2140; }
-#dicewrap .pd-panel--norivet { }
-#dicewrap .pd-panel--thin { --liseré: 3px; border-radius: 18px 15px 19px 16px; }
-#dicewrap .pd-panel--pill { border-radius: 999px; }
 
 /* Le plateau : le meme panneau, mais son interieur est creuse. */
-#dicewrap .pd-panel--deep {
-  padding: var(--pd-frame, 14px);
-  background:
-    linear-gradient(180deg, var(--deep-lo), var(--deep)) content-box,
-    var(--trame) border-box,
-    var(--vitesse) border-box,
-    linear-gradient(160deg, var(--pd-c1, var(--violet)), var(--pd-c2, var(--violet-lo))) border-box;
-  background-size: auto, var(--trame-taille), auto, auto;
-}
 
 /* ── .pd-plate : un bouton bombe, a ombre DURE ────────────────────────────── */
 #dicewrap .pd-plate,
@@ -359,16 +345,6 @@
   z-index: 0;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .34));
-}
-
-#dicewrap .dc-bgvideo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  pointer-events: none;
 }
 
 #dicewrap .dc-screen { position: absolute; inset: 0; display: none; z-index: 1; }
@@ -626,7 +602,14 @@
   box-shadow: inset 0 0 0 1px rgba(16, 48, 32, .5);
 }
 
-#dicewrap .dc-pc-elo { font-size: 11.5px; color: var(--txt-dim); margin-top: 2px; }
+/* ⚠️ MESURE : rgb(201,188,234) sur un panneau violet — ca ne se lit pas au
+   soleil. Le blanc a 78 % passe partout, sur violet comme sur bleu mer. */
+#dicewrap .dc-pc-elo {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, .78);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .45);
+  margin-top: 2px;
+}
 
 /* Le score est LE chiffre du jeu : blanc, cerne, et gros. En or sur violet il
    se noyait dans le panneau — vu a l'ecran. */
@@ -636,7 +619,12 @@
   margin-top: 6px;
   color: var(--blanc);
   line-height: 1.05;
-  -webkit-text-stroke: 5px var(--deep-lo);
+  /* ⚠️ UN CONTOUR SE MESURE EN GLYPHES, PAS EN PIXELS.
+     5 px fixes sur les 44 px du grand ecran font un beau cerne ; sur les 24 px
+     du bandeau telephone, les deux moities du trait se rejoignent au milieu du
+     chiffre et le « 0 » devient un disque noir — vu a l'ecran le 2026-08-21.
+     Exprime en em, le cerne garde la meme proportion a toutes les tailles. */
+  -webkit-text-stroke: .1em var(--deep-lo);
   paint-order: stroke fill;
   text-shadow: 0 4px 0 rgba(0, 0, 0, .5);
 }
@@ -646,8 +634,41 @@
   color: #a08f74; margin-top: 3px;
 }
 
+/* La cale a bonus : une pastille par jeton encore disponible, sous le nom.
+   Discret par construction — c'est un indice, pas un tableau de bord. */
+#dicewrap .dc-pc-stock {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 4px;
+  min-height: 14px;
+}
+#dicewrap .dc-pc-chip {
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6));
+}
+
 #dicewrap .dc-pc-bet { margin-top: 7px; font-size: 12.5px; color: var(--gold-hi); }
-#dicewrap .dc-foe-die { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; z-index: 2; }
+/* ⚠️ IL ETAIT POSE A 14 PX DU COIN DE LA CARTE — c'est-a-dire juste au-dessus du
+   score. Tant que le total tient sur un chiffre les deux boites se ratent ; a
+   trois chiffres il s'etend et passe dessous : c'est ce que l'admin a vu en
+   partie. Il est desormais accroche au MEDAILLON, dont la taille ne depend
+   d'aucun texte — sa place est donc fixe, et aucun nombre ne peut la reprendre.
+   Le pendant du trait de capitaine, qui occupe le coin oppose. */
+#dicewrap .dc-foe-die {
+  position: absolute;
+  inset-inline-end: -8px;
+  inset-block-start: -8px;
+  width: 54%;
+  height: 54%;
+  z-index: 3;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .75));
+}
+#dicewrap .dc-foe-die img, #dicewrap .dc-foe-die .dc-face {
+  width: 100%;
+  height: 100%;
+}
 
 /* ── les plateaux ─────────────────────────────────────────────────────────── */
 
@@ -702,13 +723,30 @@
     0 -4px 26px rgba(255, 198, 110, .2);
 }
 
+/* ⚠️ LES PLAQUES SUIVENT LES COLONNES, ELLES NE LES DEFINISSENT PAS.
+   Mesure : le plateau passait de 212 a 240 px des la premiere pose. La cause
+   n'etait pas le plateau mais cette rangee — `.dc-boardwrap` fait sa largeur sur
+   son contenu (`max-content`), et une plaque qui apparait avec sa largeur
+   minimale elargissait toute la colonne, donc le plateau avec. `minmax(0, 1fr)`
+   et `min-width: 0` sur les plaques : elles se partagent la largeur du plateau
+   au lieu d'en reclamer une. */
 #dicewrap .dc-scores {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(6px, .8vw, 11px);
-  width: 100%;
+  /* ⚠️ `width: 0` PLUS `min-width: 100%`, ET C'EST TOUT L'INTERET.
+     Mesure du 2026-08-21 : le plateau passait de 224 a 240 px des la premiere
+     pose. Ce n'etait ni le plateau ni les cases (64 px, inchangees) : le cadre
+     fait sa largeur sur son contenu (`width: max-content`) et cette rangee y
+     participe, si bien qu'une plaque affichant « 3 » elargissait le cadre — donc
+     le plateau, qui s'y etire. `minmax(0, 1fr)` ne suffisait pas : il regit la
+     largeur UTILISEE, pas la contribution intrinseque. Une largeur declaree a
+     zero, elle, ne contribue rien ; le minimum en pourcentage est ignore pendant
+     le calcul intrinseque puis rend la rangee aussi large que le plateau. */
+  width: 0;
+  min-width: 100%;
   box-sizing: border-box;
-  justify-items: center;
+  justify-items: stretch;
   padding: 0 var(--pd-frame, 14px);
 }
 
@@ -726,10 +764,20 @@
   box-shadow: 0 4px 0 var(--gold-lo), 0 6px 10px rgba(0, 0, 0, .4);
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   font-size: clamp(15px, 1.7vw, 21px);
-  min-width: clamp(46px, 5vw, 72px);
+  /* ⚠️ UNE LARGEUR MINIMALE PLUS GRANDE QUE SA COLONNE, ET LES PLAQUES SE
+     RECOUVRENT. Mesure du 2026-08-21 sur un ecran de 369 px : colonne de 53 px,
+     plaque de 70, donc un chevauchement de 10 px de chaque cote des que les
+     scores passent a deux chiffres — c'est le « les points vont se meler » de
+     l'admin. Le plancher est desormais RELATIF a la case : il grandit avec elle
+     et ne peut jamais la depasser. */
+  min-width: 0;
+  width: 100%;
+  max-width: var(--dc-cell, 72px);
+  justify-self: center;
+  box-sizing: border-box;
   min-height: clamp(24px, 3vh, 34px);
   line-height: clamp(24px, 3vh, 34px);
-  padding: 0 8px;
+  padding: 0 4px;
   text-align: center;
   --pd-round: 5px;
 }
@@ -738,6 +786,15 @@
    BORDURE : depuis que la plaque porte un lisere blanc, `background: none` ne
    suffisait plus et laissait trois batonnets blancs sous chaque plateau — vu a
    l'ecran. Une regle qui annule un fond doit annuler tout ce qui dessine. */
+/* La colonne benie : une plaque qui ne ressemble a aucune autre, pour toute la
+   partie. Ce n'est pas une decoration — c'est ce qui permet de refaire le calcul
+   quand un total ne tombe pas juste. */
+#dicewrap .dc-colscore-boost {
+  background: linear-gradient(180deg, #B6F36A, var(--vert));
+  box-shadow: 0 4px 0 #4E8C15, 0 6px 10px rgba(0, 0, 0, .4),
+              0 0 12px rgba(124, 200, 50, .7);
+}
+
 #dicewrap .dc-colscore:empty {
   background: none;
   border: 0;
@@ -750,13 +807,29 @@
 #dicewrap .dc-colscore:empty::before,
 #dicewrap .dc-colscore:empty::after { content: none; }
 
+/* ⚠️ L'ARRONDI DE L'ALVEOLE EST CALCULE, PAS ESTIME.
+   Mesure des six faces livrees, sur leurs quatre coins, le long de la diagonale
+   (une seule mesure, insensible au lissage du contour) : le rayon peint vaut
+   **27 % du cote du de**, a un demi-pour-cent pres partout. Mais le de et son
+   alveole n'ont PAS le meme cote : le dessin n'occupe que 237 des 256 px de sa
+   toile, et le reste fait une marge. D'ou :
+
+       rayon du de   = 0,27 x (237/256) = 0,250 de la case
+       marge de part et d'autre = (1 - 237/256) / 2 = 0,037 de la case
+       rayon de l'alveole = 0,250 + 0,037 = **0,287 de la case**
+
+   C'est la seule valeur pour laquelle les deux bords restent PARALLELES : un
+   arrondi plus serre (0,22, essaye d'abord) laisse un angle de logement visible
+   derriere un coin rond, ce que l'admin decrit par « pas encore a 100 % ». */
 #dicewrap .dc-cell {
   position: relative;
   width: var(--dc-cell);
   height: var(--dc-cell);
   display: grid;
   place-items: center;
-  --pd-round: clamp(6px, .9vw, 10px);
+  /* La valeur par defaut vaut pour nos des d'origine ; une parure la remplace
+     par la sienne, posee sur le plateau par `renderArrondi`. */
+  --pd-round: var(--pd-cell-round, calc(var(--dc-cell) * .287));
 }
 
 /* Les faces sont normalisees : le CORPS du de occupe 208 px d'une toile de 256
@@ -790,19 +863,59 @@
 #dicewrap .dc-board:not(.dc-board-top) .dc-col { cursor: pointer; transition: background .12s; }
 #dicewrap .dc-board:not(.dc-board-top) .dc-col:hover { background: rgba(232, 200, 106, .14); }
 
-#dicewrap .dc-targeting .dc-board:not(.dc-target) { opacity: .55; pointer-events: none; }
-#dicewrap .dc-targeting .dc-target { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* ⚠️ « ON NE SAIT PAS SUR QUOI ON PEUT AGIR. » Le ciblage existait mais se
+   resumait a un liseré fin et a une opacite : sur un telephone, invisible. Ce
+   qui est ACTIONNABLE bat et brille ; tout le reste s'efface franchement. */
+#dicewrap .dc-targeting .dc-board:not(.dc-target) {
+  opacity: .32;
+  filter: saturate(.3);
+  pointer-events: none;
+}
+#dicewrap .dc-targeting .dc-target {
+  outline: 4px solid var(--gold);
+  outline-offset: 3px;
+  animation: dc-vise-cadre 1.4s ease-in-out infinite;
+}
 #dicewrap .dc-targeting .dc-target .dc-col { cursor: default; }
-#dicewrap .dc-targeting .dc-target .dc-cell-filled { cursor: crosshair; animation: dc-pair 1.2s ease-in-out infinite; }
+#dicewrap .dc-targeting .dc-target .dc-cell:not(.dc-cell-filled) { opacity: .25; }
+
+/* ⚠️ UNE BENEDICTION VISE UNE COLONNE, ET UNE COLONNE VIDE EST UNE CIBLE.
+   Les regles ci-dessus n'allument que les des deja poses : sur un plateau neuf,
+   l'effet aurait ete impossible a placer alors que c'est justement la que le
+   pari est le plus interessant. Ici, c'est la colonne entiere qui repond. */
+#dicewrap .dc-targeting-col .dc-target .dc-col {
+  cursor: crosshair;
+  animation: dc-vise 1s ease-in-out infinite;
+}
+#dicewrap .dc-targeting-col .dc-target .dc-cell { opacity: 1; animation: none; }
+#dicewrap .dc-targeting-col .dc-target .dc-col:hover { filter: brightness(1.18); }
+#dicewrap .dc-targeting .dc-target .dc-cell-filled {
+  cursor: crosshair;
+  animation: dc-vise 1s ease-in-out infinite;
+}
+
+@keyframes dc-vise {
+  0%, 100% { transform: scale(1); filter: none; }
+  50% { transform: scale(1.07); filter: drop-shadow(0 0 12px rgba(255, 228, 121, .95)); }
+}
+
+@keyframes dc-vise-cadre {
+  0%, 100% { outline-color: var(--gold); }
+  50% { outline-color: var(--blanc); }
+}
 
 /* ── la barre du lancer ───────────────────────────────────────────────────── */
 
+/* La carte du milieu est un REPERE, pas une piece de decor : elle doit se voir
+   sans manger la hauteur des plateaux, et respirer entre les deux rangees de
+   plaques plutot que de les toucher. */
 #dicewrap .dc-mid {
   position: relative;
   display: flex;
   align-items: center;
   gap: clamp(8px, 1.2vw, 16px);
-  padding: 4px clamp(12px, 1.6vw, 22px);
+  margin: clamp(6px, 1.1vh, 12px) 0;
+  padding: 2px clamp(12px, 1.6vw, 22px);
   min-height: 0;
   --pd-rim: 2px;
   --pd-round: 999px;
@@ -851,26 +964,28 @@
 
 /* ── le ratelier de bonus ─────────────────────────────────────────────────── */
 
+/* Le ratelier a rejoint la barre du lancer : ce n'est plus un panneau flottant
+   mais deux rangees de boutons qui ENCADRENT le gobelet. Vides, elles ne prennent
+   aucune place — un conteneur vide sans marge ni rembourrage mesure zero.
+
+   ⚠️ `flex: 0 0 auto` EST CE QUI EMPECHE LE RETOUR A LA LIGNE. Sans lui, la barre
+   du milieu (qui passe en `flex-wrap: wrap` sur telephone) renvoyait le ratelier
+   entier SOUS le gobelet — c'est-a-dire hors du regard, la ou l'admin ne l'a pas
+   trouve. En deux flancs de trois boutons au maximum, la ligne tient meme a
+   320 px de large. */
 #dicewrap .dc-bonus {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(4px, 1vh, 10px);
-  transform: translateX(-50%);
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 28px;
+  gap: clamp(6px, 1vw, 12px);
+  padding: 0;
   z-index: 4;
   pointer-events: none;
-  --pd-rim: 2px;
+  --pd-rim: 0;
   --pd-round: 999px;
   --pd-rivet: 7px;
   --pd-rivet-in: 8px 16px;
 }
-
-#dicewrap .dc-bonus-hd { font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: #a08f74; line-height: 1.25; }
-#dicewrap .dc-bonus-hd span { display: block; color: var(--gold-hi); letter-spacing: 0; text-transform: none; font-size: 12px; }
-#dicewrap .dc-bonus-empty { font-size: 12.5px; color: var(--txt-dim); line-height: 1.35; max-width: 260px; text-align: center; }
 
 #dicewrap .dc-bonus-btn {
   position: relative;
@@ -918,7 +1033,8 @@
   display: none;
   place-items: center;
   background: rgba(10, 6, 3, .74);
-  z-index: 5;
+  /* Au-dessus des bandeaux (6) : une carte modale couvre TOUT. */
+  z-index: 12;
 }
 
 #dicewrap .dc-bet.on,
@@ -1165,11 +1281,362 @@
   50% { filter: drop-shadow(0 0 22px rgba(255, 205, 110, .55)); }
 }
 
+/* Le ratelier occupe le vide au centre du bandeau du joueur — entre son nom et
+   son score, la ou le pouce arrive naturellement. Il ne prend AUCUNE place quand
+   la cale est vide : un conteneur sans enfant, sans marge ni rembourrage, mesure
+   zero et la grille se referme dessus. */
+#dicewrap #dc-pc-me .dc-bonus {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(5px, 1.6vw, 10px);
+  flex: 0 0 auto;
+  --pd-rim: 0;
+  --pd-round: 999px;
+}
+
+/* Les deux sorties de fin de partie, cote a cote.
+
+   ⚠️ ELLE N'EXISTE QU'A LA FIN, ET CE N'EST PAS COSMETIQUE. Mesure du
+   2026-08-21 : le bandeau du bas faisait 87 px contre 61 en haut, et l'ecart
+   venait entierement de cette barre — presente pendant toute la partie avec des
+   boutons invisibles. Or la case du plateau est bornee par la hauteur qui RESTE :
+   26 px repris ici, c'est le plateau qui s'elargit d'autant. */
+#dicewrap .dc-endbar {
+  display: none;
+  gap: 10px;
+  justify-content: center;
+}
+#dicewrap .dc-endbar:has(.dc-quit-exit) { display: flex; }
+
+/* La sortie de fin : une fleche, et une couleur qui n'est PAS celle de
+   « Rejouer ». Deux boutons dores cote a cote se valent a l'oeil ; or l'un est
+   l'action attendue et l'autre la porte de sortie. */
+#dicewrap .dc-btn-sortie {
+  --b1: var(--deep-hi);
+  --b2: var(--deep);
+  --b3: var(--deep-lo);
+  color: var(--blanc);
+  flex: 0 0 auto !important;
+  width: 52px;
+  min-width: 52px;
+  padding: 8px 0 !important;
+}
+
+#dicewrap .dc-quit-arrow {
+  display: block;
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .45);
+}
+
+/* En arabe la lecture s'inverse : la fleche du retour aussi. */
+[dir="rtl"] #dicewrap .dc-quit-arrow { transform: scaleX(-1); }
+
+/* Une table en pause le dit, et ne clignote pas comme un tour a jouer. */
+#dicewrap .dc-turn-paused {
+  color: var(--txt-dim);
+  animation: dc-souffle 1.8s ease-in-out infinite;
+}
+
+@keyframes dc-souffle {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+/* Un message chasse d'un doigt s'efface, il ne disparait pas d'un coup : retirer
+   le noeud sous le doigt donne l'impression d'un rate plutot que d'un geste. */
+#dicewrap .dc-msg-part {
+  opacity: 0;
+  transform: scale(.92);
+  transition: opacity .15s ease, transform .15s ease;
+  pointer-events: none;
+}
+#dicewrap .dc-bulle.dc-msg-part { transform: translateX(-50%) scale(.92); }
+#dicewrap .dc-cast.dc-msg-part { transform: translateX(-50%) scale(.92); }
+
+/* Le quart du pont, ecrit au-dessus de sa plaque. Riche en or, pauvre en gris :
+   la couleur porte l'information avant que le chiffre soit lu. */
+#dicewrap .dc-colscore[data-quart]:not([data-quart=""])::after {
+  content: attr(data-quart);
+  position: absolute;
+  inset-block-end: calc(100% + 2px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  padding: 0 5px;
+  border-radius: 999px;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#dicewrap .dc-colscore { position: relative; }
+
+#dicewrap .dc-colscore-riche::after {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--blanc);
+}
+
+#dicewrap .dc-colscore-pauvre::after {
+  background: var(--deep-hi);
+  color: var(--txt-dim);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .55);
+}
+
+/* Le dernier de pose se signale par une LUEUR, pas seulement par son dessin.
+
+   ⚠️ TROIS JEUX DE DES SONT LIVRES SANS ETAT ACTIF — c'est un choix d'auteur, pas
+   un oubli. Sans cette regle, un joueur qui porte l'un d'eux perdrait le repere
+   du dernier coup ; avec elle, le signal existe pour TOUS les jeux, et il
+   s'ajoute simplement au dessin de ceux qui en ont un. */
+#dicewrap .dc-cell.dc-pair .dc-face {
+  filter: drop-shadow(0 0 7px rgba(255, 176, 64, .85));
+}
+
+/* ── l'annonce d'un effet : plein cadre, et assez longue pour etre lue ────── */
+
+/* ⚠️ AU MILIEU DE L'ARENE, C'EST-A-DIRE SUR LE GOBELET. Le centre exact est
+   occupe par la barre du lancer : l'annonce la recouvrait entierement, et le
+   joueur perdait de vue le seul bouton dont il a besoin — pendant 3,8 secondes,
+   a chaque effet joue. On la pose donc JUSTE AU-DESSUS de la ligne mediane :
+   elle reste au centre horizontalement, tombe sur le plateau d'en face (celui
+   qu'on regarde quand l'adversaire agit), et ne cache plus aucune commande. */
+#dicewrap .dc-cast {
+  position: absolute;
+  inset-inline-start: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: max-content;
+  /* ⚠️ UN POURCENTAGE SE MESURE SUR LE PARENT, ET LE PARENT EST MAINTENANT LA
+     BARRE. 88 % d'une barre etroite, c'est une bande de texte de 115 px de large
+     et 93 de haut, ou chaque mot passe a la ligne. La borne doit venir de
+     l'ECRAN, seul cadre qui compte pour une annonce. */
+  max-width: min(86vw, 340px);
+  padding: 12px 20px 12px 14px;
+  border: var(--liseré) solid var(--blanc);
+  border-radius: 24px 20px 26px 22px;
+  background: var(--trame), linear-gradient(160deg, var(--violet), var(--violet-dk));
+  background-size: var(--trame-taille), auto;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .4), 0 16px 34px rgba(0, 0, 0, .55);
+  animation: dc-cast-in .2s cubic-bezier(.2, 1.4, .4, 1);
+  pointer-events: none;
+}
+
+/* Ce qui vient de l'adversaire ET vise le joueur est cercle de rouge : la
+   couleur dit « ca te concerne » avant qu'on ait lu le premier mot. */
+#dicewrap .dc-cast-vs {
+  background: var(--trame), linear-gradient(160deg, #C4324B, #7A1B2C);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .4), 0 16px 34px rgba(0, 0, 0, .55),
+              0 0 0 3px rgba(255, 96, 120, .55);
+}
+#dicewrap .dc-cast-me { background: var(--trame), linear-gradient(160deg, var(--gold), var(--gold-lo)); }
+
+#dicewrap .dc-cast-art {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .7));
+}
+
+#dicewrap .dc-cast-txt { display: flex; flex-direction: column; min-width: 0; }
+#dicewrap .dc-cast-txt b {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 15px;
+  letter-spacing: .4px;
+  color: var(--blanc);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .45);
+}
+#dicewrap .dc-cast-me .dc-cast-txt b { color: #2A1A05; text-shadow: none; }
+#dicewrap .dc-cast-txt span {
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, .92);
+}
+#dicewrap .dc-cast-me .dc-cast-txt span { color: rgba(42, 26, 5, .82); }
+
+@keyframes dc-cast-in {
+  from { opacity: 0; transform: translateX(-50%) scale(.78); }
+}
+
+/* La longue-vue fermee : un bouton qui porte ce qu'il reste. Un compteur sans
+   action est une frustration, une action sans compteur se depense sans qu'on
+   s'en apercoive — les deux vont ensemble. */
+
+/* Elle respire pour dire qu'elle attend un geste ; ouverte, elle se tait. */
+@keyframes dc-vue {
+  0%, 100% { box-shadow: 0 3px 0 var(--gold-lo), 0 6px 12px rgba(0, 0, 0, .45); }
+  50% { box-shadow: 0 3px 0 var(--gold-lo), 0 6px 12px rgba(0, 0, 0, .45),
+                    0 0 14px rgba(255, 228, 121, .85); }
+}
+
+#dicewrap .dc-foresee-on { animation: none; }
+
+/* ── la table se parle : bulles et eventail d'humeurs ─────────────────────── */
+
+/* La bulle est un panneau comic comme les autres : lisere blanc, coins bancals,
+   ombre dure. Elle s'ouvre VERS LE PLATEAU — celle du siege d'en face descend,
+   celle du joueur monte — pour ne jamais sortir par le bord de l'ecran. */
+/* ⚠️ `z-index: 8` NE SUFFISAIT PAS, ET C'EST UNE HISTOIRE DE CONTEXTE.
+   Un z-index ne se compare qu'entre freres du meme contexte d'empilement. Le
+   cadre du plateau porte un `filter` (l'assombrissement du camp en attente), ce
+   qui LUI CREE son propre contexte ; venant plus loin dans le document, il se
+   peignait par-dessus la bulle quelle que soit la valeur ecrite ici — vu a
+   l'ecran : seule la pointe depassait sous le bandeau. On leve donc le bandeau
+   ENTIER, qui est le vrai frere du plateau. */
+/* ⚠️ CE `z-index` A CASSE LA CARTE DE MISE, ET C'EST INSTRUCTIF.
+   Il a ete pose pour que les bulles de dialogue passent au-dessus des plateaux.
+   Mais une carte modale vit dans la MEME arene : en levant le bandeau a 6, on
+   l'a levee au-dessus de la carte de mise, restee a 5 — la tete de la carte
+   passait donc sous le bandeau adverse, capuchon coupe. Une couche qu'on leve
+   doit etre comparee a TOUT ce qui l'entoure, pas seulement a ce qu'on voulait
+   depasser. */
+#dicewrap .dc-side { position: relative; z-index: 6; }
+
+#dicewrap .dc-bulle {
+  position: absolute;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  max-width: min(78%, 260px);
+  padding: 7px 13px;
+  border: 4px solid var(--blanc);
+  border-radius: 16px 14px 17px 15px;
+  background: linear-gradient(170deg, var(--gold-hi), var(--gold));
+  color: #2A1A05;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .38), 0 9px 18px rgba(0, 0, 0, .45);
+  animation: dc-bulle-in .18s ease-out;
+  pointer-events: none;
+}
+
+/* La pointe : un carre tourne, borde des deux cotes qui depassent. Un
+   pseudo-element plutot qu'une image — il suit la couleur de la bulle. */
+#dicewrap .dc-bulle::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 50%;
+  width: 13px;
+  height: 13px;
+  background: var(--gold-hi);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+#dicewrap .dc-bulle-foe { top: calc(100% + 11px); }
+#dicewrap .dc-bulle-foe::after {
+  top: -8px;
+  border-top: 4px solid var(--blanc);
+  border-left: 4px solid var(--blanc);
+}
+
+#dicewrap .dc-bulle-me { bottom: calc(100% + 11px); }
+#dicewrap .dc-bulle-me::after {
+  bottom: -8px;
+  border-bottom: 4px solid var(--blanc);
+  border-right: 4px solid var(--blanc);
+  background: var(--gold);
+}
+
+/* Une humeur n'est pas une phrase : pas de fond, juste le glyphe, en grand. */
+#dicewrap .dc-bulle-mood {
+  padding: 4px 10px;
+  font-size: 30px;
+  line-height: 1.1;
+  background: linear-gradient(170deg, var(--violet-hi), var(--violet));
+}
+#dicewrap .dc-bulle-mood::after { background: var(--violet-hi); }
+#dicewrap .dc-bulle-me.dc-bulle-mood::after { background: var(--violet); }
+
+@keyframes dc-bulle-in {
+  from { opacity: 0; transform: translateX(-50%) scale(.72); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+/* L'eventail : cinq boutons poses en arc autour du portrait. Chacun est tourne
+   de son angle, pousse vers l'exterieur, puis le GLYPHE est redresse par la
+   rotation inverse — sinon les emojis penchent et deviennent illisibles. */
+#dicewrap .dc-fan {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+/* ⚠️ LE RAYON N'EST PAS UN GOUT, IL SE CALCULE. Deux boutons voisins sont
+   separes par la corde `2 R sin(θ/2)` : a 22,5° d'ecart et 64 px de rayon elle
+   valait 25 px pour des boutons de 42, qui se recouvraient donc aux deux tiers
+   — vu sur l'appareil. Avec 112 px de rayon la corde fait 44 px, soit 38 px de
+   bouton et 6 px d'air, et ca tient encore dans un ecran de 320 px de large. */
+#dicewrap .dc-fan { --pd-fan-r: 112px; }
+
+#dicewrap .dc-fan-btn {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  padding: 0;
+  border: 4px solid var(--blanc);
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: 0 4px 0 var(--gold-lo), 0 7px 14px rgba(0, 0, 0, .45);
+  cursor: pointer;
+  pointer-events: auto;
+  transform: rotate(var(--pd-angle)) translateY(calc(-1 * var(--pd-fan-r)));
+  animation: dc-fan-in .22s cubic-bezier(.2, 1.5, .4, 1) backwards;
+}
+
+#dicewrap .dc-fan-btn > span {
+  display: block;
+  font-size: 20px;
+  line-height: 30px;
+  transform: rotate(calc(-1 * var(--pd-angle)));
+}
+
+#dicewrap .dc-fan-btn:active { filter: brightness(1.15); }
+
+@keyframes dc-fan-in {
+  from { transform: rotate(var(--pd-angle)) translateY(0); opacity: 0; }
+}
+
+/* ⚠️ `touch-action: none` EST CE QUI FAIT EXISTER L'APPUI LONG.
+   Par defaut le navigateur se reserve le droit d'interpreter un contact comme un
+   debut de defilement : il attend, puis emet `pointercancel` et prend la main.
+   Notre minuterie de 420 ms tombait dans cette fenetre — l'eventail s'ouvrait a
+   la souris et JAMAIS au doigt, ce qui est la pire des pannes puisque le geste
+   n'existe que sur telephone. En declarant que ce carre de 42 px ne participe a
+   aucun geste du navigateur, le contact nous appartient du debut a la fin.
+   `user-select: none` empeche en prime la poignee de selection de texte. */
+#dicewrap #dc-pc-me .dc-pc-portrait {
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+          user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* ── les cinq APNG livres : places, jamais retouches ──────────────────────── */
 
+/* L'explosion deborde LARGEMENT de son alveole : une destruction qui tient dans
+   la case qu'elle vide ne se voit pas. A -120 %, la gerbe fait trois fois et
+   demie la case et mord sur ses voisines — c'est voulu, c'est un evenement. */
 #dicewrap .dc-blast {
   position: absolute;
-  inset: -75%;
+  inset: -120%;
   background: url('/dice/img/fx_burst.png') center / contain no-repeat;
   pointer-events: none;
   z-index: 3;
@@ -1242,7 +1709,6 @@
   #dicewrap .dc-tab { padding: 7px 10px; font-size: 12px; }
   #dicewrap .dc-wallet-txt span { display: none; }
   #dicewrap .dc-menu-btns { flex-direction: column; align-items: stretch; }
-  #dicewrap .dc-bonus { position: static; transform: none; margin: 0 auto; }
   #dicewrap .dc-boards { padding-bottom: 8px; }
 }
 

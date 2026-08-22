@@ -13,7 +13,7 @@
      which cell just changed) and what removes the desync the original had.
    ============================================================================ */
 
-import { fxUrl } from './dice_state.js';
+import { fxUrl, skinOf } from './dice_state.js';
 
 const ART = '/dice/img/';
 
@@ -22,9 +22,12 @@ const ART = '/dice/img/';
  * `hot` est une VRAIE image, pas un filtre : un de qui rougeoie de l'interieur ne
  * s'obtient pas en teintant un de blanc.
  */
-export function dieFace(value, hot) {
+export function dieFace(value, hot, skin) {
   const file = 'die_' + value + (hot ? '_hot' : '') + '.png';
-  return '<img class="dc-face" src="' + ART + file + '" alt="" draggable="false">';
+  /* Sans parure on retombe sur le dossier d'origine : un joueur qui n'a rien
+     achete ne doit rien remarquer. */
+  const base = skin ? (ART + 'skins/' + skin + '/') : ART;
+  return '<img class="dc-face" src="' + base + file + '" alt="" draggable="false">';
 }
 
 /** Le gobelet, au repos ou pret a lancer. */
@@ -100,6 +103,12 @@ export function buildBoard(seat, mirrored) {
  * nombre d'occurrences dans la colonne, et il change l'IMAGE du de — le calculer
  * apres coup obligerait a repasser sur toutes les cases.
  */
+/** La parure du camp auquel appartient ce plateau. */
+function parureDuPlateau(board) {
+  const seat = parseInt(board && board.dataset ? board.dataset.seat : '-1', 10);
+  return Number.isInteger(seat) && seat >= 0 ? skinOf(seat) : null;
+}
+
 export function renderBoard(board, grid, colScores, settle) {
   for (let col = 0; col < COLUMNS; col++) {
     const cells = cellsOfColumn(col);
@@ -119,7 +128,9 @@ export function renderBoard(board, grid, colScores, settle) {
       if (before === want) continue;
       const wasEmpty = !before;
       box.dataset.face = want;
-      box.innerHTML = value === null ? '' : dieFace(value, hot);
+      /* Le plateau porte son siege dans `data-seat` : la parure se deduit de
+         lui, sans qu'on ait a la faire descendre par chaque appelant. */
+      box.innerHTML = value === null ? '' : dieFace(value, hot, parureDuPlateau(board));
       box.classList.toggle('dc-cell-filled', value !== null);
       box.classList.toggle('dc-pair', hot);
       // Le tassement d'une colonne : les des survivants TOMBENT dans les cases
@@ -220,11 +231,15 @@ export function freeCellOf(grid, col) {
 }
 
 const BLAST_STEP = 210;
-const BLAST_LIFE = 1750;                // duree reelle de fx_burst : 103 images, 1717 ms
-/* ⚠️ Une planche livree change de duree sans prevenir. L'ancienne faisait 35
-   images et 1250 ms ; celle du 2026-08-21 en fait 103 pour 1717 ms. Garder
-   l'ancienne valeur coupait l'explosion en plein milieu — mesure a la lecture
-   des metadonnees de l'APNG, pas au jugé. */
+const BLAST_LIFE = 1155;                // duree exacte de fx_burst : 35 images
+/* ⚠️ CE N'EST PLUS UN GARDE-FOU CONTRE LA BOUCLE, C'EST UN SIMPLE MENAGE.
+   La planche bouclait sans fin (`num_plays = 0` dans son chunk acTL) : la seule
+   defense etait de la retirer de l'ecran avant qu'elle ne recommence, donc de
+   connaitre sa duree a la milliseconde. A 1250 pour 1155 reels, on revoyait
+   95 ms du PREMIER carre rouge — ce que l'admin decrit comme « un debut de carre
+   rouge pre-explosion ». Le fichier a ete reecrit en `num_plays = 1` : il ne
+   peut plus rejouer, quoi qu'on fasse ici. Cette valeur ne sert donc plus qu'a
+   liberer l'element, et elle vaut la duree exacte lue dans les chunks fcTL. */
 const BLAST_SETTLE = 520;               // le plateau se tasse PENDANT l'explosion
 
 /**

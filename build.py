@@ -16,6 +16,7 @@ Usage :
     python build.py --check               # verifie seulement, n'ecrit rien
 """
 import argparse
+import subprocess
 import os
 import re
 import shutil
@@ -156,6 +157,62 @@ def weigh():
     return total, biggest[:6]
 
 
+def parse_js(www):
+    """Chaque module JS livre est-il un JavaScript VALIDE ?
+
+    ⚠️ CE CONTROLE MANQUAIT, ET SON ABSENCE A DEJA LIVRE UNE APPLICATION MORTE.
+    Le 2026-08-21, trois apostrophes francaises non echappees dans le catalogue
+    (`'Deux d'un coup'`) ont casse `i18n_fr.js` : plus aucun module ne se
+    chargeait, l'application restait sur son ecran d'ouverture. Rien ici ne le
+    voyait — la verification d'a cote ne lit que des CHEMINS, pas du code.
+
+    ⛔ `node --check fichier.js` NE SUFFIT PAS. Sur un `.js` (par opposition a un
+    `.mjs`) Node choisit son analyseur d'apres le paquet, et sur ces catalogues il
+    rend 0 malgre une erreur de syntaxe franche — verifie ce jour-la. Il faut lui
+    IMPOSER le mode module, ce que seule la lecture sur l'entree standard permet :
+    `node --input-type=module --check < fichier`.
+    """
+    mauvais = []
+    for root, _dirs, files in os.walk(os.path.join(www, "js")):
+        for fn in sorted(files):
+            if not fn.endswith(".js"):
+                continue
+            chemin = os.path.join(root, fn)
+            with open(chemin, "rb") as f:
+                r = subprocess.run(["node", "--input-type=module", "--check"],
+                                   stdin=f, capture_output=True)
+            if r.returncode != 0:
+                ligne = next((l for l in r.stderr.decode("utf-8", "replace").splitlines()
+                              if "Error" in l), "syntaxe refusee")
+                mauvais.append("%s : %s" % (os.path.relpath(chemin, www), ligne.strip()))
+    return mauvais
+
+
+def copier_vers_android():
+    """Recopie `www/` dans le projet Android.
+
+    ⚠️ LE PIEGE LE PLUS COUTEUX DE CETTE CHAINE, ET IL EST SILENCIEUX.
+    `build.py` assemble `www/`. Gradle, lui, empaquette
+    `android/app/src/main/assets/public/`, qui en est une COPIE — et rien ne les
+    rapproche sinon `npx cap copy`. Oublier cette etape ne casse rien, n'affiche
+    aucune erreur, et produit un APK parfaitement valide : simplement, il
+    contient le jeu d'il y a une heure. Vecu le 2026-08-21 — un geste tout neuf
+    « ne marchait pas sur l'appareil » alors qu'il n'y etait pas.
+
+    On la fait donc ICI, a la suite de l'assemblage, pour qu'il devienne
+    impossible de construire un APK en retard sur `www/`.
+    """
+    projet = os.path.join(HERE, "android")
+    if not os.path.isdir(projet):
+        return
+    r = subprocess.run(["npx", "cap", "copy", "android"], cwd=HERE,
+                       capture_output=True, shell=(os.name == "nt"))
+    if r.returncode != 0:
+        sys.exit("la copie vers le projet Android a echoue :\n"
+                 + r.stderr.decode("utf-8", "replace")[-800:])
+    print("copie vers android/ : l'APK embarquera bien ce www/-ci.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default=DEFAULT_SERVER, help="adresse du serveur de jeu")
@@ -168,13 +225,15 @@ def main():
         print("www/ assemble  (serveur : %s)%s"
               % (args.server, "  [depot autonome]" if standalone() else ""))
 
-    problems = check()
+    problems = check() + parse_js(WWW)
     if problems:
         print("\n".join("  ✖ " + p for p in problems))
         sys.exit("%d probleme(s) — l'application ne demarrerait pas." % len(problems))
 
+    copier_vers_android()
+
     total, biggest = weigh()
-    print("verification : tous les imports et references resolvent.")
+    print("verification : les imports resolvent, et chaque module JS se parse.")
     print("poids : %.1f Mo" % (total / 1e6))
     for size, rel in biggest:
         print("   %7.1f Ko  %s" % (size / 1024, rel))

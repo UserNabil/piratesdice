@@ -22,8 +22,6 @@ const EN_APP = {
   'set.sound': 'Sound',
   'set.soundOn': 'On',
   'set.soundOff': 'Muted',
-  'set.motion': 'Motion controls',
-  'set.motionHelp': 'Shake to roll · tilt left, right or forward to place',
   'set.account': 'Account',
   'set.signedInAs': 'Signed in as {name}',
   'set.signIn': 'Sign in with Google',

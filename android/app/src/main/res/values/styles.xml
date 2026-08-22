@@ -16,7 +16,22 @@
     </style>
 
 
+    <!--
+      ⚠️ `android:background` NE FAIT RIEN SUR LE RIDEAU D'ANDROID 12 ET PLUS.
+      Depuis Android 12 le systeme dessine lui-meme l'ecran d'ouverture, a partir
+      de `windowSplashScreenBackground` et `windowSplashScreenAnimatedIcon` ; le
+      fond declare a l'ancienne est simplement ignore. Vu sur un Android 16 le
+      2026-08-21 : le logo apparaissait sur du BLANC, alors que la couleur du jeu
+      etait bien reglee cote Capacitor — qui, elle, ne regit que le rideau des
+      versions plus anciennes. On declare donc les deux : les attributs modernes
+      pour le systeme actuel, l'image de repli pour les vieux appareils.
+    -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/pd_violet</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="android:windowSplashScreenBackground">@color/pd_violet</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>

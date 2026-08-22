@@ -81,3 +81,27 @@ est à la 13. Les testeurs jouent donc un build d'avant les capitaines. Promouvo
 se fait d'une commande, mais c'est une décision de diffusion :
 
     python play_api.py --promote 13 --track alpha
+
+## Les liens directs de la console (notés le 2026-08-21)
+
+- Compte développeur : `7610471374542677978`
+- Application : `4975621758251689754`
+
+L'API de publication ne rend NI l'un NI l'autre : elle ne connaît que le nom de
+paquet. Ils viennent de l'URL de la console, donnés par l'admin — d'où le fait de
+les écrire ici plutôt que de les redemander à chaque fois.
+
+| Où aller | Lien |
+|---|---|
+| Test fermé (pistes) | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/tracks/closed-testing |
+| **Pays/régions du test fermé** | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/tracks/closed-testing/countries |
+| Contenu de l'application | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/app-content |
+| Classification du contenu | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/app-content/rating |
+| Sécurité des données | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/app-content/data-privacy-security |
+| Public cible | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/app-content/target-audience |
+| Fiche du store | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/main-store-listing |
+| Aperçu de la publication | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/publishing |
+| Statut des règles | https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/policy-status |
+
+⚠️ Ces chemins sont ceux de la console actuelle ; si l'un d'eux bouge, partir de
+https://play.google.com/console/u/0/developers/7610471374542677978/app/4975621758251689754/app-dashboard.

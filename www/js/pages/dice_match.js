@@ -14,12 +14,12 @@
 
 import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
-import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl } from './dice_state.js';
+import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase } from './dice_state.js';
 import { t } from '../core/i18n.js';
 import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
-import { announce, renderForesee, startClock } from './dice_fx.js';
+import { announce, renderForesee, startClock, MOODS, sendMood } from './dice_fx.js';
 import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
 export function onMatch(m) {
@@ -30,6 +30,9 @@ export function onMatch(m) {
   buildGame();
   screen('game');
   paint(true);
+  /* Une partie qui reapparait sans un mot ressemble a un bug. On nomme ce qui
+     vient de se passer, sinon le joueur croit avoir relance au hasard. */
+  if (m.resumed) toast(t('resume.done'), 'ok');
 }
 
 function buildGame() {
@@ -41,16 +44,32 @@ function buildGame() {
         <div class="dc-board-slot" id="dc-slot-foe"></div>
         <div class="dc-mid pd-panel">
           <div class="dc-turn" id="dc-turn"></div>
+          <!-- Les bonus ont quitte cette barre pour le bandeau du bas : au pouce,
+               et sans disputer sa largeur au gobelet. La barre y gagne en hauteur,
+               donc les plateaux aussi — la case est bornee par la place VERTICALE
+               qui reste, jamais par la largeur. -->
           <button class="dc-cup" id="dc-cup" title="${esc(t('hdr.roll'))}"></button>
         </div>
         <div class="dc-board-slot" id="dc-slot-me"></div>
       </div>
-      <!-- Le ratelier vit DANS L'ARENE, pas dans la barre du tour : enfant de la
-           barre, il etait positionne par rapport a elle et rogne par son overflow. -->
-      <div class="dc-bonus pd-panel" id="dc-bonus"></div>
       <div class="dc-side dc-side-me">
         <div class="dc-pc pd-panel" id="dc-pc-me"></div>
-        <button class="dc-btn dc-btn-ghost dc-quit" id="dc-quit">${esc(t('game.leave'))}</button>
+        <!-- Une partie finie doit offrir les DEUX suites. « Retour au pont »
+             seul obligeait a repasser par le menu pour relancer, alors que
+             rejouer est ce qu'on veut faire neuf fois sur dix. -->
+        <div class="dc-endbar" id="dc-endbar">
+          <button class="dc-btn dc-quit" id="dc-replay">${esc(t('over.again'))}</button>
+          <!-- Une FLECHE, pas une phrase : « Retour au pont » tient en francais,
+               pas forcement dans les autres langues ni sur un ecran de 320 px.
+               Un glyphe ne peut pas deborder de son bouton. Le libelle survit
+               dans title et aria-label, pour qui survole et pour qui ecoute.
+               ATTENTION : ce commentaire vit DANS un litteral gabarit, ou un
+               accent grave termine la chaine. Pas de code entre accents ici. -->
+          <button class="dc-btn dc-btn-sortie dc-quit" id="dc-quit"
+                  title="${esc(t('over.back'))}" aria-label="${esc(t('over.back'))}">
+            <span class="dc-quit-arrow" aria-hidden="true">&#8592;</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="dc-bet" id="dc-bet"></div>`;
@@ -89,7 +108,11 @@ function buildGame() {
         const pending = S.state && S.state.pending;
         if (!pending || pending.seat !== S.seat) return;
         if (parseInt(board.dataset.seat, 10) !== pending.target) return;
-        if (!box.classList.contains('dc-cell-filled')) return;
+        /* ⚠️ UNE CIBLE DE COLONNE ACCEPTE UNE CASE VIDE. Le garde ci-dessous
+           refusait tout ce qui n'etait pas un de deja pose : parfait pour un
+           canon, mais une benediction se pose sur une colonne — vide comprise,
+           et c'est meme la que le pari a le plus de sel. */
+        if (!pending.column && !box.classList.contains('dc-cell-filled')) return;
         ev.stopPropagation();
         S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10) });
       };
@@ -102,6 +125,119 @@ function buildGame() {
     S.net.send({ t: 'roll' });
   };
   $('#dc-quit').onclick = () => UI.requestClose();
+  wireMoodFan();
+}
+
+/* ─────────────────────────────────── parler sans clavier ────────────────── */
+
+let fanTimer = 0;
+
+function closeFan() {
+  if (fanTimer) { clearTimeout(fanTimer); fanTimer = 0; }
+  const ouvert = document.querySelector('.dc-fan');
+  if (ouvert) ouvert.remove();
+}
+
+/* Le rayon de l'arc — LA MEME VALEUR QUE `--pd-fan-r` dans la feuille de style —
+   et la place qu'un bouton demande autour de lui. Le rayon vient de la corde
+   minimale entre deux boutons voisins ; le detail est note cote CSS. */
+const FAN_RAYON = 112;
+const FAN_MARGE = 26;
+
+/**
+ * De quel cote l'eventail peut-il s'ouvrir ?
+ *
+ * ⚠️ UN ARC SYMETRIQUE SORTAIT DE L'ECRAN. Sur telephone le portrait du joueur
+ * est colle au bord GAUCHE de son bandeau : un arc de -60° a +60° envoyait les
+ * deux premieres humeurs en dehors de la page, ou elles etaient invisibles et
+ * intouchables — mesure a l'ecran, deux boutons sur cinq hors cadre.
+ *
+ * On regarde donc la place reellement disponible autour du portrait et on choisit
+ * le quart de tour qui tient. C'est mieux qu'une valeur pour le telephone et une
+ * autre pour le bureau : la meme regle vaut pour une tablette, pour un ecran
+ * partage, et pour le jour ou le bandeau changera de place.
+ */
+function fanAngles(portrait) {
+  const r = portrait.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const besoin = FAN_RAYON + FAN_MARGE;
+
+  const gauche = cx > besoin;
+  const droite = window.innerWidth - cx > besoin;
+  const haut = cy > besoin;
+
+  /* 0° pointe vers le haut, les angles positifs vont vers la droite. */
+  let debut = -60;
+  let pas = 30;
+  if (!gauche) { debut = 0; pas = 22.5; }            // colle a gauche : on ouvre a droite
+  else if (!droite) { debut = -90; pas = 22.5; }     // colle a droite : on ouvre a gauche
+  if (!haut) {                                       // pas de place au-dessus : on bascule
+    debut = 180 - debut - pas * (MOODS.length - 1);
+    debut = -debut;
+  }
+  return MOODS.map((_, i) => debut + i * pas);
+}
+
+function openFan(portrait) {
+  closeFan();
+  const fan = document.createElement('div');
+  fan.className = 'dc-fan';
+  /* Un eventail, pas une rangee : les cinq humeurs s'ouvrent en arc autour du
+     portrait, la ou le pouce arrive deja. Chaque bouton est tourne de son angle
+     puis REDRESSE par une seconde rotation sur le glyphe — sans quoi les emojis
+     penchent et deviennent illisibles. */
+  const angles = fanAngles(portrait);
+  MOODS.forEach((glyphe, i) => {
+    const b = document.createElement('button');
+    b.className = 'dc-fan-btn';
+    b.style.setProperty('--pd-angle', angles[i] + 'deg');
+    b.innerHTML = '<span>' + glyphe + '</span>';
+    b.onclick = (ev) => { ev.stopPropagation(); sendMood(i); closeFan(); };
+    fan.appendChild(b);
+  });
+  portrait.appendChild(fan);
+  /* Il se referme seul : un eventail oublie ouvert masque le plateau. */
+  fanTimer = setTimeout(closeFan, 4000);
+}
+
+/**
+ * L'appui long, sur le portrait DU JOUEUR seulement.
+ *
+ * ⚠️ DELEGUE, PAS POSE SUR LE PORTRAIT. La carte du joueur est reconstruite par
+ * `innerHTML` a chaque coup : un ecouteur pose dessus disparaitrait au premier
+ * lancer. On ecoute donc l'ecran, qui lui ne bouge pas.
+ *
+ * ⚠️ `pointercancel` COMPTE AUTANT QUE `pointerup`. Sur telephone, un doigt qui
+ * glisse pendant l'attente devient un defilement et le navigateur annule le
+ * pointeur : sans cette ecoute, la minuterie survivait et l'eventail s'ouvrait
+ * en plein geste de defilement.
+ */
+function wireMoodFan() {
+  const ecran = $('#dc-screen-game');
+  if (!ecran) return;
+  let attente = 0;
+  let depart = null;
+
+  const annuler = () => { if (attente) { clearTimeout(attente); attente = 0; } depart = null; };
+
+  ecran.addEventListener('pointerdown', (ev) => {
+    const portrait = ev.target.closest('#dc-pc-me .dc-pc-portrait');
+    if (!portrait) { closeFan(); return; }
+    depart = { x: ev.clientX, y: ev.clientY };
+    attente = setTimeout(() => { attente = 0; openFan(portrait); }, 420);
+  });
+  ecran.addEventListener('pointermove', (ev) => {
+    if (!attente || !depart) return;
+    if (Math.abs(ev.clientX - depart.x) > 10 || Math.abs(ev.clientY - depart.y) > 10) annuler();
+  });
+  ecran.addEventListener('pointerup', annuler);
+  ecran.addEventListener('pointercancel', annuler);
+  ecran.addEventListener('contextmenu', (ev) => {
+    /* L'appui long ouvre le menu du navigateur sur Android : on le refuse LA ou
+       le geste nous appartient, et nulle part ailleurs. */
+    if (ev.target.closest('#dc-pc-me .dc-pc-portrait')) ev.preventDefault();
+  });
 }
 
 export function onState(msg) {
@@ -186,6 +322,9 @@ function paint(full, frozen, settle) {
   renderCup(st);
   renderBonusRack();
   renderTargeting(st);
+  renderArrondi(st);
+  renderQuarters(st);
+  renderBoost(st);
   renderBet(st, full);
 }
 
@@ -227,6 +366,39 @@ function popChangedScores(st) {
  * porte le trait. Un adversaire ne se reconnait plus a un visage tire de son
  * nom, mais a la facon dont il joue — ce qui est le sujet.
  */
+
+/**
+ * La cale a bonus, en pastilles.
+ *
+ * ⚠️ L'ADMIN NE VOYAIT PAS QUE L'IA EN AVAIT. Elle en jouait — le bandeau
+ * l'annoncait au moment du coup — mais rien ne disait a l'avance qu'elle
+ * pouvait le faire, si bien que son canon tombait du ciel. Deux ou trois
+ * pastilles sous le nom suffisent : on sait ce qui peut arriver, donc on peut
+ * jouer contre. Vide, la rangee disparait plutot que de montrer des trous.
+ */
+function stockMarkup(st, seat) {
+  /* ⚠️ LE SERVEUR COMPTE UN PLAFOND, PAS UNE CALE. `bonusStock` dit combien
+     d'effets il reste le DROIT de jouer dans la partie — trois au depart, pour
+     tout le monde. Un joueur qui n'a rien achete voyait donc trois pastilles
+     sous son nom et cherchait des bonus qu'il n'avait pas. Pour son propre
+     siege, on compte ce qu'il possede vraiment ; pour l'IA d'en face, le chiffre
+     du serveur est le bon, c'est elle qui detient la reserve. */
+  let n = (st.bonusStock && st.bonusStock[seat]) || 0;
+  if (seat === S.seat) {
+    const enCale = (S.inventory || []).reduce((t, i) => t + (i.quantity > 0 ? i.quantity : 0), 0)
+      + ((st.freeReroll && st.freeReroll[seat]) ? 1 : 0);
+    n = Math.min(n, enCale);
+  }
+  if (n <= 0) return '';
+  /* ⚠️ `bonus1.png` EST LE NOM EN BASE, PAS LE NOM DU FICHIER. La table nomme
+     les objets de gameplay ; les dessins vivent sous d'autres noms, et `bonusArt`
+     fait la traduction. Ecrit en dur, le chemin donnait une image cassee — donc
+     des pastilles presentes dans le DOM et invisibles a l'ecran. */
+  const pastille = `<img class="dc-pc-chip" src="${bonusArt('B001')}" alt="">`;
+  return `<div class="dc-pc-stock" title="${esc(t('bonus.left', { n }))}">${
+    pastille.repeat(Math.min(n, 5))}</div>`;
+}
+
 function renderPlayerCard(sel, st, seat, isMe) {
   const p = st.players[seat] || {};
   const el = $(sel);
@@ -248,6 +420,8 @@ function renderPlayerCard(sel, st, seat, isMe) {
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
+    ${stockMarkup(st, seat)}
+    ${isMe ? '<div class="dc-bonus" id="dc-bonus"></div>' : ''}
     <div class="dc-pc-total" data-v="${st.totals[seat]}">${st.totals[seat]}</div>
     <div class="dc-pc-lbl">${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}</div>
     ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}`;
@@ -261,10 +435,26 @@ function renderPlayerCard(sel, st, seat, isMe) {
  */
 function renderExit(st) {
   const quit = $('#dc-quit');
+  const replay = $('#dc-replay');
   if (!quit) return;
   const over = st.phase === 'over';
-  quit.textContent = t(over ? 'over.back' : 'game.leave');
-  quit.classList.toggle('dc-btn-ghost', !over);
+  /* ⚠️ ON NE TOUCHE PLUS AU CONTENU DE CE BOUTON : il porte une fleche, et lui
+     ecrire un libelle par-dessus la remplacerait par le texte qu'on voulait
+     justement eviter. Seul l'intitule d'accessibilite change de sens. */
+  const dit = t(over ? 'over.back' : 'game.leave');
+  quit.title = dit;
+  quit.setAttribute('aria-label', dit);
+
+  /* « Rejouer » n'existe qu'a la fin : pendant la partie il n'a pas de sens, et
+     un bouton visible mais inerte est pire qu'un bouton absent. */
+  if (replay) {
+    replay.classList.toggle('dc-quit-exit', over);
+    replay.onclick = () => {
+      const mode = (S.state && S.state.mode === 'duel') ? 'multi' : 'solo';
+      if (UI.leaveMatch) UI.leaveMatch(); else UI.showMenu();
+      if (S.net) S.net.send({ t: 'play', mode });
+    };
+  }
   /* ⚠️ Sur telephone ce bouton est masque pendant la partie (la barre laterale
      n'existe pas) : il doit REAPPARAITRE a la fin, sinon la sortie reste
      invisible la ou le probleme a ete constate. */
@@ -275,6 +465,14 @@ function renderExit(st) {
 }
 
 function renderTurn(st) {
+  /* ⚠️ UNE PARTIE EN PAUSE DOIT LE DIRE. Sans ce mot, un joueur dont
+     l'adversaire vient d'etre coupe voit une table qui ne repond plus, sans
+     savoir si c'est le jeu, son telephone, ou son tour. */
+  if (st.paused) {
+    const bar = $('#dc-turn');
+    if (bar) { bar.textContent = t('game.paused'); bar.className = 'dc-turn dc-turn-paused'; }
+    return;
+  }
   const el = $('#dc-turn');
   if (!el) return;
   if (st.phase === 'betting') { el.textContent = t('game.placeStake'); el.className = 'dc-turn'; return; }
@@ -290,47 +488,66 @@ function renderCup(st) {
   if (!cup) return;
   const die = st.dice[S.seat];
   const canRoll = st.phase === 'playing' && st.turn === S.seat && die === null;
-  if (!S.rolling) cup.innerHTML = die === null ? cupArt(canRoll) : dieFace(die);
+  /* Le gobelet est LE MIEN : il montre donc mes des. */
+  if (!S.rolling) cup.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
   cup.classList.toggle('dc-cup-ready', canRoll);
   cup.classList.toggle('dc-cup-armed', die !== null && st.turn === S.seat);
   cup.disabled = st.phase !== 'playing';
 
+  /* ⚠️ LE DE ADVERSE SE POSAIT DANS LE COIN DE LA CARTE, JUSTE AU-DESSUS DU
+     SCORE. Tant que le total tient sur un chiffre les deux boites se ratent ; a
+     trois chiffres le score s'etend et passe dessous. On l'accroche au
+     MEDAILLON : le portrait a une taille fixe, donc le de a une place fixe, et
+     il ne peut plus rencontrer un chiffre quelle que soit sa longueur. */
   const foeDie = st.dice[1 - S.seat];
-  const foeCard = $('#dc-pc-foe');
-  if (foeCard && foeDie !== null) {
+  const medaillon = $('#dc-pc-foe .dc-pc-portrait');
+  if (medaillon && foeDie !== null) {
     const badge = document.createElement('div');
     badge.className = 'dc-foe-die';
-    badge.innerHTML = dieFace(foeDie);
-    foeCard.appendChild(badge);
+    badge.innerHTML = dieFace(foeDie, false, skinOf(1 - S.seat));
+    medaillon.appendChild(badge);
   }
   renderForesee(st, dieFace);
 }
 
+/**
+ * Le ratelier vit DANS le bandeau du joueur, et il y est recree a chaque coup.
+ *
+ * ⚠️ `renderPlayerCard` refait son `innerHTML` : le conteneur du ratelier
+ * dispararait donc a chaque etat recu. C'est pourquoi cette fonction est appelee
+ * APRES elle dans `paint()` — l'ordre n'est pas cosmetique, il est structurel.
+ */
 export function renderBonusRack() {
   const rack = $('#dc-bonus');
   if (!rack || !S.state) return;
   const left = S.state.bonusLeft ? S.state.bonusLeft[S.seat] : 0;
-  /* La relance de Mary Read ne coute rien : elle apparait dans le ratelier meme
-     sans jeton en cale, sinon le trait resterait invisible a qui n'a rien achete. */
-  const gratuite = !!(S.state.freeReroll && S.state.freeReroll[S.seat]);
+  /* ⚠️ L'EFFET OFFERT PAR LE CAPITAINE N'EST PLUS FORCEMENT LA RELANCE.
+     Chaque capitaine en offre un — relance, longue-vue ou benediction — et il
+     apparait dans le ratelier meme sans jeton en cale, sinon le trait resterait
+     invisible a qui n'a rien achete. Le serveur dit LEQUEL. */
+  const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
   const owned = S.inventory.filter((i) => i.quantity > 0);
 
-  if (!owned.length && !gratuite) {
-    rack.innerHTML = '<div class="dc-bonus-empty">' + esc(t('bonus.empty')) + '</div>';
+  /* ⚠️ RIEN A MONTRER, DONC RIEN A L'ECRAN. Un bandeau « aucun bonus en cale »
+     occupait une place permanente pour dire qu'il n'y avait rien a dire. */
+  if (!owned.length && !offert) {
+    rack.innerHTML = '';
     return;
   }
-  const boutons = owned.filter((i) => !(gratuite && i.identify === 'B001'));
-  rack.innerHTML = `<div class="dc-bonus-hd">${esc(t('bonus.head'))} <span>${esc(t('bonus.left', { n: left }))}</span></div>`
-    + (gratuite ? `
-      <button class="dc-bonus-btn dc-bonus-free" data-id="B001" title="${esc(t('cap.read.trait'))}">
-        <img src="${bonusArt('B001')}" alt="">
-        <span class="dc-bonus-qty">${esc(t('bonus.free'))}</span>
-      </button>` : '')
-    + boutons.map((i) => `
-      <button class="dc-bonus-btn" data-id="${esc(i.identify)}" title="${esc(i.description)}">
-        <img src="${bonusArt(i.identify)}" alt="">
-        <span class="dc-bonus-qty">${i.quantity}</span>
-      </button>`).join('');
+  /* L'effet offert ne se compte pas deux fois : s'il en reste aussi en cale, il
+     n'apparait qu'une seule fois, gratuit — c'est celui-la qu'on depense d'abord. */
+  const boutons = owned.filter((i) => i.identify !== offert);
+  const bouton = (id, titre, badge, cadeau) => `
+      <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}"
+              data-id="${esc(id)}" title="${esc(titre)} — ${esc(t('bonus.left', { n: left }))}">
+        <img src="${bonusArt(id)}" alt="">
+        <span class="dc-bonus-qty">${esc(String(badge))}</span>
+      </button>`;
+
+  const tous = (offert ? [bouton(offert, t('shop.' + offert + '.name'), t('bonus.free'), true)] : [])
+    .concat(boutons.map((i) => bouton(i.identify, i.description, i.quantity, false)));
+
+  rack.innerHTML = tous.join('');
 
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
     b.disabled = !myTurn() || (left <= 0 && !b.classList.contains('dc-bonus-free'));
@@ -338,10 +555,81 @@ export function renderBonusRack() {
   });
 }
 
+/**
+ * La colonne benie porte une marque, jusqu'a la fin.
+ *
+ * ⚠️ UN EFFET PERMANENT SANS TRACE VISIBLE N'EXISTE PAS POUR LE JOUEUR. Les
+ * 15 % s'appliquaient bien au score, mais rien ne disait OU : on voyait un total
+ * qui ne tombait pas juste, sans pouvoir refaire le calcul. La plaque de la
+ * colonne le dit, des deux cotes — c'est une information publique, elle change
+ * le calcul de l'adversaire aussi.
+ */
+/**
+ * Les trois quarts du pont, sur les plaques de score.
+ *
+ * ⚠️ UNE REGLE QU'ON NE VOIT PAS N'EXISTE PAS. Le multiplicateur change chaque
+ * pose, mais il ne change RIEN au comportement du joueur tant qu'il n'est pas
+ * lisible sur la colonne qu'il pondere. On l'ecrit donc a l'endroit ou l'on
+ * regarde deja le score, et des deux cotes — c'est une information publique, elle
+ * pese sur le calcul de l'adversaire autant que sur le sien.
+ */
+/**
+ * Chaque plateau cale l'arrondi de ses logements sur les dés qu'il accueille.
+ *
+ * ⚠️ UNE VALEUR UNIQUE NE PEUT PAS CONVENIR À SIX JEUX. Les arrondis livrés vont
+ * de 16 % à 26 % : un logement figé laisse des coins vides autour des uns et
+ * mord sur les autres. La valeur descend donc du plateau, par variable CSS.
+ */
+function renderArrondi(st) {
+  [0, 1].forEach((seat) => {
+    const board = boardOf(seat);
+    if (!board) return;
+    board.style.setProperty('--pd-cell-round',
+      (arrondiDeCase(skinOf(seat)) * 100).toFixed(2) + '%');
+  });
+}
+
+function renderQuarters(st) {
+  const q = st.quarters;
+  if (!q) return;
+  [0, 1].forEach((seat) => {
+    const board = boardOf(seat);
+    if (!board || !board.parentNode) return;
+    board.parentNode.querySelectorAll('.dc-colscore').forEach((plaque) => {
+      const col = parseInt(plaque.dataset.col, 10);
+      const m = q[col];
+      if (typeof m !== 'number') return;
+      /* On n'ecrit rien sur une colonne neutre : un « x1 » partout ne dit rien
+         et vole la place des deux qui comptent. */
+      plaque.dataset.quart = m === 1 ? '' : ('×' + String(m).replace('.', ','));
+      plaque.classList.toggle('dc-colscore-riche', m > 1);
+      plaque.classList.toggle('dc-colscore-pauvre', m < 1);
+    });
+  });
+}
+
+function renderBoost(st) {
+  [0, 1].forEach((seat) => {
+    const board = boardOf(seat);
+    if (!board || !board.parentNode) return;
+    const beni = (st.boostCol && st.boostCol[seat]);
+    board.parentNode.querySelectorAll('.dc-colscore').forEach((plaque) => {
+      const col = parseInt(plaque.dataset.col, 10);
+      plaque.classList.toggle('dc-colscore-boost', col === beni && beni >= 0);
+      if (col === beni && beni >= 0) plaque.title = t('fx.boost');
+    });
+  });
+}
+
 function renderTargeting(st) {
   const game = $('#dc-screen-game');
   const pending = st.pending && st.pending.seat === S.seat ? st.pending : null;
   game.classList.toggle('dc-targeting', !!pending);
+  /* ⚠️ UNE BENEDICTION VISE UNE COLONNE, PAS UNE CASE — et une colonne VIDE est
+     une cible parfaitement valable, c'est meme le pari le plus interessant. Les
+     regles de ciblage n'allumaient que les cases occupees : sur un plateau neuf,
+     l'effet aurait ete impossible a poser. */
+  game.classList.toggle('dc-targeting-col', !!(pending && pending.column));
   [0, 1].forEach((seat) => {
     const board = boardOf(seat);
     if (board) board.classList.toggle('dc-target', !!pending && pending.target === seat);

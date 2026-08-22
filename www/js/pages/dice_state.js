@@ -21,7 +21,58 @@ const BONUS_ART = {
   B001: 'bonus_reroll.png',
   B002: 'bonus_clear_own.png',
   B003: 'bonus_blast_enemy.png',
+  /* Ces deux-la empruntent le dessin du TRAIT qui les offre : la longue-vue de
+     Ching Shih et la benediction de Grace O'Malley. C'est exactement ce que
+     cette table permet — le nom en base et le fichier qui le dessine n'ont pas
+     a etre la meme chose, et un joueur qui a vu le trait reconnait l'effet. */
+  B004: 'trait_ching.png',
+  B005: 'trait_omalley.png',
 };
+
+/**
+ * Les des d'un siege : ceux d'origine, ou la parure qu'il porte.
+ *
+ * ⚠️ LA PARURE VIENT DE L'ETAT, PAS DU CLIENT LOCAL. Chacun verrait sinon ses
+ * propres des des deux cotes, et une parure achetee ne se montrerait a personne —
+ * ce qui lui retire tout son interet.
+ */
+/**
+ * L'arrondi PEINT sur les dés de chaque parure, en % du côté — mesuré, pas estimé.
+ *
+ * ⚠️ LES JEUX LIVRÉS N'ONT PAS TOUS LE MÊME ARRONDI. Nos dés d'origine font 27 %,
+ * l'or et le rubis 25, le pirate 21, l'arabe et le dragon 16. Un logement calé
+ * une fois pour toutes sur 27 % laisse quatre coins vides bien visibles autour
+ * d'un dé à 16 — c'est exactement le défaut que l'admin avait signalé sur les dés
+ * d'origine, et qui reviendrait par la porte des parures.
+ *
+ * Arrondir les dessins pour les aligner serait pire : on abîmerait un art livré
+ * fini. C'est le logement qui s'adapte.
+ */
+const ARRONDI = { S002: 25.8, S003: 25.1, S004: 25.1, S005: 21.3, S006: 16.1, S007: 15.9 };
+const ARRONDI_ORIGINE = 27;
+
+/**
+ * L'arrondi du LOGEMENT, en fraction de la case.
+ *
+ * Le dé n'occupe que 239 des 256 px de sa toile : il reste une marge de part et
+ * d'autre. Pour que les deux bords restent parallèles :
+ *     rayon du logement = rayon du dé x (239/256) + demi-marge
+ */
+export function arrondiDeCase(skin) {
+  const pc = (skin && ARRONDI[skin]) || ARRONDI_ORIGINE;
+  return (pc / 100) * (239 / 256) + (1 - 239 / 256) / 2;
+}
+
+export function skinOf(seat) {
+  const p = S.state && S.state.players ? S.state.players[seat] : null;
+  const s = p && p.skin;
+  return typeof s === 'string' && /^[A-Z0-9]{1,8}$/.test(s) ? s : null;
+}
+
+/** Le dossier d'images d'une parure, ou celui d'origine. */
+export function dieArt(skin) {
+  return skin ? (ASSETS + 'img/skins/' + skin + '/') : (ASSETS + 'img/');
+}
 
 export function bonusArt(identify) {
   return ASSETS + 'img/' + (BONUS_ART[identify] || 'bonus_reroll.png');

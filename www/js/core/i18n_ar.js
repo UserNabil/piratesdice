@@ -12,9 +12,9 @@ export const AR = {
   'cap.teach.name': 'اللحية السوداء',
   'cap.teach.trait': 'أول وضع له يزيل أيضًا نرد الخصم من القيمة التي تعلوه مباشرة — والستة تزيل الآحاد.',
   'cap.ching.name': 'تشينغ شيه',
-  'cap.ching.trait': 'ترى النرد التالي الذي سيرميه خصمها.',
+  'cap.ching.trait': 'نظرة واحدة في المباراة إلى نردة خصمها التالية.',
   'cap.omalley.name': 'غرايس أومالي',
-  'cap.omalley.trait': 'أعمدتها المكوّنة من ثلاثة أنرد متطابقة تساوي 15% أكثر.',
+  'cap.omalley.trait': 'عمود مبارَك واحد في المباراة: يسجّل 15٪ أكثر.',
   'cap.jack.name': 'كاليكو جاك',
   'cap.jack.trait': 'يبدأ المباراة ونردة موضوعة سلفًا.',
   'cap.trait.reroll': 'إعادة رمي مجانية',
@@ -23,8 +23,37 @@ export const AR = {
 
   'fx.broadside': 'وابل! {n} أنرد',
   'fx.foeTrait': '{name}: {trait}',
-  'fx.aiBonus': 'لعب {name} {bonus}',
   'fx.next': 'التالي',
+  'fx.bonusYou': 'أنت تلعب',
+  'shop.B004.name': 'المنظار',
+  'shop.B004.desc': 'انظر إلى النردة التي سيرميها خصمك.',
+  'shop.B005.name': 'عمود مبارَك',
+  'shop.B005.desc': 'أحد أعمدتك يسجّل 15٪ أكثر حتّى النهاية.',
+  'fx.boost': 'عمود مبارَك: ٪15+ حتّى النهاية',
+  'resume.done': 'استُئنفت المباراة — كنّا ننتظرك.',
+  'game.paused': 'بانتظار اللاعب الآخر…',
+
+  'mood.hint': 'اضغط مطوّلًا على صورتك لتتكلّم',
+
+  'taunt.broadside.0': 'إلى البحر يا بحّار!',
+  'taunt.broadside.1': 'اثنان دفعة واحدة. أتوقّف؟',
+  'taunt.broadside.2': 'هكذا تُلعب.',
+  'taunt.broadside.3': 'سطحك يفرغ.',
+
+  'taunt.sting.0': 'واحد أقلّ لك.',
+  'taunt.sting.1': 'عفوًا.',
+  'taunt.sting.2': 'كنت بحاجة لهذا المكان.',
+  'taunt.sting.3': 'لا شيء شخصي.',
+
+  'taunt.blast.0': 'نار!',
+  'taunt.blast.1': 'هديّة من مخزني.',
+  'taunt.blast.2': 'كنت مرتاحًا أكثر من اللازم.',
+  'taunt.blast.3': 'قطع أُنفقت في محلّها.',
+
+  'taunt.lead.0': 'عدتُ إلى الصدارة.',
+  'taunt.lead.1': 'أهذا أفضل ما لديك؟',
+  'taunt.lead.2': 'المدّ ينقلب.',
+  'taunt.lead.3': 'الحق بي أيها القبطان.',
   'bonus.free': 'مجانًا',
 
   'room.title': 'العب مع صديق',
@@ -56,6 +85,7 @@ export const AR = {
   'connect.boarding': 'جارٍ الصعود إلى السفينة…',
   'connect.outOfReach': 'تعذّر الوصول إلى خادم اللعبة',
   'connect.tried': 'جرّبنا {url}',
+  'connect.retryingIn': 'إعادة المحاولة بعد {n} ثانية…',
   'connect.retry': 'إعادة المحاولة',
 
   'menu.title': 'العب على كيس القبطان',
@@ -148,15 +178,10 @@ export const AR = {
   'away.taken': 'غاب {name} — لعب الذكاء الاصطناعي ذلك الدور',
   'away.you': 'كنت غائبًا: لعب الذكاء الاصطناعي بدلًا عنك',
 
-  'motion.on': 'التحكم بالحركة مفعّل: هزّ للرمي، أمِل للوضع',
-  'motion.off': 'التحكم بالحركة متوقف',
-
   'set.title': 'الإعدادات',
   'set.sound': 'الصوت',
   'set.soundOn': 'مفعّل',
   'set.soundOff': 'مكتوم',
-  'set.motion': 'اللعب بالحركة',
-  'set.motionHelp': 'هزّ الهاتف للرمي · أمِله يمينًا أو يسارًا أو للأمام للوضع',
   'set.account': 'الحساب',
   'set.signedInAs': 'متصل باسم {name}',
   'set.signIn': 'تسجيل الدخول بحساب Google',
@@ -169,4 +194,19 @@ export const AR = {
   'set.terms': 'شروط الاستخدام والخصوصية',
   'set.close': 'إغلاق',
   'set.guest': 'ضيف (هذا الهاتف)',
+
+  /* Ces sept-la manquaient : la fiche du serveur injoignable et les
+     infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
+     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+  'hdr.close': 'إغلاق (Esc)',
+  'hdr.full': 'ملء الشاشة',
+  'hdr.exitFull': 'إنهاء ملء الشاشة',
+  'connect.viaSsh': ' (عبر نفق SSH للأداة)',
+  'connect.noSsh': ' — ولم يتمكّن نفق SSH من الفتح أيضًا',
+  'connect.fixTool': 'أعد تشغيله بـ {cmd} ({logs} يقرأ سجلّه).',
+  'connect.fixSsh': 'خارج شبكة المكتب، تمرّ اللعبة عبر نفق SSH للأداة: تحقّق من أنّ الجهاز يستجيب.',
+  'skin.appearance': 'مظهر فقط — بلا أثر على اللعب',
+  'skin.owned': 'في المخزن',
+  'skin.wear': 'العب بهذه',
+  'skin.remove': 'العودة إلى النرد الأصلي',
 };

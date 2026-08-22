@@ -1,18 +1,10 @@
 node_modules/
+www/
 android/app/build/
 android/build/
 android/.gradle/
 android/local.properties
 android/app/release/
-signing/
 *.keystore
 *.jks
-
-# Les CAPTURES de la fiche Play ne voyagent pas ici : elles sont poussees vers
-# Play par `play_api.py --listing` depuis la machine, a partir de
-# dice_server/mobile/store/ dans ee_admin. En garder une copie ici, c'est 5,7 Mo
-# clonés a chaque build de CI pour des fichiers qu'elle n'utilise pas (son
-# declencheur ignore deja `store/**`), et deux versions qui finiront par
-# diverger. L'icone et la banniere, elles, etaient deja versionnees ici : on n'y
-# touche pas.
-store/screenshots/
+signing/

@@ -20,9 +20,14 @@ export const EN = {
   'cap.teach.name': 'Blackbeard',
   'cap.teach.trait': 'His first placement also takes the enemy dice one value above — a 6 takes the 1s.',
   'cap.ching.name': 'Ching Shih',
-  'cap.ching.trait': 'Sees the next die her opponent will roll.',
+  'cap.ching.trait': 'One look per match at the die her opponent is about to roll.',
+  'shop.B004.name': 'Spyglass',
+  'shop.B004.desc': 'Look at the die your opponent is about to roll.',
+  'shop.B005.name': 'Blessed column',
+  'shop.B005.desc': 'One of your columns scores 15% more until the end of the match.',
+  'fx.boost': 'Column blessed: +15% until the end',
   'cap.omalley.name': "Grace O'Malley",
-  'cap.omalley.trait': 'Her columns of three matching dice are worth 15% more.',
+  'cap.omalley.trait': 'One blessed column per match: it scores 15% more.',
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Starts the match with one die already placed.',
   'cap.trait.reroll': 'Free reroll',
@@ -31,8 +36,33 @@ export const EN = {
 
   'fx.broadside': 'Broadside! {n} dice',
   'fx.foeTrait': '{name}: {trait}',
-  'fx.aiBonus': '{name} played {bonus}',
+  'fx.bonusYou': 'You play',
+  'resume.done': 'Match resumed — you were expected back.',
+  'game.paused': 'Waiting for the other player…',
   'fx.next': 'next',
+
+  /* ── ce que la table se dit ─────────────────────────────────────────────── */
+  'mood.hint': 'Hold your portrait to speak',
+
+  'taunt.broadside.0': 'Down they go, sailor!',
+  'taunt.broadside.1': 'Two at once. Shall I stop?',
+  'taunt.broadside.2': 'That is how we do it.',
+  'taunt.broadside.3': 'Your deck is getting empty.',
+
+  'taunt.sting.0': 'One less for you.',
+  'taunt.sting.1': 'Oops.',
+  'taunt.sting.2': 'I needed that spot.',
+  'taunt.sting.3': 'Nothing personal.',
+
+  'taunt.blast.0': 'Fire!',
+  'taunt.blast.1': 'A gift, from my hold.',
+  'taunt.blast.2': 'You were too comfortable.',
+  'taunt.blast.3': 'Coin well spent.',
+
+  'taunt.lead.0': 'Back in front.',
+  'taunt.lead.1': 'Was that your best?',
+  'taunt.lead.2': 'The tide turns.',
+  'taunt.lead.3': 'Keep up, captain.',
   'bonus.free': 'free',
 
   'room.title': 'Play with a friend',
@@ -71,6 +101,7 @@ export const EN = {
   'connect.noSsh': ' — and the SSH tunnel could not be opened either',
   'connect.fixTool': 'Deploy or restart it with {cmd} ({logs} reads its journal).',
   'connect.fixSsh': 'Off the office network the game rides the tool’s SSH connection: check Settings → server SSH.',
+  'connect.retryingIn': 'Trying again in {n} s…',
   'connect.retry': 'Try again',
 
   'menu.title': "Roll for the captain's purse",
@@ -162,7 +193,8 @@ export const EN = {
 
   'away.taken': '{name} was away — the ship’s AI played that turn',
   'away.you': 'You were away: the AI played for you',
-
-  'motion.on': 'Motion controls on: shake to roll, tilt to place',
-  'motion.off': 'Motion controls off',
+  'skin.appearance': 'Appearance only — no effect on play',
+  'skin.owned': 'Owned',
+  'skin.wear': 'Use these dice',
+  'skin.remove': 'Back to the old dice',
 };

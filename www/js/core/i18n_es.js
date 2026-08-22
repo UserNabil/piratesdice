@@ -10,9 +10,9 @@ export const ES = {
   'cap.teach.name': 'Barbanegra',
   'cap.teach.trait': 'Su primera colocación se lleva también los dados rivales del valor justo superior — un 6 se lleva los 1.',
   'cap.ching.name': 'Ching Shih',
-  'cap.ching.trait': 'Ve el próximo dado que tirará su rival.',
+  'cap.ching.trait': 'Un vistazo por partida al dado que su rival va a tirar.',
   'cap.omalley.name': 'Grace O’Malley',
-  'cap.omalley.trait': 'Sus columnas de tres dados iguales valen un 15 % más.',
+  'cap.omalley.trait': 'Una columna bendecida por partida: puntuúa un 15 % más.',
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Empieza la partida con un dado ya colocado.',
   'cap.trait.reroll': 'Tirada gratis',
@@ -21,8 +21,37 @@ export const ES = {
 
   'fx.broadside': '¡Andanada! {n} dados',
   'fx.foeTrait': '{name}: {trait}',
-  'fx.aiBonus': '{name} ha jugado {bonus}',
   'fx.next': 'próximo',
+  'fx.bonusYou': 'Juegas',
+  'shop.B004.name': 'Catalejo',
+  'shop.B004.desc': 'Ver el dado que el rival está a punto de tirar.',
+  'shop.B005.name': 'Columna bendecida',
+  'shop.B005.desc': 'Una de tus columnas puntuúa un 15 % más hasta el final.',
+  'fx.boost': 'Columna bendecida: +15 % hasta el final',
+  'resume.done': 'Partida reanudada — te esperábamos.',
+  'game.paused': 'Esperando al otro jugador…',
+
+  'mood.hint': 'Mantén pulsado tu retrato para hablar',
+
+  'taunt.broadside.0': '¡Al agua, marinero!',
+  'taunt.broadside.1': 'Dos de golpe. ¿Paro?',
+  'taunt.broadside.2': 'Así se hace.',
+  'taunt.broadside.3': 'Tu cubierta se vacía.',
+
+  'taunt.sting.0': 'Uno menos para ti.',
+  'taunt.sting.1': 'Vaya.',
+  'taunt.sting.2': 'Necesitaba ese sitio.',
+  'taunt.sting.3': 'Nada personal.',
+
+  'taunt.blast.0': '¡Fuego!',
+  'taunt.blast.1': 'Un regalo, de mi bodega.',
+  'taunt.blast.2': 'Estabas demasiado cómodo.',
+  'taunt.blast.3': 'Monedas bien gastadas.',
+
+  'taunt.lead.0': 'Otra vez delante.',
+  'taunt.lead.1': '¿Eso era lo mejor?',
+  'taunt.lead.2': 'La marea cambia.',
+  'taunt.lead.3': 'Sígueme el paso, capitán.',
   'bonus.free': 'gratis',
 
   'room.title': 'Jugar con un amigo',
@@ -54,6 +83,7 @@ export const ES = {
   'connect.boarding': 'Subiendo a bordo…',
   'connect.outOfReach': 'No se alcanza el servidor del juego',
   'connect.tried': 'Se intentó {url}',
+  'connect.retryingIn': 'Reintentando en {n} s…',
   'connect.retry': 'Reintentar',
 
   'menu.title': 'Juega la bolsa del capitán',
@@ -146,15 +176,10 @@ export const ES = {
   'away.taken': '{name} se ausentó — la IA de a bordo jugó ese turno',
   'away.you': 'Estabas ausente: la IA jugó por ti',
 
-  'motion.on': 'Movimientos activados: agita para tirar, inclina para colocar',
-  'motion.off': 'Movimientos desactivados',
-
   'set.title': 'Ajustes',
   'set.sound': 'Sonido',
   'set.soundOn': 'Activado',
   'set.soundOff': 'Silenciado',
-  'set.motion': 'Jugar con movimientos',
-  'set.motionHelp': 'Agitar para tirar · inclinar a izquierda, derecha o adelante para colocar',
   'set.account': 'Cuenta',
   'set.signedInAs': 'Conectado como {name}',
   'set.signIn': 'Iniciar sesión con Google',
@@ -167,4 +192,19 @@ export const ES = {
   'set.terms': 'Condiciones de uso y privacidad',
   'set.close': 'Cerrar',
   'set.guest': 'Invitado (este teléfono)',
+
+  /* Ces sept-la manquaient : la fiche du serveur injoignable et les
+     infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
+     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+  'hdr.close': 'Cerrar (Esc)',
+  'hdr.full': 'Pantalla completa',
+  'hdr.exitFull': 'Salir de pantalla completa',
+  'connect.viaSsh': ' (por el túnel SSH de la herramienta)',
+  'connect.noSsh': ' — y el túnel SSH tampoco pudo abrirse',
+  'connect.fixTool': 'Reinicialo con {cmd} ({logs} lee su registro).',
+  'connect.fixSsh': 'Fuera de la red de la oficina, el juego usa el túnel SSH de la herramienta: comprueba que la máquina responde.',
+  'skin.appearance': 'Solo apariencia — sin efecto en el juego',
+  'skin.owned': 'En bodega',
+  'skin.wear': 'Jugar con estos',
+  'skin.remove': 'Volver a los dados originales',
 };

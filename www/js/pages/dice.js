@@ -85,6 +85,17 @@ function build() {
 
 /* ────────────────────────────────────────────────────────── open / close ── */
 
+/* Le reseau revient, ou l'application repasse au premier plan : ce sont les deux
+   instants ou une tentative aboutit. On ne les laisse pas passer. */
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    if (S.open && !S.net) { arreterRelance(); connect(); }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && S.open && !S.net) { arreterRelance(); connect(); }
+  });
+}
+
 export async function openDice() {
   build();
   /* Les planches d'effets et les faces de des sont tirees MAINTENANT : la
@@ -106,6 +117,8 @@ async function connect() {
 
   S.net = new DiceNet({
     welcome: (m) => {
+      /* On est passe : l'attente repart de zero pour la prochaine coupure. */
+      arreterRelance();
       S.me = m.me; S.inventory = m.inventory || []; S.shop = m.shop || [];
       S.rules = m.rules || S.rules;
       renderWallet();
@@ -125,7 +138,15 @@ async function connect() {
     over: onOver,
     error: (m) => toast(m.msg || 'refused', 'warn'),
     denied: (m) => connectFailed(m.msg || 'the game server refused the token'),
-    closed: (byUs) => { if (!byUs && S.open) connectFailed('the connection to the game server dropped'); },
+    closed: (byUs) => {
+      /* ⚠️ `S.net` DOIT TOMBER AVEC LA CONNEXION. La relance automatique et les
+         panneaux verifient sa presence pour savoir s'ils peuvent parler : le
+         laisser en place derriere une socket morte, c'est promettre un canal
+         qui n'existe plus. */
+      if (byUs) return;
+      S.net = null;
+      if (S.open) connectFailed('the connection to the game server dropped');
+    },
   });
 
   try { await S.net.connect(); }
@@ -154,14 +175,63 @@ async function connectFailed(message) {
       <button class="dc-btn" id="dc-retry">${esc(t('connect.retry'))}</button>
     </div>`;
   const retry = $('#dc-retry');
-  if (retry) retry.onclick = () => connect();
+  if (retry) retry.onclick = () => { arreterRelance(); connect(); };
+
+  /* ⚠️ CE N'EST PAS AU JOUEUR DE REESSAYER. Un ascenseur, un tunnel, un
+     changement de wifi : la connexion revient d'elle-meme quelques secondes plus
+     tard, et l'ecran restait plante sur son message jusqu'a ce qu'on pense a
+     taper. Le serveur garde d'ailleurs la table dressee pendant ce temps — il
+     serait absurde de laisser expirer ce delai faute d'un geste.
+
+     L'attente double a chaque echec (1, 2, 4… jusqu'a 15 s) : marteler un serveur
+     qui redemarre le ralentit et vide la batterie pour rien. */
+  relancerPlusTard();
 }
 
+const RELANCE_MIN = 1000;
+const RELANCE_MAX = 15000;
+let relanceDelai = RELANCE_MIN;
+let relanceTimer = 0;
+
+function arreterRelance() {
+  if (relanceTimer) { clearTimeout(relanceTimer); relanceTimer = 0; }
+  relanceDelai = RELANCE_MIN;
+}
+
+function relancerPlusTard() {
+  if (relanceTimer) return;                     // une seule tentative en vol
+  const dans = relanceDelai;
+  relanceDelai = Math.min(RELANCE_MAX, relanceDelai * 2);
+  relanceTimer = setTimeout(() => {
+    relanceTimer = 0;
+    if (!S.open) return;                        // le joueur est parti : on se tait
+    connect();
+  }, dans);
+}
+
+/**
+ * Quitter — et « quitter » ne veut pas dire la meme chose des deux cotes.
+ *
+ * ⚠️ DANS LE TOOL le jeu est une surcouche : la fermer rend la main au
+ * back-office, ce qui est le geste attendu. DANS L'APPLICATION, cette meme
+ * surcouche EST l'application : la fermer laissait un ecran de jeu fige, sans
+ * menu, sans retour possible — et `closeDice()` ferme aussi la socket, si bien
+ * que le moindre onglet touche ensuite plantait sur `S.net` a null (« cannot
+ * read properties of null »). Un seul geste, deux defauts.
+ *
+ * On distingue donc les deux mondes par `UI.standalone`, pose par le demarrage
+ * de l'application. Autonome : on abandonne la partie et on revient au pont.
+ * Surcouche : on referme, comme avant.
+ */
 function requestClose() {
   const live = S.state && S.state.phase !== 'over';
-  if (!live) return closeDice();
+  const sortir = () => {
+    if (UI.standalone) { UI.leaveMatch ? UI.leaveMatch() : showMenu(); return; }
+    closeDice();
+  };
+  if (!live) { sortir(); return undefined; }
   uiConfirm(t('game.leaveConfirm'), t('game.leaveTitle'), t('game.leaveOk'))
-    .then((yes) => { if (yes) { if (S.net) S.net.send({ t: 'leave' }); closeDice(); } });
+    .then((yes) => { if (yes) { if (S.net) S.net.send({ t: 'leave' }); sortir(); } });
   return undefined;
 }
 
