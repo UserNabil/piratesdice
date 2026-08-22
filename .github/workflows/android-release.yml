@@ -30,8 +30,12 @@ on:
         type: choice
         options: [internal, alpha, beta, production]
 
+# ⚠️ MEME GROUPE QUE `play-listing.yml`, ET CE N EST PAS UN DETAIL.
+# Play n accepte qu UNE edition a la fois : deux chaines qui lui parlent en
+# meme temps se perime l une l autre en plein envoi. Le groupe commun les met
+# a la queue leu leu.
 concurrency:
-  group: android-release
+  group: play
   cancel-in-progress: false
 
 jobs:

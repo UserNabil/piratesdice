@@ -123,7 +123,8 @@ def call(token, url, method="GET", body=None, raw=None, content_type=None):
             return False, {"error": {"code": exc.code, "message": text[:400]}}
 
 
-CONFLICTS = ("has been deleted", "outside of this Edit", "edit is not valid")
+CONFLICTS = ("has been deleted", "outside of this Edit", "edit is not valid",
+             "has expired")   # ⚠️ manquait : a fait echouer un envoi de 35 Mo
 
 
 def conflicted(payload):
@@ -256,17 +257,38 @@ def prochain(token):
 
 
 def upload(token, aab, track, notes_dir):
+    """L'envoi complet, rejouable d'un bloc.
+
+    ⚠️ UNE EDITION PERIMEE NE SE REPARE PAS AU MILIEU. L'envoi ouvre une edition,
+    y depose l'AAB, pose la piste, puis valide. Si une autre edition passe entre
+    l'ouverture et la fin — la chaine de la fiche, un geste dans la console —
+    Play repond « This edit has expired » et TOUT ce qui suit est perdu : reprendre
+    a l'etape suivante n'a aucun sens, l'edition n'existe plus. On refait donc
+    depuis l'ouverture. Vecu : un envoi de 35 Mo mort a la derniere seconde.
+    """
+    blob = open(aab, "rb").read()
+    ok, out = with_retry(lambda: envoyer(token, blob, aab, track, notes_dir))
+    if not ok:
+        sys.exit("envoi refuse : " + why(out))
+    version, aLaMain = out
+    print("✔ publie sur la piste %s (versionCode %s)" % (track, version))
+    if aLaMain:
+        print("   ⚠ deposee SANS demande de revue : un rejet est encore ouvert.")
+        print("     Envoi a faire depuis la console, une fois la violation corrigee :")
+        print("     Publication > Apercu de la publication > Envoyer les modifications")
+
+
+def envoyer(token, blob, aab, track, notes_dir):
     ok, out = call(token, API + "/edits", method="POST", body={})
     if not ok:
-        sys.exit("impossible d'ouvrir une edition : " + why(out))
+        return False, out
     edit = out["id"]
 
-    blob = open(aab, "rb").read()
     print("envoi de %s (%.1f Mo)…" % (os.path.basename(aab), len(blob) / 1e6))
     ok, out = call(token, UPLOAD + "/edits/%s/bundles?uploadType=media" % edit,
                    method="POST", raw=blob, content_type="application/octet-stream")
     if not ok:
-        sys.exit("envoi refuse : " + why(out))
+        return False, out
     version = out["versionCode"]
     print("   accepte, versionCode %s" % version)
 
@@ -277,16 +299,12 @@ def upload(token, aab, track, notes_dir):
     ok, out = call(token, API + "/edits/%s/tracks/%s" % (edit, track),
                    method="PUT", body={"track": track, "releases": [release]})
     if not ok:
-        sys.exit("piste refusee : " + why(out))
+        return False, out
 
     ok, out, aLaMain = commit(token, edit)
     if not ok:
-        sys.exit("validation refusee : " + why(out))
-    print("✔ publie sur la piste %s (versionCode %s)" % (track, version))
-    if aLaMain:
-        print("   ⚠ deposee SANS demande de revue : un rejet est encore ouvert.")
-        print("     Envoi a faire depuis la console, une fois la violation corrigee :")
-        print("     Publication > Apercu de la publication > Envoyer les modifications")
+        return False, out
+    return True, (version, aLaMain)
 
 
 
