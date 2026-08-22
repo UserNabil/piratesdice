@@ -19,6 +19,7 @@ sans toi. Le dépôt : github.com/UserNabil/piratesdice, branche main.
   android/                  la coque Android, déjà publiée (versionCode 30)
   .github/workflows/android-release.yml   la CI Android : à chaque poussée sur
                             main, build signé et envoi sur la piste interne
+  play_api.py               l'envoi chez Google, le même outil à la main et en CI
 
 Le jeu est un client web dans une WebView. Le portage iOS ne réécrit RIEN du jeu :
 il ajoute une seconde coque native autour du même www/.
@@ -104,14 +105,23 @@ Android ne passeront pas telles quelles : régénère-les depuis le simulateur.
 
 ## La chaîne : `.github/workflows/ios-release.yml`
 
-Calque-la sur `android-release.yml`, qui est dans le dépôt et qui marche. Mêmes
-principes, quatre différences :
+Calque-la sur `android-release.yml`, qui est dans le dépôt. Mêmes principes,
+quatre différences :
 
   runs-on: macos-latest        (obligatoire, Xcode n'existe pas ailleurs)
-  le numéro de build = le numéro de la compilation GitHub, jamais choisi à la
-    main : App Store Connect refuse deux envois avec le même
+  le numéro de build : DEMANDE-LE À APPLE — voir juste en dessous
   secrets : ASC_KEY_P8, ASC_KEY_ID, ASC_ISSUER_ID
   destination : TestFlight, jamais l'App Store directement
+
+⚠️ **LE NUMÉRO DE BUILD : NE LE DÉDUIS PAS DU NUMÉRO DE COMPILATION.** La chaîne
+Android faisait exactement ça, et elle a échoué douze fois de suite sans que
+personne s'en aperçoive : des envois partaient aussi à la main, avec leur propre
+compte. Deux compteurs pour une seule suite. La collision est certaine, et elle
+ne tombe qu'à la DERNIÈRE étape — après un build complet et signé, quand tout
+avait l'air d'aller. App Store Connect a la même règle qu'Play. Demande-lui le
+plus haut numéro déjà reçu et prends le suivant ; c'est la seule autorité sur ce
+qui est pris. Côté Android, `play_api.py --next-version` fait exactement ça :
+lis-le, la logique se transpose.
 
 Les étapes :
 

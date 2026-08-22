@@ -6,9 +6,13 @@
 # promotion reste un geste humain dans la console (ou le workflow manuel plus
 # bas, avec la piste en parametre).
 #
-# Le numero de version (versionCode) est le NUMERO DE LA COMPILATION : Play
-# refuse deux envois avec le meme, et un numero choisi a la main finit toujours
-# par etre oublie une fois.
+# LE NUMERO DE VERSION EST DEMANDE A PLAY, PAS DEDUIT ICI.
+#
+# Il valait le numero de la compilation. C'etait faux des qu'un envoi partait a
+# la main : deux compteurs pour une seule suite. Play refuse un versionCode deja
+# pris, et il le refuse a la DERNIERE etape — apres un build complet et signe.
+# Les compilations 1 a 31 etaient condamnees d'avance ; la 20 et la 21 sont
+# mortes ainsi. Play est seul a savoir ce qui est pris : on le lui demande.
 # ============================================================================
 
 name: Android release
@@ -55,12 +59,21 @@ jobs:
       - name: Dependances
         run: npm ci
 
+      - name: Outil d'envoi
+        run: pip install --quiet cryptography
+
+      # Le numero vient de Play, pas d'ici : voir l'en-tete de ce fichier.
+      - name: Demander le prochain numero de version
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: echo "VERSION_CODE=$(python3 play_api.py --next-version)" >> "$GITHUB_ENV"
+
       # www/ est deja dans le depot (exporte depuis ee_admin), mais on le
       # reconstruit si l'adresse du serveur est fournie : c'est la seule chose
       # qui change entre un build de test et un build public.
       - name: Assembler le front
         if: ${{ vars.DICE_SERVER_URL != '' }}
-        run: python3 build.py --server "${{ vars.DICE_SERVER_URL }}" --build "${{ github.run_number }}"
+        run: python3 build.py --server "${{ vars.DICE_SERVER_URL }}" --build "$VERSION_CODE"
 
       - name: Verifier le front
         run: python3 build.py --check
@@ -85,7 +98,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           # Le numero de compilation devient le versionCode : jamais deux fois le meme.
-          ORG_GRADLE_PROJECT_versionCode: ${{ github.run_number }}
+          ORG_GRADLE_PROJECT_versionCode: ${{ env.VERSION_CODE }}
         working-directory: android
         run: ./gradlew bundleRelease --no-daemon
 
@@ -96,17 +109,16 @@ jobs:
       - name: Garder l'AAB en pièce jointe
         uses: actions/upload-artifact@v4
         with:
-          name: piratesdice-aab-${{ github.run_number }}
+          name: piratesdice-aab-${{ env.VERSION_CODE }}
           path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 30
 
       # ── l'envoi chez Google ───────────────────────────────────────────────
+      # Le MEME outil qu'a la main. Une action tierce aurait sa propre idee de
+      # ce qu'est un envoi reussi ; celle-ci sait deja retomber sur un depot
+      # sans demande de revue quand un rejet est encore ouvert.
       - name: Envoyer sur Play
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.nabil.piratesdice
-          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ inputs.track || 'internal' }}
-          status: completed
-          whatsNewDirectory: store/whatsnew
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python3 play_api.py             --upload android/app/build/outputs/bundle/release/app-release.aab             --track "${{ inputs.track || 'internal' }}"
