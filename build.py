@@ -60,10 +60,81 @@ def standalone():
     return not os.path.isdir(STATIC)
 
 
+NL = chr(10)
+
+
+def source_de(rel):
+    """Le fichier de `static/` (ou d'`app/`) dont ce fichier de `www/` est la copie."""
+    rel = rel.replace(os.sep, "/")
+    for src, r in SHARED_FILES:
+        if rel == r.replace(os.sep, "/"):
+            return src
+    for folder, prefix, r in SHARED_GLOBS:
+        r = r.replace(os.sep, "/")
+        if rel.startswith(r + "/"):
+            nom = rel[len(r) + 1:]
+            if nom.startswith(prefix) and "/" not in nom:
+                return os.path.join(folder, nom)
+    for src, r in SHARED_TREES:
+        r = r.replace(os.sep, "/")
+        if rel.startswith(r + "/"):
+            return os.path.join(src, rel[len(r) + 1:].replace("/", os.sep))
+    cand = os.path.join(APP, rel.replace("/", os.sep))
+    return cand if os.path.isfile(cand) else None
+
+
+def travail_a_la_main():
+    """Ce que `www/` contient et que `static/` ne produirait pas.
+
+    ⛔ POURQUOI CE CONTROLE EXISTE. `build()` VIDE `www/` avant de recopier. Une
+    image retouchee a la main dans `www/` disparait donc au build suivant, sans
+    une ligne d'avertissement — et le travail est irrecuperable, `www/` n'etant
+    pas suivi par git. C'est arrive DEUX FOIS a l'admin : quinze images
+    corrigees (portraits de capitaines, icones de traits) ecrasees par un build
+    lance pour une raison sans rapport.
+
+    `www/` est un produit de build. La correction doit vivre dans `static/`.
+    """
+    if standalone() or not os.path.isdir(WWW):
+        return []
+    ecarts = []
+    for base, _d, fs in os.walk(WWW):
+        for f in fs:
+            chemin = os.path.join(base, f)
+            rel = os.path.relpath(chemin, WWW).replace(os.sep, "/")
+            if rel == "index.html":
+                continue          # GENERE : l'adresse du serveur y est gravee
+            src = source_de(rel)
+            if not src or not os.path.isfile(src):
+                continue                       # genere (index.html) ou orphelin
+            if open(chemin, "rb").read() != open(src, "rb").read():
+                ecarts.append(rel)
+    return sorted(ecarts)
+
+
 def build(server, build_id):
     # ⚠️ On VIDE www/ sans le supprimer : un serveur de test ou un editeur pose
     # dessus tient le dossier ouvert, et `rmtree` echoue alors sur Windows
     # (WinError 32) — le build s'arretait pour une raison sans rapport avec lui.
+    ecarts = travail_a_la_main()
+    if ecarts and not os.environ.get("PD_ECRASER"):
+        trop = len(ecarts) - 20
+        message = [
+            "ARRET : %d fichier(s) de www/ different de la source, et www/ est" % len(ecarts),
+            "        sur le point d'etre VIDE. Ce serait du travail a la main",
+            "        detruit sans retour : www/ n'est pas suivi par git.",
+            "",
+        ] + ["        " + r for r in ecarts[:20]]
+        if trop > 0:
+            message.append("        … et %d autre(s)" % trop)
+        message += [
+            "",
+            "        www/ est un produit de build. Pour GARDER ces changements,",
+            "        les remonter dans static/dice/ — leur vraie place — puis",
+            "        relancer. Pour les jeter volontairement : PD_ECRASER=1",
+        ]
+        sys.exit(NL.join(message))
+
     os.makedirs(WWW, exist_ok=True)
     if not standalone():
         for name in os.listdir(WWW):
