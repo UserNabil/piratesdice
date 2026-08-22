@@ -1,0 +1,46 @@
+{
+  // Le jeu est du JavaScript de module, servi tel quel : pas de compilation, pas
+  // de source map. Les points d'arret tombent donc directement dans www/.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // La boucle courte : le jeu dans Chrome, sans telephone. C'est ici qu'on
+      // regle le CSS — la fenetre est ouverte a la taille d'un portrait.
+      "name": "Web : le jeu dans Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8095",
+      "webRoot": "${workspaceFolder}/www",
+      "preLaunchTask": "pd: servir www",
+      "runtimeArgs": ["--window-size=420,880", "--auto-open-devtools-for-tabs"],
+      "sourceMaps": false
+    },
+    {
+      // L'application reelle. La tache installe l'APK, l'ouvre, puis ouvre le
+      // pont ; VS Code se raccroche ensuite a la WebView sur 9222.
+      "name": "Android : construire, installer et deboguer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "preLaunchTask": "pd: lancer et ponter",
+      "webRoot": "${workspaceFolder}/www",
+      // La WebView sert la page depuis https://localhost/ (schema Capacitor par
+      // defaut) : sans cette carte, les fichiers s'ouvrent en lecture seule et
+      // les points d'arret restent gris.
+      "pathMapping": { "/": "${workspaceFolder}/www/" },
+      "sourceMaps": false
+    },
+    {
+      // Quand l'app tourne DEJA sur le telephone : on ne reinstalle rien, on se
+      // rebranche. C'est la config a prendre apres un simple rechargement.
+      "name": "Android : se rebrancher sur l'app ouverte",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "preLaunchTask": "pd: pont devtools",
+      "webRoot": "${workspaceFolder}/www",
+      "pathMapping": { "/": "${workspaceFolder}/www/" },
+      "sourceMaps": false
+    }
+  ]
+}

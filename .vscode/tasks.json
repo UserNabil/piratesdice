@@ -1,0 +1,113 @@
+{
+  // Les taches de l'application mobile. Rien ici ne fait le travail lui-meme :
+  // tout appelle build.py, cap et gradlew, qui restent la verite.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // ⚠️ build.py grave l'adresse du serveur dans www/index.html, qui est
+      // VERSIONNE. Lance sans --server il remplace l'adresse de production par
+      // le LAN du bureau, et le commit suivant emporte la regression. D'ou le
+      // choix explicite : aucune valeur par defaut silencieuse.
+      "label": "pd: assembler www",
+      "type": "shell",
+      "command": "python3 build.py --server ${input:pdServer}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "pd: sync android",
+      "type": "shell",
+      "command": "npx cap sync android",
+      "dependsOn": "pd: assembler www",
+      "options": { "env": { "JAVA_HOME": "/Applications/Android Studio.app/Contents/jbr/Contents/Home" } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      // Le java du PATH est un JDK 8 : AGP exige 17+. JAVA_HOME est donc pose
+      // ici, sinon le build echoue sur un message qui ne parle pas de Java.
+      "label": "pd: APK debug",
+      "type": "shell",
+      "command": "./gradlew assembleDebug",
+      "options": {
+        "cwd": "${workspaceFolder}/android",
+        "env": { "JAVA_HOME": "/Applications/Android Studio.app/Contents/jbr/Contents/Home" }
+      },
+      "dependsOn": "pd: sync android",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "pd: installer et lancer",
+      "type": "shell",
+      "command": "adb wait-for-device && adb install -r android/app/build/outputs/apk/debug/app-debug.apk && adb shell monkey -p com.nabil.piratesdice -c android.intent.category.LAUNCHER 1",
+      "dependsOn": "pd: APK debug",
+      "options": { "env": { "PATH": "${env:HOME}/Library/Android/sdk/platform-tools:${env:PATH}" } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      // L'emulateur tient le terminal tant qu'il tourne. Aucune autre tache ne
+      // l'attend : « installer et lancer » fait son propre `adb wait-for-device`,
+      // ce qui marche aussi bien avec un vrai telephone branche.
+      "label": "pd: emulateur",
+      "type": "shell",
+      "command": "emulator -avd ${input:pdAvd}",
+      "options": { "env": { "PATH": "${env:HOME}/Library/Android/sdk/emulator:${env:PATH}" } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "dedicated" }
+    },
+    {
+      // Le jeu dans un navigateur, sans telephone : c'est la boucle courte pour
+      // le CSS (courbures, tailles). Rechargement = F5 dans Chrome.
+      "label": "pd: servir www",
+      "type": "shell",
+      "command": "python3 -u -m http.server 8095 --directory www",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^(.*)$", "file": 1 },
+        "background": { "activeOnStart": true, "beginsPattern": ".", "endsPattern": "Serving HTTP" }
+      },
+      "presentation": { "reveal": "silent", "panel": "dedicated" }
+    },
+    {
+      // Le pont DevTools. La WebView n'ecoute pas sur un port TCP mais sur une
+      // socket abstraite dont le nom porte le PID : il faut la lire a chaque
+      // lancement, on ne peut pas la graver dans une config. La boucle attend
+      // que la WebView existe — au demarrage elle arrive apres l'activite.
+      "label": "pd: pont devtools",
+      "type": "shell",
+      "command": "sock=''; for i in $(seq 1 40); do sock=$(adb shell cat /proc/net/unix | grep -o 'webview_devtools_remote_[0-9]*' | head -1); [ -n \"$sock\" ] && break; sleep 1; done; if [ -z \"$sock\" ]; then echo 'Aucune WebView : l app est-elle ouverte, et l APK bien en debug ?'; exit 1; fi; adb forward tcp:9222 localabstract:$sock && echo \"pont ouvert : localhost:9222 -> $sock\"",
+      "options": { "env": { "PATH": "${env:HOME}/Library/Android/sdk/platform-tools:${env:PATH}" } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "dedicated" }
+    },
+    {
+      "label": "pd: lancer et ponter",
+      "dependsOrder": "sequence",
+      "dependsOn": ["pd: installer et lancer", "pd: pont devtools"],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "pdServer",
+      "type": "pickString",
+      "description": "Quel serveur graver dans l'application ?",
+      "default": "https://dice.my-officeapps.com",
+      "options": [
+        { "label": "production — dice.my-officeapps.com", "value": "https://dice.my-officeapps.com" },
+        { "label": "emulateur — l'hote, vu du telephone virtuel", "value": "http://10.0.2.2:8100" },
+        { "label": "LAN du bureau — 192.168.1.19", "value": "http://192.168.1.19:8100" }
+      ]
+    },
+    {
+      "id": "pdAvd",
+      "type": "pickString",
+      "description": "Quel telephone virtuel ?",
+      "default": "Pixel_9_Pro_XL",
+      "options": ["Pixel_9_Pro_XL", "Medium_Phone_API_36.1"]
+    }
+  ]
+}
