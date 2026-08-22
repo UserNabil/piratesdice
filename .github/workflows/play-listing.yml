@@ -1,0 +1,61 @@
+# ============================================================================
+# .github/workflows/play-listing.yml
+#
+# LA FICHE, PAS L'APPLICATION. `android-release.yml` publie une VERSION a chaque
+# poussee ; celui-ci publie la FICHE — titres, descriptions, icone, bandeau,
+# captures, coordonnees — des que `store/` bouge.
+#
+# Pourquoi deux chaines et pas une. Une correction de faute dans une description
+# n'a aucune raison de rebatir, signer et publier un APK de 34 Mo. Et une
+# correction de code n'a aucune raison de repousser quatre langues de fiche.
+# `android-release.yml` ignore donc `store/**`, et celui-ci ne regarde que lui.
+#
+# ⛔ AUCUNE CLE ICI. Le compte de service vit dans les secrets du depot. Un agent
+# ou un contributeur qui doit mettre la fiche a jour lance CE workflow — il n'a
+# jamais besoin qu'on lui confie la cle.
+# ============================================================================
+
+name: Play listing
+
+on:
+  push:
+    branches: [main]
+    paths: ['store/**']
+  workflow_dispatch:
+
+concurrency:
+  group: play-listing
+  cancel-in-progress: false
+
+jobs:
+  listing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Outil d'envoi
+        run: pip install --quiet cryptography
+
+      # Rien n'est envoye avant que l'acces soit prouve : un echec ici est un
+      # probleme de secret, pas de contenu, et le distinguer fait gagner l'heure
+      # qu'on passerait a relire des descriptions parfaitement valides.
+      - name: Verifier l'acces
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python3 play_api.py --check
+
+      - name: Publier la fiche et ses images
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python3 play_api.py --listing
+
+      - name: Publier les coordonnees
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python3 play_api.py --details
