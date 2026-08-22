@@ -1,10 +1,22 @@
 node_modules/
-www/
+
+# Regenere par `npx cap copy` depuis www/ — jamais la source.
+android/app/src/main/assets/public/
+ios/App/App/public/
+
 android/app/build/
 android/build/
 android/.gradle/
 android/local.properties
 android/app/release/
+ios/App/Pods/
+ios/App/build/
+ios/App/output/
+
+# ⛔ La signature ne quitte jamais la machine : elle vit dans les secrets GitHub.
 *.keystore
 *.jks
+*.p8
+*.p12
+*.mobileprovision
 signing/

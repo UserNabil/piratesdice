@@ -426,7 +426,7 @@ def details(token):
     edit = out["id"]
     ok, out = call(token, API + "/edits/%s/details" % edit, method="PATCH", body={
         "contactEmail": "n.ouldterki@gmail.com",
-        "contactWebsite": "https://usernabil.github.io/piratesdice/",
+        "contactWebsite": "https://usernabil.github.io/piratesdice-site/",
         "defaultLanguage": "en-US",
     })
     print("coordonnees :", "posees" if ok else "ECHEC " + why(out))

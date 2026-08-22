@@ -10,7 +10,7 @@ Paquet `com.nabil.piratesdice`.
 | Accès du compte de service | confirmé, peut ouvrir une édition |
 | Langue par défaut | `en-US` |
 | Courriel de contact | `n.ouldterki@gmail.com` |
-| Site | `https://usernabil.github.io/piratesdice/` |
+| Site | `https://usernabil.github.io/piratesdice-site/` |
 | Fiche — 4 langues | en-US, fr-FR, es-ES, ar : titre, description courte, description longue |
 | Icône 512 | posée |
 | Bannière 1024×500 | posée |

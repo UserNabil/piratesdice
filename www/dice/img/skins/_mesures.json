@@ -1,0 +1,38 @@
+{
+  "S002": {
+    "dossier": "gold",
+    "images": 6,
+    "rayon": 25.8,
+    "chaudes": true
+  },
+  "S003": {
+    "dossier": "obsidian",
+    "images": 6,
+    "rayon": 25.1,
+    "chaudes": true
+  },
+  "S004": {
+    "dossier": "ruby",
+    "images": 6,
+    "rayon": 25.1,
+    "chaudes": true
+  },
+  "S005": {
+    "dossier": "pirate",
+    "images": 12,
+    "rayon": 21.3,
+    "chaudes": true
+  },
+  "S006": {
+    "dossier": "arabic",
+    "images": 12,
+    "rayon": 16.1,
+    "chaudes": true
+  },
+  "S007": {
+    "dossier": "dragon",
+    "images": 12,
+    "rayon": 15.9,
+    "chaudes": true
+  }
+}

@@ -97,7 +97,7 @@ La fiche, les captures et la politique de confidentialité existent :
   store/listing.json            textes FR, EN, ES, AR
   store/graphics/               icône 512², bandeau
   store/screenshots/<langue>/   captures par langue et par format
-  https://usernabil.github.io/piratesdice/privacy
+  https://usernabil.github.io/piratesdice-site/privacy
 
 ⚠️ Les tailles de captures d'Apple ne sont pas celles de Google. Il faut du
 6,7 pouces (1290×2796) et du 5,5 pouces (1242×2208) au minimum. Les captures

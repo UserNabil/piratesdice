@@ -16,7 +16,7 @@ import { startMotion } from './motion.js';
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
 
-const TERMS_URL = 'https://usernabil.github.io/piratesdice/privacy.html';
+const TERMS_URL = 'https://usernabil.github.io/piratesdice-site/privacy.html';
 
 /* ⚠️ Les boites vivent DANS #dicewrap. La menuiserie (.pd-panel, .dc-btn) est
    ecrite sous `#dicewrap ...` : posee sur <body>, une carte de reglages

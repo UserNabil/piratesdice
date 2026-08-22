@@ -44,7 +44,7 @@ Fiche :
 
 ```
 DETAILS : {"defaultLanguage":"en-US",
-           "contactWebsite":"https://usernabil.github.io/piratesdice/",
+           "contactWebsite":"https://usernabil.github.io/piratesdice-site/",
            "contactEmail":"n.ouldterki@gmail.com"}
   en-US  icon 1  featureGraphic 1  phone 5  sevenInch 5  tenInch 5
   fr-FR                            phone 5  sevenInch 5  tenInch 5
