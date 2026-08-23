@@ -298,7 +298,13 @@
     --cbt-plateau-ecart: 2px;
   
     --cbt-arene-ecart: 6px;
-    --cbt-arene-marge: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 10px);
+    /* ⚠️ PAS D'`env(safe-area-inset-bottom)` ICI. Ce reglage avait recopie
+       l'ancienne valeur de mobile.css, encoche comprise — et comme combat.css
+       est charge EN DERNIER, il remettait la marge qu'on venait de retirer plus
+       haut. Mesure sur iPhone 17 Pro Max : l'arene calculait 44 px de marge basse
+       (34 d'encoche + 10) et le bandeau du joueur s'arretait a 44 px du bord.
+       Retirer une marge a un endroit ne sert a rien si un autre la repose. */
+    --cbt-arene-marge: 6px 8px 10px;
     --cbt-plateaux-ecart: 4px;
     --cbt-plateaux-marge-bas: 0px;
     --cbt-bandeau-ecart: 8px;

@@ -67,7 +67,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      vide, et elle se voyait a cote d'Android, qui en annonce moins. On en garde
      les deux tiers — assez pour ne jamais passer sous l'indicateur, sur les deux
      plateformes, sans reserver ce que personne n'occupe. */
-  padding-bottom: max(calc(env(safe-area-inset-bottom) * .65), 10px);
+  /* ⚠️ PLUS DE RESERVE EN BAS : LE JEU DESCEND SOUS LA BARRE D'ACCUEIL. Choix
+     assume — le bandeau du bas est de l'affichage, pas une rangee de boutons,
+     et l'indicateur d'accueil se pose par-dessus sans rien masquer d'utile. La
+     marge de respiration qui reste (10 px) vient de l'arene, pas d'ici. */
+  padding-bottom: 0;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
