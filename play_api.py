@@ -202,9 +202,22 @@ def check(token):
                 # deux valeurs, on lit « la piste a la version 49 » et on croit
                 # que les testeurs l'ont.
                 part = r.get("userFraction")
-                print("   piste %-12s %-8s etat: %-11s%s" % (
+                # ⚠️ TROISIEME PIEGE, LE PIRE : `completed` NE VEUT PAS DIRE
+                # « EN LIGNE ». Il dit seulement « la diffusion demandee porte
+                # sur 100 % des testeurs ». Entre cette demande et le telephone
+                # il reste l'EXAMEN de Google, que cette API n'expose nulle part.
+                # Le 23 aout 2026 les deux pistes affichaient `completed` alors
+                # que la console montrait « En cours d'examen » et que les
+                # testeurs en etaient restes a la 1.0.22 du 21 aout.
+                print("   piste %-12s %-8s diffusion demandee: %-11s%s" % (
                     t.get("track"), versions, r.get("status") or "?",
                     ("  fraction: %s" % part) if part is not None else ""))
+        print()
+        print("   ⚠️ « completed » = diffusion DEMANDEE a 100 %, pas version EN LIGNE.")
+        print("      L'examen de Google se lit uniquement dans la console :")
+        print("      Tests fermes > alpha > Versions. Une version encore")
+        print("      « En cours d'examen » n'est chez AUCUN testeur, et pousser")
+        print("      la suivante la fait passer « Non publiee » sans jamais sortir.")
     call(token, API + "/edits/" + edit, method="DELETE")
     return True
 
@@ -500,6 +513,8 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--brut", action="store_true",
                     help="la reponse ENTIERE des pistes, sans resume")
+    ap.add_argument("--historique", action="store_true",
+                    help="tous les paquets envoyes, pour voir ceux qui ne sont jamais sortis")
     ap.add_argument("--purger", action="store_true",
                     help="retire d'une piste les versions restees en brouillon")
     ap.add_argument("--next-version", action="store_true",
@@ -526,6 +541,35 @@ def main():
             sys.exit("acces refuse : " + why(edit))
         ok2, tracks = call(token, API + "/edits/%s/tracks" % edit["id"])
         print(json.dumps(tracks, indent=2, ensure_ascii=False))
+        return
+
+    if args.historique:
+        # ⚠️ CE QU'ON ENVOIE ET CE QUI SORT SONT DEUX CHOSES. Une piste n'affiche
+        # QUE sa derniere version : les precedentes disparaissent du resume, y
+        # compris celles que l'examen n'a jamais laissees passer. On compte donc
+        # les paquets recus par Play, et on les compare a ce que porte la piste.
+        ok, edit = call(token, API + "/edits", method="POST", body={})
+        if not ok:
+            sys.exit("acces refuse : " + why(edit))
+        ok2, b = call(token, API + "/edits/%s/bundles" % edit["id"])
+        if not ok2:
+            sys.exit("paquets illisibles : " + why(b))
+        codes = sorted(int(x["versionCode"]) for x in (b.get("bundles") or []))
+        print("%d paquet(s) recus par Play : %s" % (len(codes), ", ".join(map(str, codes))))
+        ok3, tracks = call(token, API + "/edits/%s/tracks" % edit["id"])
+        portees = set()
+        for t in (tracks.get("tracks") or []):
+            for r in (t.get("releases") or []):
+                for v in (r.get("versionCodes") or []):
+                    portees.add(int(v))
+                    print("   piste %-12s porte %s" % (t.get("track"), v))
+        orphelins = [c for c in codes if c not in portees]
+        if orphelins:
+            print()
+            print("   %d paquet(s) envoyes que plus aucune piste ne porte :" % len(orphelins))
+            print("   %s" % ", ".join(map(str, orphelins)))
+            print("   -> soit remplaces avant la fin de l'examen, soit jamais promus.")
+        call(token, API + "/edits/" + edit["id"], method="DELETE")
         return
 
     if args.purger:

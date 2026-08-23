@@ -30,6 +30,8 @@ jobs:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           python3 play_api.py --check
+          echo '--- paquets envoyes vs paquets portes ---'
+          python3 play_api.py --historique
           echo '--- reponse brute ---'
           python3 play_api.py --brut
           if [ "${{ inputs.purger }}" = "true" ]; then
