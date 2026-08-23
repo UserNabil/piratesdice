@@ -498,6 +498,8 @@ def promote(token, version, track):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--brut", action="store_true",
+                    help="la reponse ENTIERE des pistes, sans resume")
     ap.add_argument("--next-version", action="store_true",
                     help="affiche le prochain versionCode libre, et rien d'autre")
     ap.add_argument("--listing", action="store_true", help="pousse la fiche et ses images")
@@ -511,6 +513,19 @@ def main():
     args = ap.parse_args()
 
     token = access_token()
+    if args.brut:
+        # ⚠️ UN RESUME CACHE CE QU'ON N'A PAS PENSE A REGARDER. Des testeurs ne
+        # recevaient rien alors que la piste portait la derniere version en
+        # « completed » : la raison ne pouvait etre que dans un champ que le
+        # resume n'affichait pas — ciblage par pays, fraction d'utilisateurs, ou
+        # une seconde version sur la meme piste. On lit donc tout.
+        ok, edit = call(token, API + "/edits", method="POST", body={})
+        if not ok:
+            sys.exit("acces refuse : " + why(edit))
+        ok2, tracks = call(token, API + "/edits/%s/tracks" % edit["id"])
+        print(json.dumps(tracks, indent=2, ensure_ascii=False))
+        return
+
     if args.next_version:
         print(prochain(token))
     elif args.upload:
