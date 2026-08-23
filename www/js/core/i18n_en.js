@@ -197,4 +197,27 @@ export const EN = {
   'skin.owned': 'Owned',
   'skin.wear': 'Use these dice',
   'skin.remove': 'Back to the old dice',
+
+  /* ⚠️ CES SEIZE CLES MANQUAIENT A L'ANGLAIS — LA LANGUE SOURCE. Le francais,
+     l'espagnol et l'arabe les avaient toutes ; l'anglais, aucune. Or `t()` rend
+     LA CLE quand elle manque : un joueur anglophone lisait « set.signIn » et
+     « set.erase » a l'ecran, dans le panneau meme ou le testeur d'Apple va
+     verifier la suppression de compte. Trouve le 2026-08-23 en comptant les
+     cles par langue : 0 contre 16. */
+  'set.title': 'Settings',
+  'set.sound': 'Sound',
+  'set.soundOn': 'On',
+  'set.soundOff': 'Off',
+  'set.account': 'Account',
+  'set.signedInAs': 'Signed in as {name}',
+  'set.signIn': 'Sign in with Google',
+  'set.signOut': 'Sign out',
+  'set.erase': 'Erase my data and my account',
+  'set.eraseAsk': 'This permanently erases your captain, your coins and your ranking. Continue?',
+  'set.eraseOk': 'Erase everything',
+  'set.erased': 'Account erased.',
+  'set.language': 'Language',
+  'set.terms': 'Terms of use and privacy',
+  'set.close': 'Close',
+  'set.guest': 'Guest (this phone)',
 };

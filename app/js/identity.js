@@ -68,11 +68,36 @@ function guestName() {
   return name;
 }
 
-/* ── Google Play Games : le module natif, s'il est la ────────────────────── */
+/* ── Le compte Google : le module natif, s'il est la ─────────────────────── */
+
+/* L'identifiant du client WEB, et non celui d'Android. C'est lui que Google met
+   comme destinataire du code d'autorisation, et c'est ce code que le serveur
+   echange contre l'identite du joueur. Un identifiant de client est PUBLIC par
+   construction : ce n'est pas un secret, et il n'y en a aucun dans l'app. Le
+   client Android, lui, ne s'ecrit nulle part ici — Google le reconnait a la
+   signature de l'application et a son nom de paquet. */
+const CLIENT_WEB = '975326394375-5rrfp97jmjtmqggser8jvc3ec8mvplii.apps.googleusercontent.com';
+
+let prepare = null;
 
 function plugin() {
   const cap = window.Capacitor;
-  return (cap && cap.Plugins && cap.Plugins.PlayGames) || null;
+  return (cap && cap.Plugins && cap.Plugins.SocialLogin) || null;
+}
+
+/* ⚠️ `initialize` UNE SEULE FOIS, ET AVANT TOUT `login`. Appele a chaque
+   connexion il rejoue la configuration native pour rien ; oublie, `login` echoue
+   avec une erreur qui ne parle pas de configuration. On garde la promesse. */
+function pret() {
+  const p = plugin();
+  if (!p) return Promise.reject(new Error('no plugin'));
+  if (!prepare) {
+    /* `mode: offline` ne rend QUE le code d'autorisation — pas de profil, pas de
+       jeton d'acces. C'est exactement ce que le serveur attend, et c'est aussi
+       le moins de donnees qu'on puisse demander. */
+    prepare = p.initialize({ google: { webClientId: CLIENT_WEB, mode: 'offline' } });
+  }
+  return prepare;
 }
 
 export function googleAvailable() { return !!plugin(); }
@@ -88,7 +113,8 @@ export async function signIn(opts) {
 
   if (games) {
     try {
-      const out = await games.signIn({ interactive });
+      await pret();
+      const out = await codeGoogle(games, interactive);
       if (out && out.serverAuthCode) {
         session = await claimGoogle(out.serverAuthCode);
         localStorage.setItem(KEY_MODE, 'google');
@@ -103,6 +129,24 @@ export async function signIn(opts) {
   session = await claimDevice();
   localStorage.setItem(KEY_MODE, 'guest');
   return session;
+}
+
+/**
+ * Le code d'autorisation, silencieusement si possible.
+ *
+ * ⚠️ UNE FENETRE DE CONNEXION AU DEMARRAGE EST UN MUR, et le demarrage promet le
+ * contraire. On ne tente donc la reprise que si le telephone a DEJA accorde un
+ * compte a cette application : le joueur ne voit alors rien passer. La fenetre
+ * ne s'ouvre que lorsqu'il l'a demandee lui-meme, depuis les reglages.
+ */
+async function codeGoogle(games, interactive) {
+  if (!interactive) {
+    if (!games.isLoggedIn) return null;
+    const deja = await games.isLoggedIn({ provider: 'google' }).catch(() => null);
+    if (!deja || !deja.isLoggedIn) return null;
+  }
+  const rep = await games.login({ provider: 'google', options: {} });
+  return rep && rep.result ? rep.result : null;
 }
 
 async function claimGoogle(code) {
@@ -123,7 +167,7 @@ async function claimDevice() {
 
 export async function signOut() {
   const games = plugin();
-  if (games && games.signOut) { try { await games.signOut(); } catch (_) { /* deja dehors */ } }
+  if (games) { try { await games.logout({ provider: 'google' }); } catch (_) { /* deja dehors */ } }
   localStorage.setItem(KEY_MODE, 'guest');
   session = null;
 }

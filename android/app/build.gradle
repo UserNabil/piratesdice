@@ -88,7 +88,6 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
     // Play Games v2 : la connexion au compte Google du joueur
-    implementation 'com.google.android.gms:play-services-games-v2:20.1.2'
 }
 
 apply from: 'capacitor.build.gradle'
@@ -100,4 +99,17 @@ try {
     }
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
+
+/* ⚠️ LE GREFFON DE CONNEXION TIRE UNE PRE-VERSION QUI EXIGE UN AGP PLUS RECENT.
+   `@capgo/capacitor-social-login` demande `androidx.browser:1.9.0-alpha04`, qui
+   reclame AGP 8.9.1 alors que ce projet est en 8.7.2 : la compilation s'arrete
+   net sur `checkDebugAarMetadata`. Monter l'AGP toucherait aussi la chaine de
+   publication ; on epingle donc la seule bibliotheque en cause a sa derniere
+   version STABLE, qui suffit au navigateur integre du flux OAuth. A retirer le
+   jour ou l'AGP sera monte pour une autre raison. */
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.browser:browser:1.8.0'
+    }
 }
