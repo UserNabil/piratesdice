@@ -146,13 +146,19 @@ function pret() {
     /* `mode: offline` ne rend QUE le code d'autorisation — pas de profil, pas de
        jeton d'acces. C'est exactement ce que le serveur attend, et c'est aussi
        le moins de donnees qu'on puisse demander. */
-    prepare = p.initialize({
-      google: { webClientId: CLIENT_WEB, mode: 'offline' },
+    /* ⚠️ ON NE DECLARE QUE LE FOURNISSEUR DE CETTE PLATEFORME. Declarer `apple`
+       sur Android faisait echouer l'initialisation ENTIERE — le greffon y exige
+       une `redirectUrl` pour le flux web d'Apple, qui n'a aucun sens ici — et
+       Google ne demarrait donc jamais :
+         « apple.android.redirectUrl is null or empty »
+       Une option inutile sur une plateforme n'y est pas neutre : elle casse ce
+       qui marchait a cote. */
+    prepare = p.initialize(fournisseur() === 'apple'
       /* Apple ne demande aucun identifiant cote application : le systeme sait
-         deja quelle application le demande, et c'est le serveur qui verifie que
-         le jeton lui etait bien destine. */
-      apple: {},
-    });
+         quelle application le demande, et c'est le serveur qui verifie que le
+         jeton lui etait bien destine. */
+      ? { apple: {} }
+      : { google: { webClientId: CLIENT_WEB, mode: 'offline' } });
   }
   return prepare;
 }
@@ -231,11 +237,13 @@ async function claimApple(jeton) {
 }
 
 async function codeGoogle(games, interactive) {
-  if (!interactive) {
-    if (!games.isLoggedIn) return null;
-    const deja = await games.isLoggedIn({ provider: 'google' }).catch(() => null);
-    if (!deja || !deja.isLoggedIn) return null;
-  }
+  /* ⚠️ PAS DE REPRISE SILENCIEUSE PAR LE GREFFON, ET CE N'EST PAS UN OUBLI. En
+     mode « offline » — le seul qui rende un code pour le serveur — `isLoggedIn`
+     repond « not implemented », et `login` ouvrirait une fenetre. Le demarrage
+     promet justement de ne jamais mettre un mur devant le joueur : la reprise
+     passe donc par la SESSION GARDEE, plus haut, qui vaut pour les deux
+     plateformes. Ici, on n'agit que sur demande explicite. */
+  if (!interactive) return null;
   const rep = await games.login({ provider: 'google', options: {} });
   return rep && rep.result ? rep.result : null;
 }
@@ -258,7 +266,13 @@ async function claimDevice() {
 
 export async function signOut() {
   const games = plugin();
-  if (games) { try { await games.logout({ provider: fournisseur() }); } catch (_) { /* deja dehors */ } }
+  /* ⚠️ `logout` AVANT `initialize` REPOND « Cannot find provider ». Le greffon
+     ne connait ses fournisseurs qu'une fois prepare, et se deconnecter est
+     souvent la premiere chose qu'on lui demande apres un lancement. */
+  if (games) {
+    try { await pret(); await games.logout({ provider: fournisseur() }); }
+    catch (_) { /* deja dehors, ou greffon absent : rien a defaire */ }
+  }
   localStorage.setItem(KEY_MODE, 'guest');
   localStorage.removeItem(KEY_SESSION);
   session = null;
