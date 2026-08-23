@@ -137,6 +137,9 @@ export function renderBoard(board, grid, colScores, settle) {
       // liberees. Sans cette chute, un de « apparaissait » a la fin de la salve
       // et se lisait comme un de ressuscite.
       if (settle && wasEmpty && value !== null) {
+        /* Un de qui SE TASSE n'est pas un de qu'on POSE : si la case portait
+           encore la pose precedente, on la retire avant d'animer la chute. */
+        box.classList.remove('dc-drop');
         box.classList.remove('dc-settled');
         void box.offsetWidth;
         box.classList.add('dc-settled');
@@ -161,6 +164,13 @@ export function markPlaced(board, cell) {
   box.classList.remove('dc-drop');
   void box.offsetWidth;
   box.classList.add('dc-drop');
+  /* ⚠️ LA CLASSE DOIT PARTIR AVEC SON ANIMATION. Elle restait collee a la case
+     pour toujours — or `.dc-drop > .dc-face` anime N'IMPORTE QUELLE image qui
+     entre ensuite dans cette case. Un de detruit puis remplace par celui du
+     dessus rejouait donc une POSE de 0,62 s en plus de sa chute : deux
+     animations de depot pour un seul mouvement, exactement la ou une colonne
+     venait de se tasser. 620 ms = la duree de `dc-fall` (0,62 s). */
+  setTimeout(() => box.classList.remove('dc-drop'), 620);
 
   // fx_place : 30 images. Horodate pour repartir de la premiere a chaque pose.
   const dust = document.createElement('span');

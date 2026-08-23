@@ -22,21 +22,24 @@ const TERMS_URL = 'https://usernabil.github.io/piratesdice-site/privacy.html';
    ecrite sous `#dicewrap ...` : posee sur <body>, une carte de reglages
    n'heritait de RIEN — fond transparent, boutons gris. Vu a l'ecran. */
 /**
- * La barre d'etat ne doit pas recouvrir l'entete.
+ * La page passe SOUS la barre d'etat, des deux cotes.
  *
  * ⚠️ Trouve sur un Android 16 REEL, pas dans la documentation : depuis que
- * l'application vise l'API 36, le systeme impose le bord a bord et dessine son
- * heure et son signal PAR-DESSUS la page. `env(safe-area-inset-top)` etait deja
- * en place et valait zero — sur Android, la WebView ne recoit pas ces valeurs
- * d'elle-meme.
+ * l'application vise l'API 36, le systeme impose le bord a bord. La page etait
+ * donc inseree SOUS la barre (`overlay: false`), ce qui reglait le recouvrement
+ * mais laissait une bande violette morte de 90 px en haut — de la hauteur prise
+ * aux plateaux, et une difference visible avec iOS, ou la page monte jusqu'au
+ * bord. `env(safe-area-inset-top)` valait zero, mais la cause etait dans le
+ * theme, pas dans la WebView : sans `windowLayoutInDisplayCutoutMode`, Android
+ * ne transmet pas ces marges. Declaree (voir res/values/styles.xml), la page les
+ * recoit et se protege elle-meme — meme mecanique que sur iOS.
  */
 async function reglerBarreEtat() {
   const cap = window.Capacitor;
   const bar = cap && cap.Plugins && cap.Plugins.StatusBar;
   if (!bar) return;
   try {
-    await bar.setOverlaysWebView({ overlay: false });
-    await bar.setBackgroundColor({ color: '#241C33' });
+    await bar.setOverlaysWebView({ overlay: true });
     await bar.setStyle({ style: 'DARK' });        // DARK = fond sombre, texte clair
   } catch (e) {
     /* Un navigateur de bureau n'a pas de barre d'etat : ce n'est pas une panne. */

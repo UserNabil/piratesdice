@@ -61,7 +61,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      pas. On rend donc 24 pt a l'ecran, jamais plus : au-dela, la pastille de
      pieces passerait derriere le coin arrondi. La barre d'etat est masquee
      (UIStatusBarHidden dans Info.plist), sinon l'heure tomberait dessus. */
-  padding-top: max(calc(env(safe-area-inset-top) - 24px), 10px);
+  padding-top: max(calc(env(safe-area-inset-top) - 14px), 10px);
   padding-bottom: max(env(safe-area-inset-bottom), 10px);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -772,14 +772,31 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ============================================================================ */
 
 @media (orientation: portrait), (max-width: 820px) {
+  /* ⚠️ LE MENU S'ETIRE, IL NE FLOTTE PLUS. `align-items: start` + `margin: auto`
+     centrait la carte a sa hauteur de contenu : sur un grand telephone elle
+     laissait 385 px de vide sous elle — un ecran a moitie plein, alors que
+     l'ecran de jeu, lui, remplit tout. Mesure du 2026-08-23 sur iPhone 17 Pro
+     Max et Pixel 9 Pro XL : meme defaut des deux cotes.
+     La carte prend desormais la hauteur disponible et repartit son contenu ;
+     quand le contenu depasse (320x640), le conteneur defile comme avant. */
   #dicewrap .dc-menu {
-    align-items: start;
+    align-items: stretch;
+    min-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    padding: 12px 10px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    /* ⚠️ PAS DE `env(safe-area-inset-bottom)` ICI NON PLUS : le menu est DANS la
+       coque, qui la pose deja. Comptee deux fois, elle laissait 88 pt de vide
+       sous la carte sur iPhone 17 Pro Max — mesure : 265 px sur 2868. */
+    padding: 12px 10px 16px;
   }
-  #dicewrap .dc-menu-card { margin: auto; }
+  #dicewrap .dc-menu-card {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 1.8vh, 20px);
+  }
 
   #dicewrap .dc-caps { margin-bottom: 14px; padding-top: 12px; }
   #dicewrap .dc-caps-head { font-size: calc(11px * var(--pd-ui, 1)); margin-bottom: 9px; }

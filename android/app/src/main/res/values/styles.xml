@@ -13,6 +13,16 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!--
+          ⚠️ SANS CETTE LIGNE, `env(safe-area-inset-top)` VAUT ZERO DANS LA
+          WEBVIEW. C'est ce qui obligeait a inserer la page SOUS la barre d'etat
+          (`setOverlaysWebView(false)`) et laissait une bande violette morte en
+          haut de l'ecran — 90 px sur un telephone a poinçon. Android ne donne
+          les marges de surete a la page que si la fenetre declare vouloir aller
+          jusque sous l'encoche. Une fois declaree, la page passe dessous et se
+          protege elle-meme, exactement comme sur iOS.
+        -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 
 
