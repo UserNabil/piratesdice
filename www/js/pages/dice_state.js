@@ -52,15 +52,30 @@ const ARRONDI = { S002: 25.8, S003: 25.1, S004: 25.1, S005: 21.3, S006: 16.1, S0
 const ARRONDI_ORIGINE = 27;
 
 /**
+ * La part de la toile qu'occupe le CORPS du de, parure par parure.
+ *
+ * ⚠️ CE N'ETAIT PAS UNE CONSTANTE, ET LA TRAITER COMME TELLE FAUSSAIT LE
+ * LOGEMENT. Le calcul supposait 239 px sur 256 pour tout le monde — vrai a un
+ * pixel pres pour nos des et pour l'or, faux de 21 px pour l'arabe (S006), dont
+ * le corps ne fait que 225. Le logement etait donc arrondi pour un de plus gros
+ * que celui qu'on y pose : les coins ne se suivaient pas. Mesure du 2026-08-23
+ * sur les pixels VRAIMENT opaques (alpha >= 200) — la boite alpha brute inclut
+ * un halo diffus et asymetrique qui ment de dix pixels.
+ */
+const CORPS = { S002: 0.920, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.881, S007: 0.920 };
+const CORPS_ORIGINE = 0.923;
+
+/**
  * L'arrondi du LOGEMENT, en fraction de la case.
  *
- * Le dé n'occupe que 239 des 256 px de sa toile : il reste une marge de part et
- * d'autre. Pour que les deux bords restent parallèles :
- *     rayon du logement = rayon du dé x (239/256) + demi-marge
+ * Le de n'occupe qu'une part de sa toile : il reste une marge de part et
+ * d'autre. Pour que les deux bords restent paralleles :
+ *     rayon du logement = rayon du de x part du corps + demi-marge
  */
 export function arrondiDeCase(skin) {
   const pc = (skin && ARRONDI[skin]) || ARRONDI_ORIGINE;
-  return (pc / 100) * (239 / 256) + (1 - 239 / 256) / 2;
+  const corps = (skin && CORPS[skin]) || CORPS_ORIGINE;
+  return (pc / 100) * corps + (1 - corps) / 2;
 }
 
 export function skinOf(seat) {

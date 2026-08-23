@@ -299,7 +299,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     /* Le plafond est un plafond DE SECURITE : une feuille longue defile au lieu
        de repousser son bas hors de l'ecran. Les 96 px laisses au-dessus gardent
        l'entete visible, donc on sait toujours d'ou l'on vient. */
-    max-height: calc(100dvh - 96px);
+    /* ⚠️ 96 PX FIXES NE SUFFISENT PLUS DEPUIS QUE LA PAGE MONTE SOUS L'ENCOCHE.
+       La feuille remontait jusqu'au bord haut : sa croix de fermeture tombait
+       DANS la Dynamic Island, donc sous une zone que le doigt n'atteint pas —
+       une boutique qu'on ne peut plus fermer. Le plafond compte desormais la
+       marge de surete reelle PLUS la hauteur de l'entete, et il vaut donc ce
+       qu'il faut sur chaque appareil au lieu d'une valeur choisie sur un seul. */
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 78px);
+    overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     /* La feuille est un panneau comic : coins ronds inegaux et lisere blanc. */
