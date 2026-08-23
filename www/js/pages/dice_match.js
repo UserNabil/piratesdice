@@ -376,6 +376,23 @@ function popChangedScores(st) {
  * pastilles sous le nom suffisent : on sait ce qui peut arriver, donc on peut
  * jouer contre. Vide, la rangee disparait plutot que de montrer des trous.
  */
+/**
+ * Un objet de l'inventaire est-il JOUABLE en partie ?
+ *
+ * ⚠️ UNE PARURE N'EST PAS UN BONUS. L'inventaire porte tout ce que le joueur a
+ * achete, jeux de des compris. Sans ce tri, un jeu de des apparaissait dans le
+ * ratelier ET se comptait dans les pastilles sous le nom : le joueur voyait un
+ * bonus qu'il n'avait jamais achete, appuyait dessus, et le serveur repondait
+ * « unknown bonus ».
+ *
+ * La categorie vient du serveur. Quand elle manque — client plus recent que le
+ * serveur, le temps d'un deploiement — l'identifiant tranche : les parures
+ * commencent par S, les effets par B.
+ */
+function jouable(i) {
+  return i.category ? i.category !== 'Skin' : !/^S\d/.test(i.identify || '');
+}
+
 function stockMarkup(st, seat) {
   /* ⚠️ LE SERVEUR COMPTE UN PLAFOND, PAS UNE CALE. `bonusStock` dit combien
      d'effets il reste le DROIT de jouer dans la partie — trois au depart, pour
@@ -385,7 +402,8 @@ function stockMarkup(st, seat) {
      du serveur est le bon, c'est elle qui detient la reserve. */
   let n = (st.bonusStock && st.bonusStock[seat]) || 0;
   if (seat === S.seat) {
-    const enCale = (S.inventory || []).reduce((t, i) => t + (i.quantity > 0 ? i.quantity : 0), 0)
+    const enCale = (S.inventory || []).filter(jouable)
+      .reduce((t, i) => t + (i.quantity > 0 ? i.quantity : 0), 0)
       + ((st.freeReroll && st.freeReroll[seat]) ? 1 : 0);
     n = Math.min(n, enCale);
   }
@@ -526,7 +544,7 @@ export function renderBonusRack() {
      apparait dans le ratelier meme sans jeton en cale, sinon le trait resterait
      invisible a qui n'a rien achete. Le serveur dit LEQUEL. */
   const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
-  const owned = S.inventory.filter((i) => i.quantity > 0);
+  const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i));
 
   /* ⚠️ RIEN A MONTRER, DONC RIEN A L'ECRAN. Un bandeau « aucun bonus en cale »
      occupait une place permanente pour dire qu'il n'y avait rien a dire. */
