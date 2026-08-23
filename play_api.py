@@ -191,8 +191,20 @@ def check(token):
     if ok2:
         for t in tracks.get("tracks", []):
             rel = t.get("releases") or []
-            versions = [str(v) for r in rel for v in (r.get("versionCodes") or [])]
-            print("   piste %-12s %s" % (t.get("track"), ", ".join(versions) or "vide"))
+            if not rel:
+                print("   piste %-12s vide" % t.get("track"))
+                continue
+            for r in rel:
+                versions = ", ".join(str(v) for v in (r.get("versionCodes") or [])) or "-"
+                # ⚠️ UNE VERSION PRESENTE N'EST PAS UNE VERSION DISTRIBUEE. Un
+                # `draft` reste dans la console sans jamais partir chez personne,
+                # et une fraction d'utilisateurs limite la diffusion : sans ces
+                # deux valeurs, on lit « la piste a la version 49 » et on croit
+                # que les testeurs l'ont.
+                part = r.get("userFraction")
+                print("   piste %-12s %-8s etat: %-11s%s" % (
+                    t.get("track"), versions, r.get("status") or "?",
+                    ("  fraction: %s" % part) if part is not None else ""))
     call(token, API + "/edits/" + edit, method="DELETE")
     return True
 
