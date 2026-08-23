@@ -29,6 +29,15 @@ on:
         default: internal
         type: choice
         options: [internal, alpha, beta, production]
+      forcer:
+        description: "Pousser meme si la version precedente est encore en examen (elle sera effacee)"
+        type: boolean
+        default: false
+
+# La chaine reecrit store/dernier-envoi.json : sans ce droit, la garde oublie
+# a chaque run quelle version attend son examen.
+permissions:
+  contents: write
 
 # ⚠️ MEME GROUPE QUE `play-listing.yml`, ET CE N EST PAS UN DETAIL.
 # Play n accepte qu UNE edition a la fois : deux chaines qui lui parlent en
@@ -124,5 +133,19 @@ jobs:
       - name: Envoyer sur Play
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PD_FORCER: ${{ inputs.forcer && '--forcer' || '' }}
         run: |
-          python3 play_api.py             --upload android/app/build/outputs/bundle/release/app-release.aab             --track "${{ inputs.track || 'internal' }}"             --notes-dir store/whatsnew
+          python3 play_api.py             --upload android/app/build/outputs/bundle/release/app-release.aab             --track "${{ inputs.track || 'internal' }}"             --notes-dir store/whatsnew $PD_FORCER
+
+      # ⚠️ UNE GARDE QUI OUBLIE NE GARDE RIEN. `--upload` note la version poussee
+      # dans store/dernier-envoi.json ; sur un runner, ce fichier meurt avec la
+      # machine. Sans ce retour au depot, la chaine suivante ne saurait pas qu'une
+      # version est en examen et l'effacerait — exactement ce qu'on repare ici.
+      - name: Rapporter le journal d'envoi
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add store/dernier-envoi.json
+          git diff --cached --quiet || git commit -m "chore(play): version ${VERSION_CODE} poussee, examen en cours"
+          git push origin HEAD:${GITHUB_REF_NAME}

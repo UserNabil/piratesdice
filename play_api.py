@@ -281,7 +281,68 @@ def prochain(token):
     return (max(codes) + 1) if codes else 1
 
 
-def upload(token, aab, track, notes_dir):
+JOURNAL = os.path.join(STORE_DIR, "dernier-envoi.json")
+
+
+def journal_lire():
+    try:
+        with open(JOURNAL, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def journal_ecrire(track, version):
+    j = journal_lire()
+    j[track] = {"version": str(version), "envoye": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "sorti": False}
+    os.makedirs(STORE_DIR, exist_ok=True)
+    with open(JOURNAL, "w", encoding="utf-8") as f:
+        json.dump(j, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
+def garde_examen(track, forcer):
+    """Refuse un envoi tant que le precedent n'est pas SORTI de l'examen.
+
+    ⚠️ POUSSER PENDANT UN EXAMEN ANNULE L'EXAMEN. Play ne garde qu'une version
+    par piste : la nouvelle remplace celle en cours de revue, qui passe « Non
+    publiee » sans jamais atteindre un seul testeur. Le 23 aout 2026, ONZE
+    paquets avaient ete envoyes et les testeurs en etaient encore a la 1.0.22 du
+    21 aout — neuf versions s'etaient mutuellement effacees, chacune tuee par la
+    suivante avant la fin de sa revue.
+
+    Aucun champ de l'API ne dit « en examen » : c'est pour cela que la garde
+    s'appuie sur un journal local, et qu'elle se leve a la main, apres avoir LU
+    la console (Tests fermes > alpha > Versions : « Accessible sur Google Play »).
+    """
+    d = journal_lire().get(track)
+    if not d or d.get("sorti"):
+        return
+    if forcer:
+        print("⚠ garde levee de force : la %s de la piste %s est peut-etre encore" % (
+            d.get("version"), track))
+        print("  en examen — l'envoi qui suit l'effacera sans qu'elle sorte jamais.")
+        return
+    sys.exit(
+        "\n".join([
+            "envoi refuse : la version %s a ete poussee sur %s le %s," % (
+                d.get("version"), track, d.get("envoye")),
+            "et rien ne dit encore qu'elle soit SORTIE de l'examen de Google.",
+            "",
+            "Pousser maintenant l'effacerait : elle passerait « Non publiee »",
+            "et les testeurs garderaient leur version actuelle.",
+            "",
+            "  1. Play Console > Tests fermes > %s > Versions" % track,
+            "  2. si la %s indique « Accessible sur Google Play » :" % d.get("version"),
+            "       python3 play_api.py --sortie %s --track %s" % (d.get("version"), track),
+            "  3. si elle indique encore « En cours d'examen » : attendre.",
+            "",
+            "  (--forcer passe outre, en connaissance de cause)",
+        ]))
+
+
+def upload(token, aab, track, notes_dir, forcer=False):
     """L'envoi complet, rejouable d'un bloc.
 
     ⚠️ UNE EDITION PERIMEE NE SE REPARE PAS AU MILIEU. L'envoi ouvre une edition,
@@ -291,12 +352,17 @@ def upload(token, aab, track, notes_dir):
     a l'etape suivante n'a aucun sens, l'edition n'existe plus. On refait donc
     depuis l'ouverture. Vecu : un envoi de 35 Mo mort a la derniere seconde.
     """
+    garde_examen(track, forcer)
     blob = open(aab, "rb").read()
     ok, out = with_retry(lambda: envoyer(token, blob, aab, track, notes_dir))
     if not ok:
         sys.exit("envoi refuse : " + why(out))
     version, aLaMain = out
+    journal_ecrire(track, version)
     print("✔ publie sur la piste %s (versionCode %s)" % (track, version))
+    print("   ⚠ pas encore chez les testeurs : l'examen de Google vient maintenant.")
+    print("     Quand la console la donne « Accessible sur Google Play » :")
+    print("       python3 play_api.py --sortie %s --track %s" % (version, track))
     if aLaMain:
         print("   ⚠ deposee SANS demande de revue : un rejet est encore ouvert.")
         print("     Envoi a faire depuis la console, une fois la violation corrigee :")
@@ -477,13 +543,14 @@ def details(token):
     print("validation  :", ("ok, sans demande de revue" if aLaMain else "ok") if ok else "ECHEC " + why(out))
 
 
-def promote(token, version, track):
+def promote(token, version, track, forcer=False):
     """Fait passer une version DEJA envoyee d'une piste a une autre.
 
     C'est la bonne facon de mettre en production : on promeut le binaire qui a
     ete teste, on n'en reconstruit pas un autre. Un paquet rebati, meme depuis le
     meme code, n'est plus celui que les testeurs ont eu entre les mains.
     """
+    garde_examen(track, forcer)
     ok, out = call(token, API + "/edits", method="POST", body={})
     if not ok:
         sys.exit("impossible d'ouvrir une edition : " + why(out))
@@ -500,7 +567,9 @@ def promote(token, version, track):
     ok, out, aLaMain = commit(token, edit)
     if not ok:
         sys.exit("validation refusee : " + why(out))
+    journal_ecrire(track, version)
     print("✔ version %s promue sur la piste %s" % (version, track))
+    print("   ⚠ l'examen de Google vient maintenant — pas encore chez les testeurs.")
     if aLaMain:
         print("   ⚠ deposee SANS demande de revue : un rejet est encore ouvert.")
         print("     Envoi a faire depuis la console, une fois la violation corrigee :")
@@ -513,6 +582,10 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--brut", action="store_true",
                     help="la reponse ENTIERE des pistes, sans resume")
+    ap.add_argument("--sortie", metavar="VERSIONCODE",
+                    help="marque une version comme SORTIE de l'examen (lu dans la console)")
+    ap.add_argument("--forcer", action="store_true",
+                    help="pousse meme si la version precedente est peut-etre en examen")
     ap.add_argument("--historique", action="store_true",
                     help="tous les paquets envoyes, pour voir ceux qui ne sont jamais sortis")
     ap.add_argument("--purger", action="store_true",
@@ -528,6 +601,30 @@ def main():
     ap.add_argument("--track", default="internal")
     ap.add_argument("--notes-dir", default=os.path.join(STORE_DIR, "whatsnew"))
     args = ap.parse_args()
+
+    # ⚠️ MARQUER UN FAIT LU DANS LA CONSOLE NE DEMANDE AUCUNE CLE. Cette
+    # commande n'ecrit qu'un fichier local ; la placer apres `access_token()`
+    # la rendait impossible sur une machine sans clef — c'est-a-dire sur celle
+    # ou l'on regarde justement la console.
+    if args.sortie:
+        j = journal_lire()
+        d = j.get(args.track)
+        if not d or d.get("version") != str(args.sortie):
+            print("le journal ne porte pas la %s sur %s%s" % (
+                args.sortie, args.track,
+                (" (il porte la %s)" % d["version"]) if d else " (rien d'enregistre)"))
+        j[args.track] = {"version": str(args.sortie),
+                         "envoye": (d or {}).get("envoye", "?"),
+                         "sorti": True,
+                         "confirme": time.strftime("%Y-%m-%d %H:%M:%S")}
+        os.makedirs(STORE_DIR, exist_ok=True)
+        with open(JOURNAL, "w", encoding="utf-8") as f:
+            json.dump(j, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        print("✔ %s sur %s : sortie de l'examen. La piste est de nouveau ouverte." % (
+            args.sortie, args.track))
+        return
+
 
     token = access_token()
     if args.brut:
@@ -605,13 +702,13 @@ def main():
     if args.next_version:
         print(prochain(token))
     elif args.upload:
-        upload(token, args.upload, args.track, args.notes_dir)
+        upload(token, args.upload, args.track, args.notes_dir, args.forcer)
     elif args.listing:
         listing(token)
     elif args.details:
         details(token)
     elif args.promote:
-        promote(token, args.promote, args.track)
+        promote(token, args.promote, args.track, args.forcer)
     elif args.notes:
         renotes(token, args.track, args.notes_dir)
     else:
