@@ -210,6 +210,7 @@ export const EN = {
   'set.soundOff': 'Off',
   'set.account': 'Account',
   'set.signedInAs': 'Signed in as {name}',
+  'set.signInApple': 'Sign in with Apple',
   'set.signIn': 'Sign in with Google',
   'set.signOut': 'Sign out',
   'set.erase': 'Erase my data and my account',

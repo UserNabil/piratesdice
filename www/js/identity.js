@@ -80,6 +80,20 @@ const CLIENT_WEB = '975326394375-5rrfp97jmjtmqggser8jvc3ec8mvplii.apps.googleuse
 
 let prepare = null;
 
+/**
+ * Apple sur iOS, Google sur Android — et ce n'est pas un gout.
+ *
+ * ⚠️ DIRECTIVE 4.8 D'APPLE : une application qui propose un identifiant tiers
+ * DOIT proposer Sign in with Apple a egalite. Offrir Google sur iOS sans Apple
+ * est un rejet garanti. Comme Apple ne se propose pas hors de son ecosysteme, la
+ * regle se resume a : chacun chez soi.
+ */
+export function fournisseur() {
+  const cap = window.Capacitor;
+  const os = cap && cap.getPlatform ? cap.getPlatform() : 'web';
+  return os === 'ios' ? 'apple' : 'google';
+}
+
 function plugin() {
   const cap = window.Capacitor;
   return (cap && cap.Plugins && cap.Plugins.SocialLogin) || null;
@@ -95,7 +109,13 @@ function pret() {
     /* `mode: offline` ne rend QUE le code d'autorisation — pas de profil, pas de
        jeton d'acces. C'est exactement ce que le serveur attend, et c'est aussi
        le moins de donnees qu'on puisse demander. */
-    prepare = p.initialize({ google: { webClientId: CLIENT_WEB, mode: 'offline' } });
+    prepare = p.initialize({
+      google: { webClientId: CLIENT_WEB, mode: 'offline' },
+      /* Apple ne demande aucun identifiant cote application : le systeme sait
+         deja quelle application le demande, et c'est le serveur qui verifie que
+         le jeton lui etait bien destine. */
+      apple: {},
+    });
   }
   return prepare;
 }
@@ -114,7 +134,20 @@ export async function signIn(opts) {
   if (games) {
     try {
       await pret();
-      const out = await codeGoogle(games, interactive);
+      if (fournisseur() === 'apple') {
+        /* ⚠️ APPLE N'A PAS DE REPRISE SILENCIEUSE. Il n'existe aucun moyen de
+           savoir, sans ouvrir la fenetre, si l'utilisateur avait deja accorde
+           son compte. Au demarrage on ne tente donc RIEN : le joueur entre en
+           invite, et se lie quand il le decide. */
+        if (!interactive) throw new Error('silent');
+        const jeton = await jetonApple(games);
+        if (jeton) {
+          session = await claimApple(jeton);
+          localStorage.setItem(KEY_MODE, 'google');
+          return session;
+        }
+      }
+      const out = fournisseur() === 'apple' ? null : await codeGoogle(games, interactive);
       if (out && out.serverAuthCode) {
         session = await claimGoogle(out.serverAuthCode);
         localStorage.setItem(KEY_MODE, 'google');
@@ -139,6 +172,25 @@ export async function signIn(opts) {
  * compte a cette application : le joueur ne voit alors rien passer. La fenetre
  * ne s'ouvre que lorsqu'il l'a demandee lui-meme, depuis les reglages.
  */
+async function jetonApple(p) {
+  const rep = await p.login({ provider: 'apple', options: { scopes: ['name'] } });
+  const out = rep && rep.result ? rep.result : null;
+  if (!out || !out.idToken) return null;
+  /* ⚠️ APPLE NE DONNE LE NOM QU'A LA PREMIERE CONNEXION, jamais ensuite. On le
+     transmet s'il vient ; le serveur ne le redemandera pas. */
+  const prof = out.profile || {};
+  const nom = [prof.givenName, prof.familyName].filter(Boolean).join(' ').trim();
+  return { idToken: out.idToken, name: nom || undefined };
+}
+
+async function claimApple(jeton) {
+  const body = await post('/api/apple', { identityToken: jeton.idToken, name: jeton.name });
+  return {
+    url: serverBase(), ws: wsFrom(serverBase()),
+    token: body.token, expires: body.expires, player: body.player, google: true,
+  };
+}
+
 async function codeGoogle(games, interactive) {
   if (!interactive) {
     if (!games.isLoggedIn) return null;
@@ -167,7 +219,7 @@ async function claimDevice() {
 
 export async function signOut() {
   const games = plugin();
-  if (games) { try { await games.logout({ provider: 'google' }); } catch (_) { /* deja dehors */ } }
+  if (games) { try { await games.logout({ provider: fournisseur() }); } catch (_) { /* deja dehors */ } }
   localStorage.setItem(KEY_MODE, 'guest');
   session = null;
 }

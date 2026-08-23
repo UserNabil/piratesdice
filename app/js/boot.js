@@ -9,7 +9,7 @@
 
 import { initDice, openDice } from './pages/dice.js';
 import { S, UI, myTurn } from './pages/dice_state.js';
-import { signIn, signOut, account, eraseAccount } from './identity.js';
+import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
 import { startFitting } from './fit.js';
 import { t, LANGS, lang, setLang } from './core/i18n.js';
 import { startMotion } from './motion.js';
@@ -113,7 +113,10 @@ function settingsMarkup() {
   const who = acc.google ? t('set.signedInAs', { name: acc.name }) : t('set.guest');
   const button = acc.google
     ? `<button class="dc-btn dc-btn-sm dc-btn-ghost" data-signout>${t('set.signOut')}</button>`
-    : `<button class="dc-btn dc-btn-sm" data-signin>${t('set.signIn')}</button>`;
+    /* Le libelle nomme le fournisseur de CETTE plateforme : « avec Google » sur
+       un iPhone serait faux, et « avec Apple » sur Android n'existe pas. */
+    : `<button class="dc-btn dc-btn-sm" data-signin>${
+        t(fournisseur() === 'apple' ? 'set.signInApple' : 'set.signIn')}</button>`;
   const muted = !!(S.sfx && S.sfx.muted);
 
   return `
