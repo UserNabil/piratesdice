@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apercu — plateau de combat</title>
+<!-- Les MEMES feuilles que l'application, dans le MEME ordre. Un apercu qui
+     charge autre chose que le jeu ne prouve rien. -->
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/dice.css">
+<link rel="stylesheet" href="/css/mobile.css">
+<link rel="stylesheet" href="/css/combat.css">
+</head>
+<body>
+<!-- ⚠️ CET APERCU N'EST PAS LE JEU : c'est un plateau de demonstration, monte a
+     la main avec les classes exactes de dice_board.js. Il existe parce qu'une
+     partie demande un serveur, un adversaire et de la patience — alors qu'un
+     arrondi se juge en une seconde. Il montre d'un coup ce qu'une vraie partie
+     ne montre que par moments : une case vide, une case pleine, une case visee
+     par un bonus, un de qui vient de tomber, une colonne benie. -->
+<div id="dicewrap" class="open">
+  <div class="dc-shell">
+    <header class="dc-top">
+      <div class="dc-brand"><img class="dc-brand-mark" src="/dice/img/brand_mark.png" alt=""> The Pirate's Dice</div>
+      <div class="dc-wallet"><img class="dc-avatar" src="/dice/img/brand_mark.png" alt=""><div class="dc-wallet-txt"><b>Barbe Noire</b></div></div>
+    </header>
+    <div class="dc-body">
+      <section class="dc-screen on" id="dc-screen-game">
+        <div class="dc-arena">
+          <div class="dc-side dc-side-foe"><div class="dc-pc pd-panel dc-pc-idle" id="dc-pc-foe">
+            <div class="dc-pc-portrait"><img class="dc-pc-face" src="/dice/img/brand_mark.png" alt=""></div>
+            <div class="dc-pc-name">Anne Bonny</div>
+            <div class="dc-pc-elo">1240 elo</div>
+            <div class="dc-pc-stock"><img class="dc-pc-chip" src="/dice/img/bonus_reroll.png" alt=""><img class="dc-pc-chip" src="/dice/img/bonus_reroll.png" alt=""></div>
+            <div class="dc-pc-total">24</div>
+            <div class="dc-pc-lbl">son score</div>
+          </div></div>
+          <div class="dc-boards">
+            <div class="dc-board-slot" id="slot-foe"></div>
+            <div class="dc-mid pd-panel">
+              <div class="dc-turn dc-turn-mine">A ton tour</div>
+              <button class="dc-cup"><img class="dc-cup-art" src="/dice/img/cup_active.png" alt=""></button>
+            </div>
+            <div class="dc-board-slot" id="slot-me"></div>
+          </div>
+          <div class="dc-side dc-side-me"><div class="dc-pc pd-panel dc-pc-active" id="dc-pc-me">
+            <div class="dc-pc-portrait"><img class="dc-pc-face" src="/dice/img/brand_mark.png" alt=""></div>
+            <div class="dc-pc-name">Barbe Noire</div>
+            <div class="dc-pc-elo">1305 elo</div>
+            <!-- Le ratelier : il vit DANS le bandeau, et c'est pour cela que sa
+                 taille y a son propre reglage. -->
+            <div class="dc-bonus" id="dc-bonus">
+              <button class="dc-bonus-btn"><img src="/dice/img/bonus_reroll.png" alt=""><span class="dc-bonus-qty">2</span></button>
+              <button class="dc-bonus-btn"><img src="/dice/img/bonus_clear_own.png" alt=""><span class="dc-bonus-qty">1</span></button>
+              <button class="dc-bonus-btn" disabled><img src="/dice/img/bonus_blast_enemy.png" alt=""><span class="dc-bonus-qty">0</span></button>
+            </div>
+            <div class="dc-pc-total">31</div>
+            <div class="dc-pc-lbl">ton score</div>
+            <div class="dc-pc-bet">mise 20</div>
+          </div>
+          <div class="dc-endbar" id="dc-endbar"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* Le plateau, monte comme le fait buildBoard() : cadre, trois colonnes de trois
+   logements, et la rangee de plaques du bon cote. */
+function plateau(cible, opts) {
+  const { adverse, colonnes, scores } = opts;
+  const wrap = document.createElement('div');
+  wrap.className = 'dc-boardwrap ' + (adverse ? 'dc-boardwrap-top dc-idle' : 'dc-live');
+
+  const rangee = document.createElement('div');
+  rangee.className = 'dc-scores';
+  const board = document.createElement('div');
+  board.className = 'dc-board pd-panel pd-panel--felt' + (adverse ? ' dc-board-top pd-panel--mer' : '');
+
+  colonnes.forEach((colonne, i) => {
+    const plaque = document.createElement('div');
+    plaque.className = 'dc-colscore pd-plate' + (colonne.benie ? ' dc-colscore-boost' : '');
+    plaque.dataset.col = String(i);
+    plaque.textContent = scores[i] || '';
+    /* Le quart du pont : le multiplicateur de la colonne, pose par
+       renderQuarters() sous forme d'attribut et dessine par le CSS. */
+    if (colonne.quart) {
+      plaque.dataset.quart = '×' + String(colonne.quart).replace('.', ',');
+      plaque.classList.add(colonne.quart > 1 ? 'dc-colscore-riche' : 'dc-colscore-pauvre');
+    }
+    rangee.appendChild(plaque);
+
+    const col = document.createElement('div');
+    col.className = 'dc-col' + (colonne.visee ? ' dc-target' : '');
+    const pile = document.createElement('div');
+    pile.className = 'dc-stack';
+    (colonne.plein || opts.plein ? [{valeur:3},{valeur:5},{valeur:2}] : colonne.des).forEach((de) => {
+      const box = document.createElement('div');
+      box.className = 'dc-cell pd-socket'
+        + (de.valeur ? ' dc-cell-filled' : '')
+        + (de.pose ? ' dc-landing' : '');
+      if (de.valeur) {
+        box.innerHTML = '<img class="dc-face" src="/dice/img/die_' + de.valeur + '.png" alt="">';
+      }
+      pile.appendChild(box);
+    });
+    col.appendChild(pile);
+    board.appendChild(col);
+  });
+
+  if (adverse) { wrap.appendChild(board); wrap.appendChild(rangee); }
+  else { wrap.appendChild(rangee); wrap.appendChild(board); }
+  cible.appendChild(wrap);
+}
+
+plateau(document.getElementById('slot-foe'), {
+  adverse: true,
+  scores: ['8', '', '16'],
+  colonnes: [
+    { quart: 0.8, des: [{ valeur: 4 }, { valeur: 4 }, {}] },
+    { quart: 1.3, des: [{}, {}, {}] },
+    { des: [{ valeur: 6 }, { valeur: 6 }, { valeur: 4 }] },
+  ],
+});
+
+/* ?fin=1 : l'ecran de FIN DE PARTIE. La barre de fin n'existe qu'a ce
+   moment-la et reclame une ligne entiere du bandeau : c'est le seul etat ou la
+   place disponible change en cours de partie. */
+const fin = new URLSearchParams(location.search).has('fin');
+if (fin) {
+  document.getElementById('dc-endbar').innerHTML =
+    '<button class="dc-btn dc-quit dc-quit-exit">Rejouer</button>'
+  + '<button class="dc-btn dc-btn-sortie dc-quit dc-quit-exit">&#8592;</button>';
+}
+
+plateau(document.getElementById('slot-me'), {
+  adverse: false,
+  plein: fin,
+  scores: ['10', '5', ''],
+  colonnes: [
+    { quart: 0.8, des: [{ valeur: 2 }, { valeur: 5 }, { valeur: 3 }] },
+    { quart: 1.3, benie: true, des: [{ valeur: 5, pose: true }, { valeur: 1 }, {}] },
+    { visee: true, des: [{ valeur: 6 }, {}, {}] },
+  ],
+});
+
+/* La MEME mesure que dans l'application : sans elle, la case de l'apercu ne
+   serait pas celle du telephone et le reglage se ferait sur un mensonge. */
+import('/js/fit.js').then((fit) => fit.startFitting());
+</script>
+</body>
+</html>

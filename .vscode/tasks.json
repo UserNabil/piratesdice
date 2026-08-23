@@ -72,6 +72,15 @@
       "presentation": { "reveal": "silent", "panel": "dedicated" }
     },
     {
+      // Le pupitre de reglage : il sert le jeu ET un plateau de demonstration,
+      // et ecrit dans app/css/combat.css. Il tient le terminal tant qu'il tourne.
+      "label": "pd: studio",
+      "type": "shell",
+      "command": "python3 studio.py",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
       // Le pont DevTools. La WebView n'ecoute pas sur un port TCP mais sur une
       // socket abstraite dont le nom porte le PID : il faut la lire a chaque
       // lancement, on ne peut pas la graver dans une config. La boucle attend

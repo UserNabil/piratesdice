@@ -1,0 +1,629 @@
+/* ============================================================================
+   css/combat.css — LE TABLEAU DE BORD DE L'ECRAN DE COMBAT.
+
+   Un seul endroit pour peaufiner les plateaux et leurs logements, au lieu de
+   chercher ligne par ligne dans dice.css (1700 lignes, partage avec le tool) et
+   dans mobile.css (la couche telephone).
+
+   COMMENT CA MARCHE. Ce fichier est charge EN DERNIER : a specificite egale, il
+   gagne. Il ne redefinit donc jamais dice.css — il se pose dessus, et seulement
+   sur le plateau de combat (.dc-board, .dc-cell, .dc-col, .dc-colscore). Le
+   reste de l'application n'est pas touche : .pd-panel et .pd-plate continuent de
+   dessiner le menu, la boutique et les feuilles.
+
+   OU REGLER. Uniquement dans « LE TABLEAU DE BORD » ci-dessous. La partie
+   « LE CABLAGE » ne fait que brancher ces variables sur les bonnes regles ; il
+   n'y a rien a y changer pour peaufiner.
+
+   ⚠️ CE FICHIER FIGE LES VALEURS D'AUJOURD'HUI. Elles sont recopiees de
+   dice.css a la main (etat du 2026-08-23). Si dice.css change en amont, le
+   plateau de combat ne suivra plus : c'est le prix de l'avoir sous la main, et
+   c'est voulu. Pour rendre un reglage a dice.css, il suffit de supprimer sa
+   ligne dans le cablage.
+   ============================================================================ */
+
+/* ============================================================================
+   LE TABLEAU DE BORD — c'est ici, et nulle part ailleurs.
+   ============================================================================ */
+
+#dicewrap {
+
+  /* ── LE PLATEAU (la grille) ────────────────────────────────────────────── */
+
+  /* Des coins INEGAUX : c'est ce qui fait « dessine a la main » plutot que
+     « calcule ». Quatre valeurs identiques et le plateau redevient un widget. */
+  --cbt-plateau-courbure: 20px 20px 20px 20px;
+  --cbt-plateau-lisere: 4px;
+  --cbt-plateau-lisere-couleur: var(--blanc, #FFFFFF);
+
+  /* Le bois autour des cases, et l'ecart entre deux cases. ⚠️ Le meme ecart
+     sert a la rangee de plaques : les chiffres doivent tomber sous leur
+     colonne. Une seule variable pour les deux, exprès. */
+  --cbt-plateau-cadre: clamp(10px, 1.4vh, 16px);
+  --cbt-plateau-ecart: clamp(6px, .8vw, 11px);
+
+  /* L'ombre portee du plateau au repos. */
+  --cbt-plateau-ombre: 0 8px 0 rgba(0, 0, 0, .34), 0 14px 28px rgba(0, 0, 0, .45);
+
+  /* Le plateau DONT C'EST LE TOUR : relief interieur + halo chaud. */
+  --cbt-plateau-halo:
+    inset 0 1px 0 rgba(255, 222, 170, .18),
+    inset 0 -2px 0 rgba(0, 0, 0, .55),
+    inset 0 0 30px rgba(0, 0, 0, .5),
+    0 12px 30px rgba(0, 0, 0, .55),
+    0 -4px 26px rgba(255, 198, 110, .2);
+
+  /* Le plateau qui attend son tour. ⚠️ Assombrir jusqu'a .62 donnait un plateau
+     qui semble desactive, pas en attente. Il recule, il ne s'eteint pas. */
+  --cbt-plateau-attente: brightness(.82) saturate(.85);
+  --cbt-plateau-attente-opacite: 4.5;
+
+  /* Les deux camps. Le mien est VIOLET, celui d'en face BLEU : les deux
+     plateaux etaient du meme violet et on cherchait lequel etait le sien. */
+  --cbt-camp-moi-1: var(--violet, #8850F8);
+  --cbt-camp-moi-2: var(--violet-lo, #9830D8);
+  --cbt-camp-adverse-1: var(--mer, #5B9CF8);
+  --cbt-camp-adverse-2: var(--mer-lo, #60C0F8);
+
+  /* ── LES LOGEMENTS (les slots) ─────────────────────────────────────────── */
+
+  /* ⚠️ L'ARRONDI N'EST PAS UNE CONSTANTE : il SUIT LA PARURE des des posee sur
+     chaque plateau (16 % pour le dragon, 27 % pour nos des d'origine), calcule
+     par js/pages/dice_state.js et pose plateau par plateau par `renderArrondi`
+     dans dice_match.js. Un logement fige laisse des coins vides autour des uns
+     et mord sur les autres.
+     Decommente la ligne pour reprendre la main sur les six jeux a la fois — et
+     recommente-la pour rendre la parole aux parures. */
+  --cbt-slot-arrondi: 25.6%;
+
+  /* ⛔ IL N'Y A PAS DE REGLAGE DE TAILLE DE CASE, ET C'EST DELIBERE. Il en a
+     existe un : allume une fois depuis le studio, il figeait la case a 62 px sur
+     TOUS les appareils et court-circuitait js/fit.js — l'iPad affichait des
+     plateaux de telephone au milieu d'un grand vide, et rien ne reliait le
+     symptome a un curseur. La taille se MESURE ; ce qui se regle, ce sont les
+     constantes en tete de js/fit.js. */
+
+  /* Le creux : un fond sombre, un lisere blanc, et de l'ombre. Une alveole ne
+     porte ni trame ni rayon, sinon les neuf cases font un damier bruyant
+     derriere les des. */
+  --cbt-slot-fond: linear-gradient(180deg, var(--deep-lo, #1B1233), var(--deep-hi, #3A2A63));
+  --cbt-slot-lisere: 3px;
+  --cbt-slot-lisere-couleur: rgba(255, 255, 255, .5);
+  --cbt-slot-creux: inset 0 6px 12px rgba(0, 0, 0, .5);
+  --cbt-slot-creux-second: inset 0 3px 8px rgba(0, 0, 0, .55);
+  --cbt-slot-creux-second-marge: 3px;
+
+  /* L'ecart entre deux cases d'une meme colonne. */
+  --cbt-slot-ecart: clamp(5px, .7vw, 9px);
+
+  /* Le de dans son logement. */
+  --cbt-de-ombre: drop-shadow(0 3px 5px rgba(0, 0, 0, .6));
+
+  /* ── LES ETATS D'UN LOGEMENT ───────────────────────────────────────────── */
+
+  /* Vise par un bonus : jonc de laiton vif, meme creux. */
+  --cbt-slot-vise:
+    inset 0 4px 9px rgba(0, 0, 0, .7),
+    inset 0 0 0 2px var(--gold, #E8C86A),
+    0 0 12px rgba(232, 200, 106, .55);
+
+  /* Le de vient de se poser ici. */
+  --cbt-slot-pose:
+    inset 0 4px 9px rgba(0, 0, 0, .7),
+    inset 0 0 0 2px rgba(255, 200, 90, .7),
+    0 0 14px rgba(255, 200, 90, .35);
+
+  /* ── LES COLONNES ET LEURS PLAQUES ─────────────────────────────────────── */
+
+  --cbt-colonne-courbure: 9px;
+  --cbt-colonne-ecart: 6px;
+  --cbt-colonne-marge: 9px;
+  --cbt-colonne-survol: rgba(232, 200, 106, .14);
+
+  --cbt-plaque-courbure: 166px;
+  --cbt-plaque-lisere: 3px solid var(--blanc, #FFFFFF);
+  --cbt-plaque-fond: linear-gradient(180deg, var(--gold-hi, #F6DE8C), var(--gold, #E8C86A));
+  --cbt-plaque-ombre: 0 4px 0 var(--gold-lo, #A8862E), 0 6px 10px rgba(0, 0, 0, .4);
+
+  /* La colonne benie : une plaque qui ne ressemble a aucune autre. */
+  --cbt-plaque-benie-fond: linear-gradient(180deg, #B6F36A, var(--vert, #7CC832));
+  --cbt-plaque-benie-ombre: 0 4px 0 #4E8C15, 0 6px 10px rgba(0, 0, 0, .4),
+                            0 0 12px rgba(124, 200, 50, .7);
+
+  /* ── L'ARENE : L'AIR ENTRE LES ZONES ───────────────────────────────────── */
+
+  /* L'ecart entre les trois bandes de l'ecran : bandeau d'en face, plateaux,
+     bandeau du bas. C'est le reglage du « trop serre / trop lache ». */
+  --cbt-arene-ecart: clamp(8px, 1.4vw, 20px);
+  /* La marge de l'arene contre les bords de l'ecran. ⚠️ La valeur du portrait
+     porte `env(safe-area-inset-bottom)` : c'est elle qui empeche le bandeau du
+     bas de passer sous la barre de navigation du telephone. */
+  --cbt-arene-marge: clamp(8px, 1.6vh, 20px) clamp(10px, 1.6vw, 26px);
+
+  /* Entre les deux plateaux et la barre du centre. */
+  --cbt-plateaux-ecart: clamp(4px, .8vh, 10px);
+  --cbt-plateaux-marge-bas: clamp(40px, 6vh, 62px);
+
+  /* Entre le bandeau et ce qui l'accompagne (la barre de fin de partie). */
+  --cbt-bandeau-ecart: 12px;
+
+  /* ── LES BANDEAUX DE JOUEUR ────────────────────────────────────────────── */
+
+  --cbt-joueur-marge: clamp(10px, 1.4vh, 16px) clamp(10px, 1vw, 16px) clamp(12px, 1.6vh, 18px);
+  /* L'ecart entre les colonnes du bandeau — telephone uniquement : ailleurs
+     le bandeau est un bloc, et un bloc n'a pas d'ecart. */
+  --cbt-joueur-ecart: 7px;
+  /* Quatre colonnes en portrait : medaillon | nom et elo | ratelier | score. Le
+     ratelier a sa PROPRE colonne, sinon un achat fait sauter le nom d'une ligne
+     en pleine partie. */
+  --cbt-joueur-colonnes: auto 1fr auto auto;
+  --cbt-joueur-medaillon: clamp(48px, 6vh, 74px);
+
+  --cbt-joueur-nom-taille: clamp(12.5px, 1.2vw, 15px);
+  --cbt-joueur-nom-couleur: var(--txt, #FFFFFF);
+  /* L'elo est une INFORMATION, pas une mention legale : sa place dans la
+     hierarchie se lit a la couleur, pas a une taille qui le rendrait illisible. */
+  --cbt-joueur-elo-taille: 11.5px;
+  --cbt-joueur-elo-couleur: rgba(255, 255, 255, .78);
+  /* Le score est LE chiffre du jeu : blanc, cerne, et gros. */
+  --cbt-joueur-score-taille: clamp(28px, 3.6vh, 44px);
+  --cbt-joueur-score-couleur: var(--blanc, #FFFFFF);
+  /* ⚠️ UN CONTOUR SE MESURE EN GLYPHES, PAS EN PIXELS. En pixels fixes, les deux
+     moities du trait se rejoignent au milieu d'un petit chiffre et le « 0 »
+     devient un disque noir. En `em`, il garde sa proportion a toute taille. */
+  --cbt-joueur-score-cerne: .1em var(--deep-lo, #1B1233);
+  --cbt-joueur-mise-taille: 12.5px;
+  --cbt-joueur-mise-couleur: var(--gold-hi, #FFE479);
+
+  /* Les deux camps, sur le bandeau cette fois. */
+  --cbt-joueur-moi-1: var(--violet, #8850F8);
+  --cbt-joueur-moi-2: var(--violet-lo, #9830D8);
+  --cbt-joueur-adverse-1: var(--mer, #5B9CF8);
+  --cbt-joueur-adverse-2: var(--mer-lo, #60C0F8);
+
+  /* Celui dont c'est le tour porte un jonc d'or ; l'autre recule. */
+  --cbt-joueur-actif-jonc: 0 0 0 2px var(--gold, #F8D040) inset;
+  --cbt-joueur-attente: saturate(.55) brightness(.72);
+
+  /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
+
+  /* ⚠️ LA LARGEUR DISPONIBLE DECIDE, PAS UNE TAILLE CHOISIE. Quatre boutons, le
+     gobelet, le libelle du tour et les ecarts font 382 px : au-dela de 390 px
+     ca passe, en dessous la barre se replie et les bonus retombent SOUS le
+     lancer. C'est pourquoi la valeur du portrait est un `clamp`, pas un nombre. */
+  --cbt-bonus-taille: 46px;
+  /* ⚠️ LE RATELIER NE DOIT PAS FAIRE GRANDIR LE BANDEAU : cale sur la hauteur du
+     medaillon, il se loge dans une place qui existe deja. Mesure : a 36 px il
+     poussait le bandeau du bas de 61 a 87 px. */
+  --cbt-bonus-taille-moi: 45px;
+  --cbt-bonus-ecart: clamp(6px, 1vw, 12px);
+  --cbt-bonus-courbure: 11px;
+  --cbt-bonus-marge: 7px;
+  --cbt-bonus-fond: radial-gradient(104% 104% at 50% 26%, var(--deep-hi, #3A2A63) 0%, var(--deep, #2A1D4A) 46%, #081a0e 100%);
+  --cbt-bonus-jonc: inset 0 3px 7px rgba(0, 0, 0, .75), inset 0 0 0 2px var(--gold-lo, #E08A05), 0 2px 5px rgba(0, 0, 0, .5);
+  --cbt-bonus-nombre-taille: 11.5px;
+
+  /* ── LA BARRE DU CENTRE : LE GOBELET ET L'ETAT DU JEU ──────────────────── */
+
+  --cbt-centre-ecart: clamp(8px, 1.2vw, 16px);
+  --cbt-centre-marge-verticale: clamp(6px, 1.1vh, 12px) 0;
+  --cbt-centre-marge: 2px clamp(12px, 1.6vw, 22px);
+  /* La barre du centre est un panneau : ses coins sont ceux du panneau. */
+  --cbt-centre-courbure: 20px 20px 20px 20px;
+
+  --cbt-etat-taille: clamp(12px, 1.1vw, 14.5px);
+  --cbt-etat-couleur: var(--txt, #FFFFFF);
+  --cbt-etat-couleur-moi: #ffe6a8;
+
+  /* ⚠️ CE FACTEUR EST COUPLE A `CUP_RATIO` DANS js/fit.js, ET C'EST UN COUPLAGE
+     REEL : fit.js retranche cette part de la hauteur AVANT de calculer la taille
+     des cases, le CSS la dessine. Deux nombres differents, et le gobelet occupe
+     une place qui n'a pas ete reservee — mesure : 68 px dessines pour 56 prevus,
+     soit 12 px pris aux plateaux a chaque partie. Si tu changes le facteur du
+     portrait, change CUP_RATIO dans js/fit.js avec. */
+  --cbt-gobelet-taille: calc(var(--dc-cell) * .82);
+
+  /* ── LES QUARTS DE PONT (le multiplicateur d'une colonne) ──────────────── */
+
+  --cbt-quart-taille: 10px;
+  --cbt-quart-interligne: 14px;
+  /* La distance entre la pastille et sa plaque. */
+  --cbt-quart-decalage: 2px;
+  --cbt-quart-marge: 0 5px;
+  /* De quel cote de sa plaque se pose MA pastille. La pastille appartient a une
+     colonne : elle se met donc du cote du PLATEAU, entre les points et la
+     grille. Mon plateau etant SOUS ma rangee de plaques, elle descend ; celle
+     d'en face reste au-dessus de la sienne, pour la meme raison inversee.
+     ⚠️ Le cote oppose (vers la barre du centre) a ete essaye : la barre passe
+     PAR-DESSUS des que l'arene se resserre, et la pastille disparait. */
+  --cbt-quart-moi-haut: calc(100% + var(--cbt-quart-decalage));
+  --cbt-quart-moi-bas: auto;
+  --cbt-quart-riche-fond: var(--gold, #F8D040);
+  --cbt-quart-riche-texte: var(--ink, #2A1A00);
+  --cbt-quart-pauvre-fond: var(--deep-hi, #3A2A63);
+  --cbt-quart-pauvre-texte: var(--txt-dim, #C9BCEA);
+
+  /* ── LA PLACE DES INFORMATIONS DANS LE BANDEAU ─────────────────────────── */
+
+  /* ⚠️ L'ESPACE ENTRE DEUX LIGNES N'EST PAS LA TAILLE DU TEXTE. Agrandir le nom
+     agrandissait aussi le vide autour, parce que l'interligne suit la taille.
+     Les deux sont separes ici : la taille est dans « les bandeaux de joueur »,
+     l'air autour est ci-dessous. */
+  --cbt-nom-marge: 8px 0 0;
+  --cbt-nom-interligne: normal;
+  --cbt-elo-marge: 2px 0 0;
+  --cbt-score-marge: 6px 0 0;
+  --cbt-score-interligne: 1.05;
+  --cbt-mise-marge: 7px 0 0;
+
+  /* Ou se pose chaque information dans la grille du bandeau (telephone).
+     Les colonnes sont celles de `--cbt-joueur-colonnes`. Deplacer le ratelier
+     est le reglage qui rend le plus de place : il occupe une colonne entiere. */
+  --cbt-medaillon-colonne: auto;
+  --cbt-medaillon-ligne: auto;
+  --cbt-nom-colonne: auto;
+  --cbt-nom-ligne: auto;
+  --cbt-elo-colonne: auto;
+  --cbt-elo-ligne: auto;
+  --cbt-score-colonne: auto;
+  --cbt-score-ligne: auto;
+  --cbt-mise-colonne: auto;
+  --cbt-mise-ligne: auto;
+  --cbt-bonus-colonne: auto;
+  --cbt-bonus-ligne: auto;
+  --cbt-bonus-alignement: center;
+  --cbt-bonus-hauteur-max: none;
+
+  /* ── LA HAUTEUR DE LA BARRE DU CENTRE ──────────────────────────────────── */
+
+  /* ⚠️ SA HAUTEUR VIENT DU GOBELET, PAS D'ICI. Le gobelet mesure une fraction de
+     la case (voir --cbt-gobelet-taille) et c'est lui qui pousse la barre : ce
+     reglage ne peut que l'AGRANDIR, jamais la reduire en dessous. Pour une barre
+     plus fine, c'est le gobelet qu'il faut reduire — et CUP_RATIO avec. */
+  --cbt-centre-hauteur: 0px;
+}
+
+/* Le telephone est plus serre que l'ecran large : cadre et ecarts y sont fixes.
+   (C'est ce que faisait deja mobile.css — les valeurs sont les memes.) */
+/* Un ecran BAS (telephone couche, petite fenetre) : le medaillon retrecit.
+   ⚠️ Cette couche vient de dice.css et se place AVANT le portrait, comme dans
+   l'original : le portrait doit pouvoir la recouvrir, jamais l'inverse. */
+@media (max-height: 640px) {
+  #dicewrap { --cbt-joueur-medaillon: 44px; }
+}
+
+@media (orientation: portrait), (max-width: 820px) {
+  #dicewrap {
+    --cbt-plateau-cadre: 10px;
+    --cbt-plateau-ecart: 2px;
+  
+    --cbt-arene-ecart: 6px;
+    --cbt-arene-marge: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 10px);
+    --cbt-plateaux-ecart: 4px;
+    --cbt-plateaux-marge-bas: 0px;
+    --cbt-bandeau-ecart: 8px;
+
+    --cbt-joueur-marge: 6px 14px;
+    --cbt-joueur-medaillon: 44px;
+    --cbt-joueur-nom-taille: 18px;
+    --cbt-joueur-elo-taille: 13px;
+    --cbt-joueur-score-taille: 35px;
+    --cbt-joueur-mise-taille: 17px;
+
+    --cbt-bonus-taille: clamp(30px, 8.6vw, 42px);
+    --cbt-bonus-ecart: clamp(4px, 1.6vw, 8px);
+
+    --cbt-centre-marge-verticale: 8px 0;
+    --cbt-centre-ecart: clamp(6px, 2.4vw, 12px);
+    --cbt-centre-marge: 4px clamp(8px, 2.6vw, 16px);
+    --cbt-etat-taille: 15px;
+    --cbt-gobelet-taille: calc(var(--dc-cell) * .58);
+
+    --cbt-nom-marge: 0px;
+    --cbt-nom-interligne: 1.2;
+    --cbt-score-marge: 0px;
+    --cbt-mise-marge: 0px;
+
+    --cbt-medaillon-ligne: span 2;
+    --cbt-elo-colonne: 2;
+    --cbt-score-colonne: 4;
+    --cbt-score-ligne: 1 / span 2;
+    --cbt-mise-colonne: 2;
+    --cbt-bonus-colonne: 3;
+    --cbt-bonus-ligne: 1 / -1;
+    --cbt-bonus-hauteur-max: 42px;
+}
+}
+
+/* ⚠️ CES DEUX COUCHES EXISTENT DANS mobile.css, ET LES OUBLIER SE VOIT. Le
+   cablage plus bas ne les connait pas : il lit la variable une seule fois, et
+   c'est la cascade qui choisit la valeur selon la taille de l'ecran. Il suffit
+   donc de redonner ici la valeur, jamais de recopier une regle. */
+
+/* Le paysage large (tablette posee, bureau) : l'arene y respire autrement. */
+@media (orientation: landscape) and (min-width: 700px) {
+  #dicewrap {
+    --cbt-arene-ecart: 10px;
+    --cbt-arene-marge: 6px 10px;
+  }
+}
+
+/* Les petits telephones : le bandeau se resserre pour laisser la place aux
+   plateaux. Sans ce palier, un 360 px perdait 10 px par bandeau. */
+@media (max-width: 400px) {
+  #dicewrap {
+    --cbt-joueur-marge: 5px 9px;
+    --cbt-joueur-ecart: 8px;
+    --cbt-joueur-medaillon: 36px;
+    --cbt-bonus-taille: 46px;
+  }
+}
+
+/* ============================================================================
+   LE CABLAGE — rien a regler ici. Chaque ligne branche une variable du tableau
+   de bord sur la regle que dice.css a posee. Supprimer une ligne rend le
+   reglage a dice.css ; en ajouter une l'amene ici.
+   ============================================================================ */
+
+/* ── le plateau ───────────────────────────────────────────────────────────── */
+
+#dicewrap .dc-board {
+  border-radius: var(--cbt-plateau-courbure);
+  border: var(--cbt-plateau-lisere) solid var(--cbt-plateau-lisere-couleur);
+  box-shadow: var(--cbt-plateau-ombre);
+  gap: var(--cbt-plateau-ecart);
+  --pd-frame: var(--cbt-plateau-cadre);
+  --pd-c1: var(--cbt-camp-moi-1);
+  --pd-c2: var(--cbt-camp-moi-2);
+}
+
+/* Apres `.dc-board` : le plateau d'en face porte les deux classes. */
+#dicewrap .dc-board-top {
+  --pd-c1: var(--cbt-camp-adverse-1);
+  --pd-c2: var(--cbt-camp-adverse-2);
+}
+
+/* La rangee de plaques reprend EXACTEMENT la geometrie du plateau. */
+#dicewrap .dc-scores {
+  gap: var(--cbt-plateau-ecart);
+  --pd-frame: var(--cbt-plateau-cadre);
+}
+
+#dicewrap .dc-boardwrap.dc-live .dc-board { box-shadow: var(--cbt-plateau-halo); }
+#dicewrap .dc-boardwrap.dc-idle {
+  filter: var(--cbt-plateau-attente);
+  opacity: var(--cbt-plateau-attente-opacite);
+}
+
+/* ── les logements ────────────────────────────────────────────────────────── */
+
+#dicewrap .dc-cell {
+  /* Trois etages, du plus fort au plus faible : ta valeur du tableau de bord,
+     sinon celle que la parure pose sur le plateau, sinon le defaut d'origine. */
+  --pd-round: var(--cbt-slot-arrondi, var(--pd-cell-round, calc(var(--dc-cell) * .287)));
+  width: var(--dc-cell);
+  height: var(--dc-cell);
+}
+
+#dicewrap .dc-cell.pd-socket {
+  background: var(--cbt-slot-fond);
+  box-shadow:
+    inset 0 0 0 var(--cbt-slot-lisere) var(--cbt-slot-lisere-couleur),
+    var(--cbt-slot-creux);
+}
+
+#dicewrap .dc-cell.pd-socket::after {
+  inset: var(--cbt-slot-creux-second-marge);
+  box-shadow: var(--cbt-slot-creux-second);
+}
+
+#dicewrap .dc-stack { gap: var(--cbt-slot-ecart); }
+#dicewrap .dc-cell > .dc-face { filter: var(--cbt-de-ombre); }
+
+/* ⚠️ `.dc-cell` EST OBLIGATOIRE DANS CES DEUX SELECTEURS. Le creux ci-dessus
+   pese un id et deux classes ; ecrits `.dc-landing` tout seul, ces deux etats
+   pesaient moins que lui et le jonc ne s'allumait plus jamais — alors qu'il
+   passait tres bien avant ce fichier, ou le creux ne pesait qu'une classe. */
+#dicewrap .dc-target .dc-cell-filled { box-shadow: var(--cbt-slot-vise); }
+#dicewrap .dc-cell.dc-landing { box-shadow: var(--cbt-slot-pose); }
+
+/* ── les colonnes et leurs plaques ────────────────────────────────────────── */
+
+#dicewrap .dc-col {
+  border-radius: var(--cbt-colonne-courbure);
+  gap: var(--cbt-colonne-ecart);
+  padding: var(--cbt-colonne-marge);
+}
+
+#dicewrap .dc-board:not(.dc-board-top) .dc-col:hover { background: var(--cbt-colonne-survol); }
+
+/* ⚠️ Volontairement AVANT `:empty` de dice.css, qui est plus specifique et
+   continue d'effacer la plaque d'une colonne sans point. */
+#dicewrap .dc-colscore {
+  border-radius: var(--cbt-plaque-courbure);
+  border: var(--cbt-plaque-lisere);
+  background: var(--cbt-plaque-fond);
+  box-shadow: var(--cbt-plaque-ombre);
+}
+
+/* ⚠️ APRES la plaque ordinaire, et pas avant. La colonne benie est peinte dans
+   dice.css avec le meme poids que la regle ci-dessus : chargee apres, celle-ci
+   la repeignait en or et la benediction devenait invisible pour toute la
+   partie — or c'est elle qui permet de refaire le calcul d'un total. */
+#dicewrap .dc-colscore-boost {
+  background: var(--cbt-plaque-benie-fond);
+  box-shadow: var(--cbt-plaque-benie-ombre);
+}
+
+/* ── l'arene : l'air entre les zones ──────────────────────────────────────── */
+
+#dicewrap .dc-arena {
+  gap: var(--cbt-arene-ecart);
+  padding: var(--cbt-arene-marge);
+}
+
+#dicewrap .dc-boards {
+  gap: var(--cbt-plateaux-ecart);
+  padding-bottom: var(--cbt-plateaux-marge-bas);
+}
+
+#dicewrap .dc-side { gap: var(--cbt-bandeau-ecart); }
+
+/* ── les bandeaux de joueur ───────────────────────────────────────────────── */
+
+#dicewrap .dc-pc {
+  padding: var(--cbt-joueur-marge);
+  --pd-c1: var(--cbt-joueur-moi-1);
+  --pd-c2: var(--cbt-joueur-moi-2);
+}
+
+/* ⚠️ DEUX IDENTIFIANTS, ET C'EST OBLIGATOIRE. dice.css peint le bandeau d'en
+   face avec `#dicewrap #dc-pc-foe`, qui pese plus lourd que `.dc-pc` : ecrite
+   avec une classe, la regle ci-dessous perdrait et les deux camps seraient de
+   la meme couleur — exactement le defaut que le bleu avait corrige. */
+#dicewrap #dc-pc-foe {
+  --pd-c1: var(--cbt-joueur-adverse-1);
+  --pd-c2: var(--cbt-joueur-adverse-2);
+}
+
+#dicewrap .dc-pc-portrait {
+  width: var(--cbt-joueur-medaillon);
+  height: var(--cbt-joueur-medaillon);
+}
+
+#dicewrap .dc-pc-name { font-size: var(--cbt-joueur-nom-taille); color: var(--cbt-joueur-nom-couleur); }
+#dicewrap .dc-pc-elo { font-size: var(--cbt-joueur-elo-taille); color: var(--cbt-joueur-elo-couleur); }
+#dicewrap .dc-pc-total {
+  font-size: var(--cbt-joueur-score-taille);
+  color: var(--cbt-joueur-score-couleur);
+  -webkit-text-stroke: var(--cbt-joueur-score-cerne);
+}
+#dicewrap .dc-pc-bet { font-size: var(--cbt-joueur-mise-taille); color: var(--cbt-joueur-mise-couleur); }
+#dicewrap .dc-pc-active { box-shadow: var(--cbt-joueur-actif-jonc); }
+#dicewrap .dc-pc-idle { filter: var(--cbt-joueur-attente); }
+
+/* ── le ratelier de bonus ─────────────────────────────────────────────────── */
+
+#dicewrap .dc-bonus { gap: var(--cbt-bonus-ecart); }
+
+#dicewrap .dc-bonus-btn {
+  width: var(--cbt-bonus-taille);
+  height: var(--cbt-bonus-taille);
+  padding: var(--cbt-bonus-marge);
+  border-radius: var(--cbt-bonus-courbure);
+  background: var(--cbt-bonus-fond);
+  box-shadow: var(--cbt-bonus-jonc);
+}
+
+#dicewrap .dc-bonus-qty { font-size: var(--cbt-bonus-nombre-taille); }
+
+/* ── la barre du centre : le gobelet et l'etat du jeu ─────────────────────── */
+
+/* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. dice.css pose bien
+   `--pd-round: 999px` sur cette barre, mais `.pd-panel` dessine sa propre
+   bordure arrondie et gagne : la barre n'a jamais ete une pastille. Le reglage
+   ci-dessous agit donc sur `border-radius`, le seul qui se voie. */
+#dicewrap .dc-mid {
+  gap: var(--cbt-centre-ecart);
+  margin: var(--cbt-centre-marge-verticale);
+  padding: var(--cbt-centre-marge);
+  border-radius: var(--cbt-centre-courbure);
+}
+
+#dicewrap .dc-turn { font-size: var(--cbt-etat-taille); color: var(--cbt-etat-couleur); }
+#dicewrap .dc-turn-mine { color: var(--cbt-etat-couleur-moi); }
+#dicewrap .dc-cup { width: var(--cbt-gobelet-taille); height: var(--cbt-gobelet-taille); }
+
+/* ── le portrait : la grille du bandeau, et l'echelle du texte ────────────── */
+
+@media (orientation: portrait), (max-width: 820px) {
+  /* ⚠️ L'ECART N'EXISTE QU'ICI. Le bandeau n'est une grille QUE sur telephone :
+     ailleurs c'est un bloc, ou `gap` ne veut rien dire. Pose sans condition il
+     se calculait quand meme, pour ne rien dessiner — un reglage qui ment. */
+  #dicewrap .dc-pc {
+    grid-template-columns: var(--cbt-joueur-colonnes);
+    gap: var(--cbt-joueur-ecart);
+  }
+
+  /* ⚠️ EN PORTRAIT SEULEMENT. Le ratelier loge DANS le bandeau n'a sa taille
+     propre que sur telephone — mobile.css ne l'ecrit que la. Pose sans
+     condition, il rapetissait aussi les bonus du bureau, qui n'ont pourtant
+     pas de bandeau ou se serrer. Deux identifiants pour peser autant que
+     dice.css. */
+  #dicewrap #dc-pc-me .dc-bonus-btn {
+    width: var(--cbt-bonus-taille-moi);
+    height: var(--cbt-bonus-taille-moi);
+  }
+
+  /* ⚠️ `* var(--pd-ui)` N'EST PAS DECORATIF. js/fit.js mesure la place reelle et
+     pose cette echelle sur #dicewrap ; toutes les tailles de texte du telephone
+     la portent. Ecrire ici une taille toute seule la supprimerait, et l'ecran
+     deborderait sur un 360x640 — le defaut que l'echelle existe pour eviter. */
+  #dicewrap .dc-pc-name { font-size: calc(var(--cbt-joueur-nom-taille) * var(--pd-ui, 1)); }
+  #dicewrap .dc-pc-elo { font-size: calc(var(--cbt-joueur-elo-taille) * var(--pd-ui, 1)); }
+  #dicewrap .dc-pc-total { font-size: calc(var(--cbt-joueur-score-taille) * var(--pd-ui, 1)); }
+  #dicewrap .dc-pc-bet { font-size: calc(var(--cbt-joueur-mise-taille) * var(--pd-ui, 1)); }
+  #dicewrap .dc-turn { font-size: calc(var(--cbt-etat-taille) * var(--pd-ui, 1)); }
+
+  /* ⚠️ LE PLACEMENT N'A DE SENS QU'ICI : le bandeau n'est une grille que sur
+     telephone. Deplacer le ratelier (--cbt-bonus-colonne / -ligne) est ce qui
+     rend le plus de place : il tient une colonne entiere du bandeau. */
+  #dicewrap .dc-pc-portrait { grid-column: var(--cbt-medaillon-colonne); grid-row: var(--cbt-medaillon-ligne); }
+  #dicewrap .dc-pc-name { grid-column: var(--cbt-nom-colonne); grid-row: var(--cbt-nom-ligne); }
+  #dicewrap .dc-pc-elo { grid-column: var(--cbt-elo-colonne); grid-row: var(--cbt-elo-ligne); }
+  #dicewrap .dc-pc-total { grid-column: var(--cbt-score-colonne); grid-row: var(--cbt-score-ligne); }
+  #dicewrap .dc-pc-bet { grid-column: var(--cbt-mise-colonne); grid-row: var(--cbt-mise-ligne); }
+  #dicewrap #dc-pc-me .dc-bonus {
+    grid-column: var(--cbt-bonus-colonne);
+    grid-row: var(--cbt-bonus-ligne);
+    align-self: var(--cbt-bonus-alignement);
+    max-height: var(--cbt-bonus-hauteur-max);
+  }
+
+}
+
+/* ── les quarts de pont ───────────────────────────────────────────────────── */
+
+#dicewrap .dc-colscore[data-quart]:not([data-quart=""])::after {
+  font-size: var(--cbt-quart-taille);
+  line-height: var(--cbt-quart-interligne);
+  padding: var(--cbt-quart-marge);
+  inset-block-end: calc(100% + var(--cbt-quart-decalage));
+}
+
+/* ⚠️ LA PASTILLE SE MET ENTRE LES POINTS ET LA GRILLE, PAS DE L'AUTRE COTE.
+   dice.css la pose TOUJOURS au-dessus de la plaque — or la rangee de plaques est
+   SOUS le plateau d'en face et AU-DESSUS du mien : la meme regle donne donc deux
+   resultats opposes, et du cote de la barre du centre la pastille se fait
+   recouvrir des que l'arene se resserre (vu a l'ecran sur iPhone 17 Pro Max).
+   Chacune se pose desormais du cote de SON plateau. */
+#dicewrap .dc-boardwrap:not(.dc-boardwrap-top) .dc-colscore[data-quart]:not([data-quart=""])::after {
+  inset-block-end: var(--cbt-quart-moi-bas);
+  inset-block-start: var(--cbt-quart-moi-haut);
+}
+
+/* ⚠️ SANS CE PLAN, MA PASTILLE PASSE SOUS MON PROPRE PLATEAU. Dans mon cadre la
+   rangee de plaques vient AVANT le plateau, et deux elements positionnes sans
+   z-index se peignent dans l'ordre du document : le plateau recouvrait la
+   pastille qu'on venait de placer devant lui. */
+#dicewrap .dc-scores { position: relative; z-index: 2; }
+
+#dicewrap .dc-colscore-riche::after {
+  background: var(--cbt-quart-riche-fond);
+  color: var(--cbt-quart-riche-texte);
+}
+#dicewrap .dc-colscore-pauvre::after {
+  background: var(--cbt-quart-pauvre-fond);
+  color: var(--cbt-quart-pauvre-texte);
+}
+
+/* ── la place des informations dans le bandeau ────────────────────────────── */
+
+#dicewrap .dc-pc-name { margin: var(--cbt-nom-marge); line-height: var(--cbt-nom-interligne); }
+#dicewrap .dc-pc-elo { margin: var(--cbt-elo-marge); }
+#dicewrap .dc-pc-total { margin: var(--cbt-score-marge); line-height: var(--cbt-score-interligne); }
+#dicewrap .dc-pc-bet { margin: var(--cbt-mise-marge); }
+
+/* La hauteur de la barre du centre. */
+#dicewrap .dc-mid { min-height: var(--cbt-centre-hauteur); }
+

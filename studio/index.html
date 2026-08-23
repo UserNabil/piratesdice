@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Studio — The Pirate's Dice</title>
+<link rel="stylesheet" href="/__studio/studio.css">
+</head>
+<body>
+<aside id="panneau">
+  <header id="entete">
+    <h1>Studio</h1>
+    <p id="etat">chargement…</p>
+    <div class="barre">
+      <button id="enregistrer" class="fort">Enregistrer</button>
+      <button id="recharger">Repartir du fichier</button>
+    </div>
+    <input id="filtre" type="search" placeholder="filtrer un reglage…" autocomplete="off">
+  </header>
+  <div id="groupes"></div>
+  <footer id="pied">
+    Les reglages sont ecrits dans <code>app/css/combat.css</code>.<br>
+    <code>dice.css</code> n'est jamais modifie.
+  </footer>
+</aside>
+
+<main id="scene">
+  <div id="reglages-vue">
+    <label>Ecran
+      <select id="taille">
+        <option value="360x740">360 x 740 — petit telephone</option>
+        <option value="390x844" selected>390 x 844 — telephone courant</option>
+        <option value="412x915">412 x 915 — grand telephone</option>
+        <option value="820x1180">820 x 1180 — tablette</option>
+        <option value="1280x800">1280 x 800 — ecran large</option>
+      </select>
+    </label>
+    <label>Contenu
+      <select id="contenu">
+        <option value="/apercu" selected>Apercu — plateau de demonstration</option>
+        <option value="/jeu">Le jeu reel (serveur requis)</option>
+      </select>
+    </label>
+    <button id="rafraichir">Recharger l'apercu</button>
+  </div>
+  <div id="telephone"><div id="cadre"><span id="echelle"></span><iframe id="vue" src="/apercu" title="apercu"></iframe></div></div>
+</main>
+
+<script src="/__studio/studio.js"></script>
+</body>
+</html>

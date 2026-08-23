@@ -1,0 +1,109 @@
+/* La coque du studio. Volontairement sobre et sombre : tout ce qui brille ici
+   entrerait en concurrence avec ce qu'on regarde, qui est le jeu. */
+:root {
+  --fond: #17131F;
+  --panneau: #201A2C;
+  --bord: #342B46;
+  --txt: #EDE8F6;
+  --dim: #9C90B4;
+  --or: #F8D040;
+  --vert: #7CC832;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; height: 100vh; display: flex;
+  background: var(--fond); color: var(--txt);
+  font: 13px/1.45 "Segoe UI", system-ui, sans-serif;
+}
+
+/* ── le panneau ───────────────────────────────────────────────────────────── */
+#panneau {
+  width: 380px; flex: 0 0 380px; height: 100vh;
+  display: flex; flex-direction: column;
+  background: var(--panneau); border-right: 1px solid var(--bord);
+}
+#entete { padding: 14px 16px 10px; border-bottom: 1px solid var(--bord); }
+#entete h1 { margin: 0; font-size: 16px; letter-spacing: .4px; }
+#etat { margin: 3px 0 10px; font-size: 11.5px; color: var(--dim); min-height: 16px; }
+.barre { display: flex; gap: 8px; }
+button {
+  font: inherit; padding: 7px 12px; cursor: pointer;
+  border: 1px solid var(--bord); border-radius: 8px;
+  background: #2A2238; color: var(--txt);
+}
+button:hover { border-color: #4B3E63; }
+button.fort { background: var(--or); color: #2A1A00; border-color: #C9A31F; font-weight: 600; }
+button.fort:disabled { background: #3A3348; color: var(--dim); border-color: var(--bord); cursor: default; }
+#filtre {
+  width: 100%; margin-top: 10px; padding: 7px 10px;
+  border: 1px solid var(--bord); border-radius: 8px;
+  background: #17131F; color: var(--txt); font: inherit;
+}
+#groupes { flex: 1; overflow-y: auto; padding: 4px 0 20px; }
+#pied { padding: 10px 16px; border-top: 1px solid var(--bord); font-size: 11px; color: var(--dim); }
+code { color: var(--or); font-size: 11px; }
+
+.groupe > summary {
+  padding: 9px 16px; cursor: pointer; user-select: none;
+  font-weight: 600; font-size: 11.5px; letter-spacing: .7px; text-transform: uppercase;
+  color: var(--dim); background: #241E31; border-bottom: 1px solid var(--bord);
+}
+.groupe[open] > summary { color: var(--txt); }
+
+.reglage { padding: 10px 16px; border-bottom: 1px solid #262034; }
+.reglage.modifie { background: #241F2E; box-shadow: inset 3px 0 0 var(--or); }
+.reglage.eteint .commandes { opacity: .35; pointer-events: none; }
+.tete { display: flex; align-items: center; gap: 8px; }
+.nom { flex: 1; font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--txt); }
+.tag {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .5px;
+  padding: 1px 6px; border-radius: 999px; background: #3A2F52; color: #C9B8EA;
+}
+.tag.portrait { background: #2E4A2A; color: #B7E39F; }
+.aide { margin: 4px 0 0; font-size: 11px; color: var(--dim); }
+.commandes { margin-top: 7px; display: flex; flex-direction: column; gap: 6px; }
+.rangee { display: flex; align-items: center; gap: 8px; }
+.rangee label { width: 26px; font-size: 10.5px; color: var(--dim); }
+input[type="range"] { flex: 1; min-width: 0; accent-color: var(--or); }
+input[type="number"], input[type="text"], textarea {
+  border: 1px solid var(--bord); border-radius: 6px; background: #17131F;
+  color: var(--txt); font: 11.5px ui-monospace, Menlo, monospace; padding: 5px 7px;
+}
+input[type="number"] { width: 74px; }
+input[type="text"], textarea { width: 100%; }
+textarea { resize: vertical; min-height: 46px; }
+input[type="color"] { width: 38px; height: 26px; padding: 0; border: 1px solid var(--bord); border-radius: 6px; background: none; }
+.raz { padding: 3px 7px; font-size: 10.5px; border-radius: 6px; }
+
+/* ── la scene ─────────────────────────────────────────────────────────────── */
+#scene { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+#reglages-vue {
+  width: 100%; padding: 10px 16px; display: flex; gap: 14px; align-items: center;
+  border-bottom: 1px solid var(--bord); background: var(--panneau); flex-wrap: wrap;
+}
+#reglages-vue label { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--dim); }
+select { font: inherit; padding: 5px 8px; border: 1px solid var(--bord); border-radius: 7px; background: #17131F; color: var(--txt); }
+#telephone {
+  flex: 1; display: grid; place-items: center; width: 100%; padding: 20px; min-height: 0;
+  background:
+    radial-gradient(circle at 50% 0%, #241C33, var(--fond) 70%);
+}
+/* Le cadre a une taille REELLE : c'est un iframe, donc les media queries du
+   portrait s'y evaluent pour de vrai. Une maquette a l'echelle dans une page
+   large aurait affiche la mise en page du bureau en pretendant l'inverse. */
+/* ⚠️ NI `max-height`, NI `max-width`. Rapetisser le cadre pour le faire tenir
+   changerait la taille de fenetre que le jeu MESURE : on croirait regler un
+   390x844 en reglant un 390x780, et les media queries du portrait pourraient
+   meme basculer. Trop grand, il est donc mis a l'ECHELLE — la fenetre interieure
+   garde sa taille, seul l'affichage retrecit. */
+#vue {
+  border: 0; border-radius: 22px; background: #241C33;
+  box-shadow: 0 0 0 8px #0E0B14, 0 24px 60px rgba(0, 0, 0, .7);
+  transform-origin: top center;
+}
+#cadre { position: relative; }
+#echelle {
+  position: absolute; top: 8px; right: 12px; z-index: 2;
+  font-size: 11px; color: var(--dim); background: rgba(23, 19, 31, .85);
+  padding: 2px 8px; border-radius: 999px;
+}
