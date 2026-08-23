@@ -500,6 +500,8 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--brut", action="store_true",
                     help="la reponse ENTIERE des pistes, sans resume")
+    ap.add_argument("--purger", action="store_true",
+                    help="retire d'une piste les versions restees en brouillon")
     ap.add_argument("--next-version", action="store_true",
                     help="affiche le prochain versionCode libre, et rien d'autre")
     ap.add_argument("--listing", action="store_true", help="pousse la fiche et ses images")
@@ -524,6 +526,36 @@ def main():
             sys.exit("acces refuse : " + why(edit))
         ok2, tracks = call(token, API + "/edits/%s/tracks" % edit["id"])
         print(json.dumps(tracks, indent=2, ensure_ascii=False))
+        return
+
+    if args.purger:
+        # ⚠️ UN BROUILLON QUI TRAINE BLOQUE LA PISTE, ET RIEN NE LE DIT AUX
+        # TESTEURS. Une version deposee sans demande de revue reste en `draft` :
+        # la console la signale comme « a envoyer », et tant qu'elle est la, les
+        # testeurs continuent de recevoir l'ancienne. On ne garde donc que ce qui
+        # est reellement distribue.
+        ok, edit = call(token, API + "/edits", method="POST", body={})
+        if not ok:
+            sys.exit("acces refuse : " + why(edit))
+        ok2, t = call(token, API + "/edits/%s/tracks/%s" % (edit["id"], args.track))
+        if not ok2:
+            sys.exit("piste illisible : " + why(t))
+        gardees = [r for r in (t.get("releases") or []) if r.get("status") != "draft"]
+        jetees = [r for r in (t.get("releases") or []) if r.get("status") == "draft"]
+        if not jetees:
+            print("piste %s : aucun brouillon a retirer" % args.track)
+            return
+        for r in jetees:
+            print("   brouillon retire :", ", ".join(r.get("versionCodes") or []))
+        ok3, out3 = call(token, API + "/edits/%s/tracks/%s" % (edit["id"], args.track),
+                         method="PUT", body={"track": args.track, "releases": gardees})
+        if not ok3:
+            sys.exit("ecriture refusee : " + why(out3))
+        ok4, out4, aLaMain = commit(token, edit["id"])
+        if not ok4:
+            sys.exit("validation refusee : " + why(out4))
+        print("✔ piste %s nettoyee%s" % (args.track,
+              " (deposee sans demande de revue)" if aLaMain else ""))
         return
 
     if args.next_version:

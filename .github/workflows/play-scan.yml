@@ -14,6 +14,11 @@ name: Play scan
 
 on:
   workflow_dispatch:
+    inputs:
+      purger:
+        description: "Retirer les versions restees en brouillon (piste alpha et internal)"
+        type: boolean
+        default: false
 
 jobs:
   scan:
@@ -27,3 +32,10 @@ jobs:
           python3 play_api.py --check
           echo '--- reponse brute ---'
           python3 play_api.py --brut
+          if [ "${{ inputs.purger }}" = "true" ]; then
+            echo '--- nettoyage des brouillons ---'
+            python3 play_api.py --purger --track alpha
+            python3 play_api.py --purger --track internal
+            echo '--- apres nettoyage ---'
+            python3 play_api.py --check
+          fi
