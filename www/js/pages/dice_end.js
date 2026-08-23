@@ -51,12 +51,19 @@ export function renderBet(st, full) {
       <div class="dc-bet-wait"></div>
     </div>`;
   const field = $('#dc-bet-input');
+  const marquer = (valeur) => bet.querySelectorAll('.dc-chip')
+    .forEach((c) => c.classList.toggle('on', Number(c.dataset.bet) === Number(valeur)));
+
   bet.querySelectorAll('.dc-chip').forEach((chip) => {
-    chip.onclick = () => {
-      field.value = chip.dataset.bet;
-      bet.querySelectorAll('.dc-chip').forEach((c) => c.classList.toggle('on', c === chip));
-    };
+    chip.onclick = () => { field.value = chip.dataset.bet; marquer(chip.dataset.bet); };
   });
+  /* ⚠️ LE CHAMP DIT 0 ET AUCUN JETON N'ETAIT ALLUME. Le joueur lisait donc un
+     etat sans le voir : la mise valait bien zero, mais rien a l'ecran ne disait
+     « sans mise », et le bouton restait a atteindre pour confirmer un choix
+     qu'on croyait ne pas avoir fait. L'ecran montre desormais ce qu'il vaut. */
+  marquer(field.value);
+  /* Taper un montant a la main doit eteindre le jeton qui ne correspond plus. */
+  field.oninput = () => marquer(field.value);
 
   $('#dc-bet-go').onclick = () => {
     const value = parseInt($('#dc-bet-input').value, 10);

@@ -812,9 +812,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
        sous la carte sur iPhone 17 Pro Max — mesure : 265 px sur 2868. */
     padding: 12px 10px 16px;
   }
+  /* ⚠️ UNE CARTE QUI TOUCHE LES DEUX BORDS NE SE LIT PLUS COMME UNE CARTE. Elle
+     avait d'abord ete posee en HAUT (tout le vide dessous, ce qui ressemblait a
+     un ecran a moitie charge), puis ETIREE de bord a bord — et coller au bord bas
+     du telephone se lit comme un defaut, pas comme un plein. Elle est donc
+     centree : le reste d'espace se partage a parts egales au-dessus et en
+     dessous, ce qui se lit comme voulu. */
   #dicewrap .dc-menu-card {
-    margin: 0;
-    flex: 1;
+    margin: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;

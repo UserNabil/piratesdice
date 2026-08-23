@@ -24,10 +24,12 @@
     "chaudes": true
   },
   "S006": {
-    "dossier": "arabic",
+    "dossier": "lagon",
     "images": 12,
-    "rayon": 16.1,
-    "chaudes": true
+    "rayon": 31.4,
+    "chaudes": true,
+    "corps": 0.91,
+    "note": "planche 4x3 refaite le 2026-08-23 — remplace l'ancien jeu arabe, qui etait decentre et trop carre pour son logement"
   },
   "S007": {
     "dossier": "dragon",

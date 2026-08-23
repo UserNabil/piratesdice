@@ -48,7 +48,7 @@ const BONUS_ART = {
  * Arrondir les dessins pour les aligner serait pire : on abîmerait un art livré
  * fini. C'est le logement qui s'adapte.
  */
-const ARRONDI = { S002: 25.8, S003: 25.1, S004: 25.1, S005: 21.3, S006: 16.1, S007: 15.9 };
+const ARRONDI = { S002: 25.8, S003: 25.1, S004: 25.1, S005: 21.3, S006: 31.4, S007: 15.9 };
 const ARRONDI_ORIGINE = 27;
 
 /**
@@ -62,7 +62,7 @@ const ARRONDI_ORIGINE = 27;
  * sur les pixels VRAIMENT opaques (alpha >= 200) — la boite alpha brute inclut
  * un halo diffus et asymetrique qui ment de dix pixels.
  */
-const CORPS = { S002: 0.920, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.881, S007: 0.920 };
+const CORPS = { S002: 0.920, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.910, S007: 0.920 };
 const CORPS_ORIGINE = 0.923;
 
 /**

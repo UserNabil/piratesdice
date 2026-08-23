@@ -16,11 +16,48 @@
 const KEY_DEVICE = 'pd.device';
 const KEY_NAME = 'pd.name';
 const KEY_MODE = 'pd.mode';          // 'google' | 'guest'
+const KEY_SESSION = 'pd.session';    // le jeton en cours, garde entre deux lancements
 
 const CREWS = ['Barbarossa', 'Anne Bonny', 'Blackbeard', 'Calico Jack', 'Mary Read',
   'Long John', 'Grace O\'Malley', 'Ching Shih', 'Henry Every', 'Bartholomew'];
 
 let session = null;                  // { url, ws, token, expires, player }
+
+/**
+ * La session survit a la fermeture de l'application.
+ *
+ * ⚠️ ELLE NE SURVIVAIT PAS, ET LE COMPTE SE PERDAIT A CHAQUE LANCEMENT. Le jeton
+ * ne vivait qu'en memoire : on rouvrait le jeu, la reprise silencieuse echouait
+ * (Apple n'en a pas, et Google peut refuser) et le joueur retombait en INVITE —
+ * un autre compte, d'autres pieces, un autre classement. Le jeton est donc
+ * garde, et repris tant qu'il est valide. Ce n'est pas un secret de serveur :
+ * c'est le meme jeton que le telephone porte deja pendant toute sa session.
+ */
+function garderSession(s, mode) {
+  session = s;
+  localStorage.setItem(KEY_MODE, mode);
+  try {
+    localStorage.setItem(KEY_SESSION, JSON.stringify({ mode, token: s.token,
+      expires: s.expires, player: s.player, google: !!s.google }));
+  } catch (_) { /* stockage plein : on jouera sans reprise, pas de quoi bloquer */ }
+  return s;
+}
+
+/** La session gardee, si elle n'est pas perimee. Une marge d'une minute evite
+    de repartir avec un jeton qui expirera pendant la premiere partie. */
+function sessionGardee() {
+  try {
+    const brut = localStorage.getItem(KEY_SESSION);
+    if (!brut) return null;
+    const g = JSON.parse(brut);
+    if (!g || !g.token || !g.expires) return null;
+    if (g.expires * 1000 < Date.now() + 60000) return null;
+    return { url: serverBase(), ws: wsFrom(serverBase()),
+             token: g.token, expires: g.expires, player: g.player, google: !!g.google };
+  } catch (_) {
+    return null;
+  }
+}
 
 export function serverBase() {
   const baked = (window.PD_CONFIG && window.PD_CONFIG.server) || '';
@@ -131,6 +168,14 @@ export async function signIn(opts) {
   const interactive = !!(opts && opts.interactive);
   const games = plugin();
 
+  /* ⚠️ LA REPRISE PASSE AVANT TOUT LE RESTE, et vaut pour les deux plateformes.
+     C'est elle qui rend Apple utilisable : il n'a pas de reconnexion
+     silencieuse, mais un jeton encore valide ne demande rien a personne. */
+  if (!interactive) {
+    const reprise = sessionGardee();
+    if (reprise) { session = reprise; return session; }
+  }
+
   if (games) {
     try {
       await pret();
@@ -142,16 +187,12 @@ export async function signIn(opts) {
         if (!interactive) throw new Error('silent');
         const jeton = await jetonApple(games);
         if (jeton) {
-          session = await claimApple(jeton);
-          localStorage.setItem(KEY_MODE, 'google');
-          return session;
+          return garderSession(await claimApple(jeton), 'google');
         }
       }
       const out = fournisseur() === 'apple' ? null : await codeGoogle(games, interactive);
       if (out && out.serverAuthCode) {
-        session = await claimGoogle(out.serverAuthCode);
-        localStorage.setItem(KEY_MODE, 'google');
-        return session;
+        return garderSession(await claimGoogle(out.serverAuthCode), 'google');
       }
     } catch (e) {
       if (interactive) throw new Error(e && e.message ? e.message : 'Google sign-in failed');
@@ -159,9 +200,7 @@ export async function signIn(opts) {
     }
   }
 
-  session = await claimDevice();
-  localStorage.setItem(KEY_MODE, 'guest');
-  return session;
+  return garderSession(await claimDevice(), 'guest');
 }
 
 /**
@@ -221,6 +260,7 @@ export async function signOut() {
   const games = plugin();
   if (games) { try { await games.logout({ provider: fournisseur() }); } catch (_) { /* deja dehors */ } }
   localStorage.setItem(KEY_MODE, 'guest');
+  localStorage.removeItem(KEY_SESSION);
   session = null;
 }
 
@@ -253,6 +293,7 @@ export async function eraseAccount() {
   localStorage.removeItem(KEY_DEVICE);
   localStorage.removeItem(KEY_NAME);
   localStorage.removeItem(KEY_MODE);
+  localStorage.removeItem(KEY_SESSION);
   session = null;
 }
 
