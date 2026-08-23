@@ -167,9 +167,24 @@ function openSettings() {
     sound.setAttribute('aria-pressed', String(!off));
   };
 
+  /**
+   * ⚠️ RECHARGER EN PLEINE PARTIE COUTE LA PARTIE. `location.reload()` coupe la
+   * liaison, refait une session et renvoie le joueur au menu : changer de langue
+   * au milieu d'un duel faisait perdre la table, avec une erreur de serveur au
+   * passage. Vu a l'ecran le 2026-08-23.
+   *
+   * Hors partie, on recharge : c'est le plus sur, et rien n'est en cours. En
+   * partie, on ne recharge PAS — l'ecran de jeu se retraduit tout seul au
+   * prochain etat envoye par le serveur, parce que `paint()` rappelle `t()` a
+   * chaque fois. Ce qui reste dans l'ancienne langue, ce sont les quelques
+   * libelles poses une seule fois a la construction ; ils reviennent en ordre a
+   * la partie suivante.
+   */
   wrap.querySelector('[data-lang]').onchange = (ev) => {
     setLang(ev.target.value);
-    location.reload();                       // le jeu se redessine dans la langue choisie
+    if (!S.state) { location.reload(); return; }
+    close();
+    toast(t('set.language') + ' ✓');
   };
 
   const inBtn = wrap.querySelector('[data-signin]');
