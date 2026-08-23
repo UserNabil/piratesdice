@@ -517,6 +517,10 @@
 
 #dicewrap .dc-bonus-qty { font-size: var(--cbt-bonus-nombre-taille); }
 
+/* Le jeton qu'on ne peut pas jouer maintenant : meme aspect qu'un bouton eteint,
+   mais il reste cliquable — c'est lui qui dit pourquoi. */
+#dicewrap .dc-bonus-btn.dc-bonus-mute { filter: saturate(.3) brightness(.62); }
+
 /* ── la barre du centre : le gobelet et l'etat du jeu ─────────────────────── */
 
 /* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. dice.css pose bien

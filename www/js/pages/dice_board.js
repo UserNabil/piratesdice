@@ -190,7 +190,11 @@ export function markPlaced(board, cell) {
  * quelques dixiemes de seconde avant de s'arreter sur la vraie. C'est ce qui
  * donne l'impression qu'il a ete jete, et non pioche.
  */
-export function tumble(el, finalValue, done) {
+/* ⚠️ LA PARURE SE PASSE, ELLE NE SE DEVINE PAS. Le roulement dessinait ses
+   faces avec `dieFace(v)` — sans parure, donc avec les des D'ORIGINE. Un joueur
+   qui a achete un jeu voyait rouler des des qui ne sont pas les siens, puis se
+   poser les bons : l'achat semblait ne pas avoir pris. */
+export function tumble(el, finalValue, done, skin) {
   // 14 x 95 ms = 1,33 s : la duree de fx_roll (36 images). A 385 ms on ne
   // voyait qu'un clignotement illisible.
   let ticks = 0;
@@ -206,14 +210,14 @@ export function tumble(el, finalValue, done) {
     if (ticks >= total) {
       clearInterval(timer);
       el.classList.remove('dc-tumbling');
-      el.innerHTML = dieFace(finalValue);
+      el.innerHTML = dieFace(finalValue, false, skin);
       el.classList.remove('dc-settle');
       void el.offsetWidth;
       el.classList.add('dc-settle');
       if (done) done();
       return;
     }
-    el.innerHTML = dieFace(1 + Math.floor(Math.random() * 6));
+    el.innerHTML = dieFace(1 + Math.floor(Math.random() * 6), false, skin);
   }, 95);
 }
 
@@ -224,7 +228,8 @@ export function showLanding(board, cell, value) {
   if (!box) return;
   const ghost = document.createElement('span');
   ghost.className = 'dc-ghost';
-  ghost.innerHTML = dieFace(value);
+  /* Le de annonce : il porte la parure du plateau ou il va tomber. */
+  ghost.innerHTML = dieFace(value, false, parureDuPlateau(board));
   box.appendChild(ghost);
   box.classList.add('dc-landing');
 }

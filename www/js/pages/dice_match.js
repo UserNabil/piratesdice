@@ -273,7 +273,7 @@ export function onState(msg) {
   /* Le de du joueur ROULE avant de se fixer : le gobelet vient d'etre secoue. */
   if (rolled && rolled.seat === S.seat) {
     const cup = $('#dc-cup');
-    if (cup) tumble(cup, rolled.value, () => { S.rolling = false; if (S.state) renderCup(S.state); });
+    if (cup) tumble(cup, rolled.value, () => { S.rolling = false; if (S.state) renderCup(S.state); }, skinOf(S.seat));
     else S.rolling = false;
   }
 
@@ -539,7 +539,8 @@ export function renderBonusRack() {
   const boutons = owned.filter((i) => i.identify !== offert);
   const bouton = (id, titre, badge, cadeau) => `
       <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}"
-              data-id="${esc(id)}" title="${esc(titre)} — ${esc(t('bonus.left', { n: left }))}">
+              data-id="${esc(id)}" data-nom="${esc(titre)}"
+              title="${esc(titre)} — ${esc(t('bonus.left', { n: left }))}">
         <img src="${bonusArt(id)}" alt="">
         <span class="dc-bonus-qty">${esc(String(badge))}</span>
       </button>`;
@@ -549,9 +550,21 @@ export function renderBonusRack() {
 
   rack.innerHTML = tous.join('');
 
+  /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
+     NOM : il n'y a pas de survol, donc pas d'infobulle. Le joueur appuyait sur un
+     jeton grise sans savoir ni a quoi il sert, ni pourquoi il ne part pas. Le
+     bouton reste donc VIVANT : il repond, et ce qu'il repond est la raison —
+     exactement ce que fait deja le gobelet quand ce n'est pas votre tour. */
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
-    b.disabled = !myTurn() || (left <= 0 && !b.classList.contains('dc-bonus-free'));
-    b.onclick = () => S.net.send({ t: 'bonus', identify: b.dataset.id });
+    const cadeau = b.classList.contains('dc-bonus-free');
+    const epuise = left <= 0 && !cadeau;
+    b.classList.toggle('dc-bonus-mute', !myTurn() || epuise);
+    b.onclick = () => {
+      const nom = b.dataset.nom || '';
+      if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
+      if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
+      S.net.send({ t: 'bonus', identify: b.dataset.id });
+    };
   });
 }
 
