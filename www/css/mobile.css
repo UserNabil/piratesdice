@@ -54,7 +54,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   max-height: none;
   border-radius: 0;
   box-shadow: none;
-  padding-top: max(env(safe-area-inset-top), 26px);
+  /* ⚠️ ON MONTE SOUS L'ENCOCHE, ET C'EST VOULU. La marge de sureté complète
+     laissait une bande morte de 62 pt en haut d'un iPhone a Dynamic Island —
+     autant de hauteur perdue pour les plateaux. L'entete est une BARRE : ses
+     objets sont a gauche et a droite, l'ile est au centre, ils ne se croisent
+     pas. On rend donc 24 pt a l'ecran, jamais plus : au-dela, la pastille de
+     pieces passerait derriere le coin arrondi. La barre d'etat est masquee
+     (UIStatusBarHidden dans Info.plist), sinon l'heure tomberait dessus. */
+  padding-top: max(calc(env(safe-area-inset-top) - 24px), 10px);
   padding-bottom: max(env(safe-area-inset-bottom), 10px);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -123,8 +130,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
     gap: 6px;
-    /* Plus de reserve de 72 px : le ratelier n'occupe plus le bas de l'ecran. */
-    padding: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 10px);
+    /* Plus de reserve de 72 px : le ratelier n'occupe plus le bas de l'ecran.
+       ⚠️ ET PLUS DE `env(safe-area-inset-bottom)` ICI : LA COQUE LE POSE DEJA.
+       L'arene est DANS la coque, qui reserve deja `max(env(bottom), 10px)` — le
+       compter une seconde fois volait 34 pt sur un iPhone a barre de gestes,
+       c'est-a-dire 5 pt par case, donc 15 pt de largeur de plateau. Vu a
+       l'ecran sur iPhone 17 Pro Max : une bande morte sous le bandeau du bas. */
+    padding: 6px 8px 10px;
   }
 
   /* ⚠️ `flex-wrap` N'EST PAS DECORATIF ICI. La barre du bas est une rangee qui

@@ -24,7 +24,7 @@ const BAR_PAD = 14;     // le rembourrage de la barre du lancer
    et lui reserver 1,15 case de hauteur revenait a garder de la place pour
    quelque chose qui n'y est plus. Chaque dixieme rendu ici passe dans la
    taille des cases, donc dans la largeur du plateau. */
-const CUP_RATIO = 0.95; // le gobelet, en multiples de la case
+const CUP_RATIO = 0.58; // le gobelet, en multiples de la case
 /* ⚠️ LA MEME VALEUR EST ECRITE DANS css/mobile.css (`.dc-cup`). Les deux
    doivent bouger ENSEMBLE : ici on retranche la place, la-bas on la dessine.
    Elles ont diverge une fois — 0,95 reserve pour 1,15 dessine — et le gobelet
@@ -39,7 +39,16 @@ const MIN_CELL = 32;
    ne garde qu'un plafond de confort : au-dela, un de occupe l'ecran sans rien
    apporter. Sur telephone rien ne bouge : c'est la hauteur qui contraint, bien
    en dessous. */
-const MAX_CELL = 104;
+/* ⚠️ UN PLAFOND FIXE EST UN PLAFOND DE TELEPHONE, MEME A 104. Mesure du
+   2026-08-23 sur iPad Pro 13 pouces : la place autorisait 135 px par case, le
+   plafond en donnait 104, et les deux plateaux flottaient au milieu d'un grand
+   vide — 30 % de la largeur utilisee. Le plafond suit donc le PLUS PETIT cote de
+   l'ecran : sur un telephone (440 pt de large) il vaut 104 comme avant, sur une
+   tablette il s'efface et laisse la mesure decider. */
+function plafondCase() {
+  const cote = Math.min(window.innerWidth, window.innerHeight);
+  return Math.max(104, cote / 4.2);
+}
 
 function apply() {
   const wrap = document.getElementById('dicewrap');
@@ -80,8 +89,9 @@ function apply() {
   const width = boards.getBoundingClientRect().width || arena.clientWidth;
   const byWidth = (width - 2 * FRAME - 2 * GAP) / 3;
 
-  const cell = Math.floor(Math.max(MIN_CELL, Math.min(MAX_CELL, byHeight, byWidth)));
+  const cell = Math.floor(Math.max(MIN_CELL, Math.min(plafondCase(), byHeight, byWidth)));
   wrap.style.setProperty('--dc-cell', cell + 'px');
+
 }
 
 /*
