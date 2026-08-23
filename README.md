@@ -58,17 +58,34 @@ Le sujet du jeton est le **HMAC** du secret (`sea-…`), jamais le secret. C'est
 compte invité : rien à retenir, rien à voler dans l'application. Effacer ses
 données se fait depuis ⚙ → *Erase my data* (exigence de la fiche Play).
 
-## Ce qu'il reste à faire pour publier
+## Déployer
 
-1. **Un serveur joignable depuis l'internet, en HTTPS.** Aujourd'hui l'app parle
-   à `192.168.1.19:8100` : ça ne marche que sur le réseau du bureau. Un téléphone
-   ne peut pas emprunter le tunnel SSH du tool. Voir « Exposer le service ».
-2. **Nom, icône, identifiant de paquet** (`com.edenreforged.piratesdice` est un
-   provisoire) et la fiche Play.
-3. **Une clé de signature** (`.jks`) + `android/keystore.properties`, et
-   `./gradlew bundleRelease` pour l'AAB.
-4. **Une politique de confidentialité** en ligne : Play l'exige dès qu'un compte
-   existe, même invité.
+```
+python3 play_api.py --check          # ce que portent les pistes
+python3 play_api.py --historique     # ce qu'on a envoyé, et ce qui n'est jamais sorti
+```
+
+**Une piste ne porte qu'une version.** Pousser pendant que la précédente est en
+examen ne l'ajoute pas : elle la **remplace**, et l'ancienne passe « Non publiée »
+sans jamais atteindre un testeur. Le 23 août 2026, onze paquets avaient été
+envoyés et les testeurs en étaient restés à la 1.0.22 du 21 août — neuf versions
+s'étaient effacées les unes les autres.
+
+Aucun champ de l'API Play ne dit « en examen » : `completed` signifie seulement
+« diffusion demandée à 100 % ». Le seul endroit qui le dise est la console.
+D'où le cycle :
+
+1. envoyer — `play_api.py` note la version dans `store/dernier-envoi.json` ;
+2. **attendre**, toute nouvelle poussée sur cette piste est refusée ;
+3. lire *Play Console → Tests fermés → alpha → Versions* ;
+4. quand la version dit « Accessible sur Google Play » :
+   `python3 play_api.py --sortie 55 --track alpha` — la piste rouvre.
+
+`--forcer` passe outre. Il n'a de sens que pour remplacer sciemment une version
+en examen dont on ne veut plus.
+
+Côté iOS, `publier-ios.py` fait l'équivalent ; Apple, lui, expose bien l'état
+(`asc.py get /v1/apps/6804324160/appStoreVersions`).
 
 ## Exposer le service
 
