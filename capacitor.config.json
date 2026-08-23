@@ -19,5 +19,9 @@
       "style": "DARK",
       "backgroundColor": "#241C33"
     }
+  },
+  "ios": {
+    "scrollEnabled": false,
+    "contentInset": "never"
   }
 }

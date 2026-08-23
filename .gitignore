@@ -20,3 +20,5 @@ ios/App/output/
 *.p12
 *.mobileprovision
 signing/
+__pycache__/
+dist/
