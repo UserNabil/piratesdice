@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 
 @UIApplicationMain
@@ -6,7 +7,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    /// ⚠️ LA WEBVIEW GARDE SES IMAGES D'UNE MISE A JOUR A L'AUTRE, ET C'EST
+    /// INVISIBLE. Le jeu sert ses fichiers depuis le paquet, sous une adresse
+    /// fixe (`capacitor://localhost/dice/img/...`) : WKWebView les met en cache
+    /// et ne les redemande pas, meme quand l'application a changé. Le joueur
+    /// installe la nouvelle version et retrouve les ANCIENNES images — sans
+    /// aucune erreur, sans aucun moyen de le deviner. Même correctif que côté
+    /// Android, au même moment : au changement de numéro de build, une fois.
+    private func viderLeCacheSiNouvelleVersion() {
+        let vus = UserDefaults.standard
+        let actuelle = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        guard vus.string(forKey: "pd.versionVue") != actuelle else { return }
+        let types: Set<String> = [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache]
+        WKWebsiteDataStore.default().removeData(ofTypes: types,
+                                                modifiedSince: Date(timeIntervalSince1970: 0)) {
+            vus.set(actuelle, forKey: "pd.versionVue")
+        }
+    }
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        viderLeCacheSiNouvelleVersion()
         // Override point for customization after application launch.
         return true
     }
