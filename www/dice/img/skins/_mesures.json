@@ -1,9 +1,10 @@
 {
   "S002": {
     "dossier": "gold",
-    "images": 6,
-    "rayon": 25.8,
-    "chaudes": true
+    "images": 12,
+    "chaudes": true,
+    "rayon": 30.7,
+    "corps": 0.895
   },
   "S003": {
     "dossier": "obsidian",
