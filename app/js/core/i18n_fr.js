@@ -9,7 +9,7 @@ export const FR = {
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Une relance gratuite par partie.',
   'cap.teach.name': 'Barbe-Noire',
-  'cap.teach.trait': 'Sa première pose emporte aussi les dés adverses de la valeur juste au-dessus — un 6 emporte les 1.',
+  'cap.teach.trait': 'Une fois par partie, son adversaire saute son prochain tour.',
   'cap.ching.name': 'Ching Shih',
   'cap.ching.trait': 'Un regard par partie sur le dé que son adversaire va lancer.',
   'cap.omalley.name': 'Grace O’Malley',
@@ -17,7 +17,6 @@ export const FR = {
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Commence la partie avec un dé déjà posé.',
   'cap.trait.reroll': 'Relance gratuite',
-  'cap.trait.above': 'La valeur au-dessus !',
   'cap.trait.headstart': 'Un dé déjà en place',
 
   'fx.broadside': 'Bordée ! {n} dés',
@@ -222,4 +221,10 @@ export const FR = {
   'err.captainLocked': 'On ne change pas de capitaine en pleine partie',
   'shop.shutTitle': 'Les caisses sont fermées pendant une partie',
   'shop.shutHint': 'Votre mise est engagée : l’or reste bloqué jusqu’au verdict. Revenez à la fin de la partie.',
+  'shop.B006.name': 'Geler l’adversaire',
+  'shop.B006.desc': 'Votre adversaire saute son prochain tour. Vous jouez deux fois de suite.',
+  'fx.freeze': 'Tour gelé !',
+  'fx.frozenYou': 'Votre tour est gelé',
+  'fx.frozenThem': '{name} passe son tour — gelé',
+  'cap.trait.freeze': 'Un tour gelé',
 };

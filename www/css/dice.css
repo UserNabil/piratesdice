@@ -1162,6 +1162,25 @@
 
 /* La boutique fermee pendant une partie. Un panneau qui EXPLIQUE : un rayon
    vide ou un bouton mort laisserait croire a une panne. */
+/* LE SCEAU DE GEL. Plein cadre, 1,6 s, chez CELUI QUI SUBIT seulement : sans
+   lui, un joueur dont le tour est vole attend un tour qui ne vient pas et croit
+   a un blocage — la meme meprise que les bonus muets. */
+#dicewrap .dc-gel {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(80,180,255,.22), rgba(10,20,50,.55));
+  animation: dc-gel-vient .22s ease-out, dc-gel-part .3s ease-in 1.3s forwards;
+}
+#dicewrap .dc-gel img { width: min(46vw, 220px); filter: drop-shadow(0 0 18px rgba(90,200,255,.8)); }
+#dicewrap .dc-gel span {
+  font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90,200,255,.9);
+  font-size: clamp(.95rem, 4.2vw, 1.35rem);
+}
+@keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
+@keyframes dc-gel-part  { to { opacity: 0; } }
+
 #dicewrap .dc-shop-shut {
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 28px 18px; text-align: center;

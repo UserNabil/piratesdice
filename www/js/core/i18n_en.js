@@ -18,7 +18,7 @@ export const EN = {
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'One free reroll per match.',
   'cap.teach.name': 'Blackbeard',
-  'cap.teach.trait': 'His first placement also takes the enemy dice one value above — a 6 takes the 1s.',
+  'cap.teach.trait': 'Once a match, his opponent skips their next turn.',
   'cap.ching.name': 'Ching Shih',
   'cap.ching.trait': 'One look per match at the die her opponent is about to roll.',
   'shop.B004.name': 'Spyglass',
@@ -31,7 +31,6 @@ export const EN = {
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Starts the match with one die already placed.',
   'cap.trait.reroll': 'Free reroll',
-  'cap.trait.above': 'One value above!',
   'cap.trait.headstart': 'A die already on the board',
 
   'fx.broadside': 'Broadside! {n} dice',
@@ -235,4 +234,10 @@ export const EN = {
   'err.captainLocked': 'You cannot change captain mid-match',
   'shop.shutTitle': 'The hold is shut during a match',
   'shop.shutHint': 'Your stake is on the table: gold stays locked until the verdict. Come back when the match ends.',
+  'shop.B006.name': 'Freeze the enemy',
+  'shop.B006.desc': 'Your opponent skips their next turn. You play twice in a row.',
+  'fx.freeze': 'Turn frozen!',
+  'fx.frozenYou': 'Your turn is frozen',
+  'fx.frozenThem': '{name} skips a turn — frozen',
+  'cap.trait.freeze': 'One turn frozen',
 };

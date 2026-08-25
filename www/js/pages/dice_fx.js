@@ -213,6 +213,22 @@ function unEffet(f) {
       return;
     }
 
+    /* LE GEL, DES DEUX COTES.
+       Celui qui gele voit une banniere ; celui qui perd son tour doit voir
+       davantage — sans quoi il attend un tour qui ne vient pas et croit a un
+       blocage, exactement comme pour les bonus muets. Le sceau glace tient le
+       temps qu'il faut pour comprendre, puis s'efface. */
+    if (f.kind === 'freeze') {
+      banner(t('fx.freeze'), f.seat === S.seat ? 'good' : 'bad');
+      return;
+    }
+
+    if (f.kind === 'frozen') {
+      if (f.seat === S.seat) { sceauDeGel(); buzz([0, 60, 40, 60]); }
+      else banner(t('fx.frozenThem', { name: nomDuSiege(f.seat) }), 'good');
+      return;
+    }
+
     if (f.kind === 'peek') {
       /* Seul celui qui regarde a besoin de le savoir : prevenir l'adversaire
          qu'on vient de lire son prochain de lui donnerait l'information en
@@ -237,6 +253,21 @@ function unEffet(f) {
  * l'explosion qu'elle explique, et elle est cerclee de rouge quand elle vise le
  * joueur — la couleur dit « ca te concerne » avant meme qu'on ait lu.
  */
+
+/* Le sceau de gel : plein cadre, 1,6 s. Il dit « ton tour vient d'etre pris »
+   a celui qui le subit, et rien a l'autre — qui, lui, sait ce qu'il a fait. */
+function sceauDeGel() {
+  const arene = document.querySelector('#dc-screen-game .dc-arena');
+  if (!arene) return;
+  const ancien = arene.querySelector('.dc-gel');
+  if (ancien) ancien.remove();
+  const el = document.createElement('div');
+  el.className = 'dc-gel';
+  el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
+    + '<span>' + esc(t('fx.frozenYou')) + '</span>';
+  arene.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
 
 function annonceBonus(f) {
   const arene = document.querySelector('#dc-screen-game .dc-arena');

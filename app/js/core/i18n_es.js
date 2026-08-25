@@ -8,7 +8,7 @@ export const ES = {
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Una tirada repetida gratis por partida.',
   'cap.teach.name': 'Barbanegra',
-  'cap.teach.trait': 'Su primera colocación se lleva también los dados rivales del valor justo superior — un 6 se lleva los 1.',
+  'cap.teach.trait': 'Una vez por partida, su rival se salta el próximo turno.',
   'cap.ching.name': 'Ching Shih',
   'cap.ching.trait': 'Un vistazo por partida al dado que su rival va a tirar.',
   'cap.omalley.name': 'Grace O’Malley',
@@ -16,7 +16,6 @@ export const ES = {
   'cap.jack.name': 'Calico Jack',
   'cap.jack.trait': 'Empieza la partida con un dado ya colocado.',
   'cap.trait.reroll': 'Tirada gratis',
-  'cap.trait.above': '¡El valor superior!',
   'cap.trait.headstart': 'Un dado ya colocado',
 
   'fx.broadside': '¡Andanada! {n} dados',
@@ -221,4 +220,10 @@ export const ES = {
   'err.captainLocked': 'No se cambia de capitán en mitad de una partida',
   'shop.shutTitle': 'La bodega está cerrada durante una partida',
   'shop.shutHint': 'Tu apuesta está sobre la mesa: el oro queda bloqueado hasta el veredicto. Vuelve al terminar.',
+  'shop.B006.name': 'Congelar al rival',
+  'shop.B006.desc': 'Tu rival se salta su próximo turno. Juegas dos veces seguidas.',
+  'fx.freeze': '¡Turno congelado!',
+  'fx.frozenYou': 'Tu turno está congelado',
+  'fx.frozenThem': '{name} se salta el turno — congelado',
+  'cap.trait.freeze': 'Un turno congelado',
 };

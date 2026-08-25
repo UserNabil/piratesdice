@@ -27,6 +27,9 @@ const BONUS_ART = {
      a etre la meme chose, et un joueur qui a vu le trait reconnait l'effet. */
   B004: 'trait_ching.png',
   B005: 'trait_omalley.png',
+  /* Le gel est aussi le trait de Barbe-Noire : meme dessin des deux cotes, pour
+     qu'un joueur qui a vu le capitaine reconnaisse l'effet en boutique. */
+  B006: 'bonus_freeze.png',
 };
 
 /**
@@ -108,6 +111,7 @@ const STILL_FILES = [
   'icon_shop.png', 'icon_ranking.png', 'icon_rules.png', 'icon_duel.png',
   'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
   'bonus_reroll.png', 'bonus_clear_own.png', 'bonus_blast_enemy.png',
+  'bonus_freeze.png', 'fx_freeze.png',
   'die_1.png', 'die_2.png', 'die_3.png', 'die_4.png', 'die_5.png', 'die_6.png',
   'die_1_hot.png', 'die_2_hot.png', 'die_3_hot.png', 'die_4_hot.png',
   'die_5_hot.png', 'die_6_hot.png',
