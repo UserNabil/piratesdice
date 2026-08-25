@@ -144,19 +144,18 @@
   --cbt-plateaux-ecart: clamp(4px, .8vh, 10px);
   --cbt-plateaux-marge-bas: clamp(40px, 6vh, 62px);
 
-  /* Entre le bandeau et ce qui l'accompagne (la barre de fin de partie). */
-  --cbt-bandeau-ecart: 12px;
 
   /* ── LES BANDEAUX DE JOUEUR ────────────────────────────────────────────── */
 
   --cbt-joueur-marge: clamp(10px, 1.4vh, 16px) clamp(10px, 1vw, 16px) clamp(12px, 1.6vh, 18px);
-  /* L'ecart entre les colonnes du bandeau — telephone uniquement : ailleurs
-     le bandeau est un bloc, et un bloc n'a pas d'ecart. */
   --cbt-joueur-ecart: 7px;
-  /* Quatre colonnes en portrait : medaillon | nom et elo | ratelier | score. Le
-     ratelier a sa PROPRE colonne, sinon un achat fait sauter le nom d'une ligne
-     en pleine partie. */
-  --cbt-joueur-colonnes: auto 1fr auto auto;
+  /* ⚠️ TROIS COLONNES, ET LE `minmax(0, …)` N'EST PAS DECORATIF. Les deux
+     capitaines se font face autour du medaillon : medaillon | nom et elo |
+     score. Un simple `1fr` vaut `minmax(auto, 1fr)`, dont le MINIMUM est le
+     contenu : un nom long imposait alors sa taille a sa piste et volait la
+     place de l'autre — « BARTHOLOMEW » se coupait en « BART… » alors qu'il
+     restait de la largeur en face. */
+  --cbt-joueur-colonnes: auto minmax(0, 1fr) auto;
   --cbt-joueur-medaillon: clamp(48px, 6vh, 74px);
 
   --cbt-joueur-nom-taille: clamp(12.5px, 1.2vw, 15px);
@@ -203,25 +202,25 @@
   --cbt-bonus-jonc: inset 0 3px 7px rgba(0, 0, 0, .75), inset 0 0 0 2px var(--gold-lo, #E08A05), 0 2px 5px rgba(0, 0, 0, .5);
   --cbt-bonus-nombre-taille: 11.5px;
 
-  /* ── LA BARRE DU CENTRE : LE GOBELET ET L'ETAT DU JEU ──────────────────── */
+  /* ── L'ETAT DU JEU ─────────────────────────────────────────────────────── */
 
-  --cbt-centre-ecart: clamp(8px, 1.2vw, 16px);
-  --cbt-centre-marge-verticale: clamp(6px, 1.1vh, 12px) 0;
-  --cbt-centre-marge: 2px clamp(12px, 1.6vw, 22px);
-  /* La barre du centre est un panneau : ses coins sont ceux du panneau. */
-  --cbt-centre-courbure: 20px 20px 20px 20px;
-
+  /* ⚠️ QUATRE REGLAGES DE « BARRE DU CENTRE » ONT DISPARU AVEC ELLE. Le gobelet
+     y flottait entre l'etat du jeu et le vide ; il est descendu dans le bandeau
+     du bas, et la barre du centre est devenue la carte des deux capitaines
+     (voir --cbt-versus-*). Un reglage garde par prudence sur un element qui
+     n'existe plus se contente d'etre calcule pour rien — ou pire, de peindre
+     par-dessus le nouveau. */
   --cbt-etat-taille: clamp(12px, 1.1vw, 14.5px);
   --cbt-etat-couleur: var(--txt, #FFFFFF);
   --cbt-etat-couleur-moi: #ffe6a8;
 
-  /* ⚠️ CE FACTEUR EST COUPLE A `CUP_RATIO` DANS js/fit.js, ET C'EST UN COUPLAGE
-     REEL : fit.js retranche cette part de la hauteur AVANT de calculer la taille
-     des cases, le CSS la dessine. Deux nombres differents, et le gobelet occupe
-     une place qui n'a pas ete reservee — mesure : 68 px dessines pour 56 prevus,
-     soit 12 px pris aux plateaux a chaque partie. Si tu changes le facteur du
-     portrait, change CUP_RATIO dans js/fit.js avec. */
-  --cbt-gobelet-taille: calc(var(--dc-cell) * .82);
+  /* ⚠️ LE GOBELET N'A PLUS DE REGLAGE DE TAILLE, ET C'EST UN GAIN. Il valait une
+     fraction de case, valeur qui devait rester EGALE a `CUP_RATIO` dans
+     js/fit.js — l'un retranchait la place, l'autre la dessinait. Elles avaient
+     diverge une fois : 68 px dessines pour 56 prevus, soit 12 px pris aux
+     plateaux a chaque partie sans que rien ne le signale. Le gobelet est un
+     bouton du bandeau ; sa taille vient de `--cbt-pied-dessin`, et fit.js
+     MESURE le bandeau au lieu de deviner. */
 
   /* ── LES QUARTS DE PONT (le multiplicateur d'une colonne) ──────────────── */
 
@@ -256,31 +255,35 @@
   --cbt-score-interligne: 1.05;
   --cbt-mise-marge: 7px 0 0;
 
-  /* Ou se pose chaque information dans la grille du bandeau (telephone).
-     Les colonnes sont celles de `--cbt-joueur-colonnes`. Deplacer le ratelier
-     est le reglage qui rend le plus de place : il occupe une colonne entiere. */
-  --cbt-medaillon-colonne: auto;
-  --cbt-medaillon-ligne: auto;
-  --cbt-nom-colonne: auto;
-  --cbt-nom-ligne: auto;
-  --cbt-elo-colonne: auto;
-  --cbt-elo-ligne: auto;
-  --cbt-score-colonne: auto;
-  --cbt-score-ligne: auto;
-  --cbt-mise-colonne: auto;
-  --cbt-mise-ligne: auto;
-  --cbt-bonus-colonne: auto;
-  --cbt-bonus-ligne: auto;
-  --cbt-bonus-alignement: center;
-  --cbt-bonus-hauteur-max: none;
+  /* ⚠️ ONZE REGLAGES DE PLACEMENT ONT DISPARU ICI, ET C'EST VOULU. Ils
+     posaient chaque information dans une case precise d'un bandeau a QUATRE
+     colonnes — medaillon, nom, ratelier, score — pose en haut et en bas de
+     l'ecran. Les deux capitaines se font desormais face au centre, sur trois
+     colonnes, et le ratelier a quitte la carte pour l'eventail de la cale.
+     Ces reglages ne decrivaient plus rien : laisses en place, ils ecrasaient la
+     nouvelle grille avec l'ancienne et coupaient les noms a trois lettres. Un
+     reglage qui vise une case qui n'existe plus ne fait pas « rien », il fait
+     du mal. Le sens de lecture se regle maintenant par `--cbt-joueur-colonnes`,
+     et l'ordre par le fichier de style, pas case par case. */
 
-  /* ── LA HAUTEUR DE LA BARRE DU CENTRE ──────────────────────────────────── */
+  /* ── LE MEDAILLON « VS » ENTRE LES DEUX CAPITAINES ─────────────────────── */
 
-  /* ⚠️ SA HAUTEUR VIENT DU GOBELET, PAS D'ICI. Le gobelet mesure une fraction de
-     la case (voir --cbt-gobelet-taille) et c'est lui qui pousse la barre : ce
-     reglage ne peut que l'AGRANDIR, jamais la reduire en dessous. Pour une barre
-     plus fine, c'est le gobelet qu'il faut reduire — et CUP_RATIO avec. */
-  --cbt-centre-hauteur: 0px;
+  /* Il est decoratif ; le nom ne l'est pas. Trop large, il mange les lettres. */
+  --cbt-versus-marque: clamp(34px, 7vw, 52px);
+  --cbt-versus-ecart: clamp(6px, 1.4vw, 14px);
+  --cbt-versus-marge: clamp(6px, 1vh, 12px) clamp(8px, 1.4vw, 16px);
+  --cbt-versus-courbure: 20px;
+
+  /* ── LE BANDEAU DU BAS : CALE, GOBELET, SORTIE ─────────────────────────── */
+
+  /* Trois boutons de largeur reglable. Le central est plus large : c'est celui
+     qu'on vise a chaque tour. */
+  --cbt-pied-colonnes: 1fr 1.35fr 1fr;
+  --cbt-pied-ecart: clamp(6px, 1.6vw, 14px);
+  --cbt-pied-dessin: clamp(34px, 9.5vw, 54px);
+  --cbt-pied-texte: clamp(10px, 3vw, 13px);
+  --cbt-pied-courbure: 16px;
+  --cbt-pied-marge: clamp(4px, .8vh, 8px) 4px clamp(5px, .9vh, 9px);
 }
 
 /* Le telephone est plus serre que l'ecran large : cadre et ecarts y sont fixes.
@@ -307,37 +310,29 @@
     --cbt-arene-marge: 6px 8px 10px;
     --cbt-plateaux-ecart: 4px;
     --cbt-plateaux-marge-bas: 0px;
-    --cbt-bandeau-ecart: 8px;
 
-    --cbt-joueur-marge: 6px 14px;
-    --cbt-joueur-medaillon: 44px;
-    --cbt-joueur-nom-taille: 18px;
-    --cbt-joueur-elo-taille: 13px;
-    --cbt-joueur-score-taille: 35px;
-    --cbt-joueur-mise-taille: 17px;
+    /* ⚠️ CES TAILLES VALAIENT POUR UN BANDEAU PLEINE LARGEUR. Un capitaine
+       disposait alors de tout l'ecran ; il en a maintenant la moitie, medaillon
+       « VS » deduit. A 18 px, le nom ne tenait plus que sur trois lettres. */
+    --cbt-joueur-marge: 0px;
+    --cbt-joueur-ecart: 5px;
+    --cbt-joueur-medaillon: 36px;
+    --cbt-joueur-nom-taille: 13px;
+    --cbt-joueur-elo-taille: 11.5px;
+    --cbt-joueur-score-taille: 26px;
+    --cbt-joueur-mise-taille: 11.5px;
 
     --cbt-bonus-taille: clamp(30px, 8.6vw, 42px);
     --cbt-bonus-ecart: clamp(4px, 1.6vw, 8px);
 
-    --cbt-centre-marge-verticale: 8px 0;
-    --cbt-centre-ecart: clamp(6px, 2.4vw, 12px);
-    --cbt-centre-marge: 4px clamp(8px, 2.6vw, 16px);
+    --cbt-versus-marge: 5px 6px;
+    --cbt-versus-ecart: 5px;
     --cbt-etat-taille: 15px;
-    --cbt-gobelet-taille: calc(var(--dc-cell) * .58);
 
     --cbt-nom-marge: 0px;
     --cbt-nom-interligne: 1.2;
     --cbt-score-marge: 0px;
     --cbt-mise-marge: 0px;
-
-    --cbt-medaillon-ligne: span 2;
-    --cbt-elo-colonne: 2;
-    --cbt-score-colonne: 4;
-    --cbt-score-ligne: 1 / span 2;
-    --cbt-mise-colonne: 2;
-    --cbt-bonus-colonne: 3;
-    --cbt-bonus-ligne: 1 / -1;
-    --cbt-bonus-hauteur-max: 42px;
 }
 }
 
@@ -473,7 +468,7 @@
   padding-bottom: var(--cbt-plateaux-marge-bas);
 }
 
-#dicewrap .dc-side { gap: var(--cbt-bandeau-ecart); }
+#dicewrap .dc-boards { row-gap: var(--cbt-plateaux-ecart); }
 
 /* ── les bandeaux de joueur ───────────────────────────────────────────────── */
 
@@ -527,22 +522,33 @@
    mais il reste cliquable — c'est lui qui dit pourquoi. */
 #dicewrap .dc-bonus-btn.dc-bonus-mute { filter: saturate(.3) brightness(.62); }
 
-/* ── la barre du centre : le gobelet et l'etat du jeu ─────────────────────── */
+/* ── la carte des deux capitaines, et le bandeau du bas ───────────────────── */
 
-/* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. dice.css pose bien
-   `--pd-round: 999px` sur cette barre, mais `.pd-panel` dessine sa propre
-   bordure arrondie et gagne : la barre n'a jamais ete une pastille. Le reglage
-   ci-dessous agit donc sur `border-radius`, le seul qui se voie. */
-#dicewrap .dc-mid {
-  gap: var(--cbt-centre-ecart);
-  margin: var(--cbt-centre-marge-verticale);
-  padding: var(--cbt-centre-marge);
-  border-radius: var(--cbt-centre-courbure);
+/* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. `.pd-panel` dessine sa
+   propre bordure arrondie et gagne : le reglage ci-dessous agit donc sur
+   `border-radius`, le seul qui se voie. */
+#dicewrap .dc-versus {
+  gap: var(--cbt-versus-ecart);
+  padding: var(--cbt-versus-marge);
+  border-radius: var(--cbt-versus-courbure);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
+#dicewrap .dc-vs-mark { width: var(--cbt-versus-marque); }
 
 #dicewrap .dc-turn { font-size: var(--cbt-etat-taille); color: var(--cbt-etat-couleur); }
 #dicewrap .dc-turn-mine { color: var(--cbt-etat-couleur-moi); }
-#dicewrap .dc-cup { width: var(--cbt-gobelet-taille); height: var(--cbt-gobelet-taille); }
+
+#dicewrap .dc-foot {
+  grid-template-columns: var(--cbt-pied-colonnes);
+  gap: var(--cbt-pied-ecart);
+}
+#dicewrap .dc-foot-btn {
+  padding: var(--cbt-pied-marge);
+  border-radius: var(--cbt-pied-courbure);
+}
+#dicewrap .dc-foot-btn > img,
+#dicewrap .dc-foot-art { width: var(--cbt-pied-dessin); height: var(--cbt-pied-dessin); }
+#dicewrap .dc-foot-btn > span:last-child { font-size: var(--cbt-pied-texte); }
 
 /* ── le portrait : la grille du bandeau, et l'echelle du texte ────────────── */
 
@@ -575,21 +581,15 @@
   #dicewrap .dc-pc-bet { font-size: calc(var(--cbt-joueur-mise-taille) * var(--pd-ui, 1)); }
   #dicewrap .dc-turn { font-size: calc(var(--cbt-etat-taille) * var(--pd-ui, 1)); }
 
-  /* ⚠️ LE PLACEMENT N'A DE SENS QU'ICI : le bandeau n'est une grille que sur
-     telephone. Deplacer le ratelier (--cbt-bonus-colonne / -ligne) est ce qui
-     rend le plus de place : il tient une colonne entiere du bandeau. */
-  #dicewrap .dc-pc-portrait { grid-column: var(--cbt-medaillon-colonne); grid-row: var(--cbt-medaillon-ligne); }
-  #dicewrap .dc-pc-name { grid-column: var(--cbt-nom-colonne); grid-row: var(--cbt-nom-ligne); }
-  #dicewrap .dc-pc-elo { grid-column: var(--cbt-elo-colonne); grid-row: var(--cbt-elo-ligne); }
-  #dicewrap .dc-pc-total { grid-column: var(--cbt-score-colonne); grid-row: var(--cbt-score-ligne); }
-  #dicewrap .dc-pc-bet { grid-column: var(--cbt-mise-colonne); grid-row: var(--cbt-mise-ligne); }
-  #dicewrap #dc-pc-me .dc-bonus {
-    grid-column: var(--cbt-bonus-colonne);
-    grid-row: var(--cbt-bonus-ligne);
-    align-self: var(--cbt-bonus-alignement);
-    max-height: var(--cbt-bonus-hauteur-max);
-  }
-
+  /* ⚠️ SIX REGLES DE PLACEMENT ONT DISPARU ICI. Elles posaient chaque
+     information dans une case precise d'un bandeau a quatre colonnes : le nom
+     en 2, le score en 4, le ratelier en 3. La carte n'en a plus que trois, et
+     le ratelier n'y vit plus du tout. Appliquees a la nouvelle grille, elles
+     envoyaient le score dans une colonne inexistante et ecrasaient le nom
+     jusqu'a trois lettres — vu sur simulateur, « BARTHOLOMEW » rendu « BAR… ».
+     L'ordre vient maintenant du fichier de style, qui sait de quel cote chaque
+     capitaine regarde. */
+  #dicewrap .dc-pc-elo { font-size: calc(var(--cbt-joueur-elo-taille) * var(--pd-ui, 1)); }
 }
 
 /* ── les quarts de pont ───────────────────────────────────────────────────── */
@@ -635,5 +635,4 @@
 #dicewrap .dc-pc-bet { margin: var(--cbt-mise-marge); }
 
 /* La hauteur de la barre du centre. */
-#dicewrap .dc-mid { min-height: var(--cbt-centre-hauteur); }
 

@@ -163,10 +163,16 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      une demi-largeur, et le ratelier a quitte la carte pour l'eventail de la
      cale. Garder les anciennes lignes aurait donne une grille a quatre colonnes
      dans un espace qui n'en tient plus que trois. */
-  #dicewrap .dc-versus { padding: 5px 8px; --pd-rivet-in: 4px 10px; margin: 8px 0; }
-  #dicewrap .dc-pc { gap: 6px; }
-  #dicewrap .dc-pc-portrait { width: 40px; height: 40px; }
-  #dicewrap .dc-pc-name { margin: 0; font-size: 12.5px; line-height: 1.15;
+  #dicewrap .dc-versus { padding: 5px 6px; --pd-rivet-in: 4px 10px; margin: 8px 0; }
+  #dicewrap .dc-pc { gap: 5px; }
+  #dicewrap .dc-pc-portrait { width: 36px; height: 36px; }
+  /* ⚠️ « BARTHOLOMEW » DEVENAIT « BAR… ». Deux capitaines partagent la largeur
+     de l'ecran, et chacun y loge un portrait, un nom, un elo, des pastilles et
+     un score : le nom est le seul qui puisse retrecir sans perdre son sens, mais
+     c'est aussi celui qu'on lit. On lui rend ce qu'on peut — portrait plus
+     petit, medaillon plus etroit, taille liee a la largeur — et la coupure ne
+     sert plus que pour les noms vraiment longs. */
+  #dicewrap .dc-pc-name { margin: 0; font-size: clamp(11px, 3.2vw, 13px); line-height: 1.15;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* L'elo passe a la taille du nom : c'est une INFORMATION, pas une mention
      legale. Sa place dans la hierarchie se lit a la couleur, pas a une taille
