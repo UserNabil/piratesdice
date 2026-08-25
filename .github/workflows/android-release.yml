@@ -150,5 +150,21 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add store/dernier-envoi.json
-          git diff --cached --quiet || git commit -m "chore(play): version ${VERSION_CODE} poussee, examen en cours"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(play): version ${VERSION_CODE} poussee, examen en cours"
+          # ⚠️ UN PUSH NU ECHOUE DES QUE QUELQU'UN A POUSSE PENDANT LA CHAINE, et
+          # c'est arrive au premier essai : les notes de version parties entre
+          # la construction et la fin ont fait passer la chaine au ROUGE alors
+          # que la version 60 etait deja chez Play. Un envoi reussi ne doit pas
+          # se solder par un echec pour une course de dix minutes.
+          for essai in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "journal : le depot a bouge, nouvelle tentative ($essai/3)"
+            sleep 5
+          done
+          # ⚠️ ET S'IL N'Y ARRIVE PAS, ON NE MEURT PAS POUR AUTANT. Le journal
+          # est une garde, pas la livraison : la version est deja partie. On le
+          # signale bien en vue, et l'on rend la main verte.
+          echo "::warning::journal non rapporte : noter a la main la version ${VERSION_CODE} sur cette piste"
+
