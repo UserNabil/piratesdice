@@ -1244,6 +1244,18 @@
 #dicewrap .dc-mood-art { width: 30px; height: 30px; object-fit: contain; display: block; }
 #dicewrap .dc-fan-btn img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
+/* ⚠️ TROIS COLONNES POUR DEUX BOUTONS LAISSENT UN TROU. En fin de partie la
+   cale et le gobelet s'effacent, et « rejouer » et « le pont » se rangeaient
+   dans les deux PREMIERES colonnes : le tiers droit restait vide.
+
+   ⚠️ ET `:has(> button[hidden])` EST UN PIEGE. « Rejouer » est cache PENDANT
+   la partie : la regle passait donc le bandeau a deux colonnes en pleine
+   partie, ou trois boutons s'affichent — le troisieme retombait a la ligne et
+   « quitter » se retrouvait tout seul sous les deux autres. Vu en capture.
+   C'est l'ETAT DE LA PARTIE qui decide, et lui seul le sait : la classe est
+   posee par renderExit. */
+#dicewrap .dc-foot-over { grid-template-columns: 1.35fr 1fr; }
+
 #dicewrap .dc-foot {
   display: grid;
   grid-template-columns: 1fr 1.35fr 1fr;

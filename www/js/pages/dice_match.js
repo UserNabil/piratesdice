@@ -541,6 +541,11 @@ function renderExit(st) {
      s'efface et rend sa place. */
   const cup = $('#dc-cup');
   if (cup) cup.hidden = over;
+  /* Le bandeau passe de trois colonnes a deux : seul cet endroit sait que la
+     partie est finie, et le CSS ne peut pas le deviner d'un attribut `hidden`
+     qui sert aussi pendant la partie. */
+  const pied = cup && cup.parentElement;
+  if (pied) pied.classList.toggle('dc-foot-over', over);
   if (replay) replay.hidden = !over;
   /* La cale ne sert plus a rien quand tout est joue. */
   const sac = $('#dc-bag');
