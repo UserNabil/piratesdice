@@ -64,7 +64,26 @@ function shopText(identify, part, secours) {
   return texte === key ? secours : texte;
 }
 
+/* La partie est-elle en cours ? La boutique ferme alors ses caisses. */
+function enPartie() {
+  return !!(S.state && S.state.phase && S.state.phase !== 'over');
+}
+
 export async function renderShop(body) {
+  /* ⛔ ON N'ACHETE PAS SA MISE EN COURS DE ROUTE. Vecu : 1000 pieces misees,
+     presque 700 depensees en bonus PENDANT la partie, puis defaite — la mise
+     n'engageait plus qu'une bourse deja videe, et les bonus achetes servaient a
+     gagner la partie meme qu'ils desamorcaient. Le serveur refuse la depense ;
+     l'ecran doit le DIRE, sinon le joueur ne comprend qu'un bouton mort. */
+  if (enPartie()) {
+    body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>
+      <div class="dc-shop-shut">
+        <img src="${ASSETS}img/icon_coin.png" alt="">
+        <p>${esc(t('shop.shutTitle'))}</p>
+        <span>${esc(t('shop.shutHint'))}</span>
+      </div>`;
+    return;
+  }
   body.innerHTML = '<h3>' + esc(t('shop.title')) + '</h3><div class="dc-loading">'
     + esc(t('shop.opening')) + '</div>';
   let products = S.shop;

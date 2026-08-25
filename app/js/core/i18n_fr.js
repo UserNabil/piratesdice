@@ -220,4 +220,6 @@ export const FR = {
   'err.noMatch': 'Vous n’êtes dans aucune partie',
   'err.inMatch': 'Vous êtes déjà en partie',
   'err.captainLocked': 'On ne change pas de capitaine en pleine partie',
+  'shop.shutTitle': 'Les caisses sont fermées pendant une partie',
+  'shop.shutHint': 'Votre mise est engagée : l’or reste bloqué jusqu’au verdict. Revenez à la fin de la partie.',
 };

@@ -233,4 +233,6 @@ export const EN = {
   'err.noMatch': 'You are not in a match',
   'err.inMatch': 'You are already in a match',
   'err.captainLocked': 'You cannot change captain mid-match',
+  'shop.shutTitle': 'The hold is shut during a match',
+  'shop.shutHint': 'Your stake is on the table: gold stays locked until the verdict. Come back when the match ends.',
 };

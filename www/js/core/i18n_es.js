@@ -219,4 +219,6 @@ export const ES = {
   'err.noMatch': 'No estás en ninguna partida',
   'err.inMatch': 'Ya estás en una partida',
   'err.captainLocked': 'No se cambia de capitán en mitad de una partida',
+  'shop.shutTitle': 'La bodega está cerrada durante una partida',
+  'shop.shutHint': 'Tu apuesta está sobre la mesa: el oro queda bloqueado hasta el veredicto. Vuelve al terminar.',
 };

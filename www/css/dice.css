@@ -1160,6 +1160,16 @@
 
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
 
+/* La boutique fermee pendant une partie. Un panneau qui EXPLIQUE : un rayon
+   vide ou un bouton mort laisserait croire a une panne. */
+#dicewrap .dc-shop-shut {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 28px 18px; text-align: center;
+}
+#dicewrap .dc-shop-shut img { width: 54px; height: 54px; opacity: .55; }
+#dicewrap .dc-shop-shut p { margin: 0; font-weight: 700; font-size: 1.02rem; }
+#dicewrap .dc-shop-shut span { opacity: .72; font-size: .9rem; line-height: 1.45; max-width: 34ch; }
+
 #dicewrap .dc-shop-item {
   display: flex;
   align-items: center;

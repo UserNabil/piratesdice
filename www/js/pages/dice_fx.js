@@ -156,10 +156,25 @@ export function sendMood(index) {
  * Appele APRES le dessin, pour qu'un mot n'arrive jamais avant son image.
  */
 export function announce(fx) {
+  /* ⚠️ UN EFFET QUI TOMBE EMPORTAIT TOUS LES SUIVANTS. La boucle etait nue :
+     la premiere exception remontait au dispatch, qui l'ecrivait dans une
+     console que personne ne lit sur un telephone, et la moitie du tour ne
+     s'affichait jamais. Vecu avec `barre` : l'annonce du bonus tombait, et la
+     destruction annoncee derriere disparaissait avec elle — de l'exterieur,
+     « le jeu a plante sans raison ».
+
+     Chaque effet est donc isole. Un effet perdu vaut mieux qu'un tour perdu, et
+     le nom de l'effet fautif part dans la console plutot qu'une trace muette. */
   for (const f of fx) {
+    try { unEffet(f); }
+    catch (e) { console.error('[dice] effet ' + (f && f.kind) + ' :', e.message); }
+  }
+}
+
+function unEffet(f) {
     if (f.kind === 'mood') {
       bubble(f.seat, MOODS[f.mood] || MOODS[0], 'dc-bulle-mood');
-      continue;
+      return;
     }
 
     if (f.kind === 'taunt') {
@@ -168,34 +183,34 @@ export function announce(fx) {
          phrases differentes pour un seul evenement. */
       const dit = t('taunt.' + f.key + '.' + f.line);
       if (dit && !dit.startsWith('taunt.')) bubble(f.seat, dit);
-      continue;
+      return;
     }
 
     if (f.kind === 'broadside') {
       banner(t('fx.broadside', { n: f.count }), f.seat === S.seat ? 'good' : 'bad');
       shake();
       buzz(f.seat === S.seat ? [0, 40, 60, 90] : 60);
-      continue;
+      return;
     }
 
     if (f.kind === 'trait') {
       const nom = t('cap.trait.' + f.trait);
-      if (!nom || nom.startsWith('cap.trait.')) continue;
+      if (!nom || nom.startsWith('cap.trait.')) return;
       if (f.seat === S.seat) banner(nom, 'good');
       else toast(t('fx.foeTrait', { name: nomDuSiege(f.seat), trait: nom }), 'warn');
-      continue;
+      return;
     }
 
     if (f.kind === 'bonus') {
       annonceBonus(f);
-      continue;
+      return;
     }
 
     if (f.kind === 'boost') {
       /* Le camp qui benit doit voir OU. Les deux ecrans l'apprennent : c'est une
          information publique, elle change le calcul de l'adversaire aussi. */
       banner(t('fx.boost'), f.seat === S.seat ? 'good' : 'bad');
-      continue;
+      return;
     }
 
     if (f.kind === 'peek') {
@@ -203,11 +218,10 @@ export function announce(fx) {
          qu'on vient de lire son prochain de lui donnerait l'information en
          retour, et le trait se retournerait contre son porteur. */
       if (f.seat === S.seat) toast(t('fx.next'), 'ok');
-      continue;
+      return;
     }
 
-    if (f.kind === 'place' && f.seat === S.seat) buzz(18);
-  }
+  if (f.kind === 'place' && f.seat === S.seat) buzz(18);
 }
 
 /**
@@ -240,7 +254,13 @@ function annonceBonus(f) {
   el.className = 'dc-cast' + (mien ? ' dc-cast-me' : contreMoi ? ' dc-cast-vs' : '');
   el.innerHTML = '<img class="dc-cast-art" src="' + bonusArt(f.identify) + '" alt="">'
     + '<div class="dc-cast-txt"><b>' + esc(qui) + '</b><span>' + esc(quoi) + '</span></div>';
-  barre.appendChild(el);
+  /* ⚠️ CE NOM N'EXISTAIT PAS. `barre` n'etait declare nulle part : chaque
+     annonce levait une ReferenceError, avalee par le try/catch du dispatch.
+     Le joueur ne voyait donc plus qui avait joue quel bonus — et, pire, l'
+     exception coupait la boucle des effets : la destruction annoncee juste
+     apres n'etait jamais dessinee. « L'IA a detruit mon de et joue juste
+     apres, je n'ai rien compris ». */
+  arene.appendChild(el);
 
   /* Une secousse et une vibration seulement quand on ENCAISSE : signaler de la
      meme facon ce qu'on inflige et ce qu'on subit revient a ne rien signaler. */
