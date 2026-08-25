@@ -137,7 +137,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      sinon il recouvrait la carte du joueur — vu a l'ecran le 2026-08-20. */
   #dicewrap .dc-arena {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: 1fr auto;
     gap: 6px;
     /* Plus de reserve de 72 px : le ratelier n'occupe plus le bas de l'ecran.
        ⚠️ ET PLUS DE `env(safe-area-inset-bottom)` ICI : LA COQUE LE POSE DEJA.
@@ -148,70 +148,43 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     padding: 6px 8px 10px;
   }
 
-  /* ⚠️ `flex-wrap` N'EST PAS DECORATIF ICI. La barre du bas est une rangee qui
-     porte le bandeau du joueur ET, en fin de partie, le bouton de sortie. Sans
-     retour a la ligne, un bouton en pleine largeur ecrase le bandeau a cote de
-     lui — « quand on gagne et qu'on reste sur le resultat, le menu du bas
-     s'ecrase a cause du bouton ». */
-  #dicewrap .dc-side { flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 0; }
-  #dicewrap .dc-side-foe { justify-content: center; }
-  #dicewrap .dc-side-me { justify-content: center; flex-direction: row; }
+  /* ⚠️ DEUX DEFAUTS ANCIENS SONT MORTS AVEC LEUR DISPOSITION, ET IL FAUT S'EN
+     SOUVENIR : le bandeau de fin qui « ecrasait le menu du bas » et le nom
+     coupe en quatre lignes — « Ann / e / Bon / ny ». Tous deux venaient d'une
+     rangee unique ou la carte du joueur, le ratelier et les boutons se
+     disputaient la meme largeur. Le bandeau du bas ne porte plus que trois
+     boutons de largeur fixe, et « rejouer » prend la place du gobelet au lieu
+     de s'ajouter : la compression n'a plus par ou revenir. */
 
-  /* ⚠️ LA BARRE DE FIN DOIT PASSER SOUS LE BANDEAU, PAS A COTE. Sur telephone
-     `.dc-side` est une rangee : les deux boutons se posaient a cote de la carte
-     du joueur et la comprimaient jusqu'a couper son nom en quatre lignes —
-     « Ann / e / Bon / ny » sur la capture de l'admin. En reclamant la largeur
-     entiere, la barre force le retour a la ligne et la carte retrouve sa place. */
-  #dicewrap .dc-endbar { flex: 1 0 100%; }
-
-  /* La carte joueur devient un BANDEAU : portrait a gauche, score a droite. */
-  #dicewrap .dc-pc {
-    flex: 1;
-    min-width: 0;
-    max-width: none;
-    display: grid;
-    /* Quatre colonnes : portrait | nom et elo | ratelier | score. Le ratelier a
-       sa PROPRE colonne plutot que de partager celle du texte — sinon un achat
-       fait sauter le nom d'une ligne en pleine partie. Vide, une colonne `auto`
-       sans contenu mesure zero et la grille se referme. */
-    grid-template-columns: auto 1fr auto auto;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
-    padding: 6px 12px;
-    --pd-rivet: 6px;
-    --pd-rivet-in: 5px 8px;
-  }
-
-  #dicewrap .dc-pc-portrait { width: 42px; height: 42px; grid-row: span 2; }
-  #dicewrap .dc-pc-name { margin: 0; font-size: 13px; line-height: 1.2; }
+  /* ⚠️ CE BLOC A ETE REECRIT AVEC L'ARENE. Les regles precedentes cadraient
+     une carte joueur en bandeau pleine largeur, posee en haut et en bas de
+     l'ecran : quatre colonnes, un ratelier dans la troisieme, un score dans la
+     quatrieme. Les deux cartes se font maintenant face au centre, chacune sur
+     une demi-largeur, et le ratelier a quitte la carte pour l'eventail de la
+     cale. Garder les anciennes lignes aurait donne une grille a quatre colonnes
+     dans un espace qui n'en tient plus que trois. */
+  #dicewrap .dc-versus { padding: 5px 8px; --pd-rivet-in: 4px 10px; margin: 8px 0; }
+  #dicewrap .dc-pc { gap: 6px; }
+  #dicewrap .dc-pc-portrait { width: 40px; height: 40px; }
+  #dicewrap .dc-pc-name { margin: 0; font-size: 12.5px; line-height: 1.15;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* L'elo passe a la taille du nom : c'est une INFORMATION, pas une mention
-     legale. Sa place dans la hierarchie se lit desormais a la couleur (blanc
-     a 78 %) et non a une taille qui le rendait illisible. */
-  #dicewrap .dc-pc-elo { font-size: 13px; grid-column: 2; }
-  #dicewrap #dc-pc-me .dc-bonus { grid-column: 3; grid-row: 1 / -1; align-self: center; }
-
-  /* ⚠️ LA LONGUE-VUE SE POSAIT DANS LE COIN, C'EST-A-DIRE SUR LE SCORE. En
-     paysage de bureau ce coin est vide ; dans le bandeau horizontal du telephone
-     il est occupe, et le panneau ouvert se retrouvait a cheval sur le chiffre,
-     rogne par le bord. Le bandeau adverse n'a pas de ratelier : sa troisieme
-     colonne est libre, et c'est exactement la place qu'il faut. */
-  #dicewrap #dc-pc-foe .dc-foresee {
-    position: static;
-    grid-column: 3;
-    grid-row: 1 / -1;
-    align-self: center;
-    justify-self: end;
-  }
-  #dicewrap .dc-pc-total { grid-column: 4; grid-row: 1 / span 2; margin: 0; font-size: 26px; }
+     legale. Sa place dans la hierarchie se lit a la couleur, pas a une taille
+     qui le rendait illisible. */
+  #dicewrap .dc-pc-elo { font-size: 11.5px; }
+  #dicewrap .dc-pc-total { margin: 0; font-size: 24px; }
   #dicewrap .dc-pc-lbl { display: none; }
-  #dicewrap .dc-pc-bet { grid-column: 2; font-size: 11px; margin: 0; }
+  #dicewrap .dc-pc-bet { font-size: 11px; margin: 0; }
+
+  /* La longue-vue se pose sous la carte adverse : au-dessus elle sortirait de
+     la barre, et a cote elle mangerait le nom. */
+  #dicewrap #dc-pc-foe .dc-foresee { position: absolute; top: 100%; left: 4px; }
+
   /* ⚠️ CETTE REGLE ANNULAIT LE CORRECTIF DU BANDEAU. Le de adverse a ete
-     raccroche au medaillon pour ne plus jamais rencontrer le score ; cette
-     ligne, ecrite pour l'ancienne disposition, le repositionnait a 68 px du
-     bord droit — mais desormais du bord droit DU MEDAILLON, donc dans le vide.
+     raccroche au medaillon pour ne plus jamais rencontrer le score ; l'ancienne
+     ligne, ecrite pour une autre disposition, le repositionnait dans le vide.
      Une refonte n'est finie que quand l'ancienne regle ne peut plus gagner. */
-  #dicewrap .dc-foe-die { width: 24px; height: 24px; }
+  #dicewrap .dc-foe-die { width: 22px; height: 22px; }
 
   #dicewrap .dc-boards { gap: 4px; padding-bottom: 0; }
   #dicewrap .dc-board,
@@ -224,14 +197,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   /* Plus basse d'un tiers : le gobelet n'a plus a partager sa barre. */
   /* De l'air de chaque cote : la carte du milieu touchait les plaques de score
      a 2 px, ce qui donnait trois bandes collees plutot qu'un repere. */
-  #dicewrap .dc-mid { --pd-rivet-in: 4px 12px; margin: 12px 0; padding-block: 0; }
   #dicewrap .dc-turn { font-size: 12.5px; }
-  /* ⚠️ CE FACTEUR EST LE MEME QUE `CUP_RATIO` DANS js/fit.js, ET C'EST UN
-     COUPLAGE REEL. `fit.js` retranche cette part de la hauteur avant de calculer
-     la taille des cases ; le CSS la dessine. Deux nombres differents, et le
-     gobelet occupe une place qui n'a pas ete reservee — mesure : 68 px dessines
-     pour 56 prevus, soit 12 px pris aux plateaux a chaque partie. */
-  #dicewrap .dc-cup { width: calc(var(--dc-cell) * .95); height: calc(var(--dc-cell) * .95); }
+  /* ⚠️ UN COUPLAGE EST MORT ICI, ET C'EST UN GAIN. Cette ligne dessinait le
+     gobelet a une fraction de case que `fit.js` devait retrancher de son cote,
+     avec la MEME valeur : elles ont diverge une fois — 0,95 reserve pour 1,15
+     dessine — et le gobelet prenait 12 px aux plateaux a chaque partie sans que
+     rien ne le signale. Le gobelet est descendu dans le bandeau, dont `fit.js`
+     mesure la hauteur : il n'y a plus deux nombres a tenir d'accord. */
 
   /* ⚠️ LA LARGEUR DISPONIBLE DECIDE, PAS UNE TAILLE CHOISIE.
      Quatre boutons de 42 px, le gobelet, le libelle du tour et les ecarts font
@@ -240,18 +212,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      corrige. En liant la taille a la largeur de l'ecran, la rangee tient de
      320 px a la tablette sans jamais se replier. */
   #dicewrap .dc-bonus { gap: clamp(4px, 1.6vw, 8px); padding: 0; }
-  /* ⚠️ LE RATELIER NE DOIT PAS FAIRE GRANDIR LE BANDEAU. Mesure : a 36 px il
-     poussait le bandeau du bas de 61 a 87 px — soit exactement la hauteur que
-     venait de rendre la barre de fin, et le plateau n'y gagnait rien. Cale sur
-     la hauteur du portrait, il se loge dans une place qui existe deja. */
-  #dicewrap #dc-pc-me .dc-bonus { max-height: 42px; }
-  #dicewrap #dc-pc-me .dc-bonus-btn { width: 34px; height: 34px; }
-  #dicewrap #dc-pc-me .dc-bonus-btn img { width: 100%; height: 100%; }
+  /* Ferme, l'eventail ne prend aucune place ; ouvert, il se deploie au-dessus
+     du bandeau. Le ratelier ne pese donc plus jamais sur la hauteur du plateau. */
   #dicewrap .dc-bonus-btn {
     width: clamp(30px, 8.6vw, 42px);
     height: clamp(30px, 8.6vw, 42px);
   }
-  #dicewrap .dc-mid { gap: clamp(6px, 2.4vw, 12px); padding: 4px clamp(8px, 2.6vw, 16px); }
   #dicewrap .dc-turn { min-width: 0; }
 
   /* En dessous de 360 px, le libelle du tour est ce qu'on sacrifie EN PREMIER :

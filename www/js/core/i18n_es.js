@@ -226,4 +226,8 @@ export const ES = {
   'fx.frozenYou': 'Tu turno está congelado',
   'fx.frozenThem': '{name} se salta el turno — congelado',
   'cap.trait.freeze': 'Un turno congelado',
+  'foot.bag': 'Bodega',
+  'foot.roll': 'Lanzar',
+  'foot.leave': 'Salir',
+  'foot.back': 'Cubierta',
 };

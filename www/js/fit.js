@@ -18,18 +18,16 @@
 const GAP = 6;          // entre deux cases
 const FRAME = 9;        // le cadre de bois du plateau (--pd-frame en portrait)
 const PLATE = 26;       // une rangee de plaques de score
-const BAR_PAD = 14;     // le rembourrage de la barre du lancer
-/* ⚠️ LE GOBELET N'A PLUS BESOIN D'AUTANT. Il partageait sa barre avec le
-   ratelier de bonus, qui l'a quittee pour le bandeau du bas : la barre a maigri,
-   et lui reserver 1,15 case de hauteur revenait a garder de la place pour
-   quelque chose qui n'y est plus. Chaque dixieme rendu ici passe dans la
-   taille des cases, donc dans la largeur du plateau. */
-const CUP_RATIO = 0.58; // le gobelet, en multiples de la case
-/* ⚠️ LA MEME VALEUR EST ECRITE DANS css/mobile.css (`.dc-cup`). Les deux
-   doivent bouger ENSEMBLE : ici on retranche la place, la-bas on la dessine.
-   Elles ont diverge une fois — 0,95 reserve pour 1,15 dessine — et le gobelet
-   prenait 12 px aux plateaux a chaque partie sans que rien ne le signale. */
-const STACK_GAP = 4;    // entre plateau, plaques et barre
+/* ⚠️ LE GOBELET N'EST PLUS DANS LA COLONNE DES PLATEAUX. Il occupait la barre
+   du milieu, et on lui reservait une fraction de case — 0,58 apres avoir valu
+   1,15. Les deux nombres devaient bouger ENSEMBLE avec le CSS qui le dessine,
+   et ils ont diverge une fois : 0,95 reserve pour 1,15 dessine, soit 12 px
+   voles aux plateaux a chaque partie sans que rien ne le signale.
+
+   Ce couplage a disparu avec la refonte : le gobelet est descendu dans le
+   bandeau du bas, dont la hauteur se MESURE comme celle des autres bandeaux.
+   Plus une seule constante a tenir synchronisee avec une feuille de style. */
+const STACK_GAP = 4;    // entre plateau, plaques et barre centrale
 const MIN_CELL = 32;
 /* ⚠️ LE PLAFOND ETAIT UN PLAFOND DE TELEPHONE. A 66 px, une tablette de
    800x1280 affichait deux plateaux minuscules separes par un grand vide : la
@@ -76,15 +74,21 @@ function apply() {
   const inner = arena.clientHeight
     - parseFloat(cs.paddingTop || '0')
     - parseFloat(cs.paddingBottom || '0');
+  /* Tout ce qui n'est PAS un plateau se mesure : le bandeau du bas, la barre
+     des deux capitaines, la ligne du tour. Les mesurer plutot que les estimer
+     est ce qui a fait tenir cet ecran de 320 px a la tablette — et c'est ce qui
+     lui permet d'encaisser la refonte sans qu'on retouche une seule constante. */
   let used = 0;
-  for (const side of arena.querySelectorAll('.dc-side')) {
-    used += side.getBoundingClientRect().height;
+  for (const bloc of arena.querySelectorAll('.dc-foot, .dc-versus, .dc-turn')) {
+    used += bloc.getBoundingClientRect().height;
   }
-  const gaps = 2 * parseFloat(cs.rowGap || '6');
+  const boardsCs = getComputedStyle(boards);
+  const gaps = parseFloat(cs.rowGap || '6')
+             + 3 * parseFloat(boardsCs.rowGap || '4');
   const height = inner - used - gaps;
 
-  const fixed = 2 * (2 * GAP + 2 * FRAME) + 2 * PLATE + BAR_PAD + 4 * STACK_GAP;
-  const byHeight = (height - fixed) / (6 + CUP_RATIO);
+  const fixed = 2 * (2 * GAP + 2 * FRAME) + 2 * PLATE + 4 * STACK_GAP;
+  const byHeight = (height - fixed) / 6;
 
   const width = boards.getBoundingClientRect().width || arena.clientWidth;
   const byWidth = (width - 2 * FRAME - 2 * GAP) / 3;

@@ -227,4 +227,8 @@ export const FR = {
   'fx.frozenYou': 'Votre tour est gelé',
   'fx.frozenThem': '{name} passe son tour — gelé',
   'cap.trait.freeze': 'Un tour gelé',
+  'foot.bag': 'Inventaire',
+  'foot.roll': 'Lancer',
+  'foot.leave': 'Quitter',
+  'foot.back': 'Le pont',
 };

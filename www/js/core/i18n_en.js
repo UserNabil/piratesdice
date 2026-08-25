@@ -240,4 +240,8 @@ export const EN = {
   'fx.frozenYou': 'Your turn is frozen',
   'fx.frozenThem': '{name} skips a turn — frozen',
   'cap.trait.freeze': 'One turn frozen',
+  'foot.bag': 'Hold',
+  'foot.roll': 'Roll',
+  'foot.leave': 'Leave',
+  'foot.back': 'Deck',
 };

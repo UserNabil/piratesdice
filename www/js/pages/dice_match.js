@@ -37,39 +37,61 @@ export function onMatch(m) {
 
 function buildGame() {
   const el = $('#dc-screen-game');
+  /* ⚠️ CETTE ARENE SUIT LA MAQUETTE DE L'ADMIN, ET ELLE CHANGE TROIS CHOSES.
+
+     1. LES DEUX JOUEURS SE FONT FACE AU CENTRE. Ils occupaient le haut et le
+        bas de l'ecran, donc on ne pouvait pas comparer deux scores sans
+        traverser l'ecran des yeux. Cote a cote autour du medaillon, l'ecart se
+        lit d'un coup — c'est la seule information qui compte a chaque tour.
+     2. LE GOBELET DESCEND DANS UN BANDEAU, avec la cale et la sortie. Trois
+        boutons au pouce, la ou il n'y avait qu'un gobelet flottant.
+     3. LA CALE S'OUVRE EN EVENTAIL. Le ratelier vivait dans la carte du joueur
+        et lui disputait sa largeur ; il se deploie desormais au-dessus du
+        bandeau, et ne coute rien quand il est ferme.
+
+     Les identifiants ne bougent PAS (#dc-pc-me, #dc-pc-foe, #dc-cup, #dc-bonus,
+     #dc-turn, #dc-quit, #dc-replay) : tout le reste du fichier s'y accroche. */
   el.innerHTML = `
     <div class="dc-arena">
-      <div class="dc-side dc-side-foe"><div class="dc-pc pd-panel" id="dc-pc-foe"></div></div>
       <div class="dc-boards">
         <div class="dc-board-slot" id="dc-slot-foe"></div>
-        <div class="dc-mid pd-panel">
-          <div class="dc-turn" id="dc-turn"></div>
-          <!-- Les bonus ont quitte cette barre pour le bandeau du bas : au pouce,
-               et sans disputer sa largeur au gobelet. La barre y gagne en hauteur,
-               donc les plateaux aussi — la case est bornee par la place VERTICALE
-               qui reste, jamais par la largeur. -->
-          <button class="dc-cup" id="dc-cup" title="${esc(t('hdr.roll'))}"></button>
+
+        <div class="dc-versus pd-panel">
+          <div class="dc-pc" id="dc-pc-foe"></div>
+          <img class="dc-vs-mark" src="${ASSETS}img/icon_versus.png" alt="">
+          <div class="dc-pc" id="dc-pc-me"></div>
         </div>
+        <div class="dc-turn" id="dc-turn"></div>
+
         <div class="dc-board-slot" id="dc-slot-me"></div>
       </div>
-      <div class="dc-side dc-side-me">
-        <div class="dc-pc pd-panel" id="dc-pc-me"></div>
-        <!-- Une partie finie doit offrir les DEUX suites. « Retour au pont »
-             seul obligeait a repasser par le menu pour relancer, alors que
-             rejouer est ce qu'on veut faire neuf fois sur dix. -->
-        <div class="dc-endbar" id="dc-endbar">
-          <button class="dc-btn dc-quit" id="dc-replay">${esc(t('over.again'))}</button>
-          <!-- Une FLECHE, pas une phrase : « Retour au pont » tient en francais,
-               pas forcement dans les autres langues ni sur un ecran de 320 px.
-               Un glyphe ne peut pas deborder de son bouton. Le libelle survit
-               dans title et aria-label, pour qui survole et pour qui ecoute.
-               ATTENTION : ce commentaire vit DANS un litteral gabarit, ou un
-               accent grave termine la chaine. Pas de code entre accents ici. -->
-          <button class="dc-btn dc-btn-sortie dc-quit" id="dc-quit"
-                  title="${esc(t('over.back'))}" aria-label="${esc(t('over.back'))}">
-            <span class="dc-quit-arrow" aria-hidden="true">&#8592;</span>
-          </button>
-        </div>
+
+      <!-- L'eventail de la cale, ferme par defaut. Il se pose AU-DESSUS du
+           bandeau : deploye en dessous, le pouce qui l'ouvre le recouvrirait. -->
+      <div class="dc-bonus" id="dc-bonus"></div>
+
+      <div class="dc-foot">
+        <button class="dc-foot-btn" id="dc-bag" title="${esc(t('bonus.head'))}">
+          <img src="${ASSETS}img/icon_bag.png" alt="">
+          <span>${esc(t('foot.bag'))}</span>
+        </button>
+        <button class="dc-foot-btn dc-foot-main" id="dc-cup" title="${esc(t('hdr.roll'))}">
+          <!-- Le dessin vit dans un ecrin a lui : renderCup y ecrit le gobelet
+               ou le de tire, et le libelle en dessous survit a la reecriture. -->
+          <span class="dc-foot-art" id="dc-cup-slot"></span>
+          <span>${esc(t('foot.roll'))}</span>
+        </button>
+        <!-- Rejouer prend la place du gobelet une fois la partie finie : c'est
+             ce qu'on veut faire neuf fois sur dix, et le gobelet n'a plus rien
+             a lancer. -->
+        <button class="dc-foot-btn dc-foot-main" id="dc-replay" hidden>
+          <img src="${ASSETS}img/icon_versus.png" alt="">
+          <span>${esc(t('over.again'))}</span>
+        </button>
+        <button class="dc-foot-btn" id="dc-quit" title="${esc(t('game.leave'))}">
+          <img src="${ASSETS}img/icon_leave.png" alt="">
+          <span>${esc(t('foot.leave'))}</span>
+        </button>
       </div>
     </div>
     <div class="dc-bet" id="dc-bet"></div>`;
@@ -125,6 +147,12 @@ function buildGame() {
     S.net.send({ t: 'roll' });
   };
   $('#dc-quit').onclick = () => UI.requestClose();
+  $('#dc-bag').onclick = (ev) => { ev.stopPropagation(); basculerCale(); };
+  /* Un eventail ouvert se ferme au premier geste ailleurs : sans cela il reste
+     en travers du plateau et il faut viser le sac a nouveau pour le refermer. */
+  document.addEventListener('pointerdown', (ev) => {
+    if (!ev.target.closest('#dc-bonus') && !ev.target.closest('#dc-bag')) fermerCale();
+  });
   wireMoodFan();
 }
 
@@ -272,7 +300,7 @@ export function onState(msg) {
 
   /* Le de du joueur ROULE avant de se fixer : le gobelet vient d'etre secoue. */
   if (rolled && rolled.seat === S.seat) {
-    const cup = $('#dc-cup');
+    const cup = $('#dc-cup-slot') || $('#dc-cup');
     if (cup) tumble(cup, rolled.value, () => { S.rolling = false; if (S.state) renderCup(S.state); }, skinOf(S.seat));
     else S.rolling = false;
   }
@@ -429,20 +457,28 @@ function renderPlayerCard(sel, st, seat, isMe) {
      « les cercles sont mal places », et on ne savait toujours pas qui jouait.
      A la place, un seul cercle, et il VEUT DIRE quelque chose : c'est le temps
      qu'il reste avant que l'IA prenne la main. */
-  el.className = 'dc-pc pd-panel' + (active ? ' dc-pc-active' : ' dc-pc-idle');
+  /* ⚠️ LES DEUX CARTES SE FONT DESORMAIS FACE, AUTOUR DU MEDAILLON. Le portrait
+     se tourne vers le centre — a gauche pour l'adversaire, a droite pour soi —
+     et le score se pose contre le medaillon : c'est la que les yeux vont pour
+     comparer, et un ecart se lit alors sans traverser l'ecran.
+     Le ratelier n'est plus ICI : il vit dans l'eventail de la cale, sinon il
+     disputait sa largeur au nom et le coupait en quatre lignes. */
+  el.className = 'dc-pc' + (isMe ? ' dc-pc-mine' : ' dc-pc-theirs')
+               + (active ? ' dc-pc-active' : ' dc-pc-idle');
   el.innerHTML = `
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
       <span class="dc-pc-clock" aria-hidden="true"></span>
     </div>
-    <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
-    <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
-    ${stockMarkup(st, seat)}
-    ${isMe ? '<div class="dc-bonus" id="dc-bonus"></div>' : ''}
-    <div class="dc-pc-total" data-v="${st.totals[seat]}">${st.totals[seat]}</div>
-    <div class="dc-pc-lbl">${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}</div>
-    ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}`;
+    <div class="dc-pc-id">
+      <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
+      <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
+      ${stockMarkup(st, seat)}
+      ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}
+    </div>
+    <div class="dc-pc-total" data-v="${st.totals[seat]}"
+         aria-label="${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}">${st.totals[seat]}</div>`;
 }
 
 /*
@@ -451,6 +487,35 @@ function renderPlayerCard(sel, st, seat, isMe) {
  * devant un plateau mort — vu sur le telephone de l'admin. Le bouton de la
  * barre laterale change donc de role a la fin : il ramene au pont.
  */
+/* ─────────────────────────── la cale, en eventail ───────────────────────── */
+
+/* ⚠️ LE RATELIER OCCUPAIT UNE PLACE PERMANENTE POUR RIEN. Il vivait dans la
+   carte du joueur, lui disputait sa largeur et coupait les noms — « Ann / e /
+   Bon / ny ». Ferme, il ne coute plus rien ; ouvert, il se deploie AU-DESSUS du
+   bandeau, sans quoi le pouce qui l'ouvre le recouvrirait. */
+function caleOuverte() {
+  const rack = $('#dc-bonus');
+  return !!(rack && rack.classList.contains('dc-bonus-open'));
+}
+
+function fermerCale() {
+  const rack = $('#dc-bonus');
+  if (rack) rack.classList.remove('dc-bonus-open');
+  const sac = $('#dc-bag');
+  if (sac) sac.classList.remove('dc-foot-on');
+}
+
+function basculerCale() {
+  const rack = $('#dc-bonus');
+  if (!rack) return;
+  if (caleOuverte()) { fermerCale(); return; }
+  renderBonusRack();
+  if (!rack.children.length) { toast(t('bonus.empty'), 'warn'); return; }
+  rack.classList.add('dc-bonus-open');
+  const sac = $('#dc-bag');
+  if (sac) sac.classList.add('dc-foot-on');
+}
+
 function renderExit(st) {
   const quit = $('#dc-quit');
   const replay = $('#dc-replay');
@@ -462,6 +527,22 @@ function renderExit(st) {
   const dit = t(over ? 'over.back' : 'game.leave');
   quit.title = dit;
   quit.setAttribute('aria-label', dit);
+  /* Le bandeau porte un libelle sous chaque dessin : celui de la sortie change
+     de sens a la fin — on ne quitte plus une partie, on regagne le pont. */
+  const mot = quit.querySelector('span');
+  if (mot) mot.textContent = t(over ? 'foot.back' : 'foot.leave');
+
+  /* ⚠️ REJOUER PREND LA PLACE DU GOBELET, IL NE S'AJOUTE PAS A COTE. Trois
+     boutons tiennent dans le bandeau, quatre le compriment jusqu'a couper les
+     libelles. Le gobelet n'a plus rien a lancer une fois la partie finie ; il
+     s'efface et rend sa place. */
+  const cup = $('#dc-cup');
+  if (cup) cup.hidden = over;
+  if (replay) replay.hidden = !over;
+  /* La cale ne sert plus a rien quand tout est joue. */
+  const sac = $('#dc-bag');
+  if (sac) sac.hidden = over;
+  if (over) fermerCale();
 
   /* « Rejouer » n'existe qu'a la fin : pendant la partie il n'a pas de sens, et
      un bouton visible mais inerte est pire qu'un bouton absent. */
@@ -507,7 +588,8 @@ function renderCup(st) {
   const die = st.dice[S.seat];
   const canRoll = st.phase === 'playing' && st.turn === S.seat && die === null;
   /* Le gobelet est LE MIEN : il montre donc mes des. */
-  if (!S.rolling) cup.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
+  const ecrin = $('#dc-cup-slot') || cup;
+  if (!S.rolling) ecrin.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
   cup.classList.toggle('dc-cup-ready', canRoll);
   cup.classList.toggle('dc-cup-armed', die !== null && st.turn === S.seat);
   cup.disabled = st.phase !== 'playing';

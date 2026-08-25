@@ -228,4 +228,8 @@ export const AR = {
   'fx.frozenYou': 'دورك مُجمَّد',
   'fx.frozenThem': '{name} يفوّت دوره — مُجمَّد',
   'cap.trait.freeze': 'دور مُجمَّد',
+  'foot.bag': 'المخزن',
+  'foot.roll': 'ارمِ',
+  'foot.leave': 'خروج',
+  'foot.back': 'السطح',
 };
