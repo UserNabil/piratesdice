@@ -102,7 +102,32 @@ def access_token():
         return json.loads(resp.read().decode())["access_token"]
 
 
-def call(token, url, method="GET", body=None, raw=None, content_type=None):
+# ⚠️ UNE PANNE D'EN FACE N'EST PAS UNE ERREUR DE NOTRE CODE. Google a repondu
+# « 503 The service is currently unavailable » a l'ouverture d'une edition, et
+# la chaine de la fiche est passee au rouge pour ca. `with_retry` savait deja
+# rejouer un 5xx, mais il n'enveloppait que l'envoi : `--details`, `--listing`
+# et `--check` appelaient `call` en direct et mouraient au premier hoquet.
+# La reprise descend donc au transport, ou tout le monde passe.
+TRANSITOIRES = (429, 500, 502, 503, 504)
+
+
+def call(token, url, method="GET", body=None, raw=None, content_type=None,
+         essais=4, pause=8):
+    for essai in range(1, essais + 1):
+        ok, out = _call(token, url, method, body, raw, content_type)
+        if ok:
+            return ok, out
+        code = ((out or {}).get("error") or {}).get("code")
+        if code not in TRANSITOIRES or essai == essais:
+            return ok, out
+        attente = pause * essai
+        print("   Play repond %s — nouvel essai dans %d s (%d/%d)"
+              % (code, attente, essai, essais - 1))
+        time.sleep(attente)
+    return ok, out
+
+
+def _call(token, url, method="GET", body=None, raw=None, content_type=None):
     headers = {"Authorization": "Bearer " + token}
     payload = raw
     if body is not None:
@@ -302,7 +327,7 @@ def journal_ecrire(track, version):
         f.write("\n")
 
 
-def garde_examen(track, forcer):
+def garde_examen(track, forcer, sauter=False):
     """Refuse un envoi tant que le precedent n'est pas SORTI de l'examen.
 
     ⚠️ POUSSER PENDANT UN EXAMEN ANNULE L'EXAMEN. Play ne garde qu'une version
@@ -324,6 +349,16 @@ def garde_examen(track, forcer):
             d.get("version"), track))
         print("  en examen — l'envoi qui suit l'effacera sans qu'elle sorte jamais.")
         return
+    if sauter:
+        # ⚠️ UN PUSH N'EST PAS UNE INTENTION DE LIVRER. La chaine part a chaque
+        # commit sur main : un README corrige n'a pas a devenir une version, et
+        # encore moins a passer au rouge parce que la piste est occupee. Sur ce
+        # declencheur-la, on construit, on garde l'AAB, et on ne pousse pas.
+        print("piste %s occupee par la %s (poussee le %s) — envoi saute." % (
+            track, d.get("version"), d.get("envoye")))
+        print("L'AAB reste en piece jointe. Pour livrer : relancer la chaine a la")
+        print("main une fois la version sortie de l'examen.")
+        sys.exit(0)
     sys.exit(
         "\n".join([
             "envoi refuse : la version %s a ete poussee sur %s le %s," % (
@@ -342,7 +377,7 @@ def garde_examen(track, forcer):
         ]))
 
 
-def upload(token, aab, track, notes_dir, forcer=False):
+def upload(token, aab, track, notes_dir, forcer=False, sauter=False):
     """L'envoi complet, rejouable d'un bloc.
 
     ⚠️ UNE EDITION PERIMEE NE SE REPARE PAS AU MILIEU. L'envoi ouvre une edition,
@@ -352,7 +387,7 @@ def upload(token, aab, track, notes_dir, forcer=False):
     a l'etape suivante n'a aucun sens, l'edition n'existe plus. On refait donc
     depuis l'ouverture. Vecu : un envoi de 35 Mo mort a la derniere seconde.
     """
-    garde_examen(track, forcer)
+    garde_examen(track, forcer, sauter)
     blob = open(aab, "rb").read()
     ok, out = with_retry(lambda: envoyer(token, blob, aab, track, notes_dir))
     if not ok:
@@ -586,6 +621,8 @@ def main():
                     help="marque une version comme SORTIE de l'examen (lu dans la console)")
     ap.add_argument("--forcer", action="store_true",
                     help="pousse meme si la version precedente est peut-etre en examen")
+    ap.add_argument("--si-libre", action="store_true",
+                    help="n'envoie que si la piste est libre ; sinon sort sans erreur")
     ap.add_argument("--historique", action="store_true",
                     help="tous les paquets envoyes, pour voir ceux qui ne sont jamais sortis")
     ap.add_argument("--purger", action="store_true",
@@ -702,7 +739,7 @@ def main():
     if args.next_version:
         print(prochain(token))
     elif args.upload:
-        upload(token, args.upload, args.track, args.notes_dir, args.forcer)
+        upload(token, args.upload, args.track, args.notes_dir, args.forcer, args.si_libre)
     elif args.listing:
         listing(token)
     elif args.details:

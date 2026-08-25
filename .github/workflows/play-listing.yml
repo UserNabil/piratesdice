@@ -20,10 +20,14 @@ name: Play listing
 on:
   push:
     branches: [main]
-    paths: ['store/**']
+    # ⚠️ store/ CONTIENT AUSSI UN FICHIER QUI N'EST PAS LA FICHE. La chaine de
+    # version y ecrit dernier-envoi.json apres chaque envoi : sans cette
+    # exception, chaque livraison republiait les quatre langues de la fiche
+    # pour rien, et occupait l'edition Play que l'envoi venait de liberer.
+    paths: ['store/**', '!store/dernier-envoi.json']
   workflow_dispatch:
 
-# ⚠️ MEME GROUPE QUE `play-listing.yml`, ET CE N EST PAS UN DETAIL.
+# ⚠️ MEME GROUPE QUE `android-release.yml`, ET CE N EST PAS UN DETAIL.
 # Play n accepte qu UNE edition a la fois : deux chaines qui lui parlent en
 # meme temps se perime l une l autre en plein envoi. Le groupe commun les met
 # a la queue leu leu.
@@ -37,9 +41,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
