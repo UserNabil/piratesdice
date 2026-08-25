@@ -94,9 +94,19 @@ def travail_a_la_main():
     lance pour une raison sans rapport.
 
     `www/` est un produit de build. La correction doit vivre dans `static/`.
+
+    ⛔ ET CE CONTROLE SE TAISAIT DANS LE SEUL DEPOT OU IL SERT. Il rendait une
+    liste vide des que `static/` manquait — c'est-a-dire ici, dans piratesdice,
+    ou `app/` recouvre pourtant `www/` fichier par fichier. Trois corrections
+    ont ete ecrites dans `www/js/core/i18n_fr.js`, `www/css/mobile.css` et
+    `www/js/identity.js` avant qu'on s'apercoive qu'`app/` les effacerait ;
+    `copy2` conservant la date, meme l'horodatage ne trahissait rien. En mode
+    autonome on ne compare donc que ce qu'`app/` fournit — le reste de `www/`
+    y est bien la source.
     """
-    if standalone() or not os.path.isdir(WWW):
+    if not os.path.isdir(WWW):
         return []
+    seulement_app = standalone()
     ecarts = []
     for base, _d, fs in os.walk(WWW):
         for f in fs:
@@ -107,6 +117,8 @@ def travail_a_la_main():
             src = source_de(rel)
             if not src or not os.path.isfile(src):
                 continue                       # genere (index.html) ou orphelin
+            if seulement_app and not os.path.abspath(src).startswith(os.path.abspath(APP) + os.sep):
+                continue          # autonome : hors d'`app/`, c'est `www/` la source
             if open(chemin, "rb").read() != open(src, "rb").read():
                 ecarts.append(rel)
     return sorted(ecarts)

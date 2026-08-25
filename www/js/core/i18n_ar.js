@@ -209,4 +209,16 @@ export const AR = {
   'skin.owned': 'في المخزن',
   'skin.wear': 'العب بهذه',
   'skin.remove': 'العودة إلى النرد الأصلي',
+
+  /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
+     lisait « not enough coins » au milieu de sa partie. */
+  'err.refused': 'رفض الخادم ذلك',
+  'err.coins': 'لا تملك عملات كافية لهذا الرهان',
+  'err.betClosed': 'أُغلق باب الرهان',
+  'err.betDone': 'رهانك مُثبَّت بالفعل',
+  'err.betWhole': 'الرهان يُحسب بعملات صحيحة',
+  'err.notStarted': 'لم تبدأ المباراة',
+  'err.noMatch': 'لست في أي مباراة',
+  'err.inMatch': 'أنت في مباراة بالفعل',
+  'err.captainLocked': 'لا يُغيَّر القبطان في منتصف المباراة',
 };

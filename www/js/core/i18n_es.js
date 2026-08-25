@@ -207,4 +207,16 @@ export const ES = {
   'skin.owned': 'En bodega',
   'skin.wear': 'Jugar con estos',
   'skin.remove': 'Volver a los dados originales',
+
+  /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
+     lisait « not enough coins » au milieu de sa partie. */
+  'err.refused': 'El servidor lo ha rechazado',
+  'err.coins': 'No tienes monedas suficientes para esa apuesta',
+  'err.betClosed': 'Las apuestas están cerradas',
+  'err.betDone': 'Tu apuesta ya está hecha',
+  'err.betWhole': 'Una apuesta se cuenta en monedas enteras',
+  'err.notStarted': 'La partida no ha empezado',
+  'err.noMatch': 'No estás en ninguna partida',
+  'err.inMatch': 'Ya estás en una partida',
+  'err.captainLocked': 'No se cambia de capitán en mitad de una partida',
 };

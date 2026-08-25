@@ -208,4 +208,16 @@ export const FR = {
   'skin.owned': 'En cale',
   'skin.wear': 'Jouer avec',
   'skin.remove': 'Revenir aux dés d’origine',
+
+  /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
+     lisait « not enough coins » au milieu de sa partie. */
+  'err.refused': 'Le serveur a refusé',
+  'err.coins': 'Vous n’avez pas assez de pièces pour cette mise',
+  'err.betClosed': 'Les mises sont closes',
+  'err.betDone': 'Votre mise est déjà posée',
+  'err.betWhole': 'Une mise se compte en pièces entières',
+  'err.notStarted': 'La partie n’a pas commencé',
+  'err.noMatch': 'Vous n’êtes dans aucune partie',
+  'err.inMatch': 'Vous êtes déjà en partie',
+  'err.captainLocked': 'On ne change pas de capitaine en pleine partie',
 };

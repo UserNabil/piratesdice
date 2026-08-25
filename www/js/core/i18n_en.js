@@ -221,4 +221,16 @@ export const EN = {
   'set.terms': 'Terms of use and privacy',
   'set.close': 'Close',
   'set.guest': 'Guest (this phone)',
+
+  /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
+     lisait « not enough coins » au milieu de sa partie. */
+  'err.refused': 'The server refused that',
+  'err.coins': 'You don’t have enough coins for that stake',
+  'err.betClosed': 'Betting is closed',
+  'err.betDone': 'Your stake is already placed',
+  'err.betWhole': 'A stake is a whole number of coins',
+  'err.notStarted': 'The match has not started',
+  'err.noMatch': 'You are not in a match',
+  'err.inMatch': 'You are already in a match',
+  'err.captainLocked': 'You cannot change captain mid-match',
 };

@@ -32,8 +32,18 @@ export function renderBet(st, full) {
   if (st.phase !== 'betting') { bet.classList.remove('on'); return; }
   bet.classList.add('on');
 
-  if (!full && bet.dataset.ready === '1') return;
+  /* ⚠️ L'ECRAN SE VERROUILLAIT SUR UN ESPOIR, PAS SUR UN FAIT. Le bouton se
+     desactivait et affichait « on attend votre adversaire » des l'envoi, avant
+     toute reponse. Quand le serveur refusait — une mise de 2000 avec 190 pieces
+     en bourse — le refus arrivait bien, en toast, mais plus rien ne pouvait
+     rouvrir l'ecran : ni bouton, ni retour. La partie paraissait morte.
+     L'attente est desormais lue dans l'etat du serveur : elle n'apparait que
+     lorsque la mise est REELLEMENT enregistree. */
+  const moi = st.players && st.players[S.seat];
+  const engage = !!(moi && moi.betDone);
+  if (!full && bet.dataset.ready === '1' && bet.dataset.engage === (engage ? '1' : '0')) return;
   bet.dataset.ready = '1';
+  bet.dataset.engage = engage ? '1' : '0';
   const purse = S.me ? S.me.coins : 0;
   bet.innerHTML = `
     <div class="dc-bet-card pd-panel">
@@ -47,8 +57,8 @@ export function renderBet(st, full) {
         <input type="number" id="dc-bet-input" min="0" step="10" value="0" max="${purse}" aria-label="stake">
         <span class="dc-bet-max">${esc(t('bet.of', { n: purse }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></span>
       </div>
-      <button class="dc-btn" id="dc-bet-go">${esc(t('bet.lock'))}</button>
-      <div class="dc-bet-wait"></div>
+      <button class="dc-btn" id="dc-bet-go"${engage ? ' disabled' : ''}>${esc(t('bet.lock'))}</button>
+      <div class="dc-bet-wait">${engage ? esc(t('bet.waiting')) : ''}</div>
     </div>`;
   const field = $('#dc-bet-input');
   const marquer = (valeur) => bet.querySelectorAll('.dc-chip')
@@ -66,10 +76,15 @@ export function renderBet(st, full) {
   field.oninput = () => marquer(field.value);
 
   $('#dc-bet-go').onclick = () => {
-    const value = parseInt($('#dc-bet-input').value, 10);
-    S.net.send({ t: 'bet', value: Number.isFinite(value) ? value : 0 });
+    const brut = parseInt($('#dc-bet-input').value, 10);
+    /* ⚠️ `max` SUR UN CHAMP NOMBRE NE BRIDE RIEN. Il colore la validation et
+       arrete les fleches ; une valeur tapee ou collee passe telle quelle, et
+       `.value` la rend entiere. On borne donc ici, ou la bourse est connue :
+       le serveur refusera de toute facon, autant ne pas l'ennuyer. */
+    const value = Math.max(0, Math.min(purse, Number.isFinite(brut) ? brut : 0));
+    if (value !== brut) { field.value = value; marquer(value); }
+    S.net.send({ t: 'bet', value });
     $('#dc-bet-go').disabled = true;
-    bet.querySelector('.dc-bet-wait').textContent = t('bet.waiting');
   };
 }
 

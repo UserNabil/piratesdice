@@ -136,7 +136,12 @@ async function connect() {
     match: (m) => { resetLobby(); onMatch(m); },
     state: onState,
     over: onOver,
-    error: (m) => toast(m.msg || 'refused', 'warn'),
+    /* ⚠️ UN REFUS DU SERVEUR DOIT RENDRE LA MAIN, PAS SEULEMENT PARLER.
+       L'ecran de mise se desactivait a l'envoi ; un refus affichait bien son
+       toast, mais aucun etat ne suivait, donc rien ne rallumait le bouton et
+       la partie semblait morte. Et le message arrivait en anglais brut au
+       milieu d'un jeu en francais. */
+    error: (m) => { toast(messageServeur(m.msg), 'warn'); rendreLaMain(); },
     denied: (m) => connectFailed(m.msg || 'the game server refused the token'),
     closed: (byUs) => {
       /* ⚠️ `S.net` DOIT TOMBER AVEC LA CONNEXION. La relance automatique et les
@@ -151,6 +156,35 @@ async function connect() {
 
   try { await S.net.connect(); }
   catch (e) { connectFailed(e.message); }
+}
+
+/* Les refus que le serveur formule en anglais, dits dans la langue du joueur.
+   Un message inconnu passe tel quel : mieux vaut une phrase anglaise qu'un
+   silence, et sa presence signale la cle qui manque. */
+const REFUS = {
+  'not enough coins': 'err.coins',
+  'betting is closed': 'err.betClosed',
+  'your bet is already placed': 'err.betDone',
+  'enter a whole number of coins': 'err.betWhole',
+  'not your turn': 'game.waitTurn',
+  'you already rolled': 'game.alreadyRolled',
+  'the match has not started': 'err.notStarted',
+  'you are not in a match': 'err.noMatch',
+  'you are already in a match': 'err.inMatch',
+  'you cannot change captain during a match': 'err.captainLocked',
+};
+
+function messageServeur(brut) {
+  if (!brut) return t('err.refused');
+  const cle = REFUS[brut];
+  return cle ? t(cle) : brut;
+}
+
+/* Rouvrir ce qu'un envoi avait ferme par avance. Aujourd'hui la mise ; tout
+   bouton qui se desactive en attendant une reponse a sa place ici. */
+function rendreLaMain() {
+  const go = $('#dc-bet-go');
+  if (go) go.disabled = false;
 }
 
 async function connectFailed(message) {
