@@ -32,9 +32,14 @@ import { S, ASSETS, bonusArt, skinOf } from './dice_state.js';
  * Les bornes evitent les deux extremes : un mot seul reste visible, un pave ne
  * squatte pas l'ecran.
  */
-const LIRE_SOCLE = 1900;
+/* ⚠️ RELEVE APRES LA REFONTE : « ca ne s'affiche pas longtemps ». Les repliques
+   sont courtes — quatre mots — donc elles tombaient toutes sur le plancher, et
+   ce plancher etait cale sur un ecran ou la bulle occupait le haut ou le bas,
+   bien en vue. Au milieu de l'ecran, entre deux plateaux qui bougent, il faut
+   plus de temps pour la remarquer. */
+const LIRE_SOCLE = 2200;
 const LIRE_PAR_SIGNE = 55;
-const LIRE_MIN = 2400;
+const LIRE_MIN = 3200;
 const LIRE_MAX = 7000;
 
 function tempsDeLecture(texte) {
@@ -158,9 +163,18 @@ function bulleImage(seat, index) {
  * celle du bas monte : chacune s'ouvre vers le plateau, jamais vers le bord.
  */
 function bubble(seat, contenu, classe) {
-  const carte = $(seat === S.seat ? '#dc-pc-me' : '#dc-pc-foe');
+  /* ⚠️ LA BULLE PENDAIT A LA CARTE DU JOUEUR, ET LA CARTE A CHANGE DE TAILLE.
+     C'etait un bandeau pleine largeur en haut ou en bas de l'ecran : une bulle
+     posee dessous avait de la place et 78 % d'une largeur d'ecran pour s'ecrire.
+     La carte n'est plus qu'un demi-panneau au MILIEU de l'ecran : la bulle
+     s'ouvrait donc par-dessus le rectangle central, large de quelques mots, et
+     rognee. « Les messages des capitaines s'affichent mal maintenant. »
+     Elle pend desormais a la barre entiere, qui fait toute la largeur, et sort
+     du bon cote — vers le plateau de celui qui parle. */
+  const barre = document.querySelector('#dc-screen-game .dc-versus-wrap');
+  const carte = barre || $(seat === S.seat ? '#dc-pc-me' : '#dc-pc-foe');
   if (!carte) return;
-  const ancienne = carte.querySelector('.dc-bulle');
+  const ancienne = carte.querySelector('.dc-bulle' + (seat === S.seat ? '.dc-bulle-me' : '.dc-bulle-foe'));
   if (ancienne) ancienne.remove();
 
   const el = document.createElement('div');

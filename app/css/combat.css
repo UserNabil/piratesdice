@@ -181,8 +181,24 @@
   --cbt-joueur-adverse-2: var(--mer-lo, #60C0F8);
 
   /* Celui dont c'est le tour porte un jonc d'or ; l'autre recule. */
-  --cbt-joueur-actif-jonc: 0 0 0 2px var(--gold, #F8D040) inset;
-  --cbt-joueur-attente: saturate(.55) brightness(.72);
+  /* ⚠️ LE CADRE DORE DISAIT MAL CE QU'IL DISAIT. Un jonc jaune de 2 px autour
+     d'un demi-panneau se lisait comme « un rectangle jaune bizarre » — retour
+     de l'admin — et non comme « c'est son tour ». C'est le FOND qui porte
+     desormais l'information : allume quand on joue, eteint quand on attend.
+     Une couleur qui change sur toute la surface se voit sans etre cherchee. */
+  --cbt-joueur-actif-jonc: none;
+  /* Le degrade de chaque camp : bleu vers violet en face, violet chez soi. */
+  --cbt-joueur-fond-adverse: linear-gradient(135deg, #3E7BD8 0%, #6B3FC8 100%);
+  --cbt-joueur-fond-moi: linear-gradient(225deg, #8A4BF0 0%, #5B2BB0 100%);
+  /* Allume / eteint. L'ecart doit se voir d'un coup d'oeil sans que le camp
+     eteint devienne illisible : son nom et son score restent a lire. */
+  --cbt-joueur-actif: brightness(1.14) saturate(1.1);
+  /* ⚠️ ETEINDRE N'EST PAS EFFACER. A 0,58 le camp qui attend passait sous le
+     seuil de lecture : son nom et son score sont pourtant ce qu'on compare a
+     chaque tour. 0,68 laisse l'ecart visible d'un coup d'oeil sans rendre la
+     moitie du rectangle inutile. */
+  --cbt-joueur-eteint: brightness(.68) saturate(.78);
+  --cbt-joueur-courbure: 14px;
 
   /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
 
@@ -500,8 +516,15 @@
   -webkit-text-stroke: var(--cbt-joueur-score-cerne);
 }
 #dicewrap .dc-pc-bet { font-size: var(--cbt-joueur-mise-taille); color: var(--cbt-joueur-mise-couleur); }
-#dicewrap .dc-pc-active { box-shadow: var(--cbt-joueur-actif-jonc); }
-#dicewrap .dc-pc-idle { filter: var(--cbt-joueur-attente); }
+/* Chaque camp porte son degrade, et sa clarte dit a qui est le tour. */
+#dicewrap #dc-pc-foe { background: var(--cbt-joueur-fond-adverse); }
+#dicewrap #dc-pc-me { background: var(--cbt-joueur-fond-moi); }
+#dicewrap .dc-pc {
+  border-radius: var(--cbt-joueur-courbure);
+  transition: filter .25s ease;
+}
+#dicewrap .dc-pc-active { filter: var(--cbt-joueur-actif); box-shadow: var(--cbt-joueur-actif-jonc); }
+#dicewrap .dc-pc-idle { filter: var(--cbt-joueur-eteint); }
 
 /* ── le ratelier de bonus ─────────────────────────────────────────────────── */
 

@@ -224,15 +224,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     width: clamp(30px, 8.6vw, 42px);
     height: clamp(30px, 8.6vw, 42px);
   }
-  #dicewrap .dc-turn { min-width: 0; }
 
-  /* En dessous de 360 px, le libelle du tour est ce qu'on sacrifie EN PREMIER :
-     il repete une information que le bandeau donne deja — le camp actif est net
-     et cercle, l'autre recule, et la pendule tourne sur le portrait. Le garder
-     couterait la place de deux bonus, qui eux ne se lisent nulle part ailleurs. */
-  @media (max-width: 359px) {
-    #dicewrap .dc-turn { display: none; }
-  }
+  /* ⚠️ ON NE LE CACHE PLUS SOUS 360 px, ET LA RAISON A DISPARU. On le sacrifiait
+     parce qu'il occupait une ligne du flux et coutait la place de deux bonus.
+     C'est desormais une pastille qui FLOTTE au-dessus du rectangle, deux
+     secondes : elle ne prend de place a personne, et sur un petit ecran elle
+     est justement ce qui reste quand tout le reste a maigri. */
   #dicewrap .dc-quit { display: none; }
 
   /* La sortie de fin de partie, elle, se voit : c'est la seule porte quand la
@@ -452,7 +449,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ============================================================================ */
 
 [dir="rtl"] body { font-family: "Baloo 2", "Noto Naskh Arabic", "Trebuchet MS", sans-serif; }
-[dir="rtl"] #dicewrap .dc-turn { text-align: start; }
 [dir="rtl"] #dicewrap .dc-pc { text-align: start; }
 [dir="rtl"] #dicewrap .dc-board,
 [dir="rtl"] #dicewrap .dc-scores,

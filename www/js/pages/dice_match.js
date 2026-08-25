@@ -27,6 +27,9 @@ export function onMatch(m) {
   S.lastScores = null;
   S.seat = m.seat;
   S.state = m.state;
+  /* Une nouvelle table repart d'un etat vierge : sans cela l'alerte du tour,
+     identique a celle de la partie precedente, ne se rejouerait pas. */
+  oublierEtat();
   buildGame();
   screen('game');
   paint(true);
@@ -56,12 +59,19 @@ function buildGame() {
       <div class="dc-boards">
         <div class="dc-board-slot" id="dc-slot-foe"></div>
 
-        <div class="dc-versus pd-panel">
-          <div class="dc-pc" id="dc-pc-foe"></div>
-          <img class="dc-vs-mark" src="${ASSETS}img/icon_versus.png" alt="">
-          <div class="dc-pc" id="dc-pc-me"></div>
+        <!-- L'etat du jeu ne tient plus une ligne sous le rectangle : il passe
+             AU-DESSUS, en alerte, et s'efface. Une phrase permanente qui repete
+             « a vous » a chaque tour cesse d'etre lue au bout de trois tours,
+             et prend une bande de hauteur aux plateaux pour ne rien dire. -->
+        <div class="dc-versus-wrap">
+          <div class="dc-turn" id="dc-turn" aria-live="polite"></div>
+          <div class="dc-versus pd-panel">
+            <div class="dc-pc" id="dc-pc-foe"></div>
+            <img class="dc-vs-mark" src="${ASSETS}img/icon_versus.png" alt="">
+            <div class="dc-pc" id="dc-pc-me"></div>
+          </div>
         </div>
-        <div class="dc-turn" id="dc-turn"></div>
+
 
         <div class="dc-board-slot" id="dc-slot-me"></div>
       </div>
@@ -147,9 +157,36 @@ function buildGame() {
     S.net.send({ t: 'roll' });
   };
   $('#dc-quit').onclick = () => UI.requestClose();
-  $('#dc-bag').onclick = (ev) => { ev.stopPropagation(); basculerCale(); };
-  /* Un eventail ouvert se ferme au premier geste ailleurs : sans cela il reste
-     en travers du plateau et il faut viser le sac a nouveau pour le refermer. */
+  /* ⚠️ LA CALE S'OUVRE TANT QU'ON APPUIE, ET SE REFERME QUAND ON LACHE.
+     Au clic, l'eventail restait ouvert et il fallait viser le sac une seconde
+     fois pour s'en debarrasser — deux gestes pour un coup d'oeil. A l'appui
+     maintenu, le pouce ne quitte jamais l'ecran : on presse, on lit, on glisse
+     sur l'effet voulu, on relache. Le fond s'assombrit pendant ce temps, pour
+     que l'eventail se detache du plateau.
+     Le relachement SUR un effet le joue : c'est `dc-bonus-btn` qui s'en charge,
+     et on ne referme qu'apres, pour ne pas lui retirer sa cible. */
+  const sac = $('#dc-bag');
+  sac.addEventListener('pointerdown', (ev) => { ev.preventDefault(); ouvrirCale(); });
+  /* Un clavier ou un lecteur d'ecran n'appuie pas : il active. La bascule reste
+     donc disponible, sinon la cale serait hors d'atteinte sans doigt. */
+  sac.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); basculerCale(); }
+  });
+  document.addEventListener('pointerup', (ev) => {
+    if (!caleTenue) return;
+    /* ⚠️ RELACHER SUR UN EFFET DOIT LE JOUER, ET UN `click` N'ARRIVERA PAS.
+       L'appui a commence sur le sac : le navigateur ne synthetise un clic que
+       si la pression et le relachement partagent la meme cible. Sans cela, le
+       joueur ouvrirait la cale, glisserait sur son canon, relacherait — et rien
+       ne se passerait. On lit donc ce qui se trouve SOUS le doigt au moment ou
+       il se leve, et on declenche le bouton nous-memes. */
+    const dessous = document.elementFromPoint(ev.clientX, ev.clientY);
+    const jeton = dessous && dessous.closest('.dc-bonus-btn');
+    fermerCale();
+    if (jeton) jeton.click();
+  });
+  document.addEventListener('pointercancel', () => { if (caleTenue) fermerCale(); });
+  /* Un eventail laisse ouvert au clavier se ferme au premier geste ailleurs. */
   document.addEventListener('pointerdown', (ev) => {
     if (!ev.target.closest('#dc-bonus') && !ev.target.closest('#dc-bag')) fermerCale();
   });
@@ -496,27 +533,41 @@ function renderPlayerCard(sel, st, seat, isMe) {
    carte du joueur, lui disputait sa largeur et coupait les noms — « Ann / e /
    Bon / ny ». Ferme, il ne coute plus rien ; ouvert, il se deploie AU-DESSUS du
    bandeau, sans quoi le pouce qui l'ouvre le recouvrirait. */
+/* Vrai tant que le doigt tient la cale ouverte : au relachement, on ferme. */
+let caleTenue = false;
+
 function caleOuverte() {
   const rack = $('#dc-bonus');
   return !!(rack && rack.classList.contains('dc-bonus-open'));
 }
 
 function fermerCale() {
+  caleTenue = false;
   const rack = $('#dc-bonus');
   if (rack) rack.classList.remove('dc-bonus-open');
   const sac = $('#dc-bag');
   if (sac) sac.classList.remove('dc-foot-on');
+  const jeu = $('#dc-screen-game');
+  if (jeu) jeu.classList.remove('dc-assombri');
 }
 
-function basculerCale() {
+function ouvrirCale() {
   const rack = $('#dc-bonus');
-  if (!rack) return;
-  if (caleOuverte()) { fermerCale(); return; }
+  if (!rack || caleOuverte()) return;
   renderBonusRack();
   if (!rack.children.length) { toast(t('bonus.empty'), 'warn'); return; }
+  caleTenue = true;
   rack.classList.add('dc-bonus-open');
   const sac = $('#dc-bag');
   if (sac) sac.classList.add('dc-foot-on');
+  const jeu = $('#dc-screen-game');
+  if (jeu) jeu.classList.add('dc-assombri');
+}
+
+function basculerCale() {
+  if (caleOuverte()) { fermerCale(); return; }
+  ouvrirCale();
+  caleTenue = false;            // ouverte au clavier : elle ne suit aucun doigt
 }
 
 function renderExit(st) {
@@ -571,23 +622,44 @@ function renderExit(st) {
     : () => UI.requestClose();
 }
 
+/* ⚠️ UNE ALERTE QUI RESTE N'EST PLUS UNE ALERTE. « A vous » ecrit en permanence
+   sous le rectangle cessait d'etre lu au bout de trois tours, tout en prenant
+   une bande de hauteur aux plateaux. Elle ne parait donc qu'au CHANGEMENT, et
+   s'efface. Ce qui ne change pas — une partie en pause, une partie finie —
+   reste affiche : la, l'information EST l'immobilite. */
+let dernierEtat = '';
+let minuteurEtat = 0;
+
+function direEtat(el, texte, classe, passager) {
+  const signature = classe + '|' + texte;
+  if (signature === dernierEtat) return;
+  dernierEtat = signature;
+  if (minuteurEtat) { clearTimeout(minuteurEtat); minuteurEtat = 0; }
+  el.textContent = texte;
+  el.className = 'dc-turn ' + classe + ' dc-turn-on';
+  if (!passager) return;
+  minuteurEtat = setTimeout(() => {
+    el.classList.remove('dc-turn-on');
+    minuteurEtat = 0;
+  }, 1900);
+}
+
+export function oublierEtat() { dernierEtat = ''; }
+
 function renderTurn(st) {
   /* ⚠️ UNE PARTIE EN PAUSE DOIT LE DIRE. Sans ce mot, un joueur dont
      l'adversaire vient d'etre coupe voit une table qui ne repond plus, sans
      savoir si c'est le jeu, son telephone, ou son tour. */
-  if (st.paused) {
-    const bar = $('#dc-turn');
-    if (bar) { bar.textContent = t('game.paused'); bar.className = 'dc-turn dc-turn-paused'; }
-    return;
-  }
   const el = $('#dc-turn');
   if (!el) return;
-  if (st.phase === 'betting') { el.textContent = t('game.placeStake'); el.className = 'dc-turn'; return; }
-  if (st.phase === 'over') { el.textContent = t('game.matchOver'); el.className = 'dc-turn'; return; }
+  if (st.paused) { direEtat(el, t('game.paused'), 'dc-turn-paused', false); return; }
+  if (st.phase === 'betting') { direEtat(el, t('game.placeStake'), '', false); return; }
+  if (st.phase === 'over') { direEtat(el, t('game.matchOver'), '', false); return; }
   const mine = st.turn === S.seat;
-  el.textContent = mine ? t('game.yourTurn')
-    : t('game.playing', { name: (st.players[st.turn] || {}).name || t('game.opponent') });
-  el.className = 'dc-turn' + (mine ? ' dc-turn-mine' : '');
+  direEtat(el,
+    mine ? t('game.yourTurn')
+         : t('game.playing', { name: (st.players[st.turn] || {}).name || t('game.opponent') }),
+    mine ? 'dc-turn-mine' : '', true);
 }
 
 function renderCup(st) {

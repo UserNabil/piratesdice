@@ -977,15 +977,42 @@
   overflow: visible;
 }
 
+/* ── l'alerte de tour, au-dessus du rectangle ─────────────────────────────── */
+
+/* Elle FLOTTE : posee dans le flux, elle prendrait une bande de hauteur en
+   permanence pour une phrase qui ne parait que deux secondes. */
+#dicewrap .dc-versus-wrap { position: relative; width: 100%; justify-self: stretch; }
+
+#dicewrap .dc-turn {
+  position: absolute;
+  left: 50%; bottom: calc(100% + 6px);
+  transform: translate(-50%, 6px);
+  z-index: 12;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(58,34,110,.96), rgba(30,18,64,.96));
+  box-shadow: inset 0 0 0 2px rgba(255,225,150,.5), 0 4px 10px rgba(0,0,0,.5);
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+#dicewrap .dc-turn-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── le voile, quand la cale est ouverte ──────────────────────────────────── */
+
+/* Le plateau recule pour que l'eventail se detache. Il ne DISPARAIT pas : on
+   choisit son effet en regardant la partie, pas un ecran noir. */
+#dicewrap .dc-assombri .dc-boards { filter: brightness(.42) saturate(.75); transition: filter .18s ease; }
+#dicewrap .dc-boards { transition: filter .18s ease; }
+
+/* La typographie de l'alerte. Elle etait ecrite pour une ligne posee dans le
+   flux, alignee a droite contre le gobelet : la pastille est centree. */
 #dicewrap .dc-turn {
   font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(12px, 1.1vw, 14.5px);
-  white-space: nowrap;
   color: var(--txt);
-  text-align: right;
+  text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
-  position: relative;
-  z-index: 2;
 }
 
 #dicewrap .dc-turn-mine { color: #ffe6a8; text-shadow: 0 0 12px rgba(255, 190, 90, .55), 0 1px 2px rgba(0, 0, 0, .8); }
@@ -1536,7 +1563,7 @@
   transition: opacity .15s ease, transform .15s ease;
   pointer-events: none;
 }
-#dicewrap .dc-bulle.dc-msg-part { transform: translateX(-50%) scale(.92); }
+#dicewrap .dc-bulle.dc-msg-part { transform: scale(.92); }
 #dicewrap .dc-cast.dc-msg-part { transform: translateX(-50%) scale(.92); }
 
 /* Le quart du pont, ecrit au-dessus de sa plaque. Riche en or, pauvre en gris :
@@ -1688,10 +1715,10 @@
 
 #dicewrap .dc-bulle {
   position: absolute;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  z-index: 8;
-  max-width: min(78%, 260px);
+  z-index: 14;
+  /* Chacun parle de son cote de la barre : la moitie, moins l'air qu'il faut
+     pour que deux repliques simultanees ne se touchent pas. */
+  max-width: min(45%, 240px);
   padding: 7px 13px;
   border: 4px solid var(--blanc);
   border-radius: 16px 14px 17px 15px;
@@ -1712,26 +1739,28 @@
 #dicewrap .dc-bulle::after {
   content: '';
   position: absolute;
-  inset-inline-start: 50%;
   width: 13px;
   height: 13px;
   background: var(--gold-hi);
-  transform: translateX(-50%) rotate(45deg);
+  transform: rotate(45deg);
 }
 
-#dicewrap .dc-bulle-foe { top: calc(100% + 11px); }
+/* L'adversaire est a gauche du medaillon et son plateau est en haut : sa
+   replique sort donc vers le haut, a gauche. La mienne fait l'inverse. Une
+   bulle qui sortirait du mauvais cote ferait chercher qui a parle. */
+#dicewrap .dc-bulle-foe { bottom: calc(100% + 10px); inset-inline-start: 3%; }
 #dicewrap .dc-bulle-foe::after {
-  top: -8px;
-  border-top: 4px solid var(--blanc);
-  border-left: 4px solid var(--blanc);
-}
-
-#dicewrap .dc-bulle-me { bottom: calc(100% + 11px); }
-#dicewrap .dc-bulle-me::after {
-  bottom: -8px;
+  bottom: -8px; inset-inline-start: 28%;
   border-bottom: 4px solid var(--blanc);
   border-right: 4px solid var(--blanc);
   background: var(--gold);
+}
+
+#dicewrap .dc-bulle-me { top: calc(100% + 10px); inset-inline-end: 3%; }
+#dicewrap .dc-bulle-me::after {
+  top: -8px; inset-inline-end: 28%; inset-inline-start: auto;
+  border-top: 4px solid var(--blanc);
+  border-left: 4px solid var(--blanc);
 }
 
 /* Une humeur n'est pas une phrase : pas de fond, juste le glyphe, en grand. */
@@ -1744,9 +1773,14 @@
 #dicewrap .dc-bulle-mood::after { background: var(--violet-hi); }
 #dicewrap .dc-bulle-me.dc-bulle-mood::after { background: var(--violet); }
 
+/* ⚠️ CETTE ANIMATION PORTAIT LE CENTRAGE. La bulle etait calee a 50 % puis
+   ramenee par `translateX(-50%)` ; l'animation devait donc repeter ce decalage,
+   sinon elle sautait d'une demi-largeur a la premiere image. La bulle s'accroche
+   maintenant a un bord — plus de decalage a repeter, et l'oublier ici aurait
+   fait bondir chaque replique vers la gauche en apparaissant. */
 @keyframes dc-bulle-in {
-  from { opacity: 0; transform: translateX(-50%) scale(.72); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+  from { opacity: 0; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* L'eventail : cinq boutons poses en arc autour du portrait. Chacun est tourne
