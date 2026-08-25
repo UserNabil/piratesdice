@@ -204,8 +204,8 @@ export const ES = {
   'connect.fixSsh': 'Fuera de la red de la oficina, el juego usa el túnel SSH de la herramienta: comprueba que la máquina responde.',
   'skin.appearance': 'Solo apariencia — sin efecto en el juego',
   'skin.owned': 'En bodega',
-  'skin.wear': 'Jugar con estos',
-  'skin.remove': 'Volver a los dados originales',
+  'skin.wear': 'Equipar',
+  'skin.remove': 'Quitar',
 
   /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
      lisait « not enough coins » au milieu de sa partie. */

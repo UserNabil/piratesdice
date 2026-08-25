@@ -8,7 +8,7 @@
    ============================================================================ */
 
 import { initDice, openDice } from './pages/dice.js';
-import { S, UI, myTurn } from './pages/dice_state.js';
+import { S, UI, ASSETS, myTurn } from './pages/dice_state.js';
 import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
 import { startFitting } from './fit.js';
 import { t, LANGS, lang, setLang } from './core/i18n.js';
@@ -111,20 +111,25 @@ function row(label, body) {
 function settingsMarkup() {
   const acc = account();
   const who = acc.google ? t('set.signedInAs', { name: acc.name }) : t('set.guest');
+  /* Le libelle ET le dessin nomment le fournisseur de CETTE plateforme :
+     « avec Google » sur un iPhone serait faux, et « avec Apple » sur Android
+     n'existe pas. Le logo dit lequel avant meme qu'on ait lu. */
+  const pomme = fournisseur() === 'apple';
   const button = acc.google
-    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost" data-signout>${t('set.signOut')}</button>`
-    /* Le libelle nomme le fournisseur de CETTE plateforme : « avec Google » sur
-       un iPhone serait faux, et « avec Apple » sur Android n'existe pas. */
-    : `<button class="dc-btn dc-btn-sm" data-signin>${
-        t(fournisseur() === 'apple' ? 'set.signInApple' : 'set.signIn')}</button>`;
+    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout>
+         <img src="${ASSETS}img/icon_link.png" alt="">${t('set.signOut')}</button>`
+    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin>
+         <img src="${ASSETS}img/icon_${pomme ? 'apple' : 'google'}.png" alt="">${
+        t(pomme ? 'set.signInApple' : 'set.signIn')}</button>`;
   const muted = !!(S.sfx && S.sfx.muted);
 
   return `
     <div class="pd-ask-card pd-panel pd-set">
       <h3>${t('set.title')}</h3>
 
-      ${row(t('set.sound'), `<button class="pd-toggle${muted ? '' : ' on'}" data-sound
-              aria-pressed="${!muted}">${t(muted ? 'set.soundOff' : 'set.soundOn')}</button>`)}
+      ${row(t('set.sound'), `<button class="pd-toggle pd-toggle-art${muted ? '' : ' on'}" data-sound
+              aria-pressed="${!muted}"><img src="${ASSETS}img/icon_sound_${muted ? 'off' : 'on'}.png"
+              alt="">${t(muted ? 'set.soundOff' : 'set.soundOn')}</button>`)}
 
       <!-- Plus de reglage « jouer aux mouvements ». Secouer pour lancer est
            desormais toujours actif : un geste cache derriere un interrupteur
@@ -132,16 +137,19 @@ function settingsMarkup() {
 
       ${row(t('set.account'), `<span class="pd-row-val">${who}</span>`)}
       <div class="pd-row pd-row-btns">${button}
-        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger" data-erase>${t('set.erase')}</button>
+        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger dc-btn-art" data-erase>
+          <img src="${ASSETS}img/icon_erase.png" alt="">${t('set.erase')}</button>
       </div>
 
       ${row(t('set.language'), `<select class="pd-select" data-lang>${
         LANGS.map((l) => `<option value="${l.code}"${l.code === lang() ? ' selected' : ''}>${l.label}</option>`).join('')
       }</select>`)}
 
-      ${row(t('set.terms'), `<a class="pd-link" href="${TERMS_URL}" target="_blank" rel="noopener">&#8599;</a>`)}
+      ${row(t('set.terms'), `<a class="pd-link pd-link-art" href="${TERMS_URL}" target="_blank"
+             rel="noopener" aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
 
-      <div class="pd-ask-row"><button class="dc-btn" data-close>${t('set.close')}</button></div>
+      <div class="pd-ask-row"><button class="dc-btn dc-btn-art" data-close>
+        <img src="${ASSETS}img/icon_close_round.png" alt="">${t('set.close')}</button></div>
     </div>`;
 }
 
@@ -162,7 +170,15 @@ function openSettings() {
     const mute = document.getElementById('dc-mute');
     if (mute) mute.click();
     const off = !!(S.sfx && S.sfx.muted);
-    sound.textContent = t(off ? 'set.soundOff' : 'set.soundOn');
+    /* ⚠️ `textContent` EFFACERAIT LE DESSIN. Le bouton porte maintenant une
+       image ET un libelle : ecrire le texte sur le bouton entier remplacerait
+       les deux par une chaine nue, et le haut-parleur disparaitrait au premier
+       clic. On ne touche donc qu'au dernier noeud, celui du texte. */
+    const img = sound.querySelector('img');
+    if (img) img.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
+    const mot = sound.lastChild;
+    if (mot && mot.nodeType === 3) mot.textContent = t(off ? 'set.soundOff' : 'set.soundOn');
+    else sound.textContent = t(off ? 'set.soundOff' : 'set.soundOn');
     sound.classList.toggle('on', !off);
     sound.setAttribute('aria-pressed', String(!off));
   };

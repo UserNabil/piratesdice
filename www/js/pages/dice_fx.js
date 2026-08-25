@@ -120,7 +120,34 @@ function nomDuSiege(seat) {
  * on encaisse, on salue, on doute. Six en ferait un clavier ; quatre laisserait
  * un trou.
  */
-export const MOODS = ['😂', '😡', '😱', '👏', '🤔'];
+/* ⚠️ C'ETAIENT DES EMOJIS DU SYSTEME, ET ILS NE SE RESSEMBLAIENT NULLE PART.
+   Le meme 😱 est bleu sur un iPhone, jaune sur un Pixel et anguleux sur un
+   Samsung : deux joueurs voyaient deux humeurs differentes pour un seul geste,
+   et aucune des trois n'appartenait au jeu. Ce sont desormais cinq dessins de
+   la meme main que le reste — chacun porte encore son glyphe comme secours et
+   comme intitule pour qui ecoute l'ecran. */
+export const MOODS = [
+  { fichier: 'mood_laugh.png', glyphe: '😂' },
+  { fichier: 'mood_angry.png', glyphe: '😡' },
+  { fichier: 'mood_shocked.png', glyphe: '😱' },
+  { fichier: 'mood_good.png', glyphe: '👏' },
+  { fichier: 'mood_think.png', glyphe: '🤔' },
+];
+
+export function moodArt(i) {
+  const m = MOODS[i] || MOODS[0];
+  return ASSETS + 'img/' + m.fichier;
+}
+
+/* Une humeur dessinee, dans la meme bulle que les repliques. */
+function bulleImage(seat, index) {
+  const m = MOODS[index] || MOODS[0];
+  const img = document.createElement('img');
+  img.className = 'dc-mood-art';
+  img.src = moodArt(index);
+  img.alt = m.glyphe;
+  bubble(seat, img, 'dc-bulle-mood');
+}
 
 /**
  * Une bulle au-dessus d'un portrait.
@@ -139,7 +166,8 @@ function bubble(seat, contenu, classe) {
   const el = document.createElement('div');
   el.className = 'dc-bulle ' + (seat === S.seat ? 'dc-bulle-me' : 'dc-bulle-foe')
                + (classe ? ' ' + classe : '');
-  el.textContent = contenu;
+  if (contenu instanceof Node) el.appendChild(contenu);
+  else el.textContent = contenu;
   carte.appendChild(el);
   /* Une humeur se saisit d'un coup d'oeil : on lui compte deux signes, pas les
      deux octets de son glyphe. Une replique, elle, se lit vraiment. */
@@ -173,7 +201,7 @@ export function announce(fx) {
 
 function unEffet(f) {
     if (f.kind === 'mood') {
-      bubble(f.seat, MOODS[f.mood] || MOODS[0], 'dc-bulle-mood');
+      bulleImage(f.seat, f.mood);
       return;
     }
 

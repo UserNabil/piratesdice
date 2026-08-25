@@ -36,7 +36,10 @@ function shellMarkup() {
         <button class="dc-tab" data-panel="rules"><img src="${ASSETS}img/icon_rules.png" alt=""> ${esc(t('tab.rules'))}</button>
       </nav>
       <div class="dc-acts">
-        <button class="dc-icon" id="dc-mute" title="${esc(t('hdr.mute'))}"><img src="${ASSETS}img/icon_bell.png" alt=""></button>
+        <!-- Un GRELOT ne dit pas « son coupe » : il dit « notification ». Le
+             haut-parleur, lui, se lit sans legende, et sa version barree dit
+             l'etat coupe sans qu'on ait a comparer deux nuances de gris. -->
+        <button class="dc-icon" id="dc-mute" title="${esc(t('hdr.mute'))}"><img src="${ASSETS}img/icon_sound_on.png" alt=""></button>
         <button class="dc-icon" id="dc-full" title="${esc(t('hdr.full'))}"><img src="${ASSETS}img/icon_expand.png" alt=""></button>
         <button class="dc-icon dc-icon-close" id="dc-close" title="${esc(t('hdr.close'))}"><img src="${ASSETS}img/icon_close.png" alt=""></button>
       </div>
@@ -75,6 +78,8 @@ function build() {
     S.sfx.muted = !S.sfx.muted;
     $('#dc-mute').classList.toggle('dc-icon-off', S.sfx.muted);
     $('#dc-mute').title = t(S.sfx.muted ? 'hdr.unmute' : 'hdr.mute');
+    const hp = $('#dc-mute img');
+    if (hp) hp.src = ASSETS + 'img/icon_sound_' + (S.sfx.muted ? 'off' : 'on') + '.png';
   };
   wrap.querySelectorAll('.dc-tab').forEach((b) => { b.onclick = () => togglePanel(b.dataset.panel); });
 
@@ -112,7 +117,7 @@ export async function openDice() {
 async function connect() {
   screen('connect');
   $('#dc-screen-connect').innerHTML =
-    '<div class="dc-connect"><div class="dc-wheel"></div>'
+    '<div class="dc-connect"><img class="dc-wheel" src="' + ASSETS + 'img/icon_loader.png" alt="">'
     + '<p>' + esc(t('connect.boarding')) + '</p></div>';
 
   S.net = new DiceNet({

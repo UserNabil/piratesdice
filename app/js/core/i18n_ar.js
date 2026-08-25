@@ -206,8 +206,8 @@ export const AR = {
   'connect.fixSsh': 'خارج شبكة المكتب، تمرّ اللعبة عبر نفق SSH للأداة: تحقّق من أنّ الجهاز يستجيب.',
   'skin.appearance': 'مظهر فقط — بلا أثر على اللعب',
   'skin.owned': 'في المخزن',
-  'skin.wear': 'العب بهذه',
-  'skin.remove': 'العودة إلى النرد الأصلي',
+  'skin.wear': 'تجهيز',
+  'skin.remove': 'إزالة',
 
   /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
      lisait « not enough coins » au milieu de sa partie. */

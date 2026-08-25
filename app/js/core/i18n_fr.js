@@ -205,8 +205,8 @@ export const FR = {
   'connect.fixSsh': 'Hors du réseau du bureau, le jeu emprunte le tunnel SSH du tool : vérifiez que la machine répond.',
   'skin.appearance': 'Apparence seulement — aucun effet sur le jeu',
   'skin.owned': 'En cale',
-  'skin.wear': 'Jouer avec',
-  'skin.remove': 'Revenir aux dés d’origine',
+  'skin.wear': 'Équiper',
+  'skin.remove': 'Déséquiper',
 
   /* Les refus que le serveur formule en anglais. Sans ces cles, le joueur
      lisait « not enough coins » au milieu de sa partie. */

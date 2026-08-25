@@ -19,7 +19,7 @@ import { t } from '../core/i18n.js';
 import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
-import { announce, renderForesee, startClock, MOODS, sendMood } from './dice_fx.js';
+import { announce, renderForesee, startClock, MOODS, moodArt, sendMood } from './dice_fx.js';
 import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
 export function onMatch(m) {
@@ -216,11 +216,14 @@ function openFan(portrait) {
      puis REDRESSE par une seconde rotation sur le glyphe — sans quoi les emojis
      penchent et deviennent illisibles. */
   const angles = fanAngles(portrait);
-  MOODS.forEach((glyphe, i) => {
+  MOODS.forEach((humeur, i) => {
     const b = document.createElement('button');
     b.className = 'dc-fan-btn';
     b.style.setProperty('--pd-angle', angles[i] + 'deg');
-    b.innerHTML = '<span>' + glyphe + '</span>';
+    /* Le glyphe reste l'intitule : un dessin sans nom n'est rien pour qui
+       ecoute son ecran, et il sert de secours si l'image manque. */
+    b.setAttribute('aria-label', humeur.glyphe);
+    b.innerHTML = '<span><img src="' + moodArt(i) + '" alt="' + humeur.glyphe + '"></span>';
     b.onclick = (ev) => { ev.stopPropagation(); sendMood(i); closeFan(); };
     fan.appendChild(b);
   });

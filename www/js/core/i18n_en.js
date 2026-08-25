@@ -194,8 +194,8 @@ export const EN = {
   'away.you': 'You were away: the AI played for you',
   'skin.appearance': 'Appearance only — no effect on play',
   'skin.owned': 'Owned',
-  'skin.wear': 'Use these dice',
-  'skin.remove': 'Back to the old dice',
+  'skin.wear': 'Equip',
+  'skin.remove': 'Unequip',
 
   /* ⚠️ CES SEIZE CLES MANQUAIENT A L'ANGLAIS — LA LANGUE SOURCE. Le francais,
      l'espagnol et l'arabe les avaient toutes ; l'anglais, aucune. Or `t()` rend

@@ -106,7 +106,7 @@ export function renderMenu(el) {
   if (S.queued) {
     el.innerHTML = `
       <div class="dc-menu"><div class="dc-menu-card pd-panel">
-        <div class="dc-wheel"></div>
+        <img class="dc-wheel" src="${ASSETS}img/icon_loader.png" alt="">
         <h3>${esc(t('menu.waiting'))}</h3>
         <p>${esc(t('menu.waitingHint'))}</p>
         <button class="dc-btn dc-btn-ghost" id="dc-unqueue">${esc(t('menu.cancel'))}</button>
@@ -123,9 +123,12 @@ export function renderMenu(el) {
       <p>${esc(t('menu.pitch'))}</p>
       ${captainStrip()}
       <div class="dc-menu-btns">
-        <button class="dc-btn dc-btn-big" id="dc-solo">${esc(t('menu.solo'))}</button>
-        <button class="dc-btn dc-btn-big dc-btn-alt" id="dc-multi">${esc(t('menu.multi'))}</button>
-        <button class="dc-btn dc-btn-ghost" id="dc-friend">${esc(t('menu.friend'))}</button>
+        <button class="dc-btn dc-btn-big dc-btn-art" id="dc-solo">
+          <img src="${ASSETS}img/menu_ai.png" alt="">${esc(t('menu.solo'))}</button>
+        <button class="dc-btn dc-btn-big dc-btn-alt dc-btn-art" id="dc-multi">
+          <img src="${ASSETS}img/menu_versus.png" alt="">${esc(t('menu.multi'))}</button>
+        <button class="dc-btn dc-btn-ghost dc-btn-art" id="dc-friend">
+          <img src="${ASSETS}img/menu_friend.png" alt="">${esc(t('menu.friend'))}</button>
       </div>
       <div class="dc-menu-stats">
         <span><b>${S.me ? S.me.games : 0}</b> ${esc(t('menu.matches'))}</span>
@@ -150,7 +153,7 @@ function renderRoom(el) {
       ${attente ? `
         <p>${esc(t('room.share'))}</p>
         <div class="dc-room-code" id="dc-room-code">${esc(hostCode)}</div>
-        <div class="dc-wheel"></div>
+        <img class="dc-wheel" src="${ASSETS}img/icon_loader.png" alt="">
         <p class="dc-dim">${esc(t('room.expires'))}</p>
       ` : `
         <p>${esc(t('room.hint'))}</p>
@@ -158,12 +161,15 @@ function renderRoom(el) {
           <input id="dc-room-input" class="dc-room-input" maxlength="5" autocomplete="off"
                  spellcheck="false" inputmode="text" placeholder="${esc(t('room.placeholder'))}"
                  aria-label="${esc(t('room.placeholder'))}">
-          <button class="dc-btn" id="dc-room-go">${esc(t('room.join'))}</button>
+          <button class="dc-btn dc-btn-art" id="dc-room-go">
+            <img src="${ASSETS}img/icon_join.png" alt="">${esc(t('room.join'))}</button>
         </div>
         <p class="dc-room-or">${esc(t('room.or'))}</p>
-        <button class="dc-btn dc-btn-alt" id="dc-room-create">${esc(t('room.create'))}</button>
+        <button class="dc-btn dc-btn-alt dc-btn-art" id="dc-room-create">
+          <img src="${ASSETS}img/icon_table.png" alt="">${esc(t('room.create'))}</button>
       `}
-      <button class="dc-btn dc-btn-ghost" id="dc-room-back">${esc(t('menu.cancel'))}</button>
+      <button class="dc-btn dc-btn-ghost dc-btn-art" id="dc-room-back">
+        <img src="${ASSETS}img/icon_back.png" alt="">${esc(t('menu.cancel'))}</button>
     </div></div>`;
 
   const back = $('#dc-room-back');

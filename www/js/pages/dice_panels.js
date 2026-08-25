@@ -172,6 +172,14 @@ function bouton(p, have) {
 }
 
 const LADDER_TTL = 30000;
+/* Les trois premieres places portent leur medaille. Au-dela, le rang chiffre :
+   une quatrieme medaille ne voudrait plus rien dire. */
+export function medaille(rang) {
+  return rang >= 1 && rang <= 3
+    ? `<img class="dc-rank-medal" src="${ASSETS}img/rank_${rang}.png" alt="${rang}">`
+    : String(rang);
+}
+
 let ladderCache = null;
 
 export async function renderRanking(body) {
@@ -199,11 +207,11 @@ export async function renderRanking(body) {
           <th>${esc(t('ladder.w'))}</th><th>${esc(t('ladder.l'))}</th><th>${esc(t('ladder.d'))}</th></tr></thead>
           <tbody>${rows.map((p, i) => `
             <tr class="${S.me && p.pseudo === S.me.pseudo ? 'dc-ladder-me' : ''}">
-              <td>${i + 1}</td><td>${esc(p.display_name || p.pseudo)}</td>
+              <td>${medaille(i + 1)}</td><td>${esc(p.display_name || p.pseudo)}</td>
               <td><b>${p.rating}</b></td><td>${p.wins}</td><td>${p.losses}</td><td>${p.draws}</td>
             </tr>`).join('')}
           ${mine && !inTop ? `<tr class="dc-ladder-me dc-ladder-far">
-              <td>${mine.rang}</td><td>${esc(mine.display_name || mine.pseudo)}</td>
+              <td>${medaille(mine.rang)}</td><td>${esc(mine.display_name || mine.pseudo)}</td>
               <td><b>${mine.rating}</b></td><td>${mine.wins}</td><td>${mine.losses}</td>
               <td>${mine.draws}</td></tr>` : ''}
           </tbody></table>`
