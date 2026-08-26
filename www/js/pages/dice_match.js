@@ -535,14 +535,27 @@ function stockMarkup(st, seat) {
       + ((st.freeReroll && st.freeReroll[seat]) ? 1 : 0);
     n = Math.min(n, enCale);
   }
-  if (n <= 0) return '';
+  /* ⚠️ UNE RANGEE QUI DISPARAIT DESEQUILIBRE LES DEUX CARTES. Elle n'etait
+     dessinee que si le siege avait quelque chose : celui qui n'avait rien
+     perdait une ligne entiere, et sa carte devenait plus courte que celle d'en
+     face — deux moities censees se refleter autour du medaillon.
+
+     Le plafond est le MEME pour tout le monde : trois effets par partie. Les
+     trois emplacements sont donc toujours la, eteints quand ils sont vides.
+     C'est aussi une information qu'on ne donnait pas : on voit ce qu'il reste a
+     jouer, chez soi comme en face. */
+  const plafond = (S.rules && S.rules.maxBonusPerMatch) || 3;
+  n = Math.max(0, Math.min(n, plafond));
   /* ⚠️ `bonus1.png` EST LE NOM EN BASE, PAS LE NOM DU FICHIER. La table nomme
      les objets de gameplay ; les dessins vivent sous d'autres noms, et `bonusArt`
      fait la traduction. Ecrit en dur, le chemin donnait une image cassee — donc
      des pastilles presentes dans le DOM et invisibles a l'ecran. */
-  const pastille = `<img class="dc-pc-chip" src="${bonusArt('B001')}" alt="">`;
-  return `<div class="dc-pc-stock" title="${esc(t('bonus.left', { n }))}">${
-    pastille.repeat(Math.min(n, 5))}</div>`;
+  let rangee = '';
+  for (let i = 0; i < plafond; i++) {
+    rangee += `<img class="dc-pc-chip${i < n ? '' : ' dc-pc-chip-vide'}"
+                    src="${bonusArt('B001')}" alt="">`;
+  }
+  return `<div class="dc-pc-stock" title="${esc(t('bonus.left', { n }))}">${rangee}</div>`;
 }
 
 function renderPlayerCard(sel, st, seat, isMe) {
@@ -723,20 +736,35 @@ function direEtat(el, texte, classe, passager) {
 
 export function oublierEtat() { dernierEtat = ''; }
 
+/**
+ * CHAQUE MESSAGE SORT DU COTE DU JOUEUR QU'IL CONCERNE.
+ *
+ * ⚠️ UNE PASTILLE CENTREE NE DIT PAS DE QUI ELLE PARLE. « A vous » et « Morgane
+ * joue » s'affichaient au meme endroit, au-dessus du rectangle : il fallait LIRE
+ * la phrase pour savoir qui etait concerne, a chaque tour, alors que la reponse
+ * pouvait etre donnee par la simple position du mot.
+ *
+ * La regle vaut pour tout l'ecran, et c'est ce qui la rend lisible : ce qui me
+ * concerne parait EN BAS, du cote de mon plateau ; ce qui concerne l'autre parait
+ * EN HAUT, du sien. Les bulles de repliques suivaient deja cette regle ; l'alerte
+ * de tour et les bannieres d'effet s'y rangent a leur tour.
+ */
 function renderTurn(st) {
   /* ⚠️ UNE PARTIE EN PAUSE DOIT LE DIRE. Sans ce mot, un joueur dont
      l'adversaire vient d'etre coupe voit une table qui ne repond plus, sans
      savoir si c'est le jeu, son telephone, ou son tour. */
   const el = $('#dc-turn');
   if (!el) return;
-  if (st.paused) { direEtat(el, t('game.paused'), 'dc-turn-paused', false); return; }
-  if (st.phase === 'betting') { direEtat(el, t('game.placeStake'), '', false); return; }
-  if (st.phase === 'over') { direEtat(el, t('game.matchOver'), '', false); return; }
+  /* Ce qui concerne la TABLE et non un joueur reste au centre, en haut : une
+     pause ou une fin de partie n'appartiennent a personne. */
+  if (st.paused) { direEtat(el, t('game.paused'), 'dc-turn-paused dc-turn-haut', false); return; }
+  if (st.phase === 'betting') { direEtat(el, t('game.placeStake'), 'dc-turn-haut', false); return; }
+  if (st.phase === 'over') { direEtat(el, t('game.matchOver'), 'dc-turn-haut', false); return; }
   const mine = st.turn === S.seat;
   direEtat(el,
     mine ? t('game.yourTurn')
          : t('game.playing', { name: (st.players[st.turn] || {}).name || t('game.opponent') }),
-    mine ? 'dc-turn-mine' : '', true);
+    mine ? 'dc-turn-mine dc-turn-bas' : 'dc-turn-haut', true);
 }
 
 function renderCup(st) {

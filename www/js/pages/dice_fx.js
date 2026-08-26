@@ -78,15 +78,27 @@ let derniere = 0;
 
 /* Une banniere ne se rejoue pas sur elle-meme : deux coups rapproches se
    voleraient l'affichage, et on ne lirait ni l'un ni l'autre. */
-function banner(texte, ton) {
+/**
+ * @param {number} [siege] le siege CONCERNE par l'annonce, s'il y en a un.
+ *
+ * ⚠️ UNE BANNIERE AU CENTRE NE DIT PAS DE QUI ELLE PARLE. « Bordee ! » s'ecrivait
+ * au meme endroit que mon de soit detruit ou que je detruise celui d'en face :
+ * il fallait lire la phrase pour savoir de quel cote regarder. Elle sort
+ * desormais du cote du plateau concerne — en bas si c'est moi, en haut si c'est
+ * l'autre — comme les repliques et l'alerte de tour. Sans siege, elle reste au
+ * centre : ce qui n'appartient a personne n'a pas de cote.
+ */
+function banner(texte, ton, siege) {
   const arene = document.querySelector('#dc-screen-game .dc-arena');
   if (!arene) return;
   const now = Date.now();
   if (now - derniere < 400) return;
   derniere = now;
 
+  const cote = siege === undefined || siege === null
+    ? '' : (siege === S.seat ? ' dc-shout-bas' : ' dc-shout-haut');
   const el = document.createElement('div');
-  el.className = 'dc-shout' + (ton ? ' dc-shout-' + ton : '');
+  el.className = 'dc-shout' + (ton ? ' dc-shout-' + ton : '') + cote;
   el.textContent = texte;
   arene.appendChild(el);
   poser(el, texte);
@@ -194,16 +206,16 @@ function bubble(seat, contenu, classe) {
      encore. La hauteur d'une replique depend de sa longueur, de la langue et de
      l'echelle du texte — elle se MESURE, comme tout le reste de cet ecran.
      On la publie donc a la feuille de style, qui empile l'alerte au-dessus. */
-  if (barre && el.classList.contains('dc-bulle-foe')) {
-    barre.style.setProperty('--pd-bulle-h', el.getBoundingClientRect().height + 'px');
-  }
+  const enHaut = el.classList.contains('dc-bulle-foe');
+  const nom = enHaut ? '--pd-bulle-h' : '--pd-bulle-me-h';
+  if (barre) barre.style.setProperty(nom, el.getBoundingClientRect().height + 'px');
   const chasser = poser(el, classe === 'dc-bulle-mood' ? '..' : contenu);
   /* Quand la bulle s'en va, l'alerte redescend : une place reservee a un
      message disparu est une place perdue a chaque tour. */
-  if (barre && el.classList.contains('dc-bulle-foe')) {
+  if (barre) {
     const veille = new MutationObserver(() => {
       if (el.parentNode) return;
-      barre.style.removeProperty('--pd-bulle-h');
+      barre.style.removeProperty(nom);
       veille.disconnect();
     });
     veille.observe(barre, { childList: true });
@@ -252,7 +264,9 @@ function unEffet(f) {
     }
 
     if (f.kind === 'broadside') {
-      banner(t('fx.broadside', { n: f.count }), f.seat === S.seat ? 'good' : 'bad');
+      /* La bordee frappe l'AUTRE plateau : c'est la que le coup se voit, et
+         c'est donc la que le mot se pose. */
+      banner(t('fx.broadside', { n: f.count }), f.seat === S.seat ? 'good' : 'bad', 1 - f.seat);
       shake();
       buzz(f.seat === S.seat ? [0, 40, 60, 90] : 60);
       return;
@@ -261,7 +275,7 @@ function unEffet(f) {
     if (f.kind === 'trait') {
       const nom = t('cap.trait.' + f.trait);
       if (!nom || nom.startsWith('cap.trait.')) return;
-      if (f.seat === S.seat) banner(nom, 'good');
+      if (f.seat === S.seat) banner(nom, 'good', f.seat);
       else toast(t('fx.foeTrait', { name: nomDuSiege(f.seat), trait: nom }), 'warn');
       return;
     }
@@ -274,7 +288,7 @@ function unEffet(f) {
     if (f.kind === 'boost') {
       /* Le camp qui benit doit voir OU. Les deux ecrans l'apprennent : c'est une
          information publique, elle change le calcul de l'adversaire aussi. */
-      banner(t('fx.boost'), f.seat === S.seat ? 'good' : 'bad');
+      banner(t('fx.boost'), f.seat === S.seat ? 'good' : 'bad', f.seat);
       return;
     }
 
@@ -284,7 +298,8 @@ function unEffet(f) {
        blocage, exactement comme pour les bonus muets. Le sceau glace tient le
        temps qu'il faut pour comprendre, puis s'efface. */
     if (f.kind === 'freeze') {
-      banner(t('fx.freeze'), f.seat === S.seat ? 'good' : 'bad');
+      /* Celui qui gele agit ; le gel, lui, tombe sur l'autre plateau. */
+      banner(t('fx.freeze'), f.seat === S.seat ? 'good' : 'bad', 1 - f.seat);
       return;
     }
 
@@ -294,8 +309,8 @@ function unEffet(f) {
          cet effet-ci n'arrive qu'au moment ou le tour est effectivement saute,
          c'est-a-dire quand le givre s'en va. Rejouer un sceau par-dessus, c'est
          annoncer une seconde fois ce qu'on regardait depuis dix secondes. */
-      if (f.seat === S.seat) { banner(t('fx.frozenYou'), 'bad'); buzz([0, 60, 40, 60]); }
-      else banner(t('fx.frozenThem', { name: nomDuSiege(f.seat) }), 'good');
+      if (f.seat === S.seat) { banner(t('fx.frozenYou'), 'bad', f.seat); buzz([0, 60, 40, 60]); }
+      else banner(t('fx.frozenThem', { name: nomDuSiege(f.seat) }), 'good', f.seat);
       return;
     }
 

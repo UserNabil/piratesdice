@@ -410,15 +410,23 @@
    la repare pas, elle la deforme. Le fichier joue tout seul ; le CSS n'a plus
    qu'a lui donner sa taille.
 
-   ⚠️ SI L'ANIMATION DISPARAIT UN JOUR, C'EST LE RE-ENCODAGE. Pillow n'ecrit
-   l'APNG qu'avec `save_all=True` et la liste des images ; sans cela il ne garde
-   que la premiere et personne ne le signale. */
+   ⛔ ET ON NE LE RE-ENCODE PLUS DU TOUT. Il a d'abord ete aplati (animation
+   perdue), puis re-encode image par image avec Pillow : les images d'un APNG
+   sont des DELTAS, chacune ne portant que la region qui change. Redimensionnees
+   une a une et reecrites avec `disposal=2`, elles se remplacaient au lieu de se
+   superposer — la roue apparaissait « decoupee », un morceau a la fois.
+   Recomposer correctement etait possible ; le fichier livre l'est deja. Il est
+   donc copie TEL QUEL, octet pour octet. Un mega-octet est un prix raisonnable
+   pour une animation qui joue juste. */
 #dicewrap .dc-wheel {
   display: block;
-  width: 72px; height: 72px;
-  margin: 0 auto 16px;
+  /* ⚠️ 72 px, C'ETAIT LA TAILLE D'UNE ICONE DE BANDEAU. C'est le seul objet a
+     l'ecran pendant qu'on attend : il a droit a la place. */
+  width: clamp(120px, 34vw, 180px);
+  height: clamp(120px, 34vw, 180px);
+  margin: 0 auto 18px;
   object-fit: contain;
-  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, .6));
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .6));
 }
 
 #dicewrap .dc-connect-bad { max-width: 580px; }
@@ -748,6 +756,12 @@
   height: clamp(12px, 3.3vw, 20px);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .65));
 }
+/* L'emplacement qu'on n'a plus : present, mais eteint. Il tient la place pour
+   que les deux cartes gardent la meme hauteur, et il dit ce qui a ete depense. */
+#dicewrap .dc-pc-chip-vide {
+  filter: grayscale(1) brightness(.42) contrast(.7);
+  opacity: .5;
+}
 
 /* La mise et sa piece tiennent sur UNE ligne : le renvoi laissait la piece
    seule en dessous, ou elle ne voulait plus rien dire. */
@@ -1066,10 +1080,7 @@
    l'autre au lieu de l'une SUR l'autre. */
 #dicewrap .dc-turn {
   position: absolute;
-  /* 10 px pour l'air sous la bulle, sa hauteur mesuree, puis 8 px avant
-     l'alerte. Sans bulle, `--pd-bulle-h` vaut zero et l'alerte reprend sa place
-     a 18 px du rectangle. */
-  left: 50%; bottom: calc(100% + 18px + var(--pd-bulle-h, 0px));
+  left: 50%;
   transform: translate(-50%, 6px);
   z-index: 12;
   padding: 5px 14px;
@@ -1080,6 +1091,13 @@
   opacity: 0; pointer-events: none;
   transition: opacity .2s ease, transform .2s ease;
 }
+/* ⚠️ LE COTE N'EST PAS DECORATIF : IL EST LE MESSAGE. « A vous » sort sous le
+   rectangle, du cote de MON plateau ; « Morgane joue » sort au-dessus, du cote
+   du SIEN. On sait de qui il s'agit avant d'avoir lu la phrase.
+   Les 18 px et la hauteur de bulle mesuree servent a s'empiler sous l'alerte
+   sans la recouvrir — voir `bubble()` dans dice_fx.js. */
+#dicewrap .dc-turn-haut { bottom: calc(100% + 18px + var(--pd-bulle-h, 0px)); top: auto; }
+#dicewrap .dc-turn-bas  { top: calc(100% + 18px + var(--pd-bulle-me-h, 0px)); bottom: auto; }
 #dicewrap .dc-turn-on { opacity: 1; transform: translate(-50%, 0); }
 
 /* ── le voile, quand la cale est ouverte ──────────────────────────────────── */
@@ -1392,6 +1410,7 @@
    la moitie du dessin plus l'air, du cote ou il se pose — et le bouton reste
    centre sur ce qui reste. */
 #dicewrap .dc-btn-deborde {
+  --pd-menu-art: clamp(76px, 22vw, 118px);
   position: relative;
   overflow: visible;
   /* Le dessin depasse en haut et en bas : de l'air pour qu'il ne touche ni le
@@ -1399,25 +1418,39 @@
   margin-top: .5em;
   margin-bottom: .5em;
 }
-#dicewrap .dc-btn-deborde > img {
+/* ⚠️ `em` DONNAIT TROIS TAILLES POUR TROIS BOUTONS. La mesure suit la taille du
+   TEXTE du bouton, et les trois n'ont pas la meme : 17 px pour les deux du
+   haut, 15 pour celui du bas. A 4,4 em cela faisait 80, 80 et 70 px — et les
+   dessins eux-memes n'occupent pas la meme part de leur toile (92 % de haut en
+   bas pour l'un, 75 % pour l'autre), ce qui creusait encore l'ecart a l'oeil.
+   Retour de l'admin, capture a l'appui : « les icones doivent etre plus grandes
+   et A LA MEME TAILLE sur tout bouton ». Une taille en pixels, donc, la meme
+   pour les trois, et calee sur la largeur de l'ecran comme le reste. */
+/* ⚠️ DEUX CLASSES, ET C'EST OBLIGATOIRE. `.dc-btn-big.dc-btn-art > img` fixe
+   2,3 em et pese plus lourd qu'un selecteur a une seule classe : les deux
+   boutons du haut gardaient donc leur vignette de 42 px pendant que le
+   troisieme — le seul qui ne soit pas `dc-btn-big` — prenait la nouvelle
+   taille. C'est exactement l'ecart que l'admin a photographie, et il ne venait
+   pas des dessins mais de la cascade. */
+#dicewrap .dc-btn-art.dc-btn-deborde > img {
   position: absolute;
   top: 50%;
-  width: 4.4em; height: 4.4em;
+  width: var(--pd-menu-art); height: var(--pd-menu-art);
   transform: translateY(-50%);
   filter: drop-shadow(0 4px 7px rgba(0, 0, 0, .55));
   pointer-events: none;
 }
-#dicewrap .dc-btn-deborde-g > img { left: -.85em; }
-#dicewrap .dc-btn-deborde-d > img { right: -.85em; }
-#dicewrap .dc-btn-deborde-g { padding-left: 3.9em; }
-#dicewrap .dc-btn-deborde-d { padding-right: 3.9em; }
-#dicewrap .dc-btn-deborde:active > img { transform: translateY(calc(-50% + 2px)); }
+#dicewrap .dc-btn-deborde-g > img { left: calc(var(--pd-menu-art) * -.22); }
+#dicewrap .dc-btn-deborde-d > img { right: calc(var(--pd-menu-art) * -.22); }
+#dicewrap .dc-btn-deborde-g { padding-left: calc(var(--pd-menu-art) * .88); }
+#dicewrap .dc-btn-deborde-d { padding-right: calc(var(--pd-menu-art) * .88); }
+#dicewrap .dc-btn-art.dc-btn-deborde:active > img { transform: translateY(calc(-50% + 2px)); }
 
 /* En arabe le bouton se lit de droite a gauche : le cote du dessin suit. */
-[dir="rtl"] #dicewrap .dc-btn-deborde-g > img { left: auto; right: -.85em; }
-[dir="rtl"] #dicewrap .dc-btn-deborde-d > img { right: auto; left: -.85em; }
-[dir="rtl"] #dicewrap .dc-btn-deborde-g { padding-left: 1.2em; padding-right: 3.9em; }
-[dir="rtl"] #dicewrap .dc-btn-deborde-d { padding-right: 1.2em; padding-left: 3.9em; }
+[dir="rtl"] #dicewrap .dc-btn-deborde-g > img { left: auto; right: calc(var(--pd-menu-art) * -.22); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-d > img { right: auto; left: calc(var(--pd-menu-art) * -.22); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-g { padding-left: 1.2em; padding-right: calc(var(--pd-menu-art) * .88); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-d { padding-right: 1.2em; padding-left: calc(var(--pd-menu-art) * .88); }
 /* Le lien des conditions : le dessin, et rien autour. Il porte son propre
    cerne blanc, son fond et son ombre — un cadre de plus l'etouffait. */
 .pd-set .pd-link-art {
@@ -1586,16 +1619,30 @@
 /* ⚠️ EN POURCENTAGE DU PLATEAU, PAS EN `vw`. A `min(46vw, 220px)` le sceau
    valait 202 px sur un iPhone pour un plateau de 300 : il en debordait des
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
-   tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre. */
+   tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
+
+   ⚠️ ET 62 % ETAIT ENCORE TROP. Le dessin remplit 92 % de sa toile et ses
+   chaines rayonnent jusqu'aux coins : a 62 % il atteignait les cases d'angle et
+   le plateau disparaissait dessous — on ne voyait plus les des qu'on venait de
+   geler. « Regarde la taille de la grille par rapport a l'asset. » A la moitie,
+   le sceau tient dans les quatre cases du centre et laisse la couronne lisible. */
 #dicewrap .dc-gel img {
-  width: 62%; height: auto; max-height: 62%; object-fit: contain;
+  width: 50%; height: auto; max-height: 46%; object-fit: contain;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
+/* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
+   au milieu d'un conteneur centre, il tombait pile sur trois cases. Il descend
+   contre le bord du plateau, sur son propre fond : une phrase qui explique ne
+   doit pas cacher ce qu'elle explique. */
 #dicewrap .dc-gel span {
+  position: absolute;
+  left: 8px; right: 8px; bottom: 8px;
   font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90, 200, 255, .9);
-  font-size: clamp(.8rem, 3.4vw, 1.1rem);
-  text-align: center; padding: 0 8px;
+  font-size: clamp(.72rem, 3vw, 1rem);
+  text-align: center; padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(6, 16, 44, .72);
 }
 @keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
 
@@ -2402,7 +2449,9 @@
      bulle de l'adversaire contre le rectangle ; l'alerte de tour au-dessus
      d'elle ; ma bulle en dessous du rectangle ; le message de service au-dessus
      du bandeau. Cinq places, cinq objets. */
-  top: 22%;
+  /* Par defaut au centre : une banniere qui ne vise personne — la table, une
+     regle, un evenement partage — n'a pas de cote. */
+  top: 42%;
   z-index: 16;
   text-align: center;
   pointer-events: none;
@@ -2418,6 +2467,15 @@
   animation: dc-shout 1.5s cubic-bezier(.2, .9, .25, 1) forwards;
 }
 #dicewrap .dc-shout-bad { color: #ffb3a8; text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 22px rgba(165, 51, 42, .6); }
+
+/* ⚠️ ET LA BANNIERE AUSSI SORT DU BON COTE. Elle s'ecrivait a 42 % — c'est-a-dire
+   pile sur les deux portraits — pour un canon qui a detruit MON de comme pour un
+   gel que J'AI pose sur l'autre. Rien ne distinguait les deux. Elle se pose donc
+   sur le plateau du joueur concerne : c'est la que le coup a eu lieu. */
+#dicewrap .dc-shout-haut { top: 20%; }
+/* 26 % et non 22 : le milieu de mon plateau, pas son pied. Le bandeau du bas
+   occupe deja un dixieme de l'ecran, ce qui decale le centre visuel. */
+#dicewrap .dc-shout-bas  { top: auto; bottom: 26%; }
 
 @keyframes dc-shout {
   0%   { opacity: 0; transform: scale(.7) translateY(10px); }
