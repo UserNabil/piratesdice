@@ -1674,6 +1674,8 @@
    108→393, cases 112→389. */
 #dicewrap .dc-gel {
   position: absolute;
+  /* Le bord auquel on s'accroche vient de combat.css : le plateau est le
+     PREMIER enfant du bloc chez l'adversaire, le DERNIER chez moi. */
   top: var(--cbt-plateau-lisere, 4px);
   left: var(--cbt-plateau-lisere, 4px);
   right: var(--cbt-plateau-lisere, 4px);

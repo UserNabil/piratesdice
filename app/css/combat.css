@@ -276,9 +276,24 @@
      s'appliquent autour de ce centre, donc un changement d'echelle ne deplace
      pas le dessin, il le fait respirer. */
   --cbt-gel-marge: var(--cbt-plateau-lisere, 4px);
-  --cbt-gel-echelle: 1;
+  --cbt-gel-echelle: 1.07;
   --cbt-gel-x: 0%;
-  --cbt-gel-y: 0%;
+  --cbt-gel-y: -3%;
+
+  /* ── ET MON COTE A LES SIENS ───────────────────────────────────────────
+     ⚠️ LES DEUX PLATEAUX NE SONT PAS EMPILES DANS LE MEME SENS. Chez
+     l'adversaire, la rangee de plaques est SOUS le plateau ; chez moi elle est
+     AU-DESSUS (`buildBoard` inverse l'ordre). Une boite calee « en haut du
+     bloc » tombe donc sur le plateau d'un cote et sur les plaques de l'autre :
+     c'est pour cela que le meme reglage donnait deux resultats.
+
+     Le cablage plus bas corrige la CAUSE — la boite s'accroche au plateau de
+     chaque cote, en haut pour l'un, en bas pour l'autre. Ces trois reglages
+     restent pour l'ajustement fin : ils valent par defaut ceux d'en face, et
+     ne s'en ecartent que si on le leur demande. */
+  --cbt-gel-moi-echelle: var(--cbt-gel-echelle);
+  --cbt-gel-moi-x: var(--cbt-gel-x);
+  --cbt-gel-moi-y: var(--cbt-gel-y);
 
   /* Le voile sombre, lui, couvre TOUT LE PLATEAU — cadre compris : c'est le
      plateau qui gele, pas seulement ses cases. Il prend donc la courbure du
@@ -629,11 +644,20 @@
   border-radius: var(--cbt-plateau-courbure);
 }
 
-/* La boite du sceau : la GRILLE, c'est-a-dire le plateau moins la marge. */
+/* LA BOITE DU SCEAU S'ACCROCHE AU PLATEAU, PAS AU HAUT DU BLOC.
+   ⚠️ CHEZ L'ADVERSAIRE LE PLATEAU EST LE PREMIER ENFANT, CHEZ MOI LE DERNIER :
+   `buildBoard` pose les plaques de score sous le plateau d'en face et au-dessus
+   du mien, pour que les chiffres soient toujours du cote du centre. Une boite
+   calee `top: 0` tombait donc sur le plateau d'un cote et sur les plaques de
+   l'autre — le givre paraissait deregle chez moi et juste en face, avec le
+   MEME reglage. On s'accroche donc au bon bord de chaque cote. */
 #dicewrap .dc-gel {
-  top: var(--cbt-gel-marge);
   left: var(--cbt-gel-marge);
   right: var(--cbt-gel-marge);
+}
+#dicewrap .dc-boardwrap-top .dc-gel { top: var(--cbt-gel-marge); bottom: auto; }
+#dicewrap .dc-boardwrap:not(.dc-boardwrap-top) .dc-gel {
+  bottom: var(--cbt-gel-marge); top: auto;
 }
 
 /* Le sceau lui-meme, centre sur la grille et libre de deborder.
@@ -646,6 +670,14 @@
   height: calc(100% * var(--cbt-gel-echelle));
   transform: translate(-50%, -50%)
              translate(var(--cbt-gel-x), var(--cbt-gel-y));
+}
+
+/* Mon cote peut s'ecarter du sien, s'il le faut. */
+#dicewrap .dc-boardwrap:not(.dc-boardwrap-top) .dc-gel img {
+  width: calc(100% * var(--cbt-gel-moi-echelle));
+  height: calc(100% * var(--cbt-gel-moi-echelle));
+  transform: translate(-50%, -50%)
+             translate(var(--cbt-gel-moi-x), var(--cbt-gel-moi-y));
 }
 
 #dicewrap .dc-bonus { --pd-fan-r: var(--cbt-bonus-rayon); }
