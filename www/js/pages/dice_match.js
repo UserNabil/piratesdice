@@ -708,12 +708,25 @@ function popChangedScores(st) {
  * bonus qu'il n'avait jamais achete, appuyait dessus, et le serveur repondait
  * « unknown bonus ».
  *
+ * ⛔ ET LE TRI SE FAISAIT PAR EXCLUSION, CE QUI L'A FAIT RATER UNE SECONDE FOIS.
+ * « Tout sauf les parures » veut dire : toute categorie inventee plus tard est
+ * jouable par defaut. Les gravures sont arrivees, et elles se sont rangees dans
+ * le ratelier comme des effets — « je vois des bonus inconnus dans les
+ * inventaires alors qu'aucun bonus n'a ete achete ». Le meme defaut, au meme
+ * endroit, pour la meme raison.
+ *
+ * On nomme donc ce qui SE JOUE. Une categorie nouvelle n'entre plus dans la
+ * cale sans qu'on l'y ait mise, et le prochain rayon de la boutique — quel
+ * qu'il soit — ne pourra pas se glisser sous le pouce du joueur.
+ *
  * La categorie vient du serveur. Quand elle manque — client plus recent que le
- * serveur, le temps d'un deploiement — l'identifiant tranche : les parures
- * commencent par S, les effets par B.
+ * serveur, le temps d'un deploiement — l'identifiant tranche : les effets
+ * commencent par B, tout le reste se porte.
  */
+const CALE = ['Bonus', 'Malus'];
+
 function jouable(i) {
-  return i.category ? i.category !== 'Skin' : !/^S\d/.test(i.identify || '');
+  return i.category ? CALE.indexOf(i.category) >= 0 : /^B\d/.test(i.identify || '');
 }
 
 function stockMarkup(st, seat) {
