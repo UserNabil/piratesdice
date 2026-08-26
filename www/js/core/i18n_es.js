@@ -122,6 +122,7 @@ export const ES = {
 
   'bonus.head': 'Bonus',
   'bonus.left': 'quedan {n} esta partida',
+  'bonus.spent': 'ya jugado esta partida',
   'bonus.empty': 'No hay bonus en la bodega — cómpralos en la tienda.',
 
   'bet.title': 'Fija tu apuesta',
@@ -137,6 +138,10 @@ export const ES = {
   'over.draw': 'Empate',
   'over.against': 'contra {name}',
   'over.notRated': 'Las partidas en solitario no puntúan',
+  'over.notRatedNew': 'Rival sin clasificar — Elo sin cambios',
+  'over.notRatedGap': 'Diferencia de nivel demasiado grande — Elo sin cambios',
+  'over.notRatedPair': 'Demasiadas partidas con el mismo rival — Elo sin cambios',
+  'over.notRatedShort': 'Partida demasiado corta — Elo sin cambios',
   'over.elo': 'Elo {before} → {after} ({delta})',
   'over.coins': 'Monedas {delta}',
   'over.oppDropped': 'Tu rival se ha desconectado',

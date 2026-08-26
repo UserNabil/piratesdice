@@ -1280,6 +1280,7 @@
 }
 
 #dicewrap .dc-bet-art { width: clamp(120px, 26%, 170px); margin: 0 auto 8px; display: block; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .6)); }
+#dicewrap .dc-over-seal { width: clamp(92px, 22%, 124px); margin: 0 auto 6px; display: block; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .6)); }
 
 #dicewrap .dc-bet-card h3,
 #dicewrap .dc-over-card h2 {

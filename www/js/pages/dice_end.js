@@ -32,18 +32,29 @@ export function onOver(m) {
   if (S.quitting) { S.quitting = false; return; }
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
+  const seal = m.outcome === 'win' ? 'seal_victory' : (m.outcome === 'loss' ? 'seal_defeat' : 'seal_draw');
   const delta = m.ratingAfter - m.ratingBefore;
+  /* ⚠️ « NON CLASSEE » NE SUFFIT PAS, IL FAUT DIRE POURQUOI. Un joueur qui
+     gagne et ne monte pas croit a une panne. Le serveur envoie la raison — le
+     compte d'en face est trop neuf, l'ecart de niveau est trop grand, on a
+     deja joue trois fois ensemble aujourd'hui, la table a ete quittee avant
+     d'avoir joue — et l'ecran la lit telle quelle. */
+  const POURQUOI = {
+    new: 'over.notRatedNew', gap: 'over.notRatedGap',
+    pair: 'over.notRatedPair', short: 'over.notRatedShort',
+  };
   const rating = m.rated
     ? `<div class="dc-over-line">${t('over.elo', {
         before: m.ratingBefore, after: '<b>' + m.ratingAfter + '</b>',
         delta: (delta >= 0 ? '+' : '') + delta })}</div>`
-    : `<div class="dc-over-line dc-dim">${esc(t('over.notRated'))}</div>`;
+    : `<div class="dc-over-line dc-dim">${esc(t(POURQUOI[m.ratedWhy] || 'over.notRated'))}</div>`;
   const reason = m.reason === 'disconnect'
     ? `<div class="dc-over-line dc-dim">${esc(t('over.oppDropped'))}</div>`
     : (m.reason === 'quit' ? `<div class="dc-over-line dc-dim">${esc(t('over.someoneLeft'))}</div>` : '');
 
   el.innerHTML = `
     <div class="dc-over-card pd-panel dc-over-${esc(m.outcome)}">
+      <img class="dc-over-seal" src="${ASSETS}img/${seal}.png" alt="">
       <h2>${verdict}</h2>
       <div class="dc-over-score">${m.scores[0]} <span>—</span> ${m.scores[1]}</div>
       <div class="dc-over-line dc-over-foe">
@@ -67,14 +78,20 @@ export function onOver(m) {
      animation de dix megaoctets que personne n'avait demandee, par-dessus le
      verdict qu'elle etait censee feter. Le sceau, lui, restait de la premiere
      version : brun et bleu sur une carte violette.
-     Le verdict se lit ; il n'a pas besoin d'etre decore. Et rien ne passe plus
-     AVANT la ligne qui l'affiche. */
+     La PLUIE est partie pour de bon : dix megaoctets pour cacher le verdict
+     qu'elle fetait. Le SCEAU, lui, revient — c'est le blason de la partie, il
+     manquait a la carte. Il reste celui d'avant la refonte, et il le restera
+     jusqu'a ce qu'un nouveau dessin arrive : le retirer n'etait pas la reponse.
+     Et rien ne passe plus AVANT la ligne qui affiche le verdict. */
   el.classList.add('on');
   S.sfx.play(m.outcome === 'win' ? 'coin' : 'shut', 0.3);
 
   const leave = () => { el.classList.remove('on'); S.state = null; S.seat = -1; UI.showMenu(); };
   UI.leaveMatch = leave;                     // la barre laterale s'en sert aussi
-  const mode = m.rated ? 'multi' : 'solo';
+  /* ⚠️ LE MODE VIENT DU SERVEUR, PAS DE `rated`. Une partie multi peut
+     desormais ne pas compter au classement : lue sur `rated`, « rejouer »
+     aurait renvoye au solo quelqu'un qui cherchait un adversaire. */
+  const mode = m.mode === 'multi' ? 'multi' : (m.rated ? 'multi' : 'solo');
   $('#dc-again').onclick = () => { leave(); S.net.send({ t: 'play', mode }); };
   $('#dc-back').onclick = leave;
 }

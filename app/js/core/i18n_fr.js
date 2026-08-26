@@ -129,6 +129,7 @@ export const FR = {
 
   'bonus.head': 'Bonus',
   'bonus.left': 'encore {n} cette partie',
+  'bonus.spent': 'déjà joué cette partie',
   'bonus.empty': 'Aucun bonus en cale — il y en a à la boutique.',
 
   'bet.title': 'Fixez votre mise',
@@ -144,6 +145,10 @@ export const FR = {
   'over.draw': 'Match nul',
   'over.against': 'contre {name}',
   'over.notRated': 'Les parties solo ne comptent pas au classement',
+  'over.notRatedNew': 'Adversaire non classé — Elo inchangé',
+  'over.notRatedGap': 'Écart de niveau trop grand — Elo inchangé',
+  'over.notRatedPair': 'Trop de parties avec le même adversaire — Elo inchangé',
+  'over.notRatedShort': 'Partie trop courte — Elo inchangé',
   'over.elo': 'Elo {before} → {after} ({delta})',
   'over.coins': 'Pièces {delta}',
   'over.oppDropped': 'Votre adversaire a quitté',

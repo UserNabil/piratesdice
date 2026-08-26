@@ -140,6 +140,7 @@ export const EN = {
 
   'bonus.head': 'Bonus',
   'bonus.left': '{n} left this match',
+  'bonus.spent': 'already played this match',
   'bonus.empty': 'No bonus in the hold — buy some in the Shop.',
 
   'bet.title': 'Set your stake',
@@ -155,6 +156,10 @@ export const EN = {
   'over.draw': 'Draw',
   'over.against': 'against {name}',
   'over.notRated': 'Solo matches are not rated',
+  'over.notRatedNew': 'Unranked opponent — rating unchanged',
+  'over.notRatedGap': 'Rating gap too wide — rating unchanged',
+  'over.notRatedPair': 'Too many matches with the same opponent — rating unchanged',
+  'over.notRatedShort': 'Match too short — rating unchanged',
   'over.elo': 'Elo {before} → {after} ({delta})',
   'over.coins': 'Coins {delta}',
   'over.oppDropped': 'Your opponent dropped',

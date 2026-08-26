@@ -321,6 +321,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 @media (max-width: 820px) {
   #dicewrap .dc-bet-card,
   #dicewrap .dc-over-card { width: min(430px, 92vw); padding: 18px 18px 20px; }
+  #dicewrap .dc-over-seal { width: 86px; }
   #dicewrap .dc-bet-art { width: 116px; }
   #dicewrap .dc-over-score { font-size: 38px; }
   #dicewrap .dc-menu-card { padding: 22px 20px; }

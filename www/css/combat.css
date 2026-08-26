@@ -622,6 +622,14 @@
    mais il reste cliquable — c'est lui qui dit pourquoi. */
 #dicewrap .dc-bonus-btn.dc-bonus-mute { filter: saturate(.3) brightness(.62); }
 
+/* Un effet DEJA JOUE : il ne reviendra pas de la partie. Plus eteint encore que
+   celui qu'on ne peut pas jouer maintenant — l'un attend son heure, l'autre a
+   eu la sienne. */
+#dicewrap .dc-bonus-btn.dc-bonus-joue {
+  filter: grayscale(1) brightness(.5);
+  opacity: .55;
+}
+
 /* ── la carte des deux capitaines, et le bandeau du bas ───────────────────── */
 
 /* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. `.pd-panel` dessine sa

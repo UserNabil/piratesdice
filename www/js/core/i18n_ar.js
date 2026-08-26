@@ -124,6 +124,7 @@ export const AR = {
 
   'bonus.head': 'الإضافات',
   'bonus.left': 'بقيت {n} في هذه المباراة',
+  'bonus.spent': 'استُخدم في هذه المباراة',
   'bonus.empty': 'لا إضافات في العنبر — اشترِ من المتجر.',
 
   'bet.title': 'حدّد رهانك',
@@ -139,6 +140,10 @@ export const AR = {
   'over.draw': 'تعادل',
   'over.against': 'أمام {name}',
   'over.notRated': 'مباريات الفرد لا تُحتسب في الترتيب',
+  'over.notRatedNew': 'الخصم غير مصنف — التصنيف دون تغيير',
+  'over.notRatedGap': 'الفارق في المستوى كبير جدا — التصنيف دون تغيير',
+  'over.notRatedPair': 'مباريات كثيرة مع الخصم نفسه — التصنيف دون تغيير',
+  'over.notRatedShort': 'المباراة قصيرة جدا — التصنيف دون تغيير',
   'over.elo': 'إيلو {before} ← {after} ({delta})',
   'over.coins': 'العملات {delta}',
   'over.oppDropped': 'انقطع خصمك',

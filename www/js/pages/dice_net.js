@@ -115,6 +115,11 @@ export class DiceNet {
     const init = {
       method: method || 'GET',
       headers: { Authorization: 'Bearer ' + this.session.token },
+      /* ⚠️ RIEN DE CE QUI PASSE PAR ICI NE SE GARDE. Bourse, inventaire,
+         classement : ce sont des etats qui bougent pendant qu'on joue. Une
+         reponse relue dans le cache de la coque montre le monde d'il y a une
+         minute, et c'est exactement ce qu'on est venu verifier. */
+      cache: 'no-store',
     };
     if (body !== undefined) {
       init.headers['Content-Type'] = 'application/json';

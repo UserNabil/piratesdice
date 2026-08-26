@@ -1032,15 +1032,20 @@ export function renderBonusRack() {
   }
   /* L'effet offert ne se compte pas deux fois : s'il en reste aussi en cale, il
      n'apparait qu'une seule fois, gratuit — c'est celui-la qu'on depense d'abord. */
+  /* ⚠️ UN EFFET DEJA JOUE RESTE VISIBLE, MAIS ETEINT. Le serveur refuse le
+     second usage (un effet par partie) : le retirer du ratelier ferait
+     disparaitre un jeton sans explication, et le joueur croirait l'avoir
+     perdu. Il reste a sa place, grise, et son infobulle dit pourquoi. */
+  const joues = (S.state.bonusJoues && S.state.bonusJoues[S.seat]) || [];
   const boutons = owned.filter((i) => i.identify !== offert);
   /* ⚠️ UN INTERIEUR EN PLUS, ET IL N'EST PAS DECORATIF. Le jeton est pose sur
      l'arc par une rotation ; sans un enfant qui la DEFAIT, le dessin et son
      compteur penchent de l'angle du jeton — c'est exactement le piege qu'on
      avait deja rencontre avec les humeurs, et la meme parade. */
   const bouton = (id, titre, badge, cadeau) => `
-      <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}"
+      <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}${joues.includes(id) ? ' dc-bonus-joue' : ''}"
               data-id="${esc(id)}" data-nom="${esc(titre)}"
-              title="${esc(titre)} — ${esc(t('bonus.left', { n: left }))}">
+              title="${esc(titre)} — ${esc(joues.includes(id) ? t('bonus.spent') : t('bonus.left', { n: left }))}">
         <span class="dc-bonus-in">
           <img src="${bonusArt(id)}" alt="">
           <span class="dc-bonus-qty">${esc(String(badge))}</span>
