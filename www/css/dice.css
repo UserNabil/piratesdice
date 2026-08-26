@@ -1694,9 +1694,31 @@
    exactement. L'etirement de 4 % est invisible sur un flocon symetrique
    (mesure : 1,3 % de pixels differents entre le dessin et son miroir
    horizontal) ; la dissymetrie, elle, se voyait du premier coup d'oeil. */
+/* ⚠️ « BORD A BORD » NE MET PAS LES ANCRES SUR LES COINS. Mesure au banc : le
+   plateau va de 108 a 393, la grille de 112 a 389 — quatre pixels d'ecart, le
+   lisere. Le sceau a 100 % touchait donc bien les bords a quatre pixres pres.
+   Mais ses quatre ancres sont des objets RONDS : leur boite touche le coin,
+   leur centre reste en retrait, et l'oeil suit le centre. D'ou l'impression
+   tenace que le dessin ne rejoint pas la grille alors que sa boite, elle, y
+   est. Quinze pour cent de plus poussent les centres jusqu'aux coins ; le
+   debordement se repartit tout seul, le sceau etant centre dans sa boite. */
+/* ⛔ ET `width: 115%` A FAIT GRANDIR LA BOITE QU'IL MESURAIT. `.dc-gel` est une
+   grille dont la rangee est automatique : une image plus large que sa piste
+   fait grossir la piste, donc la boite, donc les 115 % — le serpent se mord la
+   queue et le voile debordait du plateau de vingt pixels. Mesure au banc :
+   boite 108→414 pour un plateau 108→393.
+   L'image est donc POSEE, pas rangee : hors flux, elle ne peut plus rien faire
+   grandir, et `inset: -7,5 %` la deborde symetriquement des quatre cotes. */
+/* ⚠️ `inset` SEUL NE DIMENSIONNE PAS UNE IMAGE. Pour un element REMPLACE, une
+   largeur `auto` vient de la taille intrinseque du fichier — pas des quatre
+   decalages : le sceau s'est affiche a 512 px, un coin dans le plateau et le
+   reste dehors. On donne donc les deux : d'ou il part, et ce qu'il mesure. */
 #dicewrap .dc-gel img {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  left: -7.5%;
+  top: -7.5%;
+  width: 115%;
+  height: 115%;
   object-fit: fill;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }

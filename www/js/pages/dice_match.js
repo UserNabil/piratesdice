@@ -16,7 +16,6 @@ import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase } from './dice_state.js';
 import { t } from '../core/i18n.js';
-import { renderBet } from './dice_end.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
 import { announce, renderForesee, startClock, MOODS, moodArt, sendMood } from './dice_fx.js';
@@ -110,7 +109,7 @@ function buildGame() {
         </button>
       </div>
     </div>
-    <div class="dc-bet" id="dc-bet"></div>`;
+`;
 
   const foeWrap = buildBoard(1 - S.seat, true);
   const mineWrap = buildBoard(S.seat, false);
@@ -564,7 +563,6 @@ function paint(full, frozen, settle) {
   renderQuarters(st);
   renderBoost(st);
   renderGel(st);
-  renderBet(st, full);
 }
 
 /**
@@ -748,7 +746,6 @@ function renderPlayerCard(sel, st, seat, isMe) {
     <div class="dc-pc-id">
       <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
       ${stockMarkup(st, seat)}
-      ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}
     </div>
     <div class="dc-pc-total" data-v="${st.totals[seat]}"
          aria-label="${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}">${st.totals[seat]}</div>`;
@@ -901,7 +898,10 @@ function renderTurn(st) {
   /* Ce qui concerne la TABLE et non un joueur reste au centre, en haut : une
      pause ou une fin de partie n'appartiennent a personne. */
   if (st.paused) { direEtat(el, t('game.paused'), 'dc-turn-paused dc-turn-haut', false); return; }
-  if (st.phase === 'betting') { direEtat(el, t('game.placeStake'), 'dc-turn-haut', false); return; }
+  /* La phase d'attente ne dure plus qu'un battement — le temps que les deux
+     sieges soient la — mais elle existe encore, et un ecran muet pendant une
+     seconde se lit comme une panne. */
+  if (st.phase === 'ready') { direEtat(el, t('game.waitingTable'), 'dc-turn-haut', false); return; }
   if (st.phase === 'over') { direEtat(el, t('game.matchOver'), 'dc-turn-haut', false); return; }
   const mine = st.turn === S.seat;
   direEtat(el,

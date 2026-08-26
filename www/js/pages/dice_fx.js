@@ -372,7 +372,19 @@ function annonceBonus(f) {
      parle, a la premiere personne, avec son caractere. Le nom de l'objet reste
      le repli si une replique manque : mieux vaut une etiquette qu'un vide. */
   const cap = S.state && S.state.captains ? S.state.captains[f.seat] : null;
-  const dite = cap ? t('say.' + cap + '.' + f.identify) : '';
+  /* ⚠️ LA VARIANTE DOIT ETRE LA MEME DES DEUX COTES DE LA TABLE. Un tirage au
+     sort local donnerait deux phrases differentes pour un seul evenement — le
+     defaut qu'on avait deja corrige sur les repliques de capitaine, qui sont
+     choisies par le serveur. On ne peut pas demander au serveur ici : c'est le
+     client qui compose la phrase. On la tire donc d'un nombre que LES DEUX
+     ECRANS connaissent au meme instant — le nombre de des poses, lu dans l'etat
+     qui vient d'etre applique. Meme etat, meme compte, meme phrase. */
+  let tour = 0;
+  if (S.state && S.state.grids) {
+    for (const g of S.state.grids) for (const v of g) if (v !== null) tour++;
+  }
+  const VARIANTES = 3;
+  const dite = cap ? t('say.' + cap + '.' + f.identify + '.' + (tour % VARIANTES)) : '';
   const nom = t('shop.' + f.identify + '.name');
   const quoi = dite && !dite.startsWith('say.')
     ? dite

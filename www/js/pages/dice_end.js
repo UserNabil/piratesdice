@@ -11,84 +11,19 @@ import { t } from '../core/i18n.js';
 import { S, UI, ASSETS, fxUrl } from './dice_state.js';
 import { captainArt, captainTrait } from './dice_lobby.js';
 
-/*
- * LES MONTANTS PRETS. Sur un telephone, taper un nombre ouvre le clavier, qui
- * recouvre la moitie de l'ecran au moment precis ou le joueur veut juste dire
- * « je mise 50 ». Quatre jetons couvrent tous les cas usuels ; le champ reste
- * la pour qui veut un montant exact.
- */
-function betChips(purse) {
-  const out = [{ value: 0, label: t('bet.none') }];
-  for (const value of [10, 50, 100, 250]) {
-    if (value <= purse) out.push({ value, label: String(value) });
-  }
-  if (purse > 0) out.push({ value: purse, label: t('bet.all') });
-  return out;
-}
+/* ⛔ L'ECRAN DE MISE A ETE SUPPRIME, ET AVEC LUI TOUT LE PARI.
+   Apple refuse automatiquement toute application declarant de la « simulation
+   de jeu d'argent » quand elle est publiee par un compte de developpeur
+   INDIVIDUEL — et miser une monnaie sur l'issue d'un match entre dans leur
+   definition, meme sans argent reel. Le refus tombait avant meme la relecture.
 
-export function renderBet(st, full) {
-  const bet = $('#dc-bet');
-  if (!bet) return;
-  if (st.phase !== 'betting') { bet.classList.remove('on'); return; }
-  bet.classList.add('on');
+   Les pieces restent : on en gagne en gagnant, on les depense en boutique. Ce
+   qui disparait, c'est l'engagement AVANT la partie et le pot que rafle le
+   vainqueur. La partie commence maintenant des que les deux sieges sont la.
 
-  /* ⚠️ L'ECRAN SE VERROUILLAIT SUR UN ESPOIR, PAS SUR UN FAIT. Le bouton se
-     desactivait et affichait « on attend votre adversaire » des l'envoi, avant
-     toute reponse. Quand le serveur refusait — une mise de 2000 avec 190 pieces
-     en bourse — le refus arrivait bien, en toast, mais plus rien ne pouvait
-     rouvrir l'ecran : ni bouton, ni retour. La partie paraissait morte.
-     L'attente est desormais lue dans l'etat du serveur : elle n'apparait que
-     lorsque la mise est REELLEMENT enregistree. */
-  const moi = st.players && st.players[S.seat];
-  const engage = !!(moi && moi.betDone);
-  if (!full && bet.dataset.ready === '1' && bet.dataset.engage === (engage ? '1' : '0')) return;
-  bet.dataset.ready = '1';
-  bet.dataset.engage = engage ? '1' : '0';
-  const purse = S.me ? S.me.coins : 0;
-  bet.innerHTML = `
-    <div class="dc-bet-card pd-panel">
-      <img class="dc-bet-art" src="${ASSETS}img/ornament_stake.png" alt="">
-      <h3>${esc(t('bet.title'))}</h3>
-      <p>${esc(t('bet.hint'))}</p>
-      <div class="dc-bet-chips">${betChips(purse).map((c) => `
-        <button class="dc-chip" data-bet="${c.value}">${esc(c.label)}</button>`).join('')}
-      </div>
-      <div class="dc-bet-row">
-        <input type="number" id="dc-bet-input" min="0" step="10" value="0" max="${purse}" aria-label="stake">
-        <span class="dc-bet-max">${esc(t('bet.of', { n: purse }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></span>
-      </div>
-      <button class="dc-btn" id="dc-bet-go"${engage ? ' disabled' : ''}>${esc(t('bet.lock'))}</button>
-      <div class="dc-bet-wait">${engage ? esc(t('bet.waiting')) : ''}</div>
-    </div>`;
-  const field = $('#dc-bet-input');
-  const marquer = (valeur) => bet.querySelectorAll('.dc-chip')
-    .forEach((c) => c.classList.toggle('on', Number(c.dataset.bet) === Number(valeur)));
-
-  bet.querySelectorAll('.dc-chip').forEach((chip) => {
-    chip.onclick = () => { field.value = chip.dataset.bet; marquer(chip.dataset.bet); };
-  });
-  /* ⚠️ LE CHAMP DIT 0 ET AUCUN JETON N'ETAIT ALLUME. Le joueur lisait donc un
-     etat sans le voir : la mise valait bien zero, mais rien a l'ecran ne disait
-     « sans mise », et le bouton restait a atteindre pour confirmer un choix
-     qu'on croyait ne pas avoir fait. L'ecran montre desormais ce qu'il vaut. */
-  marquer(field.value);
-  /* Taper un montant a la main doit eteindre le jeton qui ne correspond plus. */
-  field.oninput = () => marquer(field.value);
-
-  $('#dc-bet-go').onclick = () => {
-    const brut = parseInt($('#dc-bet-input').value, 10);
-    /* ⚠️ `max` SUR UN CHAMP NOMBRE NE BRIDE RIEN. Il colore la validation et
-       arrete les fleches ; une valeur tapee ou collee passe telle quelle, et
-       `.value` la rend entiere. On borne donc ici, ou la bourse est connue :
-       le serveur refusera de toute facon, autant ne pas l'ennuyer. */
-    const value = Math.max(0, Math.min(purse, Number.isFinite(brut) ? brut : 0));
-    if (value !== brut) { field.value = value; marquer(value); }
-    S.net.send({ t: 'bet', value });
-    $('#dc-bet-go').disabled = true;
-  };
-}
-
-
+   Sont partis avec : les jetons de montants prets, le champ libre borne sur la
+   bourse, l'attente lue dans l'etat du serveur, et `renderBet`. `dice_match.js`
+   ne l'appelle plus et le conteneur `#dc-bet` n'existe plus dans l'arene. */
 export function onOver(m) {
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));

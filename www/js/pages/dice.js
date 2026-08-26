@@ -167,10 +167,13 @@ async function connect() {
    Un message inconnu passe tel quel : mieux vaut une phrase anglaise qu'un
    silence, et sa presence signale la cle qui manque. */
 const REFUS = {
+  /* ⛔ TROIS REFUS DE MISE ONT DISPARU AVEC LA MISE. « betting is closed »,
+     « your bet is already placed » et « enter a whole number of coins » ne
+     peuvent plus etre emis : le message reseau `bet` n'existe plus. Une
+     traduction qui attend un message impossible ne sert qu'a faire croire que
+     le mecanisme est encore la. « not enough coins » reste : la boutique, elle,
+     refuse toujours un achat trop cher. */
   'not enough coins': 'err.coins',
-  'betting is closed': 'err.betClosed',
-  'your bet is already placed': 'err.betDone',
-  'enter a whole number of coins': 'err.betWhole',
   'not your turn': 'game.waitTurn',
   'you already rolled': 'game.alreadyRolled',
   'the match has not started': 'err.notStarted',
@@ -185,12 +188,14 @@ function messageServeur(brut) {
   return cle ? t(cle) : brut;
 }
 
-/* Rouvrir ce qu'un envoi avait ferme par avance. Aujourd'hui la mise ; tout
-   bouton qui se desactive en attendant une reponse a sa place ici. */
-function rendreLaMain() {
-  const go = $('#dc-bet-go');
-  if (go) go.disabled = false;
-}
+/* Rouvrir ce qu'un envoi avait ferme par avance.
+   ⚠️ ELLE EST VIDE, ET C'EST VOULU. Son seul client etait le bouton de mise, qui
+   se desactivait a l'envoi et restait mort quand le serveur refusait — la partie
+   paraissait figee. La mise n'existe plus, mais la lecon reste : tout bouton qui
+   se ferme en attendant une reponse doit se rouvrir ici, et le gestionnaire
+   d'erreur l'appelle deja. La garder vide coute une ligne ; la supprimer coute
+   de reapprendre le defaut. */
+function rendreLaMain() {}
 
 async function connectFailed(message) {
   screen('connect');
