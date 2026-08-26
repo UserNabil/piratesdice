@@ -303,6 +303,26 @@ def main():
     ap.add_argument("--check", action="store_true", help="verifie www/ sans le reconstruire")
     args = ap.parse_args()
 
+    # ⛔ UN BUILD NUMEROTE EST UN BUILD QUI PART. Six paquets iOS ont ete
+    # televerses sur TestFlight avec `http://192.168.1.19:8100` grave dedans —
+    # mon serveur de bureau — parce que j'avais lance `build.py --build N` a la
+    # main au lieu de `publier-ios.py`, qui, lui, passe l'adresse de production.
+    # L'application ne pouvait joindre personne : « le serveur de jeu est
+    # injoignable », des l'ouverture, pour tous les testeurs.
+    #
+    # La chaine Android ne pouvait pas tomber dans le piege : son atelier passe
+    # `--server "${{ vars.DICE_SERVER_URL }}"`. Il n'y avait qu'un seul chemin
+    # sans garde-fou, et c'est celui que j'ai emprunte.
+    #
+    # `--build` sans `dev` signifie desormais : ce paquet va etre distribue. Une
+    # adresse en clair est alors refusee — c'est aussi ce qu'exige Apple.
+    if args.build and args.build != "dev" and not args.server.startswith("https://"):
+        sys.exit("REFUS : --build %s grave une adresse NON HTTPS (%s).\n"
+                 "        Un paquet numerote est un paquet qui part : il doit\n"
+                 "        porter l'adresse de production. Utilise\n"
+                 "        `python3 publier-ios.py --build %s`, qui la connait."
+                 % (args.build, args.server, args.build))
+
     if not args.check:
         build(args.server.rstrip("/"), args.build)
         print("www/ assemble  (serveur : %s)%s"

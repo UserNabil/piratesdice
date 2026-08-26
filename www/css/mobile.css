@@ -768,17 +768,33 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  /* Le rembourrage du bas porte l'ecart voulu sous la carte : c'est lui qui la
+     tient au-dessus de la barre de gestes, encoche comprise. */
   padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px
-           calc(env(safe-area-inset-bottom, 0px) + 14px);
+           calc(env(safe-area-inset-bottom, 0px) + 26px);
 }
 
 #dicewrap .dc-bet.on,
 #dicewrap .dc-over.on { display: grid; }
 
+/* ⚠️ `margin: auto` CENTRE, ET UNE MODALE CENTREE EST HORS D'ATTEINTE. Sur un
+   telephone tenu d'une main, le milieu de l'ecran est justement la ou le pouce
+   n'arrive pas : il faut changer de prise pour appuyer sur « rejouer » ou
+   « fermer ». Les cartes descendent donc vers le BAS — `margin-top: auto`
+   pousse tout l'espace libre au-dessus — et gardent une marge sous elles pour
+   ne pas coller a la barre de gestes.
+
+   ⚠️ ET `auto` RESTE EN HAUT, CE N'EST PAS UN OUBLI : c'est lui qui laisse la
+   carte redescendre au centre quand elle est trop haute pour tenir en bas, et
+   qui l'empeche de sortir par le haut sur un petit ecran. Une valeur fixe la
+   ferait deborder au premier texte long. */
 #dicewrap .dc-bet-card,
 #dicewrap .dc-over-card,
 .pd-ask-card,
-.pd-first-card { margin: auto; max-height: none; }
+.pd-first-card {
+  margin: auto auto 0;
+  max-height: none;
+}
 
 /* ============================================================================
    ... NI DEBORDER SUR LE COTE.
