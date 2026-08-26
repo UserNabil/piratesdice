@@ -147,8 +147,10 @@
 
   /* ── LES BANDEAUX DE JOUEUR ────────────────────────────────────────────── */
 
-  --cbt-joueur-marge: clamp(10px, 1.4vh, 16px) clamp(10px, 1vw, 16px) clamp(12px, 1.6vh, 18px);
-  --cbt-joueur-ecart: 7px;
+  /* ⛔ `--cbt-joueur-marge` A ETE SUPPRIME : il rembourrait la carte d'un cote,
+     `--cbt-joueur-marge-carte` de l'autre, et le second gagnait. Deux reglages
+     pour un seul effet, dont un mort. */
+  --cbt-joueur-ecart: 3px;
   /* ⚠️ TROIS COLONNES, ET LE `minmax(0, …)` N'EST PAS DECORATIF. Les deux
      capitaines se font face autour du medaillon : medaillon | nom et elo |
      score. Un simple `1fr` vaut `minmax(auto, 1fr)`, dont le MINIMUM est le
@@ -156,16 +158,22 @@
      place de l'autre — « BARTHOLOMEW » se coupait en « BART… » alors qu'il
      restait de la largeur en face. */
   --cbt-joueur-colonnes: auto minmax(0, 1fr) auto;
-  --cbt-joueur-medaillon: clamp(48px, 6vh, 74px);
+  /* ⚠️ LE PORTRAIT FAISAIT 36 PX DANS UNE CARTE DE 70 : la moitie, quand la
+     maquette lui en donne SEPT DIXIEMES (118 px pour 168). Il flottait au
+     milieu d'un vide, et c'est pourtant lui qu'on cherche pour savoir qui joue.
+     Il se cale sur la LARGEUR de l'ecran comme le reste de la carte (13,9 %
+     dans la maquette) : c'est elle qui decide de la place, pas une hauteur qui
+     bouge avec le clavier et la barre de gestes. */
+  --cbt-joueur-medaillon: clamp(40px, 11.6vw, 66px);
 
-  --cbt-joueur-nom-taille: clamp(12.5px, 1.2vw, 15px);
+  --cbt-joueur-nom-taille: 13.5px;
   --cbt-joueur-nom-couleur: var(--txt, #FFFFFF);
   /* L'elo est une INFORMATION, pas une mention legale : sa place dans la
      hierarchie se lit a la couleur, pas a une taille qui le rendrait illisible. */
-  --cbt-joueur-elo-taille: 11.5px;
+  --cbt-joueur-elo-taille: 12.5px;
   --cbt-joueur-elo-couleur: rgba(255, 255, 255, .78);
   /* Le score est LE chiffre du jeu : blanc, cerne, et gros. */
-  --cbt-joueur-score-taille: clamp(28px, 3.6vh, 44px);
+  --cbt-joueur-score-taille: 26.5px;
   --cbt-joueur-score-couleur: var(--blanc, #FFFFFF);
   /* ⚠️ UN CONTOUR SE MESURE EN GLYPHES, PAS EN PIXELS. En pixels fixes, les deux
      moities du trait se rejoignent au milieu d'un petit chiffre et le « 0 »
@@ -187,18 +195,55 @@
      desormais l'information : allume quand on joue, eteint quand on attend.
      Une couleur qui change sur toute la surface se voit sans etre cherchee. */
   --cbt-joueur-actif-jonc: none;
-  /* Le degrade de chaque camp : bleu vers violet en face, violet chez soi. */
-  --cbt-joueur-fond-adverse: linear-gradient(135deg, #3E7BD8 0%, #6B3FC8 100%);
-  --cbt-joueur-fond-moi: linear-gradient(225deg, #8A4BF0 0%, #5B2BB0 100%);
-  /* Allume / eteint. L'ecart doit se voir d'un coup d'oeil sans que le camp
-     eteint devienne illisible : son nom et son score restent a lire. */
-  --cbt-joueur-actif: brightness(1.14) saturate(1.1);
+
+  /* ⛔ IL N'Y A PAS DE DEGRADE DANS LA MAQUETTE, ET IL Y EN A EU DEUX ICI.
+     D'abord un bleu qui virait au violet en diagonale — invente de bout en
+     bout. Puis un degrade vertical « mesure », ce qui n'etait pas mieux : ce
+     que je prenais pour un degrade est le BISEAU de la carte — une arete claire
+     en haut, une ombre en bas — pose sur un aplat. Un degrade sur toute la
+     hauteur, lui, delave le milieu de la carte, la ou tombent le nom et le
+     score.
+
+     Ce sont donc deux APLATS, releves au coeur de chaque carte dans
+     `proposition_ui.png` (2026-08-26) :
+
+         bleu   (22,101,187)   violet  (99,23,192)
+
+     et le relief revient par `--cbt-joueur-biseau`, en ombres INTERIEURES : une
+     arete de lumiere en haut, une ombre portee en bas. La couleur du milieu
+     reste alors exactement celle de la maquette. */
+  --cbt-joueur-fond-adverse: #1665BB;
+  --cbt-joueur-fond-moi: #6317C0;
+  --cbt-joueur-biseau:
+    inset 0 3px 0 rgba(255, 255, 255, .17),
+    inset 0 -10px 16px rgba(0, 0, 0, .30);
+  /* Le jonc creme de la maquette, releve a (250,233,226). Le blanc pur faisait
+     un cerne de tableur autour des deux capitaines. */
+  --cbt-joueur-jonc: 3px solid #F7E2C0;
+  /* ⚠️ LES PROPORTIONS VIENNENT DE LA MAQUETTE, PAS DU CONFORT. Sur ses 852 px
+     de large, la carte fait 168 de haut et le portrait 118 — soit 19,7 % et
+     13,9 % de la largeur de l'ecran. En pixels fixes (36 px de portrait pour
+     70 de carte) la carte etait maigre et le portrait perdu au milieu. */
+  /* ⚠️ LE REMBOURRAGE HORIZONTAL COUTE DES LETTRES, ET LA MAQUETTE N'EN MET
+     PAS. Mesure au pixel : la carte fait 342 px de large sur 852, et son
+     contenu — score 37, bloc de texte 182, portrait 105 — en fait 324. Il reste
+     DIX-HUIT pixels pour deux ecarts et deux rembourrages. A 2 vw de chaque
+     cote (25 px), « BARTHOLOMEW » redevenait « BART… ».
+     En hauteur c'est l'inverse : 30 px de part et d'autre du portrait, et c'est
+     ce qui donne a la carte son assise. */
+  --cbt-joueur-marge-carte: clamp(6px, 3.4vw, 22px) clamp(2px, .8vw, 8px);
+
+  /* ⚠️ LE CAMP ACTIF NE SE RETOUCHE PLUS. Un `brightness(1.14)` par-dessus des
+     couleurs relevees dans la maquette, c'est ne plus afficher la maquette :
+     le camp dont c'est le tour montre les couleurs EXACTES, et c'est l'autre
+     qui recule. Le tour se lit donc toujours d'un coup d'oeil, sans qu'aucune
+     des deux moities ne soit une invention. */
+  --cbt-joueur-actif: none;
   /* ⚠️ ETEINDRE N'EST PAS EFFACER. A 0,58 le camp qui attend passait sous le
      seuil de lecture : son nom et son score sont pourtant ce qu'on compare a
-     chaque tour. 0,68 laisse l'ecart visible d'un coup d'oeil sans rendre la
-     moitie du rectangle inutile. */
-  --cbt-joueur-eteint: brightness(.68) saturate(.78);
-  --cbt-joueur-courbure: 14px;
+     chaque tour. */
+  --cbt-joueur-eteint: brightness(.66) saturate(.82);
+  --cbt-joueur-courbure: 18px;
 
   /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
 
@@ -284,11 +329,19 @@
 
   /* ── LE MEDAILLON « VS » ENTRE LES DEUX CAPITAINES ─────────────────────── */
 
-  /* Il est decoratif ; le nom ne l'est pas. Trop large, il mange les lettres. */
-  --cbt-versus-marque: clamp(34px, 7vw, 52px);
-  --cbt-versus-ecart: clamp(6px, 1.4vw, 14px);
-  --cbt-versus-marge: clamp(6px, 1vh, 12px) clamp(8px, 1.4vw, 16px);
-  --cbt-versus-courbure: 20px;
+  /* ⚠️ IL A ETE BRIDE A 7 vw PAR PEUR DE MANGER LE NOM, ET LA PEUR EST PERIMEE.
+     Il partageait alors une piste avec les deux capitaines ; ils ont maintenant
+     chacun leur carte, et l'ECART entre les deux lui appartient en propre.
+     Mesure dans la maquette : 155 px de large sur 852, soit 18,2 %, et une
+     hauteur qui DEPASSE les cartes de 12 px en haut comme en bas. */
+  /* ⚠️ 16 vw ETAIT LA COTE DE LA MAQUETTE, ET ELLE NE TENAIT PAS CHEZ NOUS.
+     La maquette est dessinee sur 852 px de large ; l'arene, elle, retranche
+     d'abord son propre rembourrage. A 16 vw il restait 77 px au nom quand
+     « BARTHOLOMEW » en demande 88 a 14,5 px — et on retombait sur « BARTHOL… ».
+     Le nom a depuis change de place — il enjambe le score — et le medaillon a
+     pu reprendre sa cote.
+     Mesure : 14 vw laisse 92 px, soit quatre pixels de marge. */
+  --cbt-versus-marque: clamp(50px, 15vw, 88px);
 
   /* ── LE BANDEAU DU BAS : CALE, GOBELET, SORTIE ─────────────────────────── */
 
@@ -308,7 +361,7 @@
    ⚠️ Cette couche vient de dice.css et se place AVANT le portrait, comme dans
    l'original : le portrait doit pouvoir la recouvrir, jamais l'inverse. */
 @media (max-height: 640px) {
-  #dicewrap { --cbt-joueur-medaillon: 44px; }
+  #dicewrap { --cbt-joueur-medaillon: clamp(40px, 11vw, 56px); }
 }
 
 @media (orientation: portrait), (max-width: 820px) {
@@ -330,19 +383,15 @@
     /* ⚠️ CES TAILLES VALAIENT POUR UN BANDEAU PLEINE LARGEUR. Un capitaine
        disposait alors de tout l'ecran ; il en a maintenant la moitie, medaillon
        « VS » deduit. A 18 px, le nom ne tenait plus que sur trois lettres. */
-    --cbt-joueur-marge: 0px;
-    --cbt-joueur-ecart: 5px;
-    --cbt-joueur-medaillon: 36px;
-    --cbt-joueur-nom-taille: 13px;
-    --cbt-joueur-elo-taille: 11.5px;
-    --cbt-joueur-score-taille: 26px;
+    /* ⛔ PLUS DE TAILLES DE TELEPHONE ICI. Elles rapetissaient la carte a
+       36 px de portrait et 26 px de score « parce qu'on est sur telephone » —
+       or la maquette EST une maquette de telephone, et elle donne 57 et 28.
+       Les valeurs du tableau de bord sont deja exprimees pour cet ecran-la. */
     --cbt-joueur-mise-taille: 11.5px;
 
     --cbt-bonus-taille: clamp(30px, 8.6vw, 42px);
     --cbt-bonus-ecart: clamp(4px, 1.6vw, 8px);
 
-    --cbt-versus-marge: 5px 6px;
-    --cbt-versus-ecart: 5px;
     --cbt-etat-taille: 15px;
 
     --cbt-nom-marge: 0px;
@@ -369,9 +418,6 @@
    plateaux. Sans ce palier, un 360 px perdait 10 px par bandeau. */
 @media (max-width: 400px) {
   #dicewrap {
-    --cbt-joueur-marge: 5px 9px;
-    --cbt-joueur-ecart: 8px;
-    --cbt-joueur-medaillon: 36px;
     --cbt-bonus-taille: 46px;
   }
 }
@@ -489,7 +535,6 @@
 /* ── les bandeaux de joueur ───────────────────────────────────────────────── */
 
 #dicewrap .dc-pc {
-  padding: var(--cbt-joueur-marge);
   --pd-c1: var(--cbt-joueur-moi-1);
   --pd-c2: var(--cbt-joueur-moi-2);
 }
@@ -519,8 +564,14 @@
 /* Chaque camp porte son degrade, et sa clarte dit a qui est le tour. */
 #dicewrap #dc-pc-foe { background: var(--cbt-joueur-fond-adverse); }
 #dicewrap #dc-pc-me { background: var(--cbt-joueur-fond-moi); }
+/* CHAQUE CAPITAINE A SA CARTE : aplat, jonc creme, coins arrondis, relief par
+   ombres interieures. C'est ce qui remplace le panneau commun. */
 #dicewrap .dc-pc {
   border-radius: var(--cbt-joueur-courbure);
+  border: var(--cbt-joueur-jonc);
+  box-shadow: var(--cbt-joueur-biseau);
+  padding: var(--cbt-joueur-marge-carte);
+  box-sizing: border-box;
   transition: filter .25s ease;
 }
 #dicewrap .dc-pc-active { filter: var(--cbt-joueur-actif); box-shadow: var(--cbt-joueur-actif-jonc); }
@@ -550,10 +601,12 @@
 /* ⚠️ LA COURBURE EST CELLE DU PANNEAU, PAS `--pd-round`. `.pd-panel` dessine sa
    propre bordure arrondie et gagne : le reglage ci-dessous agit donc sur
    `border-radius`, le seul qui se voie. */
+/* ⛔ QUATRE REGLAGES DE « PANNEAU DU CENTRE » ONT DISPARU AVEC LE PANNEAU.
+   `--cbt-versus-marge`, `-ecart`, `-courbure` et son jonc dessinaient UN cadre
+   autour des deux capitaines ; la maquette en montre DEUX, un par carte. Ces
+   reglages sont passes sur `.dc-pc` (voir --cbt-joueur-*) : les garder ici,
+   c'etait repeindre le rectangle unique par-dessus les deux cartes. */
 #dicewrap .dc-versus {
-  gap: var(--cbt-versus-ecart);
-  padding: var(--cbt-versus-marge);
-  border-radius: var(--cbt-versus-courbure);
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 #dicewrap .dc-vs-mark { width: var(--cbt-versus-marque); }

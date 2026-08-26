@@ -174,10 +174,17 @@ function bouton(p, have) {
 const LADDER_TTL = 30000;
 /* Les trois premieres places portent leur medaille. Au-dela, le rang chiffre :
    une quatrieme medaille ne voudrait plus rien dire. */
+/* ⚠️ UNE IMAGE ET UN CHIFFRE NU NE S'ALIGNENT PAS. Les trois premieres lignes
+   rendaient une `<img>`, les suivantes une chaine posee dans la cellule : deux
+   boites de hauteurs et de largeurs differentes, donc trois medailles decalees
+   au-dessus d'une colonne de chiffres — retour de l'admin. Les deux passent
+   maintenant par la MEME boite (`.dc-rank-box`), centree et de taille fixe :
+   c'est la boite qui tient la colonne, pas son contenu. */
 export function medaille(rang) {
-  return rang >= 1 && rang <= 3
+  const dedans = rang >= 1 && rang <= 3
     ? `<img class="dc-rank-medal" src="${ASSETS}img/rank_${rang}.png" alt="${rang}">`
-    : String(rang);
+    : `<span class="dc-rank-num">${rang}</span>`;
+  return `<span class="dc-rank-box">${dedans}</span>`;
 }
 
 let ladderCache = null;

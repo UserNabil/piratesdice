@@ -122,12 +122,20 @@ export function renderMenu(el) {
       <h2>${esc(t('menu.title'))}</h2>
       <p>${esc(t('menu.pitch'))}</p>
       ${captainStrip()}
+      <!-- LES DESSINS SORTENT DU CADRE, ET ILS ALTERNENT.
+           Enfermes dans le bouton, ils valaient 1,9 fois la hauteur du texte —
+           trois vignettes en file indienne, illisibles, et le bouton n'etait
+           qu'une barre de plus. Poses A CHEVAL sur le bord, ils reprennent la
+           taille d'une illustration et donnent au menu son relief.
+           L'alternance gauche / droite / gauche est ce que l'admin a demande :
+           l'oeil zigzague au lieu de descendre une colonne, et les trois modes
+           cessent de se ressembler. -->
       <div class="dc-menu-btns">
-        <button class="dc-btn dc-btn-big dc-btn-art" id="dc-solo">
+        <button class="dc-btn dc-btn-big dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-solo">
           <img src="${ASSETS}img/menu_ai.png" alt="">${esc(t('menu.solo'))}</button>
-        <button class="dc-btn dc-btn-big dc-btn-alt dc-btn-art" id="dc-multi">
+        <button class="dc-btn dc-btn-big dc-btn-alt dc-btn-art dc-btn-deborde dc-btn-deborde-d" id="dc-multi">
           <img src="${ASSETS}img/menu_versus.png" alt="">${esc(t('menu.multi'))}</button>
-        <button class="dc-btn dc-btn-ghost dc-btn-art" id="dc-friend">
+        <button class="dc-btn dc-btn-ghost dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-friend">
           <img src="${ASSETS}img/menu_friend.png" alt="">${esc(t('menu.friend'))}</button>
       </div>
       <div class="dc-menu-stats">

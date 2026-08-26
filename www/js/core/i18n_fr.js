@@ -182,6 +182,14 @@ export const FR = {
   'set.soundOff': 'Coupé',
   'set.account': 'Compte',
   'set.signedInAs': 'Connecté en tant que {name}',
+  /* ⚠️ LE LIBELLE COMPLET TIENT DANS `title`, PAS SUR LE BOUTON. « Se
+     connecter avec Google » et « Effacer mes donnees et mon compte » se
+     repliaient sur trois lignes dans deux boutons cote a cote — retour de
+     l'admin. Le logo dit deja de qui il s'agit, et la corbeille ce qu'elle
+     fait : le mot n'a plus qu'a confirmer. */
+  'set.signInShort': 'Connexion',
+  'set.signOutShort': 'Déconnexion',
+  'set.eraseShort': 'Supprimer',
   'set.signIn': 'Se connecter avec Google',
   'set.signOut': 'Se déconnecter',
   'set.erase': 'Effacer mes données et mon compte',

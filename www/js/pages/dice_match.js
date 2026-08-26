@@ -65,7 +65,13 @@ function buildGame() {
              et prend une bande de hauteur aux plateaux pour ne rien dire. -->
         <div class="dc-versus-wrap">
           <div class="dc-turn" id="dc-turn" aria-live="polite"></div>
-          <div class="dc-versus pd-panel">
+          <!-- ⛔ PLUS DE PANNEAU COMMUN ICI (la classe pd-panel a saute). Un seul cadre englobait les deux
+               capitaines et le medaillon : la maquette montre DEUX CARTES
+               SEPAREES, chacune avec son jonc creme, et le medaillon POSE DANS
+               L'ECART entre elles, debordant en haut et en bas. Le panneau
+               commun donnait un rectangle unique coupe en deux — pas la meme
+               chose, et pas ce qui a ete dessine. -->
+          <div class="dc-versus">
             <div class="dc-pc" id="dc-pc-foe"></div>
             <img class="dc-vs-mark" src="${ASSETS}img/icon_versus.png" alt="">
             <div class="dc-pc" id="dc-pc-me"></div>
@@ -505,14 +511,24 @@ function renderPlayerCard(sel, st, seat, isMe) {
      disputait sa largeur au nom et le coupait en quatre lignes. */
   el.className = 'dc-pc' + (isMe ? ' dc-pc-mine' : ' dc-pc-theirs')
                + (active ? ' dc-pc-active' : ' dc-pc-idle');
+  /* ⚠️ LE NOM EST SORTI DU BLOC D'IDENTITE, ET C'EST CE QUI LE FAIT TENIR.
+     Il vivait avec l'elo et les pastilles dans une seule colonne, coincee entre
+     le portrait et le score : « BARTHOLOMEW » disposait de 77 px pour 88, donc
+     « BARTHOL… », quatre fois de suite malgre trois tentatives de rognage
+     ailleurs. La maquette ne s'y prend pas comme ca — regarder l'image plutot
+     que rapetisser les voisins : le nom y occupe TOUTE LA LIGNE DU HAUT, par-
+     dessus le score, et seul le portrait lui prend de la largeur. Il a alors
+     113 px pour 88, et la question ne se repose plus.
+     C'est le CSS qui pose les quatre morceaux (voir `.dc-pc-theirs` et
+     `.dc-pc-mine` dans dice.css) ; ici on se contente de ne plus les emboiter. */
   el.innerHTML = `
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
       <span class="dc-pc-clock" aria-hidden="true"></span>
     </div>
+    <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
-      <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
       <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
       ${stockMarkup(st, seat)}
       ${p.bet ? `<div class="dc-pc-bet">${esc(t('game.stake', { n: p.bet }))} <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>` : ''}

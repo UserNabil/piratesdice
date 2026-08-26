@@ -74,17 +74,33 @@ function apply() {
   const inner = arena.clientHeight
     - parseFloat(cs.paddingTop || '0')
     - parseFloat(cs.paddingBottom || '0');
-  /* Tout ce qui n'est PAS un plateau se mesure : le bandeau du bas, la barre
-     des deux capitaines, la ligne du tour. Les mesurer plutot que les estimer
-     est ce qui a fait tenir cet ecran de 320 px a la tablette — et c'est ce qui
-     lui permet d'encaisser la refonte sans qu'on retouche une seule constante. */
+  /* Tout ce qui n'est PAS un plateau se mesure : le bandeau du bas et la carte
+     des deux capitaines. Les mesurer plutot que les estimer est ce qui a fait
+     tenir cet ecran de 320 px a la tablette — et c'est ce qui lui permet
+     d'encaisser la refonte sans qu'on retouche une seule constante.
+
+     ⚠️ ON NE MESURE QUE CE QUI EST DANS LE FLUX. `.dc-turn` etait de la liste
+     du temps ou l'etat du jeu tenait sa propre ligne ; il est depuis pose en
+     ABSOLU au-dessus de la carte. Sa hauteur existe toujours pour
+     `getBoundingClientRect`, mais elle ne coute rien a personne : la retrancher,
+     c'etait voler ~26 px aux plateaux en permanence pour une pastille qui ne
+     parait que deux secondes.
+     Et la marge compte : `.dc-versus` en porte 8 px en haut et en bas sur
+     telephone, que la boite englobante n'inclut pas. */
   let used = 0;
-  for (const bloc of arena.querySelectorAll('.dc-foot, .dc-versus, .dc-turn')) {
-    used += bloc.getBoundingClientRect().height;
+  for (const bloc of arena.querySelectorAll('.dc-foot, .dc-versus')) {
+    const bcs = getComputedStyle(bloc);
+    used += bloc.getBoundingClientRect().height
+          + parseFloat(bcs.marginTop || '0')
+          + parseFloat(bcs.marginBottom || '0');
   }
   const boardsCs = getComputedStyle(boards);
-  const gaps = parseFloat(cs.rowGap || '6')
-             + 3 * parseFloat(boardsCs.rowGap || '4');
+  /* Les ecarts se COMPTENT, ils ne s'estiment pas : l'arene a trois enfants
+     (plateaux, eventail, bandeau) donc deux ecarts, et le bloc des plateaux en
+     a trois (face, carte, moi) donc deux aussi. Le « 3 x » d'avant datait de la
+     quatrieme rangee disparue et retranchait un ecart fantome. */
+  const gaps = 2 * parseFloat(cs.rowGap || '6')
+             + 2 * parseFloat(boardsCs.rowGap || '4');
   const height = inner - used - gaps;
 
   const fixed = 2 * (2 * GAP + 2 * FRAME) + 2 * PLATE + 4 * STACK_GAP;

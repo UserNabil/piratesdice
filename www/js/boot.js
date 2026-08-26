@@ -115,21 +115,37 @@ function settingsMarkup() {
      « avec Google » sur un iPhone serait faux, et « avec Apple » sur Android
      n'existe pas. Le logo dit lequel avant meme qu'on ait lu. */
   const pomme = fournisseur() === 'apple';
+  /* ⚠️ LA PHRASE ENTIERE NE TIENT PAS SUR UN DEMI-BOUTON. « Se connecter avec
+     Google » et « Effacer mes donnees et mon compte » se repliaient sur trois
+     lignes dans deux boutons cote a cote, et le dessin se retrouvait ecrase
+     contre un pave de texte — retour de l'admin, capture a l'appui. Le mot
+     court s'affiche, la phrase complete reste dans `title` : elle est encore la
+     pour le lecteur d'ecran et pour qui hesite. */
   const button = acc.google
-    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout>
-         <img src="${ASSETS}img/icon_link.png" alt="">${t('set.signOut')}</button>`
-    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin>
+    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout
+               title="${t('set.signOut')}" aria-label="${t('set.signOut')}">
+         <img src="${ASSETS}img/icon_link.png" alt="">${t('set.signOutShort')}</button>`
+    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin
+               title="${t(pomme ? 'set.signInApple' : 'set.signIn')}"
+               aria-label="${t(pomme ? 'set.signInApple' : 'set.signIn')}">
          <img src="${ASSETS}img/icon_${pomme ? 'apple' : 'google'}.png" alt="">${
-        t(pomme ? 'set.signInApple' : 'set.signIn')}</button>`;
+        t('set.signInShort')}</button>`;
   const muted = !!(S.sfx && S.sfx.muted);
 
   return `
     <div class="pd-ask-card pd-panel pd-set">
       <h3>${t('set.title')}</h3>
 
-      ${row(t('set.sound'), `<button class="pd-toggle pd-toggle-art${muted ? '' : ' on'}" data-sound
-              aria-pressed="${!muted}"><img src="${ASSETS}img/icon_sound_${muted ? 'off' : 'on'}.png"
-              alt="">${t(muted ? 'set.soundOff' : 'set.soundOn')}</button>`)}
+      <!-- ⚠️ « ACTIVE » A COTE D'UN HAUT-PARLEUR NE DIT RIEN DE PLUS. Le dessin
+           CHANGE avec l'etat — haut-parleur barre quand c'est coupe — et le
+           bouton s'allume en or : le mot repetait une troisieme fois ce que
+           deux signaux disaient deja, et il volait la place qui manquait au
+           dessin. Il reste en aria-label, pour qui ne voit pas l'icone. -->
+      ${row(t('set.sound'), `<button class="pd-toggle pd-toggle-art pd-toggle-seul${muted ? '' : ' on'}"
+              data-sound aria-pressed="${!muted}"
+              aria-label="${t('set.sound')} — ${t(muted ? 'set.soundOff' : 'set.soundOn')}"
+              title="${t(muted ? 'set.soundOff' : 'set.soundOn')}"><img
+              src="${ASSETS}img/icon_sound_${muted ? 'off' : 'on'}.png" alt=""></button>`)}
 
       <!-- Plus de reglage « jouer aux mouvements ». Secouer pour lancer est
            desormais toujours actif : un geste cache derriere un interrupteur
@@ -137,19 +153,30 @@ function settingsMarkup() {
 
       ${row(t('set.account'), `<span class="pd-row-val">${who}</span>`)}
       <div class="pd-row pd-row-btns">${button}
-        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger dc-btn-art" data-erase>
-          <img src="${ASSETS}img/icon_erase.png" alt="">${t('set.erase')}</button>
+        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger dc-btn-art" data-erase
+                title="${t('set.erase')}" aria-label="${t('set.erase')}">
+          <img src="${ASSETS}img/icon_erase.png" alt=""
+               >${t('set.eraseShort')}</button>
       </div>
 
       ${row(t('set.language'), `<select class="pd-select" data-lang>${
         LANGS.map((l) => `<option value="${l.code}"${l.code === lang() ? ' selected' : ''}>${l.label}</option>`).join('')
       }</select>`)}
 
-      ${row(t('set.terms'), `<a class="pd-link pd-link-art" href="${TERMS_URL}" target="_blank"
-             rel="noopener" aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
+      <!-- ⚠️ LE CADRE ETOUFFAIT LE DESSIN. Le lien portait un carre sombre a
+           jonc blanc de 40 px, et l'icone tenait dans 26 : un autocollant deja
+           cerne de blanc, pose dans un second cerne blanc, sur un fond noir qui
+           mangeait ses couleurs — « on voit mal l'icone et le rectangle autour
+           pue ». On enleve le cadre et on rend au dessin sa taille : il se
+           suffit, c'est pour cela qu'il a ete dessine ainsi. -->
+      ${row(t('set.terms'), `<a class="pd-link-art" href="${TERMS_URL}" target="_blank"
+             rel="noopener" title="${t('set.terms')}"
+             aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
 
-      <div class="pd-ask-row"><button class="dc-btn dc-btn-art" data-close>
-        <img src="${ASSETS}img/icon_close_round.png" alt="">${t('set.close')}</button></div>
+      <!-- Fermer ne s'ecrit plus : la croix EST le mot. -->
+      <div class="pd-ask-row"><button class="dc-btn dc-btn-art pd-btn-icone" data-close
+             title="${t('set.close')}" aria-label="${t('set.close')}">
+        <img src="${ASSETS}img/icon_close_round.png" alt=""></button></div>
     </div>`;
 }
 
@@ -176,9 +203,8 @@ function openSettings() {
        clic. On ne touche donc qu'au dernier noeud, celui du texte. */
     const img = sound.querySelector('img');
     if (img) img.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
-    const mot = sound.lastChild;
-    if (mot && mot.nodeType === 3) mot.textContent = t(off ? 'set.soundOff' : 'set.soundOn');
-    else sound.textContent = t(off ? 'set.soundOff' : 'set.soundOn');
+    sound.setAttribute('title', t(off ? 'set.soundOff' : 'set.soundOn'));
+    sound.setAttribute('aria-label', t('set.sound') + ' — ' + t(off ? 'set.soundOff' : 'set.soundOn'));
     sound.classList.toggle('on', !off);
     sound.setAttribute('aria-pressed', String(!off));
   };
@@ -248,8 +274,12 @@ function addSheetBar() {
   if (!panel || panel.querySelector('.pd-sheet-bar')) return;
   const bar = document.createElement('div');
   bar.className = 'pd-sheet-bar';
+  /* ⚠️ `&times;` N'EST PAS NOTRE CROIX. C'etait un glyphe de la police du
+     systeme — fin, gris, different sur chaque telephone — au milieu d'un jeu
+     ou tout le reste est dessine. Le jeu a SA croix ; c'est elle qu'on pose. */
   bar.innerHTML = '<span class="pd-sheet-spacer"></span><span class="pd-grab"></span>'
-    + '<button class="pd-sheet-close" aria-label="' + t('set.close') + '">&times;</button>';
+    + '<button class="pd-sheet-close" title="' + t('set.close') + '" aria-label="'
+    + t('set.close') + '"><img src="' + ASSETS + 'img/icon_close.png" alt=""></button>';
   bar.querySelector('.pd-sheet-close').onclick = () => {
     const tab = document.querySelector('#dicewrap .dc-tab.on');
     if (tab) tab.click();

@@ -163,22 +163,28 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      une demi-largeur, et le ratelier a quitte la carte pour l'eventail de la
      cale. Garder les anciennes lignes aurait donne une grille a quatre colonnes
      dans un espace qui n'en tient plus que trois. */
-  #dicewrap .dc-versus { padding: 5px 6px; --pd-rivet-in: 4px 10px; margin: 8px 0; }
+  /* ⛔ PLUS DE REMBOURRAGE NI DE JONC ICI. `.dc-versus` n'est plus un panneau :
+     c'est une regle de placement a trois pistes, et chaque capitaine porte sa
+     propre carte. Un rembourrage laisse la ecartait les deux cartes du
+     medaillon, qui doit les TOUCHER. Reste la marge : c'est l'air entre la
+     carte et les deux rangees de plaques de score. */
+  #dicewrap .dc-versus { margin: 8px 0; }
   #dicewrap .dc-pc { gap: 5px; }
-  #dicewrap .dc-pc-portrait { width: 36px; height: 36px; }
+  /* ⛔ ET PLUS DE PORTRAIT A 36 PX. C'etait la moitie de la hauteur de la carte
+     quand la maquette lui en donne sept dixiemes ; la taille vient maintenant
+     de `--cbt-joueur-medaillon`, exprimee en pourcentage de largeur d'ecran. */
   /* ⚠️ « BARTHOLOMEW » DEVENAIT « BAR… ». Deux capitaines partagent la largeur
      de l'ecran, et chacun y loge un portrait, un nom, un elo, des pastilles et
      un score : le nom est le seul qui puisse retrecir sans perdre son sens, mais
      c'est aussi celui qu'on lit. On lui rend ce qu'on peut — portrait plus
      petit, medaillon plus etroit, taille liee a la largeur — et la coupure ne
      sert plus que pour les noms vraiment longs. */
-  #dicewrap .dc-pc-name { margin: 0; font-size: clamp(11px, 3.2vw, 13px); line-height: 1.15;
+  #dicewrap .dc-pc-name { margin: 0; line-height: 1.15;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* L'elo passe a la taille du nom : c'est une INFORMATION, pas une mention
      legale. Sa place dans la hierarchie se lit a la couleur, pas a une taille
      qui le rendait illisible. */
-  #dicewrap .dc-pc-elo { font-size: 11.5px; }
-  #dicewrap .dc-pc-total { margin: 0; font-size: 24px; }
+  #dicewrap .dc-pc-total { margin: 0; }
   #dicewrap .dc-pc-lbl { display: none; }
   #dicewrap .dc-pc-bet { font-size: 11px; margin: 0; }
 
@@ -410,6 +416,19 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6);
 }
 
+/* ⚠️ `min-width: 92px` ETAIT LA PLACE D'UN MOT. Le bouton du son n'en porte
+   plus : garder la largeur, c'etait garder une pastille ovale a moitie vide
+   autour d'un haut-parleur.
+   ⚠️ ET L'ORDRE COMPTE ICI. Ecrite AVANT `.pd-toggle`, cette regle perdait a
+   specificite egale et l'ovale revenait — vu au banc d'essai. Elle se pose donc
+   apres, comme toute regle qui doit gagner sans monter d'un cran. */
+.pd-toggle-seul {
+  min-width: 0;
+  width: 54px; height: 54px;
+  padding: 0;
+  border-radius: 50%;
+}
+
 .pd-select {
   min-height: 40px;
   padding: 0 12px;
@@ -422,17 +441,16 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   box-shadow: inset 0 0 0 2px var(--blanc, #FFFFFF);
 }
 
-.pd-link {
-  display: grid;
-  place-items: center;
-  width: 40px; height: 40px;
-  border-radius: 8px;
-  color: var(--gold-hi, #FFE479);
-  text-decoration: none;
-  font-size: 18px;
-  background: rgba(0, 0, 0, .4);
-  box-shadow: inset 0 0 0 2px var(--blanc, #FFFFFF);
-}
+/* ⛔ `.pd-link` N'A PLUS D'UTILISATEUR, ET SON CADRE EST LA RAISON. Un carre
+   sombre a jonc blanc de 40 px autour d'un autocollant DEJA cerne de blanc :
+   deux cernes, un fond noir qui mangeait les couleurs du dessin, et 26 px
+   utiles au milieu. Le lien des conditions ne porte plus que `.pd-link-art`,
+   c'est-a-dire son dessin et rien autour.
+   La regle est gardee vide a dessein : la classe est peut-etre encore ecrite
+   quelque part, et une regle absente vaut mieux qu'une regle qui repeint. */
+
+.pd-sheet-close img,
+.pd-btn-icone img { display: block; }
 
 .pd-danger { color: #ff9a90 !important; }
 .pd-glyph { font-size: 19px; line-height: 1; color: var(--gold-hi, #FFE479);
@@ -572,21 +590,26 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   margin: 0 auto;
 }
 
+/* ⚠️ CE BOUTON PORTAIT UN `&times;` DE LA POLICE SYSTEME dans un rond noir
+   cercle de blanc. Il porte maintenant NOTRE croix, dessinee, qui a deja son
+   propre cerne : le rond et le jonc feraient un troisieme cercle autour d'un
+   dessin qui n'en demandait pas. */
 .pd-sheet-close {
-  width: 40px; height: 40px;
+  width: 44px; height: 44px;
   flex: none;
   display: grid; place-items: center;
   border: 0;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--gold-hi, #FFE479);
+  padding: 0;
+  background: none;
   cursor: pointer;
-  background: rgba(0, 0, 0, .4);
-  box-shadow: inset 0 0 0 2px var(--blanc, #FFFFFF);
 }
+.pd-sheet-close img {
+  width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6));
+}
+.pd-sheet-close:active img { transform: scale(.92); }
 
-.pd-sheet-spacer { width: 40px; flex: none; }
+.pd-sheet-spacer { width: 44px; flex: none; }
 
 .pd-hint { margin: -4px 0 10px; font-size: 12px; color: var(--txt-dim, #C9BCEA); line-height: 1.4; }
 
@@ -660,7 +683,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-over-card h2 { font-size: calc(21px * var(--pd-ui)); }
   #dicewrap .dc-over-score { font-size: calc(36px * var(--pd-ui)); }
   #dicewrap .dc-rules { font-size: calc(14.5px * var(--pd-ui)); }
-  #dicewrap .dc-ladder { font-size: calc(14px * var(--pd-ui)); }
+  #dicewrap .dc-ladder { font-size: calc(16.5px * var(--pd-ui)); }
+  #dicewrap .dc-rank-num { font-size: calc(16.5px * var(--pd-ui)); }
   #dicewrap .dc-shop-txt b { font-size: calc(14.5px * var(--pd-ui)); }
   #dicewrap .dc-shop-txt span { font-size: calc(13px * var(--pd-ui)); }
   .pd-row-lbl, .pd-row-val { font-size: calc(14px * var(--pd-ui)); }
@@ -730,6 +754,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .pd-row > .pd-link { flex: 0 0 auto; }
 .pd-row-btns .dc-btn,
 .pd-ask-row .dc-btn { min-width: 0; flex: 1 1 140px; }
+/* ⚠️ UN BOUTON QUI N'A QU'UNE CROIX NE S'ETIRE PAS SUR TOUTE LA LARGEUR. Le
+   `flex: 1 1 140px` de la rangee vaut pour deux boutons de texte qui se
+   partagent la ligne ; applique a une icone seule, il donnait une barre d'or de
+   quatre cents pixels avec un petit rond au milieu. */
+.pd-ask-row .pd-btn-icone { flex: 0 0 auto; }
 
 /* ── les ecrans tres etroits (320 px : le plancher Android) ───────────────── */
 
@@ -799,7 +828,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-caps-row { gap: 5px; }
   #dicewrap .dc-cap { width: 15.5vw; height: 15.5vw; max-width: 64px; max-height: 64px; }
   #dicewrap .dc-cap-card { gap: 9px; padding: 8px 11px; min-height: 54px; }
-  #dicewrap .dc-cap-trait { width: 32px; height: 32px; }
+  #dicewrap .dc-cap-trait { width: 52px; height: 52px; }
   #dicewrap .dc-cap-txt b { font-size: calc(13px * var(--pd-ui, 1)); }
   #dicewrap .dc-cap-txt span { font-size: calc(12px * var(--pd-ui, 1)); }
 
