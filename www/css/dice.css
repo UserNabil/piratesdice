@@ -819,7 +819,15 @@
   grid-template-rows: auto auto auto;
   gap: clamp(4px, .8vh, 10px);
   justify-items: center;
+  /* ⚠️ `center` DEBORDE DES DEUX COTES. Si le contenu depasse d'un pixel, un
+     centrage en donne la moitie AU-DESSUS — c'est-a-dire derriere la barre de
+     l'entete et sous l'encoche, la ou rien ne peut plus etre lu ni touche.
+     `safe center` centre tant que ca tient et s'aligne au DEBUT des que ca ne
+     tient plus : le debordement part alors vers le bas, du cote ou il se voit
+     et ou il ne cache rien. La ligne nue reste devant pour les navigateurs qui
+     ne connaissent pas encore le mot-cle (iOS 15). */
   align-content: center;
+  align-content: safe center;
   min-height: 0;
   padding-bottom: clamp(40px, 6vh, 62px);
 }
@@ -1665,30 +1673,49 @@
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
    tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-   ⚠️ ET UN POURCENTAGE NE SUFFISAIT PAS, PARCE QUE L'IMAGE PORTAIT SA PROPRE
-   MARGE. Le fichier livre laissait 8 % de vide autour du dessin : a « 94 % de
-   la boite » on obtenait 86 % de dessin, et les ancres tombaient entre deux
-   cases. Le fichier a donc ete RECADRE sur son contenu (471 x 452 au lieu de
-   512 x 512, mesure a l'alpha), et le dessin remplit maintenant sa boite. Il
-   reste 2 % de jeu en hauteur, le dessin n'etant pas tout a fait carre : c'est
-   `contain` qui les repartit, en haut et en bas a parts egales. */
+   ⚠️ TROIS CHOSES ONT DU ETRE CORRIGEES AVANT QUE LES QUATRE COINS TOMBENT AU
+   MEME ENDROIT, ET ELLES SE CACHAIENT L'UNE DERRIERE L'AUTRE :
+
+   1. LA BOITE. Le pourcentage se prenait sur le bloc entier, puis sur le
+      plateau cadre compris. Il se prend maintenant sur la zone des cases.
+   2. LA MARGE DU FICHIER. Le dessin livre laissait 8 % de vide autour de lui :
+      a « 94 % de la boite » on n'obtenait que 86 % de dessin. Recadre sur son
+      contenu a l'alpha.
+   3. LE FORMAT. Et c'est celle-la qui restait visible. Le contenu recadre
+      mesurait 471 x 452 — PAS CARRE. Dans une boite carree, `contain` cale sur
+      la largeur et repartit les 4 % restants en haut et en bas : les deux bras
+      verticaux s'arretaient plus tot que les horizontaux, et les quatre ancres
+      ne tombaient pas a la meme distance de leur coin. Le fichier est donc
+      remis d'aplomb — 512 x 512, contenu bord a bord. L'etirement de 4 % est
+      invisible sur un flocon symetrique (mesure : 1,3 % de pixels differents
+      entre le dessin et son miroir horizontal), et il vaut mieux cela qu'une
+      dissymetrie qu'on voit, elle, du premier coup d'oeil.
+
+   Le tout est en pourcentages et en variables : la taille suit celle de la
+   grille, quel que soit l'ecran. */
 #dicewrap .dc-gel img {
-  width: 100%; height: 100%; object-fit: contain;
+  width: 100%; height: 100%; object-fit: fill;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
 /* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
    au milieu d'un conteneur centre, il tombait pile sur trois cases. Il descend
    contre le bord du plateau, sur son propre fond : une phrase qui explique ne
    doit pas cacher ce qu'elle explique. */
+/* ⚠️ PLEINE LARGEUR, IL RECOUVRAIT LES DEUX ANCRES DU BAS — c'est-a-dire deux
+   des quatre coins qu'on vient de caler au pixel. Il se contente maintenant de
+   sa propre largeur, centre : il ne mord plus que sur la case du milieu. */
 #dicewrap .dc-gel span {
   position: absolute;
-  left: 8px; right: 8px; bottom: 8px;
-  font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  left: 50%; bottom: 6px;
+  transform: translateX(-50%);
+  max-width: 92%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 800; letter-spacing: .03em; text-transform: uppercase;
   color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90, 200, 255, .9);
-  font-size: clamp(.72rem, 3vw, 1rem);
-  text-align: center; padding: 4px 8px;
+  font-size: clamp(.62rem, 2.6vw, .88rem);
+  text-align: center; padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(6, 16, 44, .72);
+  background: rgba(6, 16, 44, .78);
 }
 @keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
 

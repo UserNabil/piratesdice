@@ -15,9 +15,22 @@
 
    ============================================================================ */
 
-const GAP = 6;          // entre deux cases
-const FRAME = 9;        // le cadre de bois du plateau (--pd-frame en portrait)
-const PLATE = 26;       // une rangee de plaques de score
+/* ⛔ QUATRE CONSTANTES ONT DISPARU ICI, ET C'EST LA REPARATION D'UN DEFAUT
+   VISIBLE. Elles decrivaient a la main ce qui entoure les neuf cases : l'ecart
+   entre deux cases (6), le cadre de bois (9), la rangee de plaques (26) et
+   l'ecart entre les deux (4). Trois d'entre elles avaient DERIVE avec les
+   feuilles de style — l'ecart vaut 2 px en portrait, le cadre 10 — et surtout
+   AUCUNE ne comptait le LISERE du plateau, quatre pixels de chaque cote, huit
+   par plateau, seize en tout.
+
+   Seize pixels reserves en trop peu, ce sont seize pixels de plateaux en trop :
+   le bloc deborde de l'arene, et comme il centre son contenu, la moitie part
+   PAR LE HAUT — derriere la barre de l'entete et sous l'encoche. C'est ce que
+   l'admin voyait depasser au-dessus de la grille adverse, et que j'ai cherche
+   trois fois du cote des messages.
+
+   Ce fichier existe pour dire que la taille se MESURE. Il ne restait que ces
+   constantes-la pour la deviner encore ; elles sont mesurees a leur tour. */
 /* ⚠️ LE GOBELET N'EST PLUS DANS LA COLONNE DES PLATEAUX. Il occupait la barre
    du milieu, et on lui reservait une fraction de case — 0,58 apres avoir valu
    1,15. Les deux nombres devaient bouger ENSEMBLE avec le CSS qui le dessine,
@@ -27,8 +40,35 @@ const PLATE = 26;       // une rangee de plaques de score
    Ce couplage a disparu avec la refonte : le gobelet est descendu dans le
    bandeau du bas, dont la hauteur se MESURE comme celle des autres bandeaux.
    Plus une seule constante a tenir synchronisee avec une feuille de style. */
-const STACK_GAP = 4;    // entre plateau, plaques et barre centrale
 const MIN_CELL = 32;
+
+/**
+ * Tout ce qu'un plateau ajoute AUTOUR de ses trois rangees de cases : son
+ * lisere, son cadre de bois, les deux ecarts entre rangees, la rangee de
+ * plaques et l'ecart qui l'en separe. Mesure, jamais suppose.
+ */
+function surcout(wrap) {
+  const board = wrap.querySelector('.dc-board');
+  if (!board) return 0;
+  const bs = getComputedStyle(board);
+  const ws = getComputedStyle(wrap);
+  const scores = wrap.querySelector('.dc-scores');
+  return parseFloat(bs.borderTopWidth || '0') + parseFloat(bs.borderBottomWidth || '0')
+       + parseFloat(bs.paddingTop || '0') + parseFloat(bs.paddingBottom || '0')
+       + 2 * parseFloat(bs.rowGap || '0')
+       + (scores ? scores.getBoundingClientRect().height : 0)
+       + parseFloat(ws.rowGap || '0');
+}
+
+/** Ce qu'un plateau ajoute autour de ses trois COLONNES de cases. */
+function surcoutLarge(wrap) {
+  const board = wrap.querySelector('.dc-board');
+  if (!board) return 0;
+  const bs = getComputedStyle(board);
+  return parseFloat(bs.borderLeftWidth || '0') + parseFloat(bs.borderRightWidth || '0')
+       + parseFloat(bs.paddingLeft || '0') + parseFloat(bs.paddingRight || '0')
+       + 2 * parseFloat(bs.columnGap || '0');
+}
 /* ⚠️ LE PLAFOND ETAIT UN PLAFOND DE TELEPHONE. A 66 px, une tablette de
    800x1280 affichait deux plateaux minuscules separes par un grand vide : la
    case etait bornee par une constante, pas par la place disponible. Capture a
@@ -117,14 +157,23 @@ function apply() {
   const gaps = ecarts(arena, cs) + ecarts(boards, boardsCs);
   const height = inner - used - gaps;
 
-  const fixed = 2 * (2 * GAP + 2 * FRAME) + 2 * PLATE + 4 * STACK_GAP;
+  /* Les deux plateaux existent-ils deja ? Avant la premiere partie, non : on se
+     rabat alors sur une reserve prudente plutot que sur zero, qui donnerait des
+     cases trop grandes le temps d'une image. */
+  const enveloppes = boards.querySelectorAll('.dc-boardwrap');
+  let fixed = 0;
+  for (const w of enveloppes) fixed += surcout(w);
+  if (!enveloppes.length) fixed = 160;
   const byHeight = (height - fixed) / 6;
 
   const width = boards.getBoundingClientRect().width || arena.clientWidth;
-  const byWidth = (width - 2 * FRAME - 2 * GAP) / 3;
+  const large = enveloppes.length ? surcoutLarge(enveloppes[0]) : 40;
+  const byWidth = (width - large) / 3;
 
   const cell = Math.floor(Math.max(MIN_CELL, Math.min(plafondCase(), byHeight, byWidth)));
   wrap.style.setProperty('--dc-cell', cell + 'px');
+
+
 
 }
 
