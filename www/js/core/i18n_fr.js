@@ -160,6 +160,30 @@ export const FR = {
 
   'shop.rayon.des': 'Jeux de dés',
 
+  'shop.S002.name': 'Dés d’or',
+
+  'shop.S002.desc': 'Frappés dans l’or ; les points s’embrasent sur une paire. Apparence seulement.',
+
+  'shop.S006.name': 'Dés du sultan',
+
+  'shop.S006.desc': 'Or ciselé et lapis. Apparence seulement.',
+
+  'shop.M001.name': 'Gravure du dragon',
+
+  'shop.M001.desc': 'Un dragon des mers enroulé autour de la face. Apparence seulement.',
+
+  'shop.M002.name': 'Gravure du kraken',
+
+  'shop.M002.desc': 'Tentacules et bulles en travers de la face. Apparence seulement.',
+
+  'shop.M003.name': 'Gravure des os',
+
+  'shop.M003.desc': 'Crâne et tibias, usés sur le bord. Apparence seulement.',
+
+  'shop.M004.name': 'Gravure des joyaux',
+
+  'shop.M004.desc': 'Pierres taillées et étoile de compas. Apparence seulement.',
+
   'shop.rayon.motifs': 'Gravures',
 
   'shop.rayon.bonus': 'Effets',

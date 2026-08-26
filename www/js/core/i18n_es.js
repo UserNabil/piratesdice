@@ -153,6 +153,30 @@ export const ES = {
 
   'shop.rayon.des': 'Juegos de dados',
 
+  'shop.S002.name': 'Dados de oro',
+
+  'shop.S002.desc': 'Acuñados en oro; los puntos arden en pareja. Solo apariencia.',
+
+  'shop.S006.name': 'Dados del sultán',
+
+  'shop.S006.desc': 'Oro cincelado y lapislázuli. Solo apariencia.',
+
+  'shop.M001.name': 'Grabado del dragón',
+
+  'shop.M001.desc': 'Un dragón marino enroscado en la cara. Solo apariencia.',
+
+  'shop.M002.name': 'Grabado del kraken',
+
+  'shop.M002.desc': 'Tentáculos y burbujas por toda la cara. Solo apariencia.',
+
+  'shop.M003.name': 'Grabado de huesos',
+
+  'shop.M003.desc': 'Calavera y tibias, gastadas en el borde. Solo apariencia.',
+
+  'shop.M004.name': 'Grabado de joyas',
+
+  'shop.M004.desc': 'Piedras talladas y una estrella de compás. Solo apariencia.',
+
   'shop.rayon.motifs': 'Grabados',
 
   'shop.rayon.bonus': 'Efectos',

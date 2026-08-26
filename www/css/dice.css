@@ -1777,21 +1777,39 @@
 #dicewrap .dc-shop-shut p { margin: 0; font-weight: 700; font-size: 1.02rem; }
 #dicewrap .dc-shop-shut span { opacity: .72; font-size: .9rem; line-height: 1.45; max-width: 34ch; }
 
-/* Le nom du rayon. Trois listes qui se suivent sans titre se lisent comme une
-   seule : c'est ce qu'etait la boutique avant, et on n'y trouvait plus rien. */
-#dicewrap .dc-shop-rayon {
+/* ⛔ LES RAYONS ETAIENT DES TITRES DANS UN LONG ROULEAU, ils sont devenus des
+   ONGLETS : un rayon a un doigt du precedent, et la liste tient dans un ecran.
+   Ils reprennent la facture des onglets du rail (`.dc-tab`) — meme geste, meme
+   dessin, on ne fait pas deux fois le meme objet. */
+#dicewrap .dc-shop-onglets {
+  display: flex;
+  gap: 6px;
+  margin: 2px 0 12px;
+}
+#dicewrap .dc-shop-onglet {
+  flex: 1 1 0;
+  min-width: 0;
   font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-weight: 400;
-  color: var(--gold-hi);
-  letter-spacing: .06em;
+  font-size: .82rem;
+  letter-spacing: .04em;
   text-transform: uppercase;
-  font-size: .92rem;
-  margin: 18px 0 8px;
-  padding-bottom: 5px;
-  border-bottom: 2px solid rgba(232, 200, 106, .28);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, .6);
+  color: var(--txt);
+  padding: 8px 6px;
+  border: 2px solid rgba(232, 200, 106, .28);
+  border-radius: 11px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .22));
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-#dicewrap .dc-shop-rayon:first-of-type { margin-top: 6px; }
+#dicewrap .dc-shop-onglet.on {
+  color: var(--ink);
+  border-color: var(--blanc);
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .4);
+}
 
 #dicewrap .dc-shop-item {
   display: flex;

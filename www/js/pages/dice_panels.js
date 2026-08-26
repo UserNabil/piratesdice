@@ -71,10 +71,15 @@ function enPartie() {
 
 /* Les rayons de la boutique, dans l'ordre ou l'on s'habille. */
 const RAYONS = [
-  { titre: 'shop.rayon.des', tient: estParure },
-  { titre: 'shop.rayon.motifs', tient: estMotif },
-  { titre: 'shop.rayon.bonus', tient: (p) => !porte(p) },
+  { cle: 'des', titre: 'shop.rayon.des', tient: estParure },
+  { cle: 'motifs', titre: 'shop.rayon.motifs', tient: estMotif },
+  { cle: 'bonus', titre: 'shop.rayon.bonus', tient: (p) => !porte(p) },
 ];
+
+/* ⚠️ LE RAYON OUVERT SURVIT AU RE-RENDU. La boutique se redessine apres chaque
+   achat : sans cette memoire, on achetait une gravure et on se retrouvait
+   devant les jeux de des, a chercher ou l'on etait. */
+let rayonOuvert = 'des';
 
 export async function renderShop(body) {
   /* ⛔ ON N'ACHETE PAS SA MISE EN COURS DE ROUTE. Vecu : 1000 pieces misees,
@@ -122,14 +127,28 @@ export async function renderShop(body) {
         ${bouton(p, have)}
       </div>`;
 
-  const rayons = RAYONS.map((r) => {
-    const lot = products.filter((p) => r.tient(p));
-    if (!lot.length) return '';
-    return `<h4 class="dc-shop-rayon">${esc(t(r.titre))}</h4>`
-      + `<div class="dc-shop">${lot.map(article).join('')}</div>`;
-  }).join('');
+  /* ⛔ LES TROIS RAYONS SE SUIVAIENT, ET LA BOUTIQUE FAISAIT TROIS ECRANS DE
+     HAUT. Des titres dans un long rouleau donnent l'ordre des choses, pas
+     l'acces : pour voir une gravure il fallait passer devant tous les jeux de
+     des. En onglets, chaque rayon est a un doigt du precedent et la liste
+     tient dans un ecran. */
+  const pleins = RAYONS.map((r) => ({ r, lot: products.filter((p) => r.tient(p)) }))
+    .filter((x) => x.lot.length);
+  if (!pleins.some((x) => x.r.cle === rayonOuvert)) {
+    rayonOuvert = pleins.length ? pleins[0].r.cle : 'des';
+  }
+  const ouvert = pleins.find((x) => x.r.cle === rayonOuvert);
 
-  body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>${rayons}`;
+  body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>
+    <div class="dc-shop-onglets" role="tablist">${pleins.map((x) => `
+      <button class="dc-shop-onglet${x.r.cle === rayonOuvert ? ' on' : ''}"
+              role="tab" aria-selected="${x.r.cle === rayonOuvert}"
+              data-rayon="${esc(x.r.cle)}">${esc(t(x.r.titre))}</button>`).join('')}</div>
+    <div class="dc-shop">${(ouvert ? ouvert.lot : []).map(article).join('')}</div>`;
+
+  body.querySelectorAll('[data-rayon]').forEach((b) => {
+    b.onclick = () => { rayonOuvert = b.dataset.rayon; renderShop(body); };
+  });
 
   body.querySelectorAll('[data-skin]').forEach((b) => {
     b.onclick = () => {
