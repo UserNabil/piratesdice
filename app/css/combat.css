@@ -252,48 +252,17 @@
 
   /* ── LE GIVRE DU GEL, SUR LA GRILLE ────────────────────────────────────── */
 
-  /* ⚠️ CE BLOC EXISTE PARCE QUE J'AI RATE CE CADRAGE SIX FOIS. 62 %, 50 %, la
-     zone des cases, deux cases et deux ecarts, 100 % du plateau, 115 % — a
-     chaque essai il fallait retrouver la regle dans dice.css, deviner sur quoi
-     portait le pourcentage, reconstruire, reinstaller, regarder. Une demi-heure
-     par tentative, pour une valeur qui se juge a l'oeil en deux secondes.
-     Ce qui se juge a l'oeil doit se regler a la main. Les quatre reglages
-     ci-dessous suffisent a poser le sceau n'importe ou sur la grille, sans
-     toucher a une seule ligne de code.
+  /* ⛔ LES SEPT REGLAGES DE CADRAGE ONT DISPARU, ET C'EST LA VRAIE CORRECTION.
+     Marge, echelle, decalage en x, en y, puis les trois memes pour mon cote :
+     sept boutons pour faire coincider deux rectangles qui, eux, existaient
+     deja. Chaque reglage etait un aveu — la boite du sceau n'etait pas la
+     grille, alors on la rattrapait a la main, et il fallait la rattraper deux
+     fois puisque les deux plateaux ne sont pas empiles dans le meme sens.
 
-     COMMENT S'EN SERVIR. Les valeurs partent de la GRILLE — les neuf cases,
-     cadre du plateau exclu :
-       --cbt-gel-marge   ce qu'on retranche de chaque cote du plateau pour
-                         tomber sur la grille. Par defaut le lisere, seule
-                         epaisseur reelle entre le bord et la premiere case.
-       --cbt-gel-echelle 1 = le sceau fait exactement la grille. 1.15 = il
-                         deborde de 15 %. 0.8 = il flotte au milieu.
-       --cbt-gel-x / -y  pour le decaler, si le dessin n'est pas centre sur
-                         lui-meme. En pourcentage de la grille, positif vers la
-                         droite et vers le bas.
-
-     Le sceau reste TOUJOURS centre sur la grille : les trois derniers reglages
-     s'appliquent autour de ce centre, donc un changement d'echelle ne deplace
-     pas le dessin, il le fait respirer. */
-  --cbt-gel-marge: var(--cbt-plateau-lisere, 4px);
-  --cbt-gel-echelle: 1.07;
-  --cbt-gel-x: 0%;
-  --cbt-gel-y: -3%;
-
-  /* ── ET MON COTE A LES SIENS ───────────────────────────────────────────
-     ⚠️ LES DEUX PLATEAUX NE SONT PAS EMPILES DANS LE MEME SENS. Chez
-     l'adversaire, la rangee de plaques est SOUS le plateau ; chez moi elle est
-     AU-DESSUS (`buildBoard` inverse l'ordre). Une boite calee « en haut du
-     bloc » tombe donc sur le plateau d'un cote et sur les plaques de l'autre :
-     c'est pour cela que le meme reglage donnait deux resultats.
-
-     Le cablage plus bas corrige la CAUSE — la boite s'accroche au plateau de
-     chaque cote, en haut pour l'un, en bas pour l'autre. Ces trois reglages
-     restent pour l'ajustement fin : ils valent par defaut ceux d'en face, et
-     ne s'en ecartent que si on le leur demande. */
-  --cbt-gel-moi-echelle: var(--cbt-gel-echelle);
-  --cbt-gel-moi-x: var(--cbt-gel-x);
-  --cbt-gel-moi-y: var(--cbt-gel-y);
+     `.dc-gel` est desormais POSE DANS `.dc-board` (voir dice.css) : le plateau
+     n'ayant pas de rembourrage, l'interieur de son cadre EST la grille, et
+     `inset: 0` y colle le sceau des deux cotes sans rien a calculer. Un reglage
+     qu'on ne peut plus derregler vaut mieux qu'un reglage bien regle. */
 
   /* Le voile sombre, lui, couvre TOUT LE PLATEAU — cadre compris : c'est le
      plateau qui gele, pas seulement ses cases. Il prend donc la courbure du
@@ -638,46 +607,11 @@
    Ne restent que la taille du jeton et le RAYON de l'arc. */
 /* ── le givre du gel ──────────────────────────────────────────────────────── */
 
-/* Le voile : tout le plateau, courbure comprise. */
+/* Le voile : la grille, et rien qu'elle — il prend la courbure des cases, pas
+   celle du plateau, puisqu'il ne couvre plus le cadre. */
 #dicewrap .dc-gel {
   background: var(--cbt-gel-voile);
-  border-radius: var(--cbt-plateau-courbure);
-}
-
-/* LA BOITE DU SCEAU S'ACCROCHE AU PLATEAU, PAS AU HAUT DU BLOC.
-   ⚠️ CHEZ L'ADVERSAIRE LE PLATEAU EST LE PREMIER ENFANT, CHEZ MOI LE DERNIER :
-   `buildBoard` pose les plaques de score sous le plateau d'en face et au-dessus
-   du mien, pour que les chiffres soient toujours du cote du centre. Une boite
-   calee `top: 0` tombait donc sur le plateau d'un cote et sur les plaques de
-   l'autre — le givre paraissait deregle chez moi et juste en face, avec le
-   MEME reglage. On s'accroche donc au bon bord de chaque cote. */
-#dicewrap .dc-gel {
-  left: var(--cbt-gel-marge);
-  right: var(--cbt-gel-marge);
-}
-#dicewrap .dc-boardwrap-top .dc-gel { top: var(--cbt-gel-marge); bottom: auto; }
-#dicewrap .dc-boardwrap:not(.dc-boardwrap-top) .dc-gel {
-  bottom: var(--cbt-gel-marge); top: auto;
-}
-
-/* Le sceau lui-meme, centre sur la grille et libre de deborder.
-   ⚠️ `translate(-50%, -50%)` PUIS le decalage voulu : l'ordre compte, sinon le
-   decalage serait lui aussi divise par deux. */
-#dicewrap .dc-gel img {
-  left: 50%;
-  top: 50%;
-  width: calc(100% * var(--cbt-gel-echelle));
-  height: calc(100% * var(--cbt-gel-echelle));
-  transform: translate(-50%, -50%)
-             translate(var(--cbt-gel-x), var(--cbt-gel-y));
-}
-
-/* Mon cote peut s'ecarter du sien, s'il le faut. */
-#dicewrap .dc-boardwrap:not(.dc-boardwrap-top) .dc-gel img {
-  width: calc(100% * var(--cbt-gel-moi-echelle));
-  height: calc(100% * var(--cbt-gel-moi-echelle));
-  transform: translate(-50%, -50%)
-             translate(var(--cbt-gel-moi-x), var(--cbt-gel-moi-y));
+  border-radius: var(--pd-round, 12px);
 }
 
 #dicewrap .dc-bonus { --pd-fan-r: var(--cbt-bonus-rayon); }

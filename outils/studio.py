@@ -51,6 +51,32 @@ ETAT = {"v": 0, "vars": {}}
 VERROU = threading.Lock()
 
 DECLARATION = re.compile(r"^\s*(--cbt-[a-z0-9-]+)\s*:\s*([^;]+);", re.I | re.M)
+RENVOI = re.compile(r"^var\(\s*(--[a-z0-9-]+)\s*(?:,\s*(.+?))?\s*\)$", re.I | re.S)
+
+
+def resoudre(valeur, table, profondeur=6):
+    """Suivre les `var(--autre)` jusqu'a une valeur ecrite en clair.
+
+    ⚠️ POUR LE CURSEUR, PAS POUR LE FICHIER. Un reglage qui en recopie un autre
+    — `--cbt-gel-moi-echelle: var(--cbt-gel-echelle)` — n'est pas un nombre :
+    sans ce demelage l'atelier n'affichait qu'un champ de texte, et les trois
+    reglages de MON cote du plateau restaient sans curseur alors qu'ils sont
+    exactement ceux qu'on veut regler a l'oeil. On ne resout que pour placer le
+    curseur au bon endroit ; le fichier garde son renvoi tant que personne n'a
+    touche a rien, et ne recoit un nombre que le jour ou on bouge le curseur.
+    """
+    for _ in range(profondeur):
+        m = RENVOI.match(valeur.strip())
+        if not m:
+            return valeur
+        vise, secours = m.group(1), m.group(2)
+        if vise in table:
+            valeur = table[vise]
+        elif secours:
+            valeur = secours
+        else:
+            return valeur
+    return valeur
 
 
 def reglages():
@@ -62,17 +88,19 @@ def reglages():
     variante d'un ecran particulier.
     """
     out = []
-    vus = set()
+    table = {}
     for chemin in FEUILLES:
         if not os.path.isfile(chemin):
             continue
         texte = open(chemin, encoding="utf-8").read()
         for nom, valeur in DECLARATION.findall(texte):
-            if nom in vus:
+            if nom in table:
                 continue
-            vus.add(nom)
+            table[nom] = valeur.strip()
             out.append({"nom": nom, "valeur": valeur.strip(),
                         "ou": os.path.basename(chemin)})
+    for r in out:
+        r["depart"] = resoudre(r["valeur"], table)
     return out
 
 
@@ -143,11 +171,16 @@ const mot = document.getElementById('mot');
 let modifs = {};
 
 function unite(v){ const m=/^\\s*(-?\\d+(?:\\.\\d+)?)\\s*(px|%|em|rem|vw|vh|deg|s|ms)?\\s*$/.exec(v||''); return m?{n:parseFloat(m[1]),u:m[2]||''}:null; }
+/* ⚠️ LA BORNE BASSE DOIT POUVOIR ETRE NEGATIVE. Le premier jeu de bornes
+   partait de zero : le curseur de `--cbt-gel-y`, dont la bonne valeur est -3%,
+   ne pouvait pas atteindre sa propre valeur. Un decalage se regle des deux
+   cotes du centre ou il ne se regle pas. */
 function bornes(n,u){
-  if(u==='%') return [0,Math.max(200,Math.ceil(n*2)),1];
-  if(u==='')  return [0,Math.max(2,Math.ceil(n*2)),0.01];
-  if(u==='deg')return [-180,180,1];
-  return [0,Math.max(40,Math.ceil(n*3)),1];
+  const b=(bas,haut,pas)=>[Math.min(bas,Math.floor(n)),Math.max(haut,Math.ceil(n*2)),pas];
+  if(u==='%')  return b(-100,200,0.5);
+  if(u==='')   return b(0,2,0.01);
+  if(u==='deg')return b(-180,180,1);
+  return b(n<0?-40:0,40,1);
 }
 function famille(nom){ const r=nom.slice(6); const i=r.indexOf('-'); return i<0?r:r.slice(0,i); }
 
@@ -158,10 +191,10 @@ fetch('/reglages').then(r=>r.json()).then((liste)=>{
     const f=famille(r.nom);
     if(f!==fam){ fam=f; const t=document.createElement('div'); t.className='fam'; t.textContent=f; corps.appendChild(t); }
     const l=document.createElement('div'); l.className='l';
-    const nom=document.createElement('span'); nom.className='nom'; nom.title=r.nom+'  ('+r.ou+')';
+    const nom=document.createElement('span'); nom.className='nom'; nom.title=r.nom+'  ('+r.ou+')'+(r.depart!==r.valeur?'  = '+r.depart:'');
     nom.textContent=r.nom.slice(6+f.length+1)||f; l.appendChild(nom);
     const champ=document.createElement('input'); champ.type='text'; champ.value=r.valeur; champ.spellcheck=false;
-    const s=unite(r.valeur); let gl=null;
+    const s=unite(r.depart||r.valeur); let gl=null;
     if(s){ const [a,b,p]=bornes(s.n,s.u); gl=document.createElement('input'); gl.type='range';
            gl.min=a; gl.max=b; gl.step=p; gl.value=s.n; l.appendChild(gl); }
     l.appendChild(champ); corps.appendChild(l);

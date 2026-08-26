@@ -580,20 +580,74 @@ function paint(full, frozen, settle) {
  * y reste jusqu'a ce que le tour soit effectivement saute. On lit alors la
  * situation en regardant l'endroit ou elle se joue.
  */
+/**
+ * Poser le givre EXACTEMENT sur les cases, ni plus ni moins.
+ *
+ * ⛔ SEPT REGLAGES ONT ESSAYE DE FAIRE CE QUE FONT CES DIX LIGNES. Marge,
+ * echelle, decalage en x, en y, et les trois memes pour mon cote : autant de
+ * boutons pour faire coincider deux rectangles qui existaient deja. Chacun
+ * etait un aveu — la boite du sceau n'etait pas la grille, alors on la
+ * rattrapait a la main.
+ *
+ * ⚠️ ET L'INTERIEUR DU PLATEAU N'EST PAS LA GRILLE NON PLUS. Mesure au banc :
+ * plateau 114→386, cases 123→377 — dix-huit pixels d'ecart. Ils viennent de la
+ * rangee de plaques, dont le rembourrage (`--pd-frame`, 9 px) elargit le bloc,
+ * donc le plateau qui s'y etire ; ses trois pistes deviennent plus larges que
+ * les cases, qui s'y centrent. `inset: 0` posait donc le sceau a neuf pixels
+ * des cases sur les quatre cotes.
+ *
+ * Ce qu'on veut est ce qu'on VOIT : la boite des neuf cases. On la mesure. Une
+ * mesure ne se derregle pas et ne se demande pas deux fois — elle vaut pour les
+ * deux plateaux, quel que soit le sens dans lequel ils sont empiles.
+ */
+function calerGel(board, el) {
+  const cases = board.querySelectorAll('.dc-cell');
+  let g = Infinity, h = Infinity, d = -Infinity, b = -Infinity;
+  for (const c of cases) {
+    const q = c.getBoundingClientRect();
+    if (!q.width || !q.height) continue;
+    g = Math.min(g, q.left); h = Math.min(h, q.top);
+    d = Math.max(d, q.right); b = Math.max(b, q.bottom);
+  }
+  if (!isFinite(g)) return;
+  /* ⚠️ LE REPERE D'UN ENFANT ABSOLU EST LA BOITE DE REMBOURRAGE : le cadre du
+     plateau ne compte pas dans les coordonnees, il faut donc le retrancher. */
+  const p = board.getBoundingClientRect();
+  const st = getComputedStyle(board);
+  const cg = parseFloat(st.borderLeftWidth) || 0;
+  const ch = parseFloat(st.borderTopWidth) || 0;
+  el.style.left = (g - p.left - cg) + 'px';
+  el.style.top = (h - p.top - ch) + 'px';
+  el.style.right = 'auto';
+  el.style.bottom = 'auto';
+  el.style.width = (d - g) + 'px';
+  el.style.height = (b - h) + 'px';
+}
+
 function renderGel(st) {
   for (let seat = 0; seat < 2; seat++) {
     const board = boardOf(seat);
-    const wrap = board && board.parentNode;
-    if (!wrap || !wrap.classList.contains('dc-boardwrap')) continue;
+    if (!board) continue;
     const gele = !!(st.gele && st.gele[seat]) && st.phase === 'playing';
-    const pose = wrap.querySelector('.dc-gel');
+    const pose = board.querySelector('.dc-gel');
     if (!gele) { if (pose) pose.remove(); continue; }
-    if (pose) continue;                       // deja la : on ne le refait pas
+    /* Deja la : on ne le refait pas, mais on le recale — la grille change de
+       taille quand l'ecran tourne ou que `fit` repasse. */
+    if (pose) { calerGel(board, pose); continue; }
     const el = document.createElement('div');
     el.className = 'dc-gel';
     el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
       + '<span>' + esc(t(seat === S.seat ? 'fx.frozenYou' : 'fx.frozenWait')) + '</span>';
-    wrap.appendChild(el);
+    /* ⚠️ DANS LE PLATEAU, PAS DANS LE BLOC. Le bloc contient aussi la rangee de
+       plaques de score — et elle est SOUS le plateau d'en face, AU-DESSUS du
+       mien : une boite calee dessus tombait a cote d'un cote sur deux. Posee
+       dans le plateau, qui n'a pas de rembourrage, elle vaut la grille des deux
+       cotes sans une seule soustraction. */
+    board.appendChild(el);
+    calerGel(board, el);
+    /* Une fois de plus au tour suivant : a l'instant de l'insertion, la police
+       du libelle peut encore manquer et le plateau bouger d'un pixel. */
+    requestAnimationFrame(() => { if (el.isConnected) calerGel(board, el); });
   }
 }
 

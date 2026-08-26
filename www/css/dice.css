@@ -1672,20 +1672,26 @@
    retrancher, `--pd-frame` n'etant pas pose en rembourrage sur `.dc-board`
    (verifie : il ne sert qu'a la rangee de plaques). Mesure au banc : plateau
    108→393, cases 112→389. */
+/* ⛔ LE SCEAU N'EST PLUS ACCROCHE AU BLOC, IL EST DANS LE PLATEAU.
+   Tant qu'il pendait a `.dc-boardwrap`, sa boite devait etre RECONSTRUITE :
+   retrancher le lisere, choisir le bon bord — en haut chez l'adversaire, en bas
+   chez moi, les plaques de score n'etant pas du meme cote — puis rattraper le
+   reste a l'echelle et au decalage. Six cadrages rates, quatre reglages, et
+   toujours deux resultats differents pour une seule consigne.
+
+   `.dc-gel` est maintenant enfant de `.dc-board`. Le plateau n'a pas de
+   rembourrage : la boite de reference d'un enfant absolu est donc exactement
+   son interieur, c'est-a-dire LA GRILLE. `inset: 0` et c'est fini — meme boite
+   des deux cotes, sans lisere a retrancher, sans bord a choisir, sans echelle a
+   regler. Ce qui doit coincider par construction ne se regle pas. */
 #dicewrap .dc-gel {
   position: absolute;
-  /* Le bord auquel on s'accroche vient de combat.css : le plateau est le
-     PREMIER enfant du bloc chez l'adversaire, le DERNIER chez moi. */
-  top: var(--cbt-plateau-lisere, 4px);
-  left: var(--cbt-plateau-lisere, 4px);
-  right: var(--cbt-plateau-lisere, 4px);
-  bottom: auto;
-  aspect-ratio: 1;
+  inset: 0;
   z-index: 12;
   display: grid;
   place-items: center;
   pointer-events: none;
-  border-radius: var(--cbt-plateau-courbure, 20px);
+  border-radius: var(--pd-round, 12px);
   background: radial-gradient(closest-side, rgba(70, 170, 255, .20), rgba(8, 16, 40, .58));
   animation: dc-gel-vient .22s ease-out;
 }
