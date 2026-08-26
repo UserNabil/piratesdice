@@ -32,6 +32,16 @@ def keyPw = System.getenv('ANDROID_KEY_PASSWORD') ?: signingProps['keyPassword']
  */
 def buildNumber = (project.findProperty('versionCode') ?: '1').toString().toInteger()
 
+/*
+ * Un suffixe de nom de version, pour les paquets qui ne passent pas par Play.
+ *
+ * ⚠️ IL NE TOUCHE PAS AU `versionCode`, seulement au nom LISIBLE. Un testeur a
+ * qui l'on envoie un APK doit pouvoir dire ce qu'il a installe — « 1.0.74 » a
+ * cote de « 1.0.74-essai », c'est la difference entre un rapport de bogue utile
+ * et une heure perdue a chercher sur quelle version il jouait.
+ */
+def versionSuffix = (project.findProperty('versionSuffix') ?: '').toString()
+
 def canSign = storeFilePath != null && storePw != null && keyAliasName != null && keyPw != null
 
 android {
@@ -42,7 +52,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode buildNumber
-        versionName "1.0." + buildNumber
+        versionName "1.0." + buildNumber + versionSuffix
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
