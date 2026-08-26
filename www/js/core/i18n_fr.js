@@ -104,6 +104,10 @@ export const FR = {
   'game.placeStake': 'Posez votre mise',
   'game.matchOver': 'Partie terminée',
   'game.pickBlast': 'Choisissez un dé à détruire',
+  /* Le bouton de lancer devient le bouton d'annulation pendant la visee : un
+     effet arme par erreur n'a plus a coûter le tour entier. */
+  'game.cancelBonus': 'Annuler',
+  'fx.alreadyFrozen': 'Son tour est déjà gelé',
   'game.leave': 'Quitter la partie',
   'game.leaveTitle': 'Abandonner la partie',
   'game.leaveConfirm': 'Partir maintenant, c’est perdre la partie et la mise. Quitter quand même ?',
@@ -173,8 +177,12 @@ export const FR = {
   'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer — une relance offerte, une ouverture qui emporte la valeur au-dessus, un œil sur le prochain dé, des triples plus riches, ou un dé déjà posé. Choisissez le vôtre sur le pont.',
   'rules.shortcuts': 'Raccourcis : {space} lance, {one} {two} {three} posent dans une colonne, {esc} ferme.',
 
-  'away.taken': '{name} s’est absenté — l’IA du bord a joué ce tour',
-  'away.you': 'Vous étiez absent : l’IA a joué pour vous',
+  /* ⚠️ CES DEUX PHRASES DECRIVAIENT L'ANCIENNE REGLE. L'IA jouait le tour de
+     l'absent — et lui offrait donc le meilleur coup. Le tour SAUTE desormais :
+     dire le contraire a l'ecran serait pire que de ne rien dire, puisqu'on
+     chercherait un dé qui n'a jamais ete pose. */
+  'away.taken': '{name} n’a pas joué à temps — son tour a sauté',
+  'away.you': 'Trop tard — votre tour a sauté',
 
   'set.title': 'Réglages',
   'set.sound': 'Son',

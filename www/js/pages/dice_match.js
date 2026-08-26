@@ -158,6 +158,10 @@ function buildGame() {
   });
 
   $('#dc-cup').onclick = () => {
+    /* En visee, ce bouton DESARME : c'est la sortie de secours d'un effet
+       arme par erreur, et elle doit passer avant tout le reste. */
+    const vise = S.state && S.state.pending && S.state.pending.seat === S.seat;
+    if (vise) { if (S.net) S.net.send({ t: 'unbonus' }); return; }
     if (!myTurn()) { toast(t('game.waitTurn'), 'warn'); return; }
     if (S.state.dice[S.seat] !== null) { toast(t('game.alreadyRolled'), 'warn'); return; }
     S.net.send({ t: 'roll' });
@@ -872,14 +876,22 @@ export function renderBonusRack() {
      jeton grise sans savoir ni a quoi il sert, ni pourquoi il ne part pas. Le
      bouton reste donc VIVANT : il repond, et ce qu'il repond est la raison —
      exactement ce que fait deja le gobelet quand ce n'est pas votre tour. */
+  /* ⚠️ LE GEL POUVAIT SE MARTELER. Le serveur refuse bien un second gel tant que
+     le premier n'a pas ete consomme — `check` de B006 — mais l'ecran, lui, ne
+     disait rien : le jeton restait vif, on appuyait, et le refus revenait en
+     message d'erreur. Trois appuis, trois erreurs, et l'impression que le jeu
+     ne repond pas. Un bouton qui ne peut rien faire doit le montrer AVANT. */
+  const dejaGele = !!(S.state.gele && S.state.gele[1 - S.seat]);
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
     const cadeau = b.classList.contains('dc-bonus-free');
     const epuise = left <= 0 && !cadeau;
-    b.classList.toggle('dc-bonus-mute', !myTurn() || epuise);
+    const redondant = b.dataset.id === 'B006' && dejaGele;
+    b.classList.toggle('dc-bonus-mute', !myTurn() || epuise || redondant);
     b.onclick = () => {
       const nom = b.dataset.nom || '';
       if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
       if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
+      if (redondant) { toast(t('fx.alreadyFrozen'), 'warn'); return; }
       S.net.send({ t: 'bonus', identify: b.dataset.id });
     };
   });
@@ -964,6 +976,20 @@ function renderTargeting(st) {
     const board = boardOf(seat);
     if (board) board.classList.toggle('dc-target', !!pending && pending.target === seat);
   });
+  /* ⚠️ UN EFFET ARME NE POUVAIT PLUS ETRE DESARME. Le serveur sait pourtant le
+     faire depuis le debut — le message `unbonus` et `cancelBonus()` existent —
+     mais rien a l'ecran ne l'appelait : un joueur qui armait un canon par erreur
+     restait bloque en visee jusqu'a ce que la pendule joue a sa place. Le seul
+     moyen d'en sortir etait de perdre son tour.
+     Le bandeau du bas prend donc le role d'annulation pendant la visee : c'est
+     le bouton qu'on a deja sous le pouce, et il ne sert a rien d'autre a cet
+     instant precis. */
+  const cup = $('#dc-cup');
+  if (cup) {
+    cup.classList.toggle('dc-cup-annule', !!pending);
+    const mot = cup.querySelector('span:last-child');
+    if (mot) mot.textContent = pending ? t('game.cancelBonus') : t('foot.roll');
+  }
   if (pending) {
     const turn = $('#dc-turn');
     if (turn) turn.textContent = t('game.pickBlast');

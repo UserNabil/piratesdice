@@ -646,10 +646,20 @@
    entiere), la carte serait REPEINTE par le compteur au lieu d'etre cerclee.
    ============================================================================ */
 
+/* ⚠️ LE RAYON N'EST PAS CELUI DE LA CARTE PLUS SON JONC : C'EST CELUI DE LA
+   CARTE. La boite de reference d'un enfant absolu est la boite de REMBOURRAGE
+   de son parent — pas sa boite de bordure. `inset: -3px` retombe donc deja
+   exactement sur la boite de bordure, celle dont `border-radius: 18px` decrit
+   le contour. En ajoutant l'epaisseur du jonc au rayon, le minuteur decrivait
+   un arc de 21 px la ou la carte en decrit un de 18 : trois pixels d'ecart,
+   invisibles sur les cotes droits et parfaitement visibles dans les quatre
+   coins — « l'arrondi du timer doit etre le meme que celui du rectangle ».
+   Le `padding` de 3 px peint alors le minuteur PAR-DESSUS le jonc creme, au
+   pixel pres, au lieu de dessiner un second cerne a cote. */
 #dicewrap .dc-pc-clock {
   position: absolute;
   inset: calc(-1 * var(--cbt-joueur-jonc-ep, 3px));
-  border-radius: calc(var(--cbt-joueur-courbure, 18px) + var(--cbt-joueur-jonc-ep, 3px));
+  border-radius: var(--cbt-joueur-courbure, 18px);
   padding: var(--cbt-joueur-jonc-ep, 3px);
   pointer-events: none;
   opacity: 0;
@@ -1389,10 +1399,14 @@
   display: inline-flex; align-items: center; justify-content: center;
   gap: 8px;
 }
+/* ⚠️ 1,9 em, C'EST LA HAUTEUR DU MOT A COTE — donc une vignette. Sur l'ecran
+   du salon prive (« ouvrir une table », « rejoindre », « annuler ») ces
+   dessins sont la seule chose qui distingue trois boutons de meme forme, et on
+   n'y voyait rien. Retour de l'admin, capture a l'appui. */
 #dicewrap .dc-btn-art > img,
 .pd-set .dc-btn-art > img,
 .pd-set .pd-toggle-art > img {
-  width: 1.9em; height: 1.9em; object-fit: contain; flex: none;
+  width: 2.7em; height: 2.7em; object-fit: contain; flex: none;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .55));
 }
 #dicewrap .dc-btn-big.dc-btn-art > img { width: 2.3em; height: 2.3em; }
@@ -1569,6 +1583,14 @@
 #dicewrap .dc-foot-main > span:last-child { text-shadow: 0 1px 0 rgba(255,255,255,.4); }
 #dicewrap .dc-foot-on { filter: brightness(1.18); box-shadow: inset 0 0 0 2px rgba(255,235,170,.95), 0 0 14px rgba(255,205,110,.6); }
 
+/* Pendant la visee, le bouton central desarme au lieu de lancer : il change de
+   couleur pour qu'on ne s'y trompe pas, et le mot change avec lui. */
+#dicewrap .dc-cup-annule {
+  background: linear-gradient(180deg, #ff9a8a, #d0503c);
+  color: #2a0d08;
+  box-shadow: inset 0 0 0 2px rgba(255, 220, 210, .8), 0 3px 0 rgba(110, 30, 20, .55);
+}
+
 /* ── l'eventail de la cale ────────────────────────────────────────────────── */
 
 /* Ferme, il ne prend aucune place — c'est tout l'interet : le ratelier vivait
@@ -1608,8 +1630,18 @@
    jeton joue jusqu'au tour effectivement saute. Plus d'animation de sortie :
    c'est le JS qui le retire quand le gel se consomme, sinon le dessin
    s'effacerait alors que le gel court toujours. */
+/* ⚠️ IL COUVRAIT LE BLOC, PAS LA GRILLE — et c'est de la que venait l'erreur de
+   taille. `.dc-boardwrap` porte le plateau ET sa rangee de plaques : sa hauteur
+   depasse celle du plateau d'une trentaine de pixels, si bien qu'un pourcentage
+   pris dessus ne voulait rien dire par rapport aux neuf cases. Le plateau est
+   CARRE — trois cases carrees, deux ecarts, deux cadres, dans les deux sens —
+   donc `aspect-ratio: 1` avec les deux bords lateraux colles suffit a retomber
+   exactement dessus, sans mesurer quoi que ce soit en JS. */
 #dicewrap .dc-gel {
-  position: absolute; inset: 0; z-index: 12;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: auto;
+  aspect-ratio: 1;
+  z-index: 12;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 6px; pointer-events: none;
   border-radius: var(--cbt-plateau-courbure, 20px);
@@ -1621,13 +1653,15 @@
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
    tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-   ⚠️ ET 62 % ETAIT ENCORE TROP. Le dessin remplit 92 % de sa toile et ses
-   chaines rayonnent jusqu'aux coins : a 62 % il atteignait les cases d'angle et
-   le plateau disparaissait dessous — on ne voyait plus les des qu'on venait de
-   geler. « Regarde la taille de la grille par rapport a l'asset. » A la moitie,
-   le sceau tient dans les quatre cases du centre et laisse la couronne lisible. */
+   ⚠️ ET LES DEUX PREMIERS ESSAIS — 62 % PUIS 50 % — ETAIENT FAUX DES DEUX COTES.
+   Ils etaient pris sur `.dc-boardwrap`, qui est plus haut que le plateau : le
+   pourcentage ne se rapportait pas a la grille. Une fois la boite recalee sur
+   le plateau (ci-dessus), la question redevient simple — ce dessin EST une
+   grille gelee, ses chaines partent du centre vers les huit cases et ses ancres
+   se posent dans les coins. Il vaut donc la grille entiere, cadre de bois
+   deduit : 94 %. A la moitie il flottait au milieu comme un jeton oublie. */
 #dicewrap .dc-gel img {
-  width: 50%; height: auto; max-height: 46%; object-fit: contain;
+  width: 94%; height: auto; max-height: 94%; object-fit: contain;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
 /* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
@@ -2468,14 +2502,20 @@
 }
 #dicewrap .dc-shout-bad { color: #ffb3a8; text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 22px rgba(165, 51, 42, .6); }
 
-/* ⚠️ ET LA BANNIERE AUSSI SORT DU BON COTE. Elle s'ecrivait a 42 % — c'est-a-dire
-   pile sur les deux portraits — pour un canon qui a detruit MON de comme pour un
-   gel que J'AI pose sur l'autre. Rien ne distinguait les deux. Elle se pose donc
-   sur le plateau du joueur concerne : c'est la que le coup a eu lieu. */
-#dicewrap .dc-shout-haut { top: 20%; }
-/* 26 % et non 22 : le milieu de mon plateau, pas son pied. Le bandeau du bas
-   occupe deja un dixieme de l'ecran, ce qui decale le centre visuel. */
-#dicewrap .dc-shout-bas  { top: auto; bottom: 26%; }
+/* ⛔ LA BANNIERE A ETE LATERALISEE, ET C'ETAIT UNE ERREUR. Posee sur le plateau
+   du joueur concerne, celle du haut se retrouvait a 20 % de l'arene — c'est-a-
+   dire sous la barre de l'entete sur un ecran a encoche, ou elle etait
+   simplement coupee. Retour de l'admin, capture a l'appui : « ce message doit
+   s'afficher au centre du jeu pour comprendre. »
+
+   Elle reste donc AU CENTRE, ou rien ne la recouvre et ou l'oeil est deja. Ce
+   qui dit de qui il s'agit, c'est le TON — dore quand c'est pour moi, rouge
+   quand c'est contre — et la phrase elle-meme. Le cote reste la regle pour
+   l'alerte de tour et pour les repliques, qui pendent a la carte de leur
+   auteur ; une banniere, elle, n'appartient pas a une moitie d'ecran.
+   `.dc-shout-haut` et `.dc-shout-bas` sont gardees inertes : le JS les pose
+   encore, et une classe sans regle ne fait rien — mieux vaut cela qu'un
+   selecteur oublie qui repeindrait un jour. */
 
 @keyframes dc-shout {
   0%   { opacity: 0; transform: scale(.7) translateY(10px); }

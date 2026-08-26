@@ -103,6 +103,8 @@ export const ES = {
   'game.placeStake': 'Pon tu apuesta',
   'game.matchOver': 'Partida terminada',
   'game.pickBlast': 'Elige un dado que destruir',
+  'game.cancelBonus': 'Cancelar',
+  'fx.alreadyFrozen': 'Su turno ya está congelado',
   'game.leave': 'Abandonar la partida',
   'game.leaveTitle': 'Abandonar',
   'game.leaveConfirm': 'Salir ahora pierde la partida y la apuesta. ¿Salir igualmente?',
@@ -172,8 +174,8 @@ export const ES = {
   'rules.7': 'Tu <b>capitán</b> cambia tu forma de jugar — una tirada gratis, una apertura que se lleva el valor superior, un vistazo al próximo dado, triples más ricos o un dado ya colocado. Elige el tuyo en cubierta.',
   'rules.shortcuts': 'Atajos: {space} tira, {one} {two} {three} colocan en una columna, {esc} cierra.',
 
-  'away.taken': '{name} se ausentó — la IA de a bordo jugó ese turno',
-  'away.you': 'Estabas ausente: la IA jugó por ti',
+  'away.taken': '{name} no jugó a tiempo — se saltó su turno',
+  'away.you': 'Demasiado tarde — se saltó tu turno',
 
   'set.title': 'Ajustes',
   'set.sound': 'Sonido',

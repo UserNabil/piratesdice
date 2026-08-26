@@ -95,10 +95,13 @@ function banner(texte, ton, siege) {
   if (now - derniere < 400) return;
   derniere = now;
 
-  const cote = siege === undefined || siege === null
-    ? '' : (siege === S.seat ? ' dc-shout-bas' : ' dc-shout-haut');
+  /* ⛔ LE COTE A ETE RETIRE DE LA BANNIERE. Posee sur le plateau du joueur
+     concerne, celle du haut passait sous l'entete et se coupait. Une banniere
+     se lit AU CENTRE ; c'est son ton — dore ou rouge — qui dit pour qui elle
+     parle. Le parametre reste dans la signature parce que les appels le
+     donnent, et parce qu'il redeviendra utile si l'entete disparait un jour. */
   const el = document.createElement('div');
-  el.className = 'dc-shout' + (ton ? ' dc-shout-' + ton : '') + cote;
+  el.className = 'dc-shout' + (ton ? ' dc-shout-' + ton : '');
   el.textContent = texte;
   arene.appendChild(el);
   poser(el, texte);
