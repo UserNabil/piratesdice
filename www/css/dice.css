@@ -1679,29 +1679,24 @@
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
    tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-/* ⚠️ « ALIGNE SUR LA GRILLE » NE VEUT PAS DIRE « DE LA TAILLE DE LA GRILLE ».
-   Le sceau a d'abord flotte au milieu (50 %), puis rempli la zone des cases
-   (100 %) — et dans ce dernier cas ses quatre ancres tombaient sur les COINS
-   EXTERIEURS des cases d'angle, a cheval sur le cadre de bois. Ce dessin ne
-   couvre pas la grille : il la VERROUILLE. Ses quatre ancres doivent se poser
-   AU CENTRE des quatre cases d'angle, ses quatre diamants au centre des quatre
-   cases de cote, et son ecusson au centre de la case du milieu.
+/* LE SCEAU FAIT LA TAILLE DU CADRE DU PLATEAU. Bord a bord, un pour un.
+   C'est la demande de l'admin, repetee quatre fois, et j'ai mis quatre essais a
+   l'entendre : 62 %, puis 50 %, puis la zone des cases, puis « deux cases et
+   deux ecarts » — a chaque fois une interpretation de plus, jamais la consigne.
+   Le sceau vaut la boite de `.dc-gel`, qui est celle du plateau (voir plus
+   haut) : `100 %` des deux cotes, et rien a calculer.
 
-   Ce qui donne une largeur qui ne se devine pas : deux cases et deux ecarts,
-   d'un centre de coin a l'autre. Les deux valeurs existent deja — `--dc-cell`,
-   pose par js/fit.js, et l'ecart du tableau de bord — donc rien a mesurer et
-   rien a estimer, et la taille suit la grille sur n'importe quel ecran.
-
-   ⚠️ L'IMAGE A AUSSI DU ETRE REMISE D'APLOMB pour que les quatre coins tombent
-   au meme endroit : le fichier livre laissait 8 % de marge et son contenu
-   mesurait 471 x 452, PAS CARRE. Recadre a l'alpha puis ramene a 512 x 512.
-   L'etirement de 4 % est invisible sur un flocon symetrique (mesure : 1,3 % de
-   pixels differents entre le dessin et son miroir horizontal) ; la dissymetrie,
-   elle, se voyait du premier coup d'oeil. */
+   ⚠️ CE QUI DEVAIT VRAIMENT ETRE CORRIGE, C'ETAIT LE FICHIER. Il laissait 8 %
+   de marge transparente et son contenu mesurait 471 x 452, PAS CARRE : dans une
+   boite carree, l'image se centrait avec du vide en haut et en bas et les
+   quatre coins ne tombaient pas au meme endroit — quelle que soit la taille
+   choisie. Recadre a l'alpha puis ramene a 512 x 512, il remplit sa boite
+   exactement. L'etirement de 4 % est invisible sur un flocon symetrique
+   (mesure : 1,3 % de pixels differents entre le dessin et son miroir
+   horizontal) ; la dissymetrie, elle, se voyait du premier coup d'oeil. */
 #dicewrap .dc-gel img {
-  width: calc(2 * var(--dc-cell) + 2 * var(--cbt-plateau-ecart, 2px));
-  height: auto;
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
