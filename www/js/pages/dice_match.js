@@ -1215,29 +1215,9 @@ function renderTargeting(st) {
   }
 }
 
-/**
- * La pluie de doublons de la victoire. Elle dure 4,1 s (33 images).
- *
- * ⚠️ Elle est portee par un PSEUDO-ELEMENT et REPOSEE tant que la fenetre de
- * victoire dure : en simple enfant elle disparaissait au bout d'une seconde,
- * emportee par un re-rendu de l'ecran de fin — on ne voyait qu'un quart de
- * l'animation. Reposer la classe est insensible a la cause du nettoyage.
- */
-function rain(el) {
-  const src = "url('" + fxUrl('fx_win.png', 5200) + "')";
-  const until = Date.now() + 4300;
-  const keep = setInterval(() => {
-    if (Date.now() > until || !el.classList.contains('on')) {
-      clearInterval(keep);
-      el.classList.remove('dc-rain');
-      return;
-    }
-    if (!el.classList.contains('dc-rain')) {
-      el.style.setProperty('--dc-win-img', src);
-      el.classList.add('dc-rain');
-    }
-  }, 200);
-  el.style.setProperty('--dc-win-img', src);
-  el.classList.add('dc-rain');
-}
-
+/* ⛔ `rain` EST PARTIE DANS `dice_end.js`, ET C'ETAIT UN BOGUE MUET. Elle
+   vivait ici, sans `export`, et la carte de fin l'appelait : `ReferenceError`
+   a chaque VICTOIRE, avalee par le `try` du routeur de messages. Le gagnant
+   restait devant un plateau mort — la carte etait construite mais jamais
+   affichee, la ligne qui l'allume venant apres l'appel. Une fonction n'habite
+   pas un fichier qui ne s'en sert pas. */

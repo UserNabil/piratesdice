@@ -296,6 +296,33 @@ def copier_vers_android():
     print("copie vers android/ : l'APK embarquera bien ce www/-ci.")
 
 
+def noms_absents(racine):
+    """Un nom appele comme une fonction, qui n'existe nulle part.
+
+    ⛔ CE CONTROLE NAIT D'UN BOGUE MUET. `rain()` vivait dans `dice_match.js`
+    sans `export` et `dice_end.js` l'appelait : `ReferenceError` a chaque
+    VICTOIRE, avale par le `try` du routeur de messages. Le gagnant restait
+    devant un plateau mort, la carte de fin construite mais jamais affichee.
+    Les imports resolvaient, les modules se parsaient, la partie tournait :
+    rien ici ne le voyait. Le detail est dans `outils/noms.py`.
+    """
+    sys.path.insert(0, os.path.join(HERE, "outils"))
+    try:
+        import noms
+    except Exception as e:                       # l'outil manque : on le dit
+        return ["outils/noms.py illisible (%s)" % e]
+    out = []
+    for dossier, _, fichiers in os.walk(racine):
+        for f in sorted(fichiers):
+            if not f.endswith(".js"):
+                continue
+            chemin = os.path.join(dossier, f)
+            for ligne, nom in noms.fautes(chemin):
+                out.append("%s:%d  %s() n'est ni declare, ni importe"
+                           % (os.path.relpath(chemin, HERE), ligne, nom))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default=DEFAULT_SERVER, help="adresse du serveur de jeu")
@@ -328,7 +355,7 @@ def main():
         print("www/ assemble  (serveur : %s)%s"
               % (args.server, "  [depot autonome]" if standalone() else ""))
 
-    problems = check() + parse_js(WWW)
+    problems = check() + parse_js(WWW) + noms_absents(WWW)
     if problems:
         print("\n".join("  ✖ " + p for p in problems))
         sys.exit("%d probleme(s) — l'application ne demarrerait pas." % len(problems))
@@ -336,7 +363,8 @@ def main():
     copier_vers_android()
 
     total, biggest = weigh()
-    print("verification : les imports resolvent, et chaque module JS se parse.")
+    print("verification : les imports resolvent, chaque module se parse, et\n"
+          "               tout nom appele existe.")
     print("poids : %.1f Mo" % (total / 1e6))
     for size, rel in biggest:
         print("   %7.1f Ko  %s" % (size / 1024, rel))

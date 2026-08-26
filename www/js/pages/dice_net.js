@@ -13,7 +13,15 @@
 
 import { api } from '../core/api.js';
 
-const PING_MS = 20000;
+/* ⚠️ SIX SECONDES, ET C'EST LE SEUL SIGNE DE VIE QUI COMPTE. Cloudflare est
+   devant le serveur : il tient la connexion ouverte quand l'application
+   disparait et absorbe les trames de controle, si bien qu'une partie a
+   continue quatre-vingt-cinq secondes contre un joueur ferme — l'adversaire
+   jouait seul sans un mot. Ce battement-la traverse le proxy parce qu'il est
+   dans le protocole DU JEU ; le serveur declare partie toute session muette
+   trois fois de suite, et previent l'autre joueur. Douze octets toutes les six
+   secondes, contre une minute et demie devant une table morte. */
+const PING_MS = 6000;
 
 export class DiceNet {
   constructor(handlers) {
@@ -45,7 +53,9 @@ export class DiceNet {
         try { ws.close(); } catch (_) { /* already dead */ }
       }, 8000);
 
-      ws.onopen = () => this.send({ t: 'hello', token: this.session.token });
+      /* On annonce notre cadence : le serveur ne peut pas la deviner, et les
+         versions deja distribuees ne la disent pas. */
+      ws.onopen = () => this.send({ t: 'hello', token: this.session.token, pingMs: PING_MS });
 
       ws.onmessage = (ev) => {
         let msg;

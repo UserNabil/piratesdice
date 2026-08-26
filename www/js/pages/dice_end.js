@@ -62,9 +62,16 @@ export function onOver(m) {
         <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(t('over.back'))}</button>
       </div>
     </div>`;
+  /* ⚠️ ON ALLUME LA CARTE D'ABORD, ON LA DECORE ENSUITE. Dans l'autre ordre,
+     la pluie de doublons passait AVANT la ligne qui affiche le verdict : le
+     jour ou elle a leve une exception — `rain` n'etait pas importee — la carte
+     etait construite, complete, et invisible. Le gagnant restait devant un
+     plateau mort pendant que l'autre lisait sa defaite. Le verdict ne doit
+     dependre d'aucune decoration, et une decoration qui echoue ne doit rien
+     emporter avec elle. */
   el.classList.remove('dc-rain');
-  if (m.outcome === 'win') rain(el);
   el.classList.add('on');
+  if (m.outcome === 'win') { try { rain(el); } catch (e) { console.error('[fin] pluie', e); } }
   S.sfx.play(m.outcome === 'win' ? 'coin' : 'shut', 0.3);
 
   const leave = () => { el.classList.remove('on'); S.state = null; S.seat = -1; UI.showMenu(); };
@@ -72,4 +79,30 @@ export function onOver(m) {
   const mode = m.rated ? 'multi' : 'solo';
   $('#dc-again').onclick = () => { leave(); S.net.send({ t: 'play', mode }); };
   $('#dc-back').onclick = leave;
+}
+
+/**
+ * La pluie de doublons de la victoire. Elle dure 4,1 s (33 images).
+ *
+ * ⚠️ Elle est portee par un PSEUDO-ELEMENT et REPOSEE tant que la fenetre de
+ * victoire dure : en simple enfant elle disparaissait au bout d'une seconde,
+ * emportee par un re-rendu de l'ecran de fin — on ne voyait qu'un quart de
+ * l'animation. Reposer la classe est insensible a la cause du nettoyage.
+ */
+function rain(el) {
+  const src = "url('" + fxUrl('fx_win.png', 5200) + "')";
+  const until = Date.now() + 4300;
+  const keep = setInterval(() => {
+    if (Date.now() > until || !el.classList.contains('on')) {
+      clearInterval(keep);
+      el.classList.remove('dc-rain');
+      return;
+    }
+    if (!el.classList.contains('dc-rain')) {
+      el.style.setProperty('--dc-win-img', src);
+      el.classList.add('dc-rain');
+    }
+  }, 200);
+  el.style.setProperty('--dc-win-img', src);
+  el.classList.add('dc-rain');
 }
