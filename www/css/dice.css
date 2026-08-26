@@ -1280,7 +1280,6 @@
 }
 
 #dicewrap .dc-bet-art { width: clamp(120px, 26%, 170px); margin: 0 auto 8px; display: block; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .6)); }
-#dicewrap .dc-over-seal { width: clamp(92px, 22%, 124px); margin: 0 auto 6px; display: block; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .6)); }
 
 #dicewrap .dc-bet-card h3,
 #dicewrap .dc-over-card h2 {
@@ -2307,27 +2306,6 @@
   z-index: 3;
 }
 
-/* La pluie de doublons dure 4,1 s (33 images) et s'eteint en fondu. Portee par un
-   PSEUDO-ELEMENT de l'ecran de fin : un enfant se faisait emporter par le rendu
-   de la carte au bout d'une seconde. */
-#dicewrap .dc-over.dc-rain::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--dc-win-img);
-  background-position: center top;
-  background-size: auto 100%;
-  background-repeat: repeat-x;
-  pointer-events: none;
-  z-index: 1;
-  animation: dc-winrain 4.3s ease-out forwards;
-}
-
-@keyframes dc-winrain {
-  0% { opacity: 0; }
-  6% { opacity: .95; }
-  80% { opacity: .95; }
-  100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2339,8 +2317,7 @@
      demande. `.dc-cup-ready::after` l'y remplace : lui bat vraiment. */
   #dicewrap .dc-ghost, #dicewrap .dc-cup-ready::after, #dicewrap .dc-pc-urgent .dc-pc-clock,
   #dicewrap .dc-settled > .dc-face { animation: none; }
-  #dicewrap .dc-blast, #dicewrap .dc-dust, #dicewrap .dc-rollfx,
-  #dicewrap .dc-over.dc-rain::before { display: none; }
+  #dicewrap .dc-blast, #dicewrap .dc-dust, #dicewrap .dc-rollfx { display: none; }
   #dicewrap .dc-boardwrap { transition: none; }
 }
 
