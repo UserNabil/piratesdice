@@ -146,6 +146,47 @@ export const ES = {
   'shop.owned': 'en bodega: {n}',
   'shop.bought': 'comprado — está en tu bodega',
   'shop.B001.name': 'Repetir la tirada',
+
+  /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
+     ⚠️ ON AFFICHAIT LE NOM DE L'OBJET EN BOUTIQUE, ET CA NE VOULAIT RIEN DIRE
+     EN PARTIE. « Geler l'adversaire » sous le portrait de Molly, c'est une
+     etiquette de catalogue collee sur un coup de theatre — et d'un effet a
+     l'autre on passait d'une phrase a la premiere personne a une phrase a la
+     troisieme, sans logique apparente.
+     C'est le CAPITAINE qui parle desormais, a la premiere personne, avec son
+     caractere : Mary Read commande, Barbe-Noire menace, Ching Shih compte,
+     Grace O'Malley invoque la mer, Calico Jack se moque. Trente repliques par
+     langue, et le nom de l'objet reste le repli si l'une venait a manquer. */
+  'say.read.B001': 'Mala tirada. Otra vez.',
+  'say.read.B002': 'Esa casilla ya no sirve. Despéjala.',
+  'say.read.B003': 'Ese dado estorbaba. Ya no.',
+  'say.read.B004': 'Leo tu próxima jugada antes que tú.',
+  'say.read.B005': 'Esta columna es mía. Defendedla.',
+  'say.read.B006': 'No te muevas. Es una orden.',
+  'say.teach.B001': 'La suerte me ha insultado. Que lo intente otra vez.',
+  'say.teach.B002': 'Quemo mi propia casilla. ¿Y qué?',
+  'say.teach.B003': 'Tu dado vio mi barba. No sobrevivió.',
+  'say.teach.B004': 'Veo tu mano como una botella vacía.',
+  'say.teach.B005': 'Esta columna lleva mi nombre. Acércate a verlo.',
+  'say.teach.B006': '¡No te muevas o te congelo hasta los huesos!',
+  'say.ching.B001': 'Un dado mal puesto es un dado que se vuelve a tirar.',
+  'say.ching.B002': 'Retiro esa pieza. Las cuentas cambian.',
+  'say.ching.B003': 'Tu dado costaba demasiado. Lo he saldado.',
+  'say.ching.B004': 'Tu flota no tiene secretos para la mía.',
+  'say.ching.B005': 'Esta columna pagará un tributo del quince por ciento.',
+  'say.ching.B006': 'Quédate donde estás. Tu turno no llegará.',
+  'say.omalley.B001': 'El mar me debe uno mejor. Otra vez.',
+  'say.omalley.B002': 'Hago sitio. De eso se encarga la marea.',
+  'say.omalley.B003': 'Tu dado se fue por la borda.',
+  'say.omalley.B004': 'Desde mi cofa veo tu juego.',
+  'say.omalley.B005': 'Que esta columna sea bendecida, y que rinda.',
+  'say.omalley.B006': 'El hielo se cierra. Quédate en puerto.',
+  'say.jack.B001': 'Ese dado no me gustaba. ¡El siguiente!',
+  'say.jack.B002': 'Lo borro. Nadie ha visto nada, ¿verdad?',
+  'say.jack.B003': 'No necesitabas ese, ¡jajaja!',
+  'say.jack.B004': 'He echado un vistazo. Te va a doler.',
+  'say.jack.B005': '¿Esa columna? Tiene suerte. Como yo.',
+  'say.jack.B006': 'No te muevas, guapo. ¡Tómate un turno libre!',
   'shop.B001.desc': 'Vuelve a tirar tu dado — el valor que no querías desaparece.',
   'shop.B002.name': 'Vaciar una casilla mía',
   'shop.B002.desc': 'Quita un dado tuyo para rehacer una columna.',
@@ -195,6 +236,7 @@ export const ES = {
   'set.language': 'Idioma',
   'set.terms': 'Condiciones de uso y privacidad',
   'set.close': 'Cerrar',
+  'set.notInMatch': 'No durante una partida: cambiar de cuenta cierra la mesa y cuesta la apuesta.',
   'set.guest': 'Invitado (este teléfono)',
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les

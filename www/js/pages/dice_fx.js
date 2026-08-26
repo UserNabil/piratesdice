@@ -361,8 +361,22 @@ function annonceBonus(f) {
 
   const mien = f.seat === S.seat;
   const contreMoi = !mien && f.target === S.seat;
+  /* ⚠️ ON LISAIT LE NOM DE L'OBJET EN BOUTIQUE, ET CA NE VOULAIT RIEN DIRE ICI.
+     « Geler l'adversaire » sous le portrait de Molly, c'est une etiquette de
+     catalogue collee sur un coup de theatre — et selon l'effet on passait d'une
+     phrase a la premiere personne a une phrase a la troisieme, sans logique
+     apparente. Retour de l'admin : « parfois ca dit l'ennemi a detruit mon de,
+     parfois molly freeze the enemy ».
+
+     Chaque capitaine a maintenant SA REPLIQUE pour chaque effet — c'est lui qui
+     parle, a la premiere personne, avec son caractere. Le nom de l'objet reste
+     le repli si une replique manque : mieux vaut une etiquette qu'un vide. */
+  const cap = S.state && S.state.captains ? S.state.captains[f.seat] : null;
+  const dite = cap ? t('say.' + cap + '.' + f.identify) : '';
   const nom = t('shop.' + f.identify + '.name');
-  const quoi = nom.startsWith('shop.') ? f.identify : nom;
+  const quoi = dite && !dite.startsWith('say.')
+    ? dite
+    : (nom.startsWith('shop.') ? f.identify : nom);
   const qui = mien ? t('fx.bonusYou') : nomDuSiege(f.seat);
 
   const el = document.createElement('div');

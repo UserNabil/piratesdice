@@ -148,6 +148,47 @@ export const AR = {
   'shop.owned': 'لديك: {n}',
   'shop.bought': 'تم الشراء — صار في عنبرك',
   'shop.B001.name': 'إعادة رمي النرد',
+
+  /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
+     ⚠️ ON AFFICHAIT LE NOM DE L'OBJET EN BOUTIQUE, ET CA NE VOULAIT RIEN DIRE
+     EN PARTIE. « Geler l'adversaire » sous le portrait de Molly, c'est une
+     etiquette de catalogue collee sur un coup de theatre — et d'un effet a
+     l'autre on passait d'une phrase a la premiere personne a une phrase a la
+     troisieme, sans logique apparente.
+     C'est le CAPITAINE qui parle desormais, a la premiere personne, avec son
+     caractere : Mary Read commande, Barbe-Noire menace, Ching Shih compte,
+     Grace O'Malley invoque la mer, Calico Jack se moque. Trente repliques par
+     langue, et le nom de l'objet reste le repli si l'une venait a manquer. */
+  'say.read.B001': 'رمية سيئة. من جديد.',
+  'say.read.B002': 'هذه الخانة لم تعد تنفع. أفرغوها.',
+  'say.read.B003': 'ذلك النرد كان يعترض الطريق. لم يعد كذلك.',
+  'say.read.B004': 'أقرأ حركتك القادمة قبلك.',
+  'say.read.B005': 'هذا العمود لي. احموه.',
+  'say.read.B006': 'لا تتحرّك. هذا أمر.',
+  'say.teach.B001': 'أهانني الحظ. فليُعد المحاولة.',
+  'say.teach.B002': 'أحرق خانتي بنفسي. وماذا في ذلك؟',
+  'say.teach.B003': 'رأى نردك لحيتي، فلم ينجُ.',
+  'say.teach.B004': 'أرى يدك كزجاجة فارغة.',
+  'say.teach.B005': 'هذا العمود يحمل اسمي. اقترب وانظر.',
+  'say.teach.B006': 'لا تتحرّك وإلا جمّدتك حتى العظم!',
+  'say.ching.B001': 'النرد في غير موضعه نردٌ يُعاد رميه.',
+  'say.ching.B002': 'أسحب هذه القطعة. تتغيّر الحسابات.',
+  'say.ching.B003': 'كان نردك باهظ الثمن. وقد سدّدته.',
+  'say.ching.B004': 'لا أسرار لأسطولك أمام أسطولي.',
+  'say.ching.B005': 'سيدفع هذا العمود جزية خمسة عشر بالمئة.',
+  'say.ching.B006': 'ابقَ مكانك. لن يأتي دورك.',
+  'say.omalley.B001': 'البحر يدين لي بأفضل من هذا. نُعيد.',
+  'say.omalley.B002': 'أفسح مكانًا. المدّ يتكفّل بالباقي.',
+  'say.omalley.B003': 'سقط نردك في البحر.',
+  'say.omalley.B004': 'من أعلى الصاري أرى لعبك.',
+  'say.omalley.B005': 'ليكن هذا العمود مباركًا، وليُثمر.',
+  'say.omalley.B006': 'الجليد يُطبق. ابقَ في المرفأ.',
+  'say.jack.B001': 'لم يعجبني هذا النرد. التالي!',
+  'say.jack.B002': 'أمحوه. لم يرَ أحد شيئًا، صحيح؟',
+  'say.jack.B003': 'لم تكن بحاجة إلى ذلك، هاهاها!',
+  'say.jack.B004': 'ألقيت نظرة. لن يعجبك ما رأيت.',
+  'say.jack.B005': 'هذا العمود؟ محظوظ. مثلي.',
+  'say.jack.B006': 'لا تتحرّك يا جميل. خذ دورًا للراحة!',
   'shop.B001.desc': 'ارمِ نردك مجددًا — تختفي القيمة التي لم ترغب بها.',
   'shop.B002.name': 'إفراغ إحدى خاناتي',
   'shop.B002.desc': 'أزل نردًا من لوحك لإعادة تشكيل عمود.',
@@ -197,6 +238,7 @@ export const AR = {
   'set.language': 'اللغة',
   'set.terms': 'شروط الاستخدام والخصوصية',
   'set.close': 'إغلاق',
+  'set.notInMatch': 'ليس أثناء المباراة: تغيير الحساب يُنهي الطاولة ويكلّفك رهانك.',
   'set.guest': 'ضيف (هذا الهاتف)',
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les

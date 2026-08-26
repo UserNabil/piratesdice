@@ -1654,18 +1654,24 @@
    juste, sa boite doit etre EXACTEMENT la zone des cases — le plateau moins son
    lisere et moins son cadre de bois. Les deux sont des reglages du tableau de
    bord ; on les retranche plutot que de deviner un pourcentage. */
+/* ⚠️ LE VOILE ET LE SCEAU N'ONT PAS LA MEME BOITE, ET LES CONFONDRE SE VOIT.
+   Le voile sombre etait cale sur la ZONE DES CASES : un carre a angles vifs
+   pose au milieu d'un plateau aux coins arrondis, dont on voyait les quatre
+   angles depasser du dessin. « Meme l'effet noir derriere les chaines est
+   rate. » Le voile appartient au PLATEAU — il en prend la boite et la courbure,
+   et le bois du cadre s'assombrit avec le reste, ce qui est le but : c'est tout
+   le plateau qui gele.
+   Le sceau, lui, appartient a la GRILLE, et il se mesure plus bas. */
 #dicewrap .dc-gel {
   position: absolute;
-  top: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
-  left: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
-  right: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
-  bottom: auto;
+  top: 0; left: 0; right: 0; bottom: auto;
   aspect-ratio: 1;
   z-index: 12;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; pointer-events: none;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
   border-radius: var(--cbt-plateau-courbure, 20px);
-  background: radial-gradient(closest-side, rgba(80, 180, 255, .26), rgba(10, 20, 50, .62));
+  background: radial-gradient(closest-side, rgba(70, 170, 255, .20), rgba(8, 16, 40, .58));
   animation: dc-gel-vient .22s ease-out;
 }
 /* ⚠️ EN POURCENTAGE DU PLATEAU, PAS EN `vw`. A `min(46vw, 220px)` le sceau
@@ -1673,28 +1679,30 @@
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
    tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-   ⚠️ TROIS CHOSES ONT DU ETRE CORRIGEES AVANT QUE LES QUATRE COINS TOMBENT AU
-   MEME ENDROIT, ET ELLES SE CACHAIENT L'UNE DERRIERE L'AUTRE :
+/* ⚠️ « ALIGNE SUR LA GRILLE » NE VEUT PAS DIRE « DE LA TAILLE DE LA GRILLE ».
+   Le sceau a d'abord flotte au milieu (50 %), puis rempli la zone des cases
+   (100 %) — et dans ce dernier cas ses quatre ancres tombaient sur les COINS
+   EXTERIEURS des cases d'angle, a cheval sur le cadre de bois. Ce dessin ne
+   couvre pas la grille : il la VERROUILLE. Ses quatre ancres doivent se poser
+   AU CENTRE des quatre cases d'angle, ses quatre diamants au centre des quatre
+   cases de cote, et son ecusson au centre de la case du milieu.
 
-   1. LA BOITE. Le pourcentage se prenait sur le bloc entier, puis sur le
-      plateau cadre compris. Il se prend maintenant sur la zone des cases.
-   2. LA MARGE DU FICHIER. Le dessin livre laissait 8 % de vide autour de lui :
-      a « 94 % de la boite » on n'obtenait que 86 % de dessin. Recadre sur son
-      contenu a l'alpha.
-   3. LE FORMAT. Et c'est celle-la qui restait visible. Le contenu recadre
-      mesurait 471 x 452 — PAS CARRE. Dans une boite carree, `contain` cale sur
-      la largeur et repartit les 4 % restants en haut et en bas : les deux bras
-      verticaux s'arretaient plus tot que les horizontaux, et les quatre ancres
-      ne tombaient pas a la meme distance de leur coin. Le fichier est donc
-      remis d'aplomb — 512 x 512, contenu bord a bord. L'etirement de 4 % est
-      invisible sur un flocon symetrique (mesure : 1,3 % de pixels differents
-      entre le dessin et son miroir horizontal), et il vaut mieux cela qu'une
-      dissymetrie qu'on voit, elle, du premier coup d'oeil.
+   Ce qui donne une largeur qui ne se devine pas : deux cases et deux ecarts,
+   d'un centre de coin a l'autre. Les deux valeurs existent deja — `--dc-cell`,
+   pose par js/fit.js, et l'ecart du tableau de bord — donc rien a mesurer et
+   rien a estimer, et la taille suit la grille sur n'importe quel ecran.
 
-   Le tout est en pourcentages et en variables : la taille suit celle de la
-   grille, quel que soit l'ecran. */
+   ⚠️ L'IMAGE A AUSSI DU ETRE REMISE D'APLOMB pour que les quatre coins tombent
+   au meme endroit : le fichier livre laissait 8 % de marge et son contenu
+   mesurait 471 x 452, PAS CARRE. Recadre a l'alpha puis ramene a 512 x 512.
+   L'etirement de 4 % est invisible sur un flocon symetrique (mesure : 1,3 % de
+   pixels differents entre le dessin et son miroir horizontal) ; la dissymetrie,
+   elle, se voyait du premier coup d'oeil. */
 #dicewrap .dc-gel img {
-  width: 100%; height: 100%; object-fit: fill;
+  width: calc(2 * var(--dc-cell) + 2 * var(--cbt-plateau-ecart, 2px));
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: fill;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
 /* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
@@ -1706,7 +1714,7 @@
    sa propre largeur, centre : il ne mord plus que sur la case du milieu. */
 #dicewrap .dc-gel span {
   position: absolute;
-  left: 50%; bottom: 6px;
+  left: 50%; bottom: 4px;
   transform: translateX(-50%);
   max-width: 92%;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

@@ -149,6 +149,47 @@ export const FR = {
   'shop.owned': 'en cale : {n}',
   'shop.bought': 'acheté — c’est dans votre cale',
   'shop.B001.name': 'Relancer le dé',
+
+  /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
+     ⚠️ ON AFFICHAIT LE NOM DE L'OBJET EN BOUTIQUE, ET CA NE VOULAIT RIEN DIRE
+     EN PARTIE. « Geler l'adversaire » sous le portrait de Molly, c'est une
+     etiquette de catalogue collee sur un coup de theatre — et d'un effet a
+     l'autre on passait d'une phrase a la premiere personne a une phrase a la
+     troisieme, sans logique apparente.
+     C'est le CAPITAINE qui parle desormais, a la premiere personne, avec son
+     caractere : Mary Read commande, Barbe-Noire menace, Ching Shih compte,
+     Grace O'Malley invoque la mer, Calico Jack se moque. Trente repliques par
+     langue, et le nom de l'objet reste le repli si l'une venait a manquer. */
+  'say.read.B001': 'Mauvais tirage. On recommence.',
+  'say.read.B002': 'Cette case ne me sert plus. Dégagez-la.',
+  'say.read.B003': 'Ce dé gênait. Il ne gêne plus.',
+  'say.read.B004': 'Je lis ton prochain coup avant toi.',
+  'say.read.B005': 'Cette colonne est à moi. Tenez-la.',
+  'say.read.B006': 'Ne bouge plus. C\'est un ordre.',
+  'say.teach.B001': 'Le sort m\'a insulté. Qu\'il recommence.',
+  'say.teach.B002': 'Je brûle ma propre case. Et alors ?',
+  'say.teach.B003': 'Ton dé a vu ma barbe. Il n\'a pas survécu.',
+  'say.teach.B004': 'Je vois dans ta main comme dans une bouteille vide.',
+  'say.teach.B005': 'Cette colonne porte mon nom. Approche pour voir.',
+  'say.teach.B006': 'Ne bouge plus ou je te gèle jusqu\'aux os !',
+  'say.ching.B001': 'Un dé mal placé est un dé qu\'on relance.',
+  'say.ching.B002': 'Je retire cette pièce. Le calcul change.',
+  'say.ching.B003': 'Ton dé coûtait trop cher. Je l\'ai réglé.',
+  'say.ching.B004': 'Ta flotte n\'a plus de secrets pour la mienne.',
+  'say.ching.B005': 'Cette colonne paiera un tribut de quinze pour cent.',
+  'say.ching.B006': 'Reste où tu es. Ton tour ne viendra pas.',
+  'say.omalley.B001': 'La mer m\'en doit un meilleur. Relançons.',
+  'say.omalley.B002': 'Je fais de la place. La marée s\'en occupe.',
+  'say.omalley.B003': 'Ton dé est passé par-dessus bord.',
+  'say.omalley.B004': 'Du haut de mon mât, je vois ton jeu.',
+  'say.omalley.B005': 'Que cette colonne soit bénie, et qu\'elle rapporte.',
+  'say.omalley.B006': 'Les glaces se referment. Reste au port.',
+  'say.jack.B001': 'Ce dé ne me plaisait pas. Suivant !',
+  'say.jack.B002': 'J\'efface. Personne n\'a rien vu, hein ?',
+  'say.jack.B003': 'Tu n\'avais pas besoin de celui-là, hahaha !',
+  'say.jack.B004': 'J\'ai jeté un oeil. Tu vas détester.',
+  'say.jack.B005': 'Cette colonne-là ? Elle est chanceuse. Comme moi.',
+  'say.jack.B006': 'Bouge pas, mon joli. Prends donc un tour de repos !',
   'shop.B001.desc': 'Relancez votre dé — la valeur dont vous ne vouliez pas disparaît.',
   'shop.B002.name': 'Vider une de mes cases',
   'shop.B002.desc': 'Retirez un de vos dés pour refaire une colonne.',
@@ -207,6 +248,7 @@ export const FR = {
   'set.language': 'Langue',
   'set.terms': 'Conditions d’utilisation et confidentialité',
   'set.close': 'Fermer',
+  'set.notInMatch': 'Impossible en pleine partie : changer de compte referme la table et coûte la mise.',
   'set.guest': 'Invité (ce téléphone)',
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les

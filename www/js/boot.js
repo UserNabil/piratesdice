@@ -115,19 +115,28 @@ function settingsMarkup() {
      « avec Google » sur un iPhone serait faux, et « avec Apple » sur Android
      n'existe pas. Le logo dit lequel avant meme qu'on ait lu. */
   const pomme = fournisseur() === 'apple';
+  /* ⚠️ CHANGER DE COMPTE EN PLEINE PARTIE, C'EST PERDRE LA PARTIE. Se connecter,
+     se deconnecter ou effacer son compte refont la session : la liaison tombe,
+     le siege est declare abandonne, et la mise part avec. Rien ne l'empechait —
+     les reglages s'ouvrent par-dessus le plateau. On barre donc les deux boutons
+     tant qu'un duel est en cours, en DISANT pourquoi : un bouton grise et muet
+     laisserait croire a une panne. */
+  const enPartie = !!(S.state && S.state.phase && S.state.phase !== 'over');
   /* ⚠️ LA PHRASE ENTIERE NE TIENT PAS SUR UN DEMI-BOUTON. « Se connecter avec
      Google » et « Effacer mes donnees et mon compte » se repliaient sur trois
      lignes dans deux boutons cote a cote, et le dessin se retrouvait ecrase
      contre un pave de texte — retour de l'admin, capture a l'appui. Le mot
      court s'affiche, la phrase complete reste dans `title` : elle est encore la
      pour le lecteur d'ecran et pour qui hesite. */
+  const barre = enPartie ? ' disabled' : '';
+  const dit = (phrase) => (enPartie ? t('set.notInMatch') : phrase);
   const button = acc.google
-    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout
-               title="${t('set.signOut')}" aria-label="${t('set.signOut')}">
+    ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout${barre}
+               title="${dit(t('set.signOut'))}" aria-label="${dit(t('set.signOut'))}">
          <img src="${ASSETS}img/icon_link.png" alt="">${t('set.signOutShort')}</button>`
-    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin
-               title="${t(pomme ? 'set.signInApple' : 'set.signIn')}"
-               aria-label="${t(pomme ? 'set.signInApple' : 'set.signIn')}">
+    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin${barre}
+               title="${dit(t(pomme ? 'set.signInApple' : 'set.signIn'))}"
+               aria-label="${dit(t(pomme ? 'set.signInApple' : 'set.signIn'))}">
          <img src="${ASSETS}img/icon_${pomme ? 'apple' : 'google'}.png" alt="">${
         t('set.signInShort')}</button>`;
   const muted = !!(S.sfx && S.sfx.muted);
@@ -152,9 +161,10 @@ function settingsMarkup() {
            n'est jamais decouvert, donc jamais utilise. -->
 
       ${row(t('set.account'), `<span class="pd-row-val">${who}</span>`)}
+      ${enPartie ? `<p class="pd-hint">${t('set.notInMatch')}</p>` : ''}
       <div class="pd-row pd-row-btns">${button}
-        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger dc-btn-art" data-erase
-                title="${t('set.erase')}" aria-label="${t('set.erase')}">
+        <button class="dc-btn dc-btn-sm dc-btn-ghost pd-danger dc-btn-art" data-erase${barre}
+                title="${dit(t('set.erase'))}" aria-label="${dit(t('set.erase'))}">
           <img src="${ASSETS}img/icon_erase.png" alt=""
                >${t('set.eraseShort')}</button>
       </div>

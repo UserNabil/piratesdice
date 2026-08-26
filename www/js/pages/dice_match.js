@@ -233,46 +233,175 @@ const FAN_MARGE = 26;
  * partage, et pour le jour ou le bandeau changera de place.
  */
 /**
- * ⚠️ CETTE FONCTION NE CONNAIT PLUS LES HUMEURS, ET C'EST CE QUI PERMET DE LA
- * PARTAGER. Elle comptait `MOODS.length` en dur : la cale a bonus ne pouvait
- * donc pas s'ouvrir comme l'eventail des humeurs sans recopier tout le calcul —
- * et deux copies d'une regle de placement, c'est une copie qui derive.
- * L'ancre et le nombre d'objets sont maintenant des arguments.
+ * LES ANGLES D'UN EVENTAIL, CALCULES SUR LA PLACE REELLEMENT LIBRE.
+ *
+ * ⛔ LA VERSION PRECEDENTE CHOISISSAIT UN QUART DE TOUR PARMI TROIS. Trois
+ * dispositions ecrites a la main — « ouvre a droite », « ouvre a gauche »,
+ * « ouvre en bas » — selectionnees par trois tests de distance. Ca marche tant
+ * que l'ancre est franchement d'un cote ; entre deux, on tombait sur la mauvaise
+ * disposition et le dernier bouton sortait de l'ecran. C'est ce que l'admin a
+ * photographie : le cinquieme emoji coupe par le bord droit.
+ *
+ * ⚠️ ET AUCUN DES TROIS CAS NE GARANTISSAIT QUOI QUE CE SOIT. Ils choisissaient
+ * une direction, pas un resultat : personne ne verifiait qu'a l'arrivee les N
+ * boutons etaient bien dans le cadre.
+ *
+ * On renverse donc la question. Pour chaque angle possible on SAIT dire si le
+ * bouton y tiendrait — c'est de la trigonometrie et quatre bords. On balaie le
+ * tour complet, on garde le plus grand arc continu ou tout tient, et on y range
+ * les boutons. La reponse est alors juste par construction, sur n'importe quel
+ * ecran et pour n'importe quelle ancre.
  */
-export function anglesEventail(ancre, combien) {
+export function anglesEventail(ancre, combien, options) {
+  if (combien <= 0) return [];
+  const o = options || {};
+  const rayon = o.rayon || FAN_RAYON;
+  const demi = (o.taille || 44) / 2;
+  const marge = o.marge === undefined ? 6 : o.marge;
+
+  /* ⚠️ LE CALCUL ET LE DESSIN DOIVENT PARTIR DU MEME POINT. Le solveur prenait
+     le CENTRE de l'ancre ; la cale, elle, ouvre son arc depuis le HAUT du
+     bandeau (`--pd-fan-y`), pour ne pas partir de sous le pouce. Quarante
+     pixels d'ecart : le calcul jugeait les jetons libres et le CSS les posait
+     sur le bandeau. Deux origines pour un seul arc, c'est un arc faux — et un
+     faux qu'aucun des deux cotes ne peut voir seul. L'appelant donne donc
+     l'origine quand ce n'est pas le centre. */
   const r = ancre.getBoundingClientRect();
-  const cx = r.left + r.width / 2;
-  const cy = r.top + r.height / 2;
-  const besoin = FAN_RAYON + FAN_MARGE;
+  const cx = o.origine ? o.origine.x : r.left + r.width / 2;
+  const cy = o.origine ? o.origine.y : r.top + r.height / 2;
 
-  const gauche = cx > besoin;
-  const droite = window.innerWidth - cx > besoin;
-  const haut = cy > besoin;
+  /* Le cadre : l'ecran, moins ce que l'entete du jeu recouvre en haut. Un
+     bouton pose sous la barre est aussi perdu qu'un bouton hors de l'ecran. */
+  const jeu = document.querySelector('#dicewrap .dc-arena');
+  const boite = jeu ? jeu.getBoundingClientRect() : null;
+  const hautLimite = (boite ? boite.top : 0) + demi + marge;
+  const basLimite = (boite ? boite.bottom : window.innerHeight) - demi - marge;
+  const gaucheLimite = demi + marge;
+  const droiteLimite = window.innerWidth - demi - marge;
 
-  /* 0° pointe vers le haut, les angles positifs vont vers la droite.
-     ⚠️ UN QUART DE TOUR QUI VA JUSQU'A L'HORIZONTALE RETOMBE SUR LE BANDEAU.
-     L'ancre collee a gauche ouvrait de 0° a 90° : le dernier jeton se retrouvait
-     A LA HAUTEUR de son ancre, c'est-a-dire par-dessus le bouton de lancer —
-     vu au banc d'essai. L'ecart de 90° est bon, c'est son ASSIETTE qui ne
-     l'etait pas : bascule de vingt degres vers le haut, l'arc garde sa largeur
-     et ses deux extremites restent au-dessus du bandeau. */
-  let debut = -60;
-  let ouverture = 120;
-  if (!gauche) { debut = -20; ouverture = 90; }      // colle a gauche : on ouvre a droite
-  else if (!droite) { debut = -70; ouverture = 90; } // colle a droite : on ouvre a gauche
-  if (!haut) debut = -(180 - debut - ouverture);     // pas de place au-dessus : on bascule
+  /* ⚠️ « DANS L'ECRAN » NE SUFFIT PAS. Un jeton pose sur le bandeau du bas est
+     dans le cadre et pourtant inutilisable : il recouvre les trois boutons, et
+     c'est la main qui tient l'eventail qui est dessous. On donne donc au calcul
+     la liste des zones INTERDITES — le bandeau, et l'ancre elle-meme — et un
+     angle n'est retenu que si le jeton n'en touche aucune. */
+  const interdits = (o.evite || []).filter(Boolean);
 
-  /* ⚠️ UN SEUL OBJET N'EST PAS « LE PREMIER D'UNE SERIE ». Il se posait au bord
-     de l'arc — a -20° pour une ancre collee a gauche, c'est-a-dire a moitie
-     hors de l'ecran. Un eventail d'un seul jeton, c'est un jeton AU MILIEU de
-     la place disponible. Vu a l'ecran avec le seul effet offert par le
-     capitaine. */
-  if (combien <= 1) return combien ? [debut + ouverture / 2] : [];
+  const tient = (deg) => {
+    const a = deg * Math.PI / 180;
+    const x = cx + rayon * Math.sin(a);
+    const y = cy - rayon * Math.cos(a);
+    if (x < gaucheLimite || x > droiteLimite || y < hautLimite || y > basLimite) return false;
+    for (const z of interdits) {
+      if (x + demi > z.left && x - demi < z.right
+          && y + demi > z.top && y - demi < z.bottom) return false;
+    }
+    return true;
+  };
 
-  const pas = ouverture / (combien - 1);
+  /* Le balayage part de la verticale HAUTE et s'ecarte de part et d'autre :
+     a place egale, un eventail s'ouvre vers le haut, jamais vers le bas. */
+  const PAS = 2;
+  const ok = [];
+  for (let d = -180; d <= 180; d += PAS) ok.push(tient(d));
+
+  let debut = 0, fin = -1, longueur = -1;
+  let i = 0;
+  while (i < ok.length) {
+    if (!ok[i]) { i++; continue; }
+    let j = i;
+    while (j + 1 < ok.length && ok[j + 1]) j++;
+    /* A longueur egale, on prefere l'arc le plus proche du haut. */
+    const centre = Math.abs(((i + j) / 2) * PAS - 180);
+    const mieux = (j - i > longueur)
+      || (j - i === longueur && centre < Math.abs(((debut + fin) / 2) * PAS - 180));
+    if (mieux) { longueur = j - i; debut = i; fin = j; }
+    i = j + 1;
+  }
+
+  /* Rien ne tient nulle part — ecran minuscule, ancre dans un coin : on rend
+     l'arc du haut plutot que rien, et l'ecran fera ce qu'il pourra. */
+  if (longueur < 0) {
+    const pas = combien > 1 ? 120 / (combien - 1) : 0;
+    const d0 = combien > 1 ? -60 : 0;
+    return Array.from({ length: combien }, (_, k) => d0 + k * pas);
+  }
+
+  const a0 = -180 + debut * PAS;
+  const a1 = -180 + fin * PAS;
+  /* ⚠️ ON N'ETALE PAS SUR TOUT L'ARC DISPONIBLE. Deux boutons sur un demi-tour
+     se retrouveraient dos a dos ; l'eventail doit rester un eventail. On borne
+     l'ouverture a ce qu'il faut pour que les jetons se frolent sans se toucher,
+     et on centre le tout dans la place libre. */
+  const ecartMini = 2 * Math.asin(Math.min(1, (demi + 4) / rayon)) * 180 / Math.PI;
+  const voulu = Math.min(a1 - a0, ecartMini * (combien - 1));
+  const milieu = (a0 + a1) / 2;
+  const depart = milieu - voulu / 2;
+  const pas = combien > 1 ? voulu / (combien - 1) : 0;
   const angles = [];
-  for (let i = 0; i < combien; i++) angles.push(debut + i * pas);
+  for (let k = 0; k < combien; k++) angles.push(depart + k * pas);
   return angles;
+}
+
+/**
+ * ON POSE, ON REGARDE, ON RECALE.
+ *
+ * ⚠️ PREDIRE OU TOMBE UN JETON DEMANDE DE REFAIRE LE CALCUL DU NAVIGATEUR, ET
+ * DE LE REFAIRE JUSTE. J'ai essaye : origine au centre de l'ancre d'un cote et
+ * a son bord haut de l'autre, rayon lu dans une variable qui en cachait une
+ * autre — deux fois le calcul a jure que tout tenait pendant que l'ecran
+ * montrait le contraire. Deux verites sur une meme geometrie, c'est une de
+ * trop.
+ *
+ * Le navigateur, lui, ne se trompe jamais sur ou il a mis les choses. On lui
+ * demande donc : on pose l'eventail, on MESURE chaque jeton, et tant qu'un seul
+ * sort du cadre ou retombe sur une zone interdite, on resserre l'arc et on le
+ * redresse vers le haut. Quelques passes suffisent, et le resultat est vrai par
+ * construction sur n'importe quel ecran.
+ */
+function calerEventail(jetons, angles, zones, rayon) {
+  if (!jetons.length) return;
+  const fan = jetons[0].parentNode;
+  const cadre = document.querySelector('#dicewrap .dc-arena');
+  const boite = cadre ? cadre.getBoundingClientRect() : null;
+  const dedans = (r) => {
+    if (r.left < 2 || r.right > window.innerWidth - 2) return false;
+    if (boite && (r.top < boite.top + 2 || r.bottom > boite.bottom - 2)) return false;
+    for (const z of zones) {
+      if (z && r.right > z.left && r.left < z.right
+          && r.bottom > z.top && r.top < z.bottom) return false;
+    }
+    return true;
+  };
+
+  const n = jetons.length;
+  const cote = jetons[0].getBoundingClientRect().width || 46;
+  let r = rayon;
+
+  /* ⛔ ON NE RESSERRE PAS L'ARC JUSQU'A L'EMPILEMENT. Une premiere version
+     reduisait l'ouverture de 12 % a chaque passe sans plancher : au bout de
+     quelques tours les deux jetons se retrouvaient l'un SUR l'autre, au meme
+     angle — vu a l'ecran, deux bonus superposes au bord du plateau. Un eventail
+     ferme n'est plus un eventail.
+     L'ouverture a donc un MINIMUM : celui qui laisse les jetons se froler sans
+     se toucher. Quand meme ce minimum ne tient pas, ce n'est plus l'ecart qu'il
+     faut reduire mais le RAYON — on ramene l'eventail contre son ancre, ou il y
+     a toujours de la place. */
+  for (let passe = 0; passe < 14; passe++) {
+    const mini = 2 * Math.asin(Math.min(1, (cote / 2 + 4) / r)) * 180 / Math.PI;
+    const plancher = mini * (n - 1);
+    const ouverture = Math.max(plancher, angles[n - 1] - angles[0]);
+    const milieu = ((angles[0] + angles[n - 1]) / 2) * Math.pow(0.8, passe);
+    const pose = [];
+    for (let k = 0; k < n; k++) {
+      pose.push(n > 1 ? milieu - ouverture / 2 + (ouverture * k) / (n - 1) : milieu);
+    }
+    fan.style.setProperty('--pd-fan-r', r + 'px');
+    jetons.forEach((b, k) => b.style.setProperty('--pd-angle', pose[k] + 'deg'));
+    if (!jetons.some((b) => !dedans(b.getBoundingClientRect()))) return;
+    /* Redresse d'abord, rapproche ensuite : on ne perd du rayon qu'apres avoir
+       epuise les rotations. */
+    if (passe >= 4) r = Math.max(52, r * 0.9);
+  }
 }
 
 function openFan(portrait) {
@@ -283,11 +412,20 @@ function openFan(portrait) {
      portrait, la ou le pouce arrive deja. Chaque bouton est tourne de son angle
      puis REDRESSE par une seconde rotation sur le glyphe — sans quoi les emojis
      penchent et deviennent illisibles. */
-  const angles = anglesEventail(portrait, MOODS.length);
+  /* La taille reelle du jeton compte : c'est elle qui decide s'il tient au bord.
+     `.dc-fan-btn` fait 38 px plus son jonc de 4, soit 46. */
+  const pied = document.querySelector('#dicewrap .dc-foot');
+  const zones = [pied && pied.getBoundingClientRect()];
+  const rayon = FAN_RAYON;
+  const angles = anglesEventail(portrait, MOODS.length, {
+    rayon, taille: 46, evite: zones,
+  });
+  const jetons = [];
   MOODS.forEach((humeur, i) => {
     const b = document.createElement('button');
     b.className = 'dc-fan-btn';
     b.style.setProperty('--pd-angle', angles[i] + 'deg');
+    jetons.push(b);
     /* Le glyphe reste l'intitule : un dessin sans nom n'est rien pour qui
        ecoute son ecran, et il sert de secours si l'image manque. */
     b.setAttribute('aria-label', humeur.glyphe);
@@ -296,6 +434,7 @@ function openFan(portrait) {
     fan.appendChild(b);
   });
   portrait.appendChild(fan);
+  calerEventail(jetons, angles, zones, rayon);
   /* Il se referme seul : un eventail oublie ouvert masque le plateau. */
   fanTimer = setTimeout(closeFan, 4000);
 }
@@ -867,8 +1006,20 @@ export function renderBonusRack() {
        a la fois le voir et le viser. */
     rack.style.setProperty('--pd-fan-x', (ancre.left + ancre.width / 2 - scene.left) + 'px');
     rack.style.setProperty('--pd-fan-y', (ancre.top - scene.top) + 'px');
-    const angles = anglesEventail(sac, jetons.length);
-    jetons.forEach((b, i) => b.style.setProperty('--pd-angle', angles[i] + 'deg'));
+    const style = getComputedStyle(rack);
+    const rayon = parseFloat(style.getPropertyValue('--pd-fan-r')) || FAN_RAYON;
+    const taille = parseFloat(getComputedStyle(jetons[0]).width) || 52;
+    /* Le bandeau du bas est interdit : c'est de la que sort l'eventail, et le
+       pouce qui le tient s'y trouve deja. */
+    const pied = document.querySelector('#dicewrap .dc-foot');
+    const zones = [pied && pied.getBoundingClientRect()];
+    const angles = anglesEventail(sac, jetons.length, {
+      rayon, taille,
+      /* La MEME origine que celle posee en variables juste au-dessus. */
+      origine: { x: ancre.left + ancre.width / 2, y: ancre.top },
+      evite: zones,
+    });
+    calerEventail(jetons, angles, zones, rayon);
   }
 
   /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON

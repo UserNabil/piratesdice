@@ -170,7 +170,15 @@ function apply() {
   const large = enveloppes.length ? surcoutLarge(enveloppes[0]) : 40;
   const byWidth = (width - large) / 3;
 
-  const cell = Math.floor(Math.max(MIN_CELL, Math.min(plafondCase(), byHeight, byWidth)));
+  /* ⚠️ ON NE PREND PAS TOUTE LA PLACE, ET C'EST UN CHOIX. La mesure donne la
+     case la plus grande qui TIENNE ; a ce maximum les deux plateaux se touchent
+     presque, la carte du centre est comprimee et le moindre pixel de plus
+     deborde. Neuf dixiemes laissent respirer l'ecran et rendent la mise en page
+     insensible aux petites variations — une ligne de mise qui apparait, un nom
+     plus haut, une langue plus large. Demande de l'admin, et bonne pratique. */
+  const AISANCE = 0.9;
+  const cell = Math.floor(
+    Math.max(MIN_CELL, Math.min(plafondCase(), byHeight, byWidth) * AISANCE));
   wrap.style.setProperty('--dc-cell', cell + 'px');
 
 
