@@ -103,7 +103,7 @@ export const EN = {
   'connect.retryingIn': 'Trying again in {n} s…',
   'connect.retry': 'Try again',
 
-  'menu.title': "Roll for the captain's purse",
+  'menu.title': "The captains' duel",
   'menu.pitch': 'Three columns, nine dice. A die you place destroys every enemy die of the '
     + 'same value in the same column. Highest total when a board fills up wins.',
   'menu.solo': 'Challenge the AI',

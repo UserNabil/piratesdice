@@ -45,6 +45,13 @@ import time
 
 BUNDLE = "com.nabil.piratesdice"
 
+# ⚠️ « booted » DESIGNE N'IMPORTE LEQUEL DES SIMULATEURS ALLUMES, ET ON EN A
+# SOUVENT DEUX. Un iPad s'est rallume tout seul en cours de route (Xcode le
+# reveille) et `simctl io booted` a photographie SON ecran : trois captures
+# noires de 2064 x 2752 avant qu'on ne comprenne. L'appareil se nomme donc, et
+# une seule variable le porte jusqu'aux commandes.
+APPAREIL = "booted"
+
 
 def sh(cmd, **kw):
     return subprocess.run(cmd, shell=True, capture_output=True, text=True, **kw)
@@ -83,10 +90,15 @@ def _empreinte():
     sans se soucier d'un pixel d'antialiasing ou d'une horloge qui avance."""
     from PIL import Image
     tmp = "/tmp/_pd_ecran.png"
-    sh("xcrun simctl io booted screenshot '%s'" % tmp)
+    sh("xcrun simctl io %s screenshot '%s'" % (APPAREIL, tmp))
     if not os.path.exists(tmp):
         return None
-    im = Image.open(tmp).convert("L").resize((44, 96), Image.BILINEAR)
+    # ⚠️ 44 x 96 NOYAIT LES PETITS CHANGEMENTS. Un de qui apparait dans le
+    # gobelet ne bouge que trois pixels de cette vignette : l'outil concluait
+    # « rien n'a bouge » et rejouait un geste qui avait pourtant porte. Quatre
+    # fois plus de pixels, et un seuil plus bas : les grands changements restent
+    # evidents, les petits cessent d'etre invisibles.
+    im = Image.open(tmp).convert("L").resize((88, 192), Image.BILINEAR)
     return list(im.getdata())
 
 
@@ -97,8 +109,8 @@ def _ecart(a, b):
     return sum(abs(p - q) for p, q in zip(a, b)) / len(a)
 
 
-SEUIL_BOUGE = 3.0     # au-dela, l'ecran a change
-SEUIL_CALME = 1.2     # en deca, il a fini de bouger
+SEUIL_BOUGE = 1.4     # au-dela, l'ecran a change
+SEUIL_CALME = 0.6     # en deca, il a fini de bouger
 
 
 def attendre_calme(plafond=6.0):
@@ -158,7 +170,7 @@ def tenir(fx, fy, duree=1.2):
 def photo(chemin):
     os.makedirs(os.path.dirname(chemin) or ".", exist_ok=True)
     attendre_calme()
-    sh("xcrun simctl io booted screenshot '%s'" % chemin)
+    sh("xcrun simctl io %s screenshot '%s'" % (APPAREIL, chemin))
     ok = os.path.exists(chemin)
     print("   %s %s" % ("📸" if ok else "✖", os.path.basename(chemin)))
     return ok
@@ -194,7 +206,19 @@ def main():
     ap.add_argument("--sortie", required=True, help="dossier ou deposer les captures")
     ap.add_argument("--tours", type=int, default=6,
                     help="tours joues avant de photographier l'arene")
+    ap.add_argument("--appareil", default="booted",
+                    help="l'identifiant du simulateur a photographier ; "
+                         "obligatoire des que deux sont allumes")
     args = ap.parse_args()
+    global APPAREIL
+    APPAREIL = args.appareil
+    allumes = [l for l in sh("xcrun simctl list devices booted").stdout.splitlines()
+               if "Booted" in l]
+    if len(allumes) > 1 and args.appareil == "booted":
+        raise SystemExit(
+            "deux simulateurs sont allumes — nommez celui a photographier :\n"
+            + "\n".join("   " + l.strip() for l in allumes)
+            + "\n   (--appareil <identifiant>)")
 
     controler_fenetre()
     # Le clic sacrificiel : celui que macOS consomme pour le focus.
@@ -254,7 +278,7 @@ def doublons_parmi(dossier, noms):
         chemin = os.path.join(dossier, nom + ".png")
         if not os.path.exists(chemin):
             continue
-        im = Image.open(chemin).convert("L").resize((44, 96), Image.BILINEAR)
+        im = Image.open(chemin).convert("L").resize((88, 192), Image.BILINEAR)
         e = list(im.getdata())
         for autre, f in vus.items():
             if _ecart(e, f) < SEUIL_CALME:

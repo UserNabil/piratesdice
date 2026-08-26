@@ -85,7 +85,7 @@ export const ES = {
   'connect.retryingIn': 'Reintentando en {n} s…',
   'connect.retry': 'Reintentar',
 
-  'menu.title': 'Juega la bolsa del capitán',
+  'menu.title': 'El duelo de capitanes',
   'menu.pitch': 'Tres columnas, nueve dados. El dado que colocas destruye todos los dados '
     + 'rivales del mismo valor en la misma columna. Gana el total más alto cuando un tablero se llena.',
   'menu.solo': 'Retar a la IA',

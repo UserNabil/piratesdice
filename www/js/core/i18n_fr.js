@@ -86,7 +86,11 @@ export const FR = {
   'connect.retryingIn': 'Nouvelle tentative dans {n} s…',
   'connect.retry': 'Réessayer',
 
-  'menu.title': 'Jouez la bourse du capitaine',
+  /* ⚠️ CE TITRE PROMETTAIT LA MISE, RETIREE DU JEU. « Jouez la bourse du
+     capitaine » sur l'ecran d'accueil, c'etait annoncer un pari qui n'existe
+     plus — et c'est exactement la formulation qu'Apple lit comme du jeu
+     d'argent. Le titre dit maintenant ce qu'on fait vraiment : un duel. */
+  'menu.title': 'Le duel des capitaines',
   'menu.pitch': 'Trois colonnes, neuf dés. Un dé que vous posez détruit tous les dés '
     + 'adverses de même valeur dans la même colonne. Le plus haut total gagne quand un plateau est plein.',
   'menu.solo': 'Affronter l’IA',
