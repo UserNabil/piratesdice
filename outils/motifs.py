@@ -56,6 +56,8 @@ MOTIFS = [('M001', 'dragon', (0, 0)),
 # pas ; le jour ou l'un d'eux revient au catalogue, il suffit de l'ajouter ici.
 JEUX = ['D000', 'S002', 'S006']
 
+MOTIFS_PAR_ID = {ident: nom for ident, nom, _ in MOTIFS}
+
 MARGE = 4          # de pixels entre le motif et le cadre du de
 SATURER = 1.35
 # ⚠️ UN FACTEUR FIXE NE SUFFIT PAS. Assombrir de 40 % marche sur le sultan,
@@ -75,20 +77,31 @@ def dossier_du_jeu(jeu):
 def anatomie(a):
     """La face, et les pips — lus dans l'image, jamais supposes.
 
-    ⚠️ LE LISERE BLANC DU DE EST CLAIR LUI AUSSI. On ne peut donc pas prendre
-    « la plus grande zone claire » : c'est la composante qui contient le CENTRE
-    qu'on veut, le cadre sombre separant les deux.
+    ⛔ LA PREMIERE VERSION PRENAIT LA ZONE CLAIRE QUI CONTIENT LE CENTRE, et
+    elle a rate vingt-quatre faces sur cent quarante-quatre : celles dont le
+    point du milieu est en BRAISE. Un pip allume est clair lui aussi — le
+    centre tombait donc dedans, la « face » mesurait neuf cent cinquante pixels
+    au lieu de trente-quatre mille, et le motif se gravait a l'interieur du
+    point. A l'ecran : un plateau ou les des chauds n'avaient pas de gravure,
+    et eux seuls.
+
+    On prend donc la PLUS GRANDE zone claire. Le lisere blanc du de en est une
+    autre (six mille pixels contre trente-quatre mille) et ne peut pas gagner ;
+    un pip, allume ou non, encore moins. Aucun cas particulier a prevoir, et
+    `--verifier` le prouve face par face.
     """
     L = a[..., :3].mean(2)
     de = a[..., 3] > 128
     clair = de & (L > 100)
     lab, n = ndimage.label(clair)
-    cy, cx = [s // 2 for s in de.shape]
-    ident = lab[cy, cx]
-    if ident == 0:                       # centre sur un pip : on prend la plus grande
-        tailles = ndimage.sum(clair, lab, range(1, n + 1))
-        ident = int(np.argmax(tailles)) + 1
+    if not n:
+        raise ValueError('aucune zone claire : ce n est pas un de')
+    tailles = ndimage.sum(clair, lab, range(1, n + 1))
+    ident = int(np.argmax(tailles)) + 1
     visage = lab == ident
+    if visage.sum() < de.sum() * 0.25:
+        raise ValueError('face suspecte : %d px pour un de de %d px'
+                         % (visage.sum(), de.sum()))
     pleine = ndimage.binary_fill_holes(visage)
     return pleine, visage, pleine & ~visage
 
@@ -187,15 +200,67 @@ def planche_de_controle():
     print('planche de controle :', chemin)
 
 
+def source(jeu, fichier):
+    return os.path.join(dossier_du_jeu(jeu), fichier)
+
+
+def verifier():
+    """Chaque face gravee porte-t-elle VRAIMENT sa gravure ?
+
+    ⛔ CE CONTROLE NAIT D'UNE LIVRAISON RATEE. Le script annoncait « 144 faces
+    gravees » et vingt-quatre d'entre elles etaient la copie exacte de leur
+    source : le compte etait juste, le travail non. Compter des fichiers ecrits
+    ne prouve rien — on compare donc l'image gravee a celle dont elle sort.
+    Moins de 3 % de pixels changes, c'est qu'il ne s'est rien passe.
+    """
+    fautes = []
+    for jeu in JEUX:
+        for ident, _ in MOTIFS_PAR_ID.items():
+            combo = os.path.join(SKINS, '%s_%s' % (jeu, ident))
+            for fichier, chemin in faces(jeu):
+                cible = os.path.join(combo, fichier)
+                if not os.path.isfile(cible):
+                    fautes.append('%s/%s : absent' % (os.path.basename(combo), fichier))
+                    continue
+                avant = np.array(Image.open(chemin).convert('RGBA')).astype(int)
+                apres = np.array(Image.open(cible).convert('RGBA')).astype(int)
+                if avant.shape != apres.shape:
+                    fautes.append('%s/%s : taille differente' % (os.path.basename(combo), fichier))
+                    continue
+                bouge = (np.abs(avant - apres)[..., :3].mean(2) > 12).mean() * 100
+                if bouge < 3:
+                    fautes.append('%s/%s : gravure absente (%.1f %% de pixels changes)'
+                                  % (os.path.basename(combo), fichier, bouge))
+    return fautes
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--planche', action='store_true',
                     help='ecrit une planche de controle et ne touche a rien')
+    ap.add_argument('--verifier', action='store_true',
+                    help='compare les gravures a leurs sources, sans rien ecrire')
     args = ap.parse_args()
     if args.planche:
         return planche_de_controle()
+    if args.verifier:
+        fautes = verifier()
+        for f in fautes:
+            print('  ✖ ' + f)
+        print('%d face(s) sans gravure' % len(fautes) if fautes
+              else 'toutes les faces portent leur gravure')
+        return 1 if fautes else 0
     n = tout()
     print('%d faces gravees dans www/dice/img/skins/' % n)
+    # ⚠️ ON NE SE CROIT PAS SUR PAROLE : le compte de fichiers ecrits ne dit pas
+    # que la gravure y est. On relit ce qu'on vient d'ecrire.
+    fautes = verifier()
+    for f in fautes:
+        print('  ✖ ' + f)
+    if fautes:
+        print('%d face(s) sans gravure — RIEN N EST BON' % len(fautes))
+        return 1
+    print('controle : les %d faces portent leur gravure' % n)
     return 0
 
 

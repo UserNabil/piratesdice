@@ -324,7 +324,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-over-seal { width: 86px; }
   #dicewrap .dc-bet-art { width: 116px; }
   #dicewrap .dc-over-score { font-size: 38px; }
-  #dicewrap .dc-menu-card { padding: 22px 20px; }
   #dicewrap .dc-menu-btns { flex-direction: column; }
   #dicewrap .dc-btn { min-height: 48px; }
 }
@@ -839,6 +838,16 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* ── les ecrans tres etroits (320 px : le plancher Android) ───────────────── */
 
+/* Les tres petits ecrans en hauteur : on serre le texte, pas les boutons.
+   ⚠️ C'EST LE PARAGRAPHE QU'ON SACRIFIE, PAS LE POUCE. Reduire les trois
+   boutons ferait tenir la carte aussi — et rendrait le jeu plus dur a demarrer
+   sur les telephones ou il est deja le plus a l'etroit. */
+@media (max-height: 700px) {
+  #dicewrap .dc-menu-card p { line-height: 1.3; }
+  #dicewrap .dc-menu-card h2 { font-size: calc(18px * var(--pd-ui, 1)); }
+  #dicewrap .dc-caps-head { letter-spacing: 1px; }
+}
+
 @media (max-width: 359px) {
   #dicewrap .dc-top { gap: 5px; padding: 5px 6px; }
   #dicewrap .dc-wallet { padding: 3px 9px; }
@@ -877,7 +886,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
        d'abord en faire une colonne. */
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    /* ⛔ `min-height: 100%` LAISSAIT LA CARTE GRANDIR AU-DELA DE L'ECRAN, et
+       `overflow-y: auto` ne servait alors a rien : on ne defile que dans une
+       boite BORNEE. Mesure du 2026-08-26 en 360x640 : la coque faisait 640 px
+       pour 851 px de contenu — deux cent onze pixels coupes net, et le bas de
+       la carte (les trois boutons, la ligne de statistiques) tombait hors de
+       l'ecran sans qu'aucun geste ne puisse aller le chercher.
+       On borne donc la boite a la hauteur disponible : elle s'etire tant qu'il
+       y a de la place, elle defile quand il n'y en a plus. */
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    /* ⚠️ SANS `border-box`, LE REMBOURRAGE S'AJOUTE A `max-height`. Mesure :
+       une boite bornee a 570 px en faisait 598 — les 12 et 16 px de haut et de
+       bas — et treize pixels de la carte passaient sous le bord de l'ecran.
+       Une hauteur maximale qui n'est pas la hauteur maximale ne borne rien. */
+    box-sizing: border-box;
+    /* ⚠️ `margin: auto` CENTRE, PUIS CACHE. Quand la carte depasse, un centrage
+       par marges automatiques repartit le debordement des DEUX cotes — et la
+       moitie du haut devient inatteignable, aucun defilement ne remonte
+       au-dessus du point de depart. `safe center` centre tant qu'il y a de la
+       place et retombe en haut des qu'il n'y en a plus : rien n'est jamais
+       hors de portee. */
+    justify-content: safe center;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -893,19 +924,51 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      centree : le reste d'espace se partage a parts egales au-dessus et en
      dessous, ce qui se lit comme voulu. */
   #dicewrap .dc-menu-card {
-    margin: auto;
+    margin: 0 auto;                       /* le centrage vertical vient du parent */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: clamp(8px, 1.8vh, 20px);
+    gap: clamp(5px, 1.4vh, 20px);
+    padding: clamp(12px, 2.2vh, 22px) 20px;
   }
 
-  #dicewrap .dc-caps { margin-bottom: 14px; padding-top: 12px; }
-  #dicewrap .dc-caps-head { font-size: calc(11px * var(--pd-ui, 1)); margin-bottom: 9px; }
+  /* ⛔ LA CARTE D'ACCUEIL AVAIT UNE HAUTEUR FIXE ET L'ECRAN NON. Rembourrages,
+     ecarts, boutons et medaillons etaient en pixels : la meme carte de 695 px
+     sur un telephone de 640 et sur un de 915. Sur le petit, elle depassait de
+     cent trente pixels ; sur le grand, elle flottait au milieu du vide.
+     Tout ce qui prend de la HAUTEUR se mesure donc en hauteur d'ecran, avec un
+     plancher et un plafond : la carte se serre d'elle-meme sur un petit
+     telephone et retrouve son air sur un grand, sans media query a maintenir
+     pour chaque modele. */
+  #dicewrap .dc-menu-card p {
+    font-size: clamp(12.5px, 1.9vh, 15px);
+    line-height: 1.45;
+    margin-bottom: 0;
+  }
+  #dicewrap .dc-menu-btns { gap: clamp(7px, 1.5vh, 16px); }
+  #dicewrap .dc-menu-card .dc-btn-big {
+    padding: clamp(9px, 1.6vh, 15px) 30px clamp(7px, 1.3vh, 12px);
+    font-size: calc(clamp(14px, 2.1vh, 17px) * var(--pd-ui, 1));
+  }
+  #dicewrap .dc-menu-stats { margin-top: clamp(4px, 1vh, 14px); }
+  #dicewrap .dc-caps {
+    margin: 0 0 clamp(4px, 1.2vh, 14px);
+    padding-top: clamp(5px, 1.3vh, 12px);
+  }
+  #dicewrap .dc-caps-head { margin-bottom: clamp(4px, 1vh, 9px); }
+  #dicewrap .dc-cap {
+    width: min(15.5vw, clamp(40px, 7.2vh, 64px));
+    height: min(15.5vw, clamp(40px, 7.2vh, 64px));
+  }
+  #dicewrap .dc-cap-card {
+    min-height: clamp(40px, 6.4vh, 54px);
+    padding: clamp(4px, 1vh, 8px) 11px;
+  }
+  #dicewrap .dc-cap-trait { width: clamp(38px, 6vh, 52px); height: clamp(38px, 6vh, 52px); }
+
+  #dicewrap .dc-caps-head { font-size: calc(11px * var(--pd-ui, 1)); }
   #dicewrap .dc-caps-row { gap: 5px; }
-  #dicewrap .dc-cap { width: 15.5vw; height: 15.5vw; max-width: 64px; max-height: 64px; }
-  #dicewrap .dc-cap-card { gap: 9px; padding: 8px 11px; min-height: 54px; }
-  #dicewrap .dc-cap-trait { width: 52px; height: 52px; }
+  #dicewrap .dc-cap-card { gap: 9px; }
   #dicewrap .dc-cap-txt b { font-size: calc(13px * var(--pd-ui, 1)); }
   #dicewrap .dc-cap-txt span { font-size: calc(12px * var(--pd-ui, 1)); }
 
