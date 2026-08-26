@@ -43,7 +43,7 @@ export function renderRules(body) {
       <li>${t('rules.3')}</li>
       <li>${t('rules.4')}</li>
       <li>${t('rules.5', { n: S.rules.maxBonusPerMatch })}</li>
-      <li>${t('rules.6', { n: S.rules.winReward })}</li>
+      <li>${t('rules.6', { ia: S.rules.aiReward, rang: S.rules.rankReward })}</li>
       <li>${t('rules.7')}</li>
     </ol>
     <p class="dc-dim dc-keys">${t('rules.shortcuts', {

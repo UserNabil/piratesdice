@@ -297,8 +297,8 @@ export const EN = {
   'rules.4': 'The match ends the moment one board is full. Highest total wins.',
   'rules.5': 'Bonuses are bought in the Shop and you may use <b>{n}</b> per match: reroll the die, '
     + 'clear one of your own dice, or blast an enemy one.',
-  'rules.6': 'Winning pays your stake back plus {n} coins; losing costs the stake. '
-    + 'Only player-versus-player matches move your Elo.',
+  'rules.6': 'A match against the machine pays {ia} coins; a match that RAISES your rank pays {rang}. '
+    + 'Only player-versus-player matches move your Elo, and only against a ranked opponent of close standing.',
   'rules.7': 'Your <b>captain</b> changes how you play — one free reroll, an opening that clears the value above, a look at the next die, richer triples, or a die already on the board. Pick yours on the deck.',
   'rules.shortcuts': 'Shortcuts: {space} rolls, {one} {two} {three} drop into a column, {esc} closes.',
 

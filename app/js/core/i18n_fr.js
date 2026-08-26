@@ -286,8 +286,8 @@ export const FR = {
   'rules.4': 'La partie s’arrête dès qu’un plateau est plein. Le plus haut total gagne.',
   'rules.5': 'Les bonus s’achètent à la boutique et vous en avez droit à <b>{n}</b> par partie : '
     + 'relancer le dé, vider une de vos cases, ou détruire un dé adverse.',
-  'rules.6': 'Gagner rend la mise plus {n} pièces ; perdre coûte la mise. '
-    + 'Seules les parties entre joueurs bougent votre Elo.',
+  'rules.6': 'Une partie contre la machine rapporte {ia} pièces ; une partie qui vous fait MONTER au classement en rapporte {rang}. '
+    + 'Seules les parties entre joueurs bougent votre Elo, et seulement face à un adversaire classé, de niveau proche.',
   'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer — une relance offerte, une ouverture qui emporte la valeur au-dessus, un œil sur le prochain dé, des triples plus riches, ou un dé déjà posé. Choisissez le vôtre sur le pont.',
   'rules.shortcuts': 'Raccourcis : {space} lance, {one} {two} {three} posent dans une colonne, {esc} ferme.',
 

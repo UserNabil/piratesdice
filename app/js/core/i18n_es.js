@@ -279,8 +279,8 @@ export const ES = {
   'rules.4': 'La partida acaba en cuanto un tablero se llena. Gana el total más alto.',
   'rules.5': 'Los bonus se compran en la tienda y puedes usar <b>{n}</b> por partida: repetir la tirada, '
     + 'vaciar una casilla propia o destruir un dado rival.',
-  'rules.6': 'Ganar devuelve la apuesta más {n} monedas; perder cuesta la apuesta. '
-    + 'Solo las partidas entre jugadores mueven tu Elo.',
+  'rules.6': 'Una partida contra la máquina da {ia} monedas; una partida que SUBE tu clasificación da {rang}. '
+    + 'Solo las partidas entre jugadores mueven tu Elo, y solo ante un rival clasificado de nivel cercano.',
   'rules.7': 'Tu <b>capitán</b> cambia tu forma de jugar — una tirada gratis, una apertura que se lleva el valor superior, un vistazo al próximo dado, triples más ricos o un dado ya colocado. Elige el tuyo en cubierta.',
   'rules.shortcuts': 'Atajos: {space} tira, {one} {two} {three} colocan en una columna, {esc} cierra.',
 

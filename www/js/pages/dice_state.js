@@ -166,7 +166,7 @@ export const S = {
   me: null,
   inventory: [],
   shop: [],
-  rules: { maxBonusPerMatch: 3, winReward: 10 },
+  rules: { maxBonusPerMatch: 3, aiReward: 20, rankReward: 100 },
   panel: null,
   queued: false,
   visualLock: 0,
