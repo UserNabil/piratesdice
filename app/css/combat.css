@@ -250,6 +250,42 @@
   --cbt-joueur-eteint: brightness(.66) saturate(.82);
   --cbt-joueur-courbure: 18px;
 
+  /* ── LE GIVRE DU GEL, SUR LA GRILLE ────────────────────────────────────── */
+
+  /* ⚠️ CE BLOC EXISTE PARCE QUE J'AI RATE CE CADRAGE SIX FOIS. 62 %, 50 %, la
+     zone des cases, deux cases et deux ecarts, 100 % du plateau, 115 % — a
+     chaque essai il fallait retrouver la regle dans dice.css, deviner sur quoi
+     portait le pourcentage, reconstruire, reinstaller, regarder. Une demi-heure
+     par tentative, pour une valeur qui se juge a l'oeil en deux secondes.
+     Ce qui se juge a l'oeil doit se regler a la main. Les quatre reglages
+     ci-dessous suffisent a poser le sceau n'importe ou sur la grille, sans
+     toucher a une seule ligne de code.
+
+     COMMENT S'EN SERVIR. Les valeurs partent de la GRILLE — les neuf cases,
+     cadre du plateau exclu :
+       --cbt-gel-marge   ce qu'on retranche de chaque cote du plateau pour
+                         tomber sur la grille. Par defaut le lisere, seule
+                         epaisseur reelle entre le bord et la premiere case.
+       --cbt-gel-echelle 1 = le sceau fait exactement la grille. 1.15 = il
+                         deborde de 15 %. 0.8 = il flotte au milieu.
+       --cbt-gel-x / -y  pour le decaler, si le dessin n'est pas centre sur
+                         lui-meme. En pourcentage de la grille, positif vers la
+                         droite et vers le bas.
+
+     Le sceau reste TOUJOURS centre sur la grille : les trois derniers reglages
+     s'appliquent autour de ce centre, donc un changement d'echelle ne deplace
+     pas le dessin, il le fait respirer. */
+  --cbt-gel-marge: var(--cbt-plateau-lisere, 4px);
+  --cbt-gel-echelle: 1;
+  --cbt-gel-x: 0%;
+  --cbt-gel-y: 0%;
+
+  /* Le voile sombre, lui, couvre TOUT LE PLATEAU — cadre compris : c'est le
+     plateau qui gele, pas seulement ses cases. Il prend donc la courbure du
+     plateau, sans quoi ses quatre coins depassent du dessin. */
+  --cbt-gel-voile: radial-gradient(closest-side,
+                                   rgba(70, 170, 255, .20), rgba(8, 16, 40, .58));
+
   /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
 
   /* Le jeton de l'eventail. Il ne partage plus sa ligne avec rien : c'est le
@@ -585,6 +621,33 @@
    et un fond sombre auraient repeint le rond en carre, puisque ce fichier est
    charge en dernier.
    Ne restent que la taille du jeton et le RAYON de l'arc. */
+/* ── le givre du gel ──────────────────────────────────────────────────────── */
+
+/* Le voile : tout le plateau, courbure comprise. */
+#dicewrap .dc-gel {
+  background: var(--cbt-gel-voile);
+  border-radius: var(--cbt-plateau-courbure);
+}
+
+/* La boite du sceau : la GRILLE, c'est-a-dire le plateau moins la marge. */
+#dicewrap .dc-gel {
+  top: var(--cbt-gel-marge);
+  left: var(--cbt-gel-marge);
+  right: var(--cbt-gel-marge);
+}
+
+/* Le sceau lui-meme, centre sur la grille et libre de deborder.
+   ⚠️ `translate(-50%, -50%)` PUIS le decalage voulu : l'ordre compte, sinon le
+   decalage serait lui aussi divise par deux. */
+#dicewrap .dc-gel img {
+  left: 50%;
+  top: 50%;
+  width: calc(100% * var(--cbt-gel-echelle));
+  height: calc(100% * var(--cbt-gel-echelle));
+  transform: translate(-50%, -50%)
+             translate(var(--cbt-gel-x), var(--cbt-gel-y));
+}
+
 #dicewrap .dc-bonus { --pd-fan-r: var(--cbt-bonus-rayon); }
 
 #dicewrap .dc-bonus-qty { font-size: var(--cbt-bonus-nombre-taille); }
