@@ -157,6 +157,12 @@ export const FR = {
   'over.back': 'Retour au pont',
 
   'shop.title': 'Le fournisseur du bord',
+
+  'shop.rayon.des': 'Jeux de dés',
+
+  'shop.rayon.motifs': 'Gravures',
+
+  'shop.rayon.bonus': 'Effets',
   'shop.opening': 'On ouvre les caisses…',
   'shop.owned': 'en cale : {n}',
   'shop.bought': 'acheté — c’est dans votre cale',

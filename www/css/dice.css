@@ -1777,6 +1777,22 @@
 #dicewrap .dc-shop-shut p { margin: 0; font-weight: 700; font-size: 1.02rem; }
 #dicewrap .dc-shop-shut span { opacity: .72; font-size: .9rem; line-height: 1.45; max-width: 34ch; }
 
+/* Le nom du rayon. Trois listes qui se suivent sans titre se lisent comme une
+   seule : c'est ce qu'etait la boutique avant, et on n'y trouvait plus rien. */
+#dicewrap .dc-shop-rayon {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-weight: 400;
+  color: var(--gold-hi);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: .92rem;
+  margin: 18px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid rgba(232, 200, 106, .28);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .6);
+}
+#dicewrap .dc-shop-rayon:first-of-type { margin-top: 6px; }
+
 #dicewrap .dc-shop-item {
   display: flex;
   align-items: center;

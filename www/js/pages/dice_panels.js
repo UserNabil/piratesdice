@@ -69,6 +69,13 @@ function enPartie() {
   return !!(S.state && S.state.phase && S.state.phase !== 'over');
 }
 
+/* Les rayons de la boutique, dans l'ordre ou l'on s'habille. */
+const RAYONS = [
+  { titre: 'shop.rayon.des', tient: estParure },
+  { titre: 'shop.rayon.motifs', tient: estMotif },
+  { titre: 'shop.rayon.bonus', tient: (p) => !porte(p) },
+];
+
 export async function renderShop(body) {
   /* ⛔ ON N'ACHETE PAS SA MISE EN COURS DE ROUTE. Vecu : 1000 pieces misees,
      presque 700 depensees en bonus PENDANT la partie, puis defaite — la mise
@@ -96,25 +103,45 @@ export async function renderShop(body) {
   }
 
   const have = new Map(S.inventory.map((i) => [i.identify, i.quantity]));
-  body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>
-    <div class="dc-shop">${products.map((p) => `
+
+  /* ⛔ TOUT ETAIT DANS UNE SEULE LISTE, ET ON NE TROUVAIT PLUS RIEN. Des jeux
+     de des, des gravures et des jetons a usage unique se suivaient dans le
+     meme rouleau, avec trois boutons qui ne veulent pas dire la meme chose —
+     acheter, porter, retirer. On range donc par RAYON, dans l'ordre ou l'on
+     s'habille : les des, ce qu'on grave dessus, puis ce qu'on emporte. */
+  const article = (p) => `
       <div class="dc-shop-item">
         <img src="${vignette(p)}" alt="">
         <div class="dc-shop-txt">
           <b>${esc(shopText(p.identify, 'name', p.name))}</b>
           <span>${esc(shopText(p.identify, 'desc', p.description))}</span>
-          <em>${esc(estParure(p)
+          <em>${esc(porte(p)
             ? (have.get(p.identify) ? t('skin.owned') : t('skin.appearance'))
             : t('shop.owned', { n: have.get(p.identify) || 0 }))}</em>
         </div>
         ${bouton(p, have)}
-      </div>`).join('')}</div>`;
+      </div>`;
+
+  const rayons = RAYONS.map((r) => {
+    const lot = products.filter((p) => r.tient(p));
+    if (!lot.length) return '';
+    return `<h4 class="dc-shop-rayon">${esc(t(r.titre))}</h4>`
+      + `<div class="dc-shop">${lot.map(article).join('')}</div>`;
+  }).join('');
+
+  body.innerHTML = `<h3>${esc(t('shop.title'))}</h3>${rayons}`;
 
   body.querySelectorAll('[data-skin]').forEach((b) => {
     b.onclick = () => {
       /* Une chaine vide veut dire « retirer » : le serveur remet les des
          d'origine, et n'a donc rien a verifier. */
       if (S.net) S.net.send({ t: 'skin', skin: b.dataset.skin || null });
+    };
+  });
+
+  body.querySelectorAll('[data-motif]').forEach((b) => {
+    b.onclick = () => {
+      if (S.net) S.net.send({ t: 'motif', motif: b.dataset.motif || null });
     };
   });
 
@@ -148,19 +175,38 @@ function estParure(p) {
   return p && p.category === 'Skin';
 }
 
-/** L'image d'un article : la face 5 de la parure, ou l'icone de l'effet. */
+/* Une GRAVURE se pose SUR la parure qu'on porte deja — elle ne la remplace
+   pas. C'est toute la difference entre les deux rayons, et c'est pour cela
+   qu'ils ne partagent ni le meme champ en base ni le meme bouton. */
+function estMotif(p) {
+  return p && p.category === 'Motif';
+}
+
+function porte(p) {
+  return estParure(p) || estMotif(p);
+}
+
+/**
+ * L'image d'un article : la face 5 de la parure, ou l'icone de l'effet.
+ *
+ * ⚠️ UNE GRAVURE N'A PAS DE DOSSIER A ELLE. Elle n'existe qu'en combinaison :
+ * on montre donc la gravure sur les des d'origine, qui appartiennent a tout le
+ * monde — l'acheteur voit le dessin, pas une parure qu'il n'a peut-etre pas.
+ */
 function vignette(p) {
+  if (estMotif(p)) return ASSETS + 'img/skins/D000_' + p.identify + '/die_5.png';
   if (!estParure(p)) return bonusArt(p.identify);
   return ASSETS + 'img/skins/' + p.identify + '/die_5.png';
 }
 
 function bouton(p, have) {
   const possede = (have.get(p.identify) || 0) > 0;
-  if (estParure(p) && possede) {
-    const portee = S.me && S.me.skin === p.identify;
-    return '<button class="dc-btn dc-btn-sm' + (portee ? ' dc-btn-ghost' : '') + '"'
-      + ' data-skin="' + esc(portee ? '' : p.identify) + '">'
-      + esc(t(portee ? 'skin.remove' : 'skin.wear')) + '</button>';
+  if (porte(p) && possede) {
+    const quoi = estMotif(p) ? 'motif' : 'skin';
+    const actif = S.me && S.me[quoi] === p.identify;
+    return '<button class="dc-btn dc-btn-sm' + (actif ? ' dc-btn-ghost' : '') + '"'
+      + ' data-' + quoi + '="' + esc(actif ? '' : p.identify) + '">'
+      + esc(t(actif ? 'skin.remove' : 'skin.wear')) + '</button>';
   }
   const trop = S.me && S.me.coins < p.basic_price;
   return '<button class="dc-btn dc-btn-sm" data-buy="' + esc(p.identify) + '"'

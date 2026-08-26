@@ -168,6 +168,12 @@ export const EN = {
   'over.back': 'Back to the deck',
 
   'shop.title': "Ship's chandler",
+
+  'shop.rayon.des': 'Dice sets',
+
+  'shop.rayon.motifs': 'Engravings',
+
+  'shop.rayon.bonus': 'Effects',
   'shop.opening': 'Opening the crates…',
   'shop.owned': 'owned: {n}',
   'shop.bought': 'bought — it is in your hold',

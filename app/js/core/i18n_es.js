@@ -150,6 +150,12 @@ export const ES = {
   'over.back': 'Volver a cubierta',
 
   'shop.title': 'El proveedor de a bordo',
+
+  'shop.rayon.des': 'Juegos de dados',
+
+  'shop.rayon.motifs': 'Grabados',
+
+  'shop.rayon.bonus': 'Efectos',
   'shop.opening': 'Abriendo las cajas…',
   'shop.owned': 'en bodega: {n}',
   'shop.bought': 'comprado — está en tu bodega',

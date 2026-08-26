@@ -83,15 +83,50 @@ const CORPS_ORIGINE = 0.923;
  *     rayon du logement = rayon du de x part du corps + demi-marge
  */
 export function arrondiDeCase(skin) {
-  const pc = (skin && ARRONDI[skin]) || ARRONDI_ORIGINE;
-  const corps = (skin && CORPS[skin]) || CORPS_ORIGINE;
+  /* ⚠️ LA GRAVURE NE CHANGE PAS LA GEOMETRIE DU DE. `S006_M001` est le meme
+     corps et le meme arrondi que `S006` : sans cette coupe, la combinaison
+     retombait sur les valeurs par defaut et le logement cessait de suivre les
+     coins — exactement le defaut qu'on avait corrige pour l'or. */
+  const nu = typeof skin === 'string' ? skin.split('_')[0] : null;
+  const jeu = nu === 'D000' ? null : nu;
+  const pc = (jeu && ARRONDI[jeu]) || ARRONDI_ORIGINE;
+  const corps = (jeu && CORPS[jeu]) || CORPS_ORIGINE;
   return (pc / 100) * corps + (1 - corps) / 2;
 }
 
+/* Les jeux de des dont les motifs ont ete GRAVES (outils/motifs.py). C'est le
+   client qui porte les images, c'est donc lui qui sait quelles combinaisons
+   existent : un jeu retire du catalogue garde sa parure, sans gravure. */
+const GRAVES = ['D000', 'S002', 'S006'];
+const JEU_NU = 'D000';
+
+const identifiant = (s) => (typeof s === 'string' && /^[A-Z0-9]{1,8}$/.test(s) ? s : null);
+
+/**
+ * Le dossier d'images du siege : la parure, et le motif s'il y en a un.
+ *
+ * ⚠️ LE MOTIF N'EST PAS UNE COUCHE POSEE A L'ECRAN, C'EST UNE AUTRE IMAGE. Le
+ * dragon sur les des d'or et le dragon sur ceux du sultan sont deux gravures
+ * differentes, faites a l'avance. Superposer deux images au rendu aurait
+ * demande de tenir deux boites alignees au pixel pendant que le de tourne et
+ * rebondit — le genre de promesse que ce depot a deja vu se rompre.
+ */
 export function skinOf(seat) {
   const p = S.state && S.state.players ? S.state.players[seat] : null;
-  const s = p && p.skin;
-  return typeof s === 'string' && /^[A-Z0-9]{1,8}$/.test(s) ? s : null;
+  const jeu = identifiant(p && p.skin);
+  const motif = identifiant(p && p.motif);
+  if (!motif) return jeu;
+  const base = jeu || JEU_NU;
+  return GRAVES.indexOf(base) >= 0 ? base + '_' + motif : jeu;
+}
+
+/** La combinaison equivalente pour MOI, hors partie (boutique, apercu). */
+export function maParure(jeu, motif) {
+  const j = identifiant(jeu);
+  const m = identifiant(motif);
+  if (!m) return j;
+  const base = j || JEU_NU;
+  return GRAVES.indexOf(base) >= 0 ? base + '_' + m : j;
 }
 
 /** Le dossier d'images d'une parure, ou celui d'origine. */

@@ -152,6 +152,12 @@ export const AR = {
   'over.back': 'العودة إلى السطح',
 
   'shop.title': 'متجر السفينة',
+
+  'shop.rayon.des': 'أطقم النرد',
+
+  'shop.rayon.motifs': 'نقوش',
+
+  'shop.rayon.bonus': 'تأثيرات',
   'shop.opening': 'جارٍ فتح الصناديق…',
   'shop.owned': 'لديك: {n}',
   'shop.bought': 'تم الشراء — صار في عنبرك',
