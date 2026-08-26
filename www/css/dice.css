@@ -1637,9 +1637,21 @@
    CARRE — trois cases carrees, deux ecarts, deux cadres, dans les deux sens —
    donc `aspect-ratio: 1` avec les deux bords lateraux colles suffit a retomber
    exactement dessus, sans mesurer quoi que ce soit en JS. */
+/* ⚠️ « LA GRILLE », CE N'EST NI LE BLOC NI LE PLATEAU : CE SONT LES NEUF CASES.
+   Le givre a couvert le bloc entier (plateau + plaques de score), puis le
+   plateau (cadre de bois compris) — deux tailles fausses de suite, parce que
+   chaque fois le pourcentage se rapportait a autre chose que ce qu'on regarde.
+   Le dessin, lui, EST une grille de neuf cases gelees : ses quatre ancres se
+   posent dans les coins, ses quatre diamants sur les cotes. Pour qu'il tombe
+   juste, sa boite doit etre EXACTEMENT la zone des cases — le plateau moins son
+   lisere et moins son cadre de bois. Les deux sont des reglages du tableau de
+   bord ; on les retranche plutot que de deviner un pourcentage. */
 #dicewrap .dc-gel {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: auto;
+  top: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
+  left: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
+  right: calc(var(--cbt-plateau-lisere, 4px) + var(--cbt-plateau-cadre, 10px));
+  bottom: auto;
   aspect-ratio: 1;
   z-index: 12;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1653,15 +1665,15 @@
    deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
    tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-   ⚠️ ET LES DEUX PREMIERS ESSAIS — 62 % PUIS 50 % — ETAIENT FAUX DES DEUX COTES.
-   Ils etaient pris sur `.dc-boardwrap`, qui est plus haut que le plateau : le
-   pourcentage ne se rapportait pas a la grille. Une fois la boite recalee sur
-   le plateau (ci-dessus), la question redevient simple — ce dessin EST une
-   grille gelee, ses chaines partent du centre vers les huit cases et ses ancres
-   se posent dans les coins. Il vaut donc la grille entiere, cadre de bois
-   deduit : 94 %. A la moitie il flottait au milieu comme un jeton oublie. */
+   ⚠️ ET UN POURCENTAGE NE SUFFISAIT PAS, PARCE QUE L'IMAGE PORTAIT SA PROPRE
+   MARGE. Le fichier livre laissait 8 % de vide autour du dessin : a « 94 % de
+   la boite » on obtenait 86 % de dessin, et les ancres tombaient entre deux
+   cases. Le fichier a donc ete RECADRE sur son contenu (471 x 452 au lieu de
+   512 x 512, mesure a l'alpha), et le dessin remplit maintenant sa boite. Il
+   reste 2 % de jeu en hauteur, le dessin n'etant pas tout a fait carre : c'est
+   `contain` qui les repartit, en haut et en bas a parts egales. */
 #dicewrap .dc-gel img {
-  width: 94%; height: auto; max-height: 94%; object-fit: contain;
+  width: 100%; height: 100%; object-fit: contain;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }
 /* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
@@ -1896,7 +1908,7 @@
   pointer-events: none;
 }
 #dicewrap .dc-bulle.dc-msg-part { transform: scale(.92); }
-#dicewrap .dc-cast.dc-msg-part { transform: translateX(-50%) scale(.92); }
+#dicewrap .dc-cast.dc-msg-part { transform: translate(-50%, -50%) scale(.92); }
 
 /* Le quart du pont, ecrit au-dessus de sa plaque. Riche en or, pauvre en gris :
    la couleur porte l'information avant que le chiffre soit lu. */
@@ -1942,18 +1954,26 @@
 
 /* ── l'annonce d'un effet : plein cadre, et assez longue pour etre lue ────── */
 
-/* ⚠️ AU MILIEU DE L'ARENE, C'EST-A-DIRE SUR LE GOBELET. Le centre exact est
-   occupe par la barre du lancer : l'annonce la recouvrait entierement, et le
-   joueur perdait de vue le seul bouton dont il a besoin — pendant 3,8 secondes,
-   a chaque effet joue. On la pose donc JUSTE AU-DESSUS de la ligne mediane :
-   elle reste au centre horizontalement, tombe sur le plateau d'en face (celui
-   qu'on regarde quand l'adversaire agit), et ne cache plus aucune commande. */
+/* ⛔ VOICI LE MESSAGE QUI S'AFFICHAIT AU-DESSUS DE LA BARRE DU JEU, DERRIERE
+   L'ENCOCHE. `bottom: calc(100% + 10px)` place un element ENTIEREMENT AU-DESSUS
+   de son parent — c'est ce qu'on veut quand le parent est une petite barre au
+   milieu de l'ecran, et c'est pour elle que cette regle avait ete ecrite. Mais
+   le JS accroche l'annonce a `.dc-arena`, qui occupe TOUT l'ecran de jeu :
+   « au-dessus de l'arene » veut alors dire hors de l'ecran, sous la barre de
+   l'entete et sous l'encoche de l'iPhone. La regle et le point d'accrochage
+   avaient diverge, et rien ne pouvait le signaler — une position hors cadre est
+   une position parfaitement valide pour le navigateur.
+
+   ⚠️ ET LA RAISON D'ETRE MONTEE A DISPARU. On l'avait sortie du centre parce
+   que le gobelet y flottait ; le gobelet est descendu dans le bandeau du bas
+   depuis. Le centre est libre, et c'est la que l'oeil est : « ce message doit
+   s'afficher au centre du jeu pour comprendre. » */
 #dicewrap .dc-cast {
   position: absolute;
   inset-inline-start: 50%;
-  bottom: calc(100% + 10px);
-  transform: translateX(-50%);
-  z-index: 9;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 18;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -2007,8 +2027,10 @@
 }
 #dicewrap .dc-cast-me .dc-cast-txt span { color: rgba(42, 26, 5, .82); }
 
+/* ⚠️ L'IMAGE DE DEPART DOIT PORTER LA MEME TRANSLATION QUE L'ETAT FINAL, sinon
+   l'annonce part du coin et vient se recaler — un saut visible a chaque effet. */
 @keyframes dc-cast-in {
-  from { opacity: 0; transform: translateX(-50%) scale(.78); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.78); }
 }
 
 /* La longue-vue fermee : un bouton qui porte ce qu'il reste. Un compteur sans
@@ -2483,9 +2505,12 @@
      bulle de l'adversaire contre le rectangle ; l'alerte de tour au-dessus
      d'elle ; ma bulle en dessous du rectangle ; le message de service au-dessus
      du bandeau. Cinq places, cinq objets. */
-  /* Par defaut au centre : une banniere qui ne vise personne — la table, une
-     regle, un evenement partage — n'a pas de cote. */
-  top: 42%;
+  /* ⚠️ ELLE PARTAGEAIT LE CENTRE AVEC L'ANNONCE DE BONUS, qui vient de l'y
+     rejoindre. Deux messages au meme endroit s'annulent : celle-ci, courte,
+     monte sur le plateau d'en face — a 26 % de l'arene, c'est-a-dire BIEN
+     DEDANS. Elle n'a jamais ete celle qui passait sous l'encoche : c'etait
+     `.dc-cast`, posee hors cadre par un `bottom: calc(100% + 10px)`. */
+  top: 26%;
   z-index: 16;
   text-align: center;
   pointer-events: none;
