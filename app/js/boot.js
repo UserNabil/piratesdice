@@ -15,6 +15,7 @@ import { t, LANGS, lang, setLang } from './core/i18n.js';
 import { startMotion } from './motion.js';
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
+import { brancherStudio } from './ui/studio.js';
 
 const TERMS_URL = 'https://usernabil.github.io/piratesdice-site/privacy.html';
 
@@ -337,6 +338,10 @@ async function start() {
      les yeux du joueur. */
   await pretAAfficher();
   splashOff();
+  /* ⚠️ APRES LE RIDEAU, PAS AVANT. Chercher l'atelier coute deux requetes qui
+     echouent sur un vrai telephone : les faire au demarrage retarderait
+     l'ouverture du jeu pour une fonction que personne n'utilise en jouant. */
+  brancherStudio().then((la) => { if (la) console.log('[studio] atelier branche'); });
 }
 
 /**

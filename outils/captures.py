@@ -52,6 +52,28 @@ BUNDLE = "com.nabil.piratesdice"
 # une seule variable le porte jusqu'aux commandes.
 APPAREIL = "booted"
 
+# LA TRANSFORMATION FENETRE ↔ ECRAN, MESUREE SUR DEUX POINTS.
+#
+# ⛔ UNE SEULE CONSTANTE NE SUFFIT PAS, ET C'EST CE QUI A COUTE LE PLUS CHER.
+# Ce fichier a d'abord affirme qu'il n'y avait pas de barre de titre — « la
+# preuve tient en une division », le rapport de la fenetre etant celui de
+# l'appareil. C'etait vrai, puis la fenetre est passee de 380 a 388 de large et
+# le rapport n'a bouge que de 2 % : trop peu pour trahir la barre, assez pour
+# que TOUS les clics de l'entete tombent cinquante points trop haut. Voila
+# pourquoi « les onglets ne repondaient pas aux clics synthetiques » — ils
+# repondaient tres bien, on ne les touchait pas.
+#
+# Puis j'ai retranche le decalage mesure sur l'entete, et les clics du bas se
+# sont mis a rater : la fenetre ne contient pas l'ecran a la meme echelle en
+# haut et en bas des qu'on se trompe sur sa hauteur utile. Un decalage seul ne
+# peut pas decrire une droite.
+#
+# On mesure donc DEUX points — un en haut, un en bas — et on en tire
+# `fenetre_y = A + B x ecran_y`. Deux inconnues, deux mesures.
+CAL_A = 0.0
+CAL_B = 0.0
+CAL_FAITE = False
+
 
 def sh(cmd, **kw):
     return subprocess.run(cmd, shell=True, capture_output=True, text=True, **kw)
@@ -67,12 +89,84 @@ def fenetre():
         raise SystemExit("le simulateur n'est pas ouvert")
     x, y = (int(n) for n in pos.split(", "))
     l, h = (int(n) for n in taille.split(", "))
-    # ⚠️ IL N'Y A PAS DE BARRE DE TITRE A DEDUIRE, ET EN DEDUIRE UNE DECALE TOUT.
-    # On retranchait 28 points « pour la barre » : les clics tombaient alors
-    # 32 points plus bas sur l'appareil, soit un doigt entier. La preuve tient en
-    # une division : la fenetre fait 825 x 380, soit un rapport de 2,17,
-    # exactement celui de l'appareil (956 / 440).
+    # ⛔ « IL N'Y A PAS DE BARRE DE TITRE » : C'ETAIT VRAI, PUIS CA A CESSE DE
+    # L'ETRE. Ce fichier affirmait la preuve par une division — fenetre 380 x 825,
+    # rapport 2,17, exactement celui de l'appareil — et refusait de retrancher
+    # quoi que ce soit. La fenetre fait maintenant 388 x 825 : il y a bien une
+    # barre, et le rapport ne la voit pas puisqu'il change de moins de 3 %.
+    #
+    # Consequence : TOUS les clics sur l'entete tombaient vingt-cinq points trop
+    # haut. C'est pour cela que les onglets « ne repondaient pas aux clics
+    # synthetiques » — ils repondaient tres bien, on ne les touchait pas.
+    #
+    # On ne remplace pas une constante fausse par une autre : le decalage se
+    # MESURE au demarrage (voir `calibrer`), une fois, sur cette machine et ce
+    # niveau de zoom.
     return x, y, l, h, (h / l if l else 0)
+
+
+def _cherche(fx, attendu, bas, haut, pas):
+    """Balaie une colonne et rend la hauteur de FENETRE ou l'ecran a repondu.
+
+    On appuie, on regarde. C'est la seule mesure qui ne mente pas : ni le
+    rapport de la fenetre, ni `System Events`, ni une constante lue dans une
+    documentation ne disent ou se trouve reellement le pixel qu'on vise.
+    """
+    x, y, l, h, _ = fenetre()
+    depart = int(y + attendu * h)
+    for delta in range(bas, haut, pas):
+        py = depart + delta
+        px = int(x + fx * l)
+        avant = _empreinte()
+        sh("""osascript -e 'tell application "Simulator" to activate'""")
+        time.sleep(0.25)
+        sh("cliclick m:%d,%d w:150 c:%d,%d" % (px, py, px, py))
+        time.sleep(1.1)
+        if _ecart(avant, _empreinte()) > SEUIL_BOUGE * 2:
+            return py
+    return None
+
+
+def calibrer():
+    """DEUX POINTS, ET LA DROITE QUI LES JOINT.
+
+    Le haut : l'onglet de la boutique, a 8,2 % de l'ecran. Le bas : le bouton
+    « quitter » du bandeau, a 95 %. Entre les deux, presque toute la hauteur —
+    c'est ce qui rend la pente fiable. Deux cibles larges, toujours presentes,
+    et dont l'effet se voit d'un coup d'oeil.
+
+    ⚠️ ON REFERME CE QU'ON OUVRE. Chaque sonde laisse une feuille ou une carte
+    a l'ecran ; sans les fermer, la sonde suivante taperait dedans et mesurerait
+    la mauvaise chose.
+    """
+    global CAL_A, CAL_B, CAL_FAITE
+    CAL_FAITE = False
+    x, y, l, h, _ = fenetre()
+
+    haut_ecran, bas_ecran = 0.082, 0.950
+    trouve_haut = _cherche(0.45, haut_ecran, 0, 90, 4)
+    if trouve_haut is None:
+        print("   ⚠ calibrage : l'entete ne repond a aucune hauteur.")
+        return False
+    au_pont()                                  # on referme la feuille ouverte
+
+    trouve_bas = _cherche(0.845, bas_ecran, -60, 40, 4)
+    if trouve_bas is None:
+        print("   ⚠ calibrage : le bandeau du bas ne repond a aucune hauteur.")
+        return False
+    au_pont()
+
+    """La droite : deux points d'ecran connus, deux hauteurs de fenetre mesurees."""
+    e1, e2 = haut_ecran, bas_ecran
+    f1, f2 = trouve_haut - y, trouve_bas - y
+    if abs(e2 - e1) < 1e-6:
+        return False
+    CAL_B = (f2 - f1) / (e2 - e1)
+    CAL_A = f1 - CAL_B * e1
+    CAL_FAITE = True
+    print("   calibrage : ecran = %.0f px de fenetre, decale de %.0f px"
+          % (CAL_B, CAL_A))
+    return True
 
 
 def controler_fenetre():
@@ -126,6 +220,18 @@ def attendre_calme(plafond=6.0):
     return avant
 
 
+def point(fx, fy):
+    """Une fraction d'ECRAN, rendue en pixels de FENETRE.
+
+    Sans calibrage on suppose que la fenetre EST l'ecran. C'est faux — c'est
+    justement le defaut qu'on repare — mais ca reste utilisable pour les grandes
+    cibles du milieu, et ca evite qu'un oubli d'appel casse tout."""
+    x, y, l, h, _ = fenetre()
+    px = x + fx * l
+    py = (y + CAL_A + CAL_B * fy) if CAL_FAITE else (y + fy * h)
+    return int(px), int(py)
+
+
 def taper(fx, fy, attendre=True, essais=3, plafond=8.0):
     """Un appui, et la PREUVE qu'il est arrive.
 
@@ -134,8 +240,7 @@ def taper(fx, fy, attendre=True, essais=3, plafond=8.0):
     web ne voit rien passer. `m:` puis `c:`, avec une pause entre les deux,
     tombe juste a chaque fois — mesure sur une centaine de gestes.
     """
-    x, y, l, h, _ = fenetre()
-    px, py = int(x + fx * l), int(y + fy * h)
+    px, py = point(fx, fy)
     for essai in range(1, essais + 1):
         avant = _empreinte()
         sh("""osascript -e 'tell application "Simulator" to activate'""")
@@ -158,8 +263,7 @@ def taper(fx, fy, attendre=True, essais=3, plafond=8.0):
 def tenir(fx, fy, duree=1.2):
     """Un appui MAINTENU : la cale a bonus ne s'ouvre qu'ainsi, et se referme
     des qu'on relache. On rend la main au relachement a l'appelant."""
-    x, y, l, h, _ = fenetre()
-    px, py = int(x + fx * l), int(y + fy * h)
+    px, py = point(fx, fy)
     sh("""osascript -e 'tell application "Simulator" to activate'""")
     time.sleep(0.25)
     sh("cliclick m:%d,%d w:200 dd:%d,%d" % (px, py, px, py))
@@ -223,6 +327,9 @@ def main():
     controler_fenetre()
     # Le clic sacrificiel : celui que macOS consomme pour le focus.
     taper(0.5, 0.30, attendre=False)
+    # ⚠️ AVANT TOUT GESTE UTILE. Sans cette mesure, l'entete est hors d'atteinte
+    # et le parcours produit trois fois la meme photo de l'arene.
+    calibrer()
 
     faites, ratees = [], []
 

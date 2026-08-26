@@ -925,3 +925,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-caps-row { gap: 4px; }
   #dicewrap .dc-room-code { letter-spacing: 5px; padding-left: 15px; font-size: 28px; }
 }
+
+
+/* ⛔ LE PANNEAU DU STUDIO A ETE RETIRE DE L'APPAREIL, ET SON STYLE AVEC LUI.
+   Il couvrait les deux tiers de l'ecran, c'est-a-dire exactement ce qu'il
+   servait a regler : on bougeait un curseur pour voir le plateau… sous le
+   curseur. L'atelier vit maintenant sur le Mac (`outils/studio.py`) et
+   l'appareil ne garde que l'apercu. Une centaine de lignes de style pour un
+   panneau qui n'existe plus, c'est une centaine de lignes qui mentent. */
