@@ -228,6 +228,7 @@ export const AR = {
   'shop.B006.name': 'جمِّد الخصم',
   'shop.B006.desc': 'يفوّت خصمك دوره التالي، فتلعب مرّتين متتاليتين.',
   'fx.freeze': 'دور مُجمَّد!',
+  'fx.frozenWait': 'دوره مُجمَّد',
   'fx.frozenYou': 'دورك مُجمَّد',
   'fx.frozenThem': '{name} يفوّت دوره — مُجمَّد',
   'cap.trait.freeze': 'دور مُجمَّد',

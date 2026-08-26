@@ -226,6 +226,7 @@ export const ES = {
   'shop.B006.name': 'Congelar al rival',
   'shop.B006.desc': 'Tu rival se salta su próximo turno. Juegas dos veces seguidas.',
   'fx.freeze': '¡Turno congelado!',
+  'fx.frozenWait': 'Su turno está congelado',
   'fx.frozenYou': 'Tu turno está congelado',
   'fx.frozenThem': '{name} se salta el turno — congelado',
   'cap.trait.freeze': 'Un turno congelado',

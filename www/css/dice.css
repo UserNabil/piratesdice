@@ -813,6 +813,12 @@
   width: max-content;
   gap: 6px;
   transition: filter .4s ease, opacity .4s ease;
+  /* Le givre du gel se pose dessus, et il a besoin d'une boite de reference.
+     ⚠️ UN CONTENEUR EN FLEX, PAS EN GRILLE — c'est deliberé. Le sceau a deja
+     pendu a `.dc-arena`, qui EST une grille : un enfant absolu d'une grille est
+     un cas ou les moteurs ne s'accordent pas, et il se calait tantot sur toute
+     l'arene, tantot sur une rangee. Ici il n'y a rien a discuter. */
+  position: relative;
 }
 /* ⚠️ Assombrir jusqu'a .62 donnait un plateau qui semble desactive, pas en
    attente. Il recule, il ne s'eteint pas. */
@@ -1048,9 +1054,22 @@
    permanence pour une phrase qui ne parait que deux secondes. */
 #dicewrap .dc-versus-wrap { position: relative; width: 100%; justify-self: stretch; }
 
+/* ⚠️ DEUX MESSAGES SE DISPUTAIENT LA MEME BANDE. L'alerte de tour et la bulle
+   de l'adversaire pendaient toutes deux a 6 et 10 px au-dessus de la carte :
+   la bulle, large de 45 %, passait par-dessus la pastille et la coupait en
+   deux — « certains messages pour l'adversaire s'affichent encore mal ».
+   Reproduit au banc d'essai, capture a l'appui.
+
+   La bulle GARDE sa place, parce qu'elle porte une pointe qui doit toucher la
+   carte de celui qui parle ; c'est l'alerte, qui n'en a pas, qui monte d'un
+   etage. Les deux restent au-dessus du rectangle du centre, l'une derriere
+   l'autre au lieu de l'une SUR l'autre. */
 #dicewrap .dc-turn {
   position: absolute;
-  left: 50%; bottom: calc(100% + 6px);
+  /* 10 px pour l'air sous la bulle, sa hauteur mesuree, puis 8 px avant
+     l'alerte. Sans bulle, `--pd-bulle-h` vaut zero et l'alerte reprend sa place
+     a 18 px du rectangle. */
+  left: 50%; bottom: calc(100% + 18px + var(--pd-bulle-h, 0px));
   transform: translate(-50%, 6px);
   z-index: 12;
   padding: 5px 14px;
@@ -1546,21 +1565,39 @@
 }
 #dicewrap .dc-bonus-open { opacity: 1; pointer-events: auto; }
 
+/* ⚠️ CE SCEAU ETAIT PLEIN CADRE, ET IL NE DURAIT QUE 1,6 s. Il se posait au
+   milieu de l'ecran — donc nulle part en particulier — et disparaissait avant
+   qu'on ait compris ce qui venait d'arriver. « Il faut que l'effet frozen soit
+   place sur la grille, a la bonne taille, et pendant TOUT le gel. »
+
+   Il couvre maintenant LE PLATEAU de celui qui va perdre son tour, il en prend
+   la taille, et il y reste tant que l'etat `gele` est vrai — c'est-a-dire du
+   jeton joue jusqu'au tour effectivement saute. Plus d'animation de sortie :
+   c'est le JS qui le retire quand le gel se consomme, sinon le dessin
+   s'effacerait alors que le gel court toujours. */
 #dicewrap .dc-gel {
-  position: absolute; inset: 0; z-index: 40;
+  position: absolute; inset: 0; z-index: 12;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(80,180,255,.22), rgba(10,20,50,.55));
-  animation: dc-gel-vient .22s ease-out, dc-gel-part .3s ease-in 1.3s forwards;
+  gap: 6px; pointer-events: none;
+  border-radius: var(--cbt-plateau-courbure, 20px);
+  background: radial-gradient(closest-side, rgba(80, 180, 255, .26), rgba(10, 20, 50, .62));
+  animation: dc-gel-vient .22s ease-out;
 }
-#dicewrap .dc-gel img { width: min(46vw, 220px); filter: drop-shadow(0 0 18px rgba(90,200,255,.8)); }
+/* ⚠️ EN POURCENTAGE DU PLATEAU, PAS EN `vw`. A `min(46vw, 220px)` le sceau
+   valait 202 px sur un iPhone pour un plateau de 300 : il en debordait des
+   deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
+   tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre. */
+#dicewrap .dc-gel img {
+  width: 62%; height: auto; max-height: 62%; object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
+}
 #dicewrap .dc-gel span {
   font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
-  color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90,200,255,.9);
-  font-size: clamp(.95rem, 4.2vw, 1.35rem);
+  color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90, 200, 255, .9);
+  font-size: clamp(.8rem, 3.4vw, 1.1rem);
+  text-align: center; padding: 0 8px;
 }
 @keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
-@keyframes dc-gel-part  { to { opacity: 0; } }
 
 #dicewrap .dc-shop-shut {
   display: flex; flex-direction: column; align-items: center; gap: 10px;
@@ -2349,13 +2386,29 @@
 
 /* ── la banniere de coup ─────────────────────────────────────────────────── */
 
+/* ⚠️ ELLE TOMBAIT PILE SUR LA CARTE DES DEUX CAPITAINES. A 42 % de l'arene, la
+   banniere s'ecrivait par-dessus les deux portraits, les noms et les scores :
+   du texte dore sur un aplat violet charge de dessins, sans rien pour l'en
+   detacher. Et son `z-index: 8` la faisait passer SOUS les bulles, qui montent
+   a 14.
+   Elle remonte au-dessus des plateaux, elle passe devant, et elle emporte son
+   propre fond : une banniere doit se lire quel que soit ce qu'elle recouvre. */
 #dicewrap .dc-shout {
   position: absolute;
   inset-inline: 0;
-  top: 42%;
-  z-index: 8;
+  /* ⚠️ 42 % TOMBAIT SUR LA CARTE, 30 % SUR LA BULLE ET SUR L'ALERTE DE TOUR.
+     Les messages de cet ecran occupent chacun leur bande, et il faut qu'elles
+     ne se croisent pas : la banniere en haut, sur le plateau d'en face ; la
+     bulle de l'adversaire contre le rectangle ; l'alerte de tour au-dessus
+     d'elle ; ma bulle en dessous du rectangle ; le message de service au-dessus
+     du bandeau. Cinq places, cinq objets. */
+  top: 22%;
+  z-index: 16;
   text-align: center;
   pointer-events: none;
+  padding: 8px 14px;
+  background: linear-gradient(90deg, rgba(12, 6, 30, 0), rgba(12, 6, 30, .82) 12%,
+                                     rgba(12, 6, 30, .82) 88%, rgba(12, 6, 30, 0));
   font-family: "Luckiest Guy", "Baloo 2", cursive;
   font-size: clamp(20px, 3.6vw, 34px);
   font-weight: 700;

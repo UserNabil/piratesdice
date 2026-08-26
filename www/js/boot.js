@@ -176,7 +176,7 @@ function settingsMarkup() {
       <!-- Fermer ne s'ecrit plus : la croix EST le mot. -->
       <div class="pd-ask-row"><button class="dc-btn dc-btn-art pd-btn-icone" data-close
              title="${t('set.close')}" aria-label="${t('set.close')}">
-        <img src="${ASSETS}img/icon_close_round.png" alt=""></button></div>
+        <img src="${ASSETS}img/icon_close.png" alt=""></button></div>
     </div>`;
 }
 

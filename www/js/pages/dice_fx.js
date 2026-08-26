@@ -183,9 +183,32 @@ function bubble(seat, contenu, classe) {
   if (contenu instanceof Node) el.appendChild(contenu);
   else el.textContent = contenu;
   carte.appendChild(el);
-  /* Une humeur se saisit d'un coup d'oeil : on lui compte deux signes, pas les
-     deux octets de son glyphe. Une replique, elle, se lit vraiment. */
-  poser(el, classe === 'dc-bulle-mood' ? '..' : contenu);
+
+  /* ⚠️ L'ALERTE DE TOUR ET CETTE BULLE VISENT LE MEME CIEL. Toutes deux pendent
+     au-dessus du rectangle du centre : la bulle de l'adversaire, large de 45 %
+     et parfois haute de deux lignes, passait PAR-DESSUS la pastille « c'est au
+     tour de… » et la coupait en deux — reproduit au banc d'essai.
+
+     ⛔ ET UN DECALAGE FIXE NE REGLE RIEN. Un premier essai remontait l'alerte
+     de 46 px : une bulle d'une ligne passait, une bulle de deux la recouvrait
+     encore. La hauteur d'une replique depend de sa longueur, de la langue et de
+     l'echelle du texte — elle se MESURE, comme tout le reste de cet ecran.
+     On la publie donc a la feuille de style, qui empile l'alerte au-dessus. */
+  if (barre && el.classList.contains('dc-bulle-foe')) {
+    barre.style.setProperty('--pd-bulle-h', el.getBoundingClientRect().height + 'px');
+  }
+  const chasser = poser(el, classe === 'dc-bulle-mood' ? '..' : contenu);
+  /* Quand la bulle s'en va, l'alerte redescend : une place reservee a un
+     message disparu est une place perdue a chaque tour. */
+  if (barre && el.classList.contains('dc-bulle-foe')) {
+    const veille = new MutationObserver(() => {
+      if (el.parentNode) return;
+      barre.style.removeProperty('--pd-bulle-h');
+      veille.disconnect();
+    });
+    veille.observe(barre, { childList: true });
+  }
+  return chasser;
 }
 
 /** Envoyer son humeur. Le serveur decide si elle passe — ici on ne fait qu'oser. */
@@ -266,7 +289,12 @@ function unEffet(f) {
     }
 
     if (f.kind === 'frozen') {
-      if (f.seat === S.seat) { sceauDeGel(); buzz([0, 60, 40, 60]); }
+      /* ⚠️ PLUS DE SCEAU PLEIN CADRE ICI. Le givre est desormais POSE sur le
+         plateau pendant tout le gel (voir `renderGel` dans dice_match.js) :
+         cet effet-ci n'arrive qu'au moment ou le tour est effectivement saute,
+         c'est-a-dire quand le givre s'en va. Rejouer un sceau par-dessus, c'est
+         annoncer une seconde fois ce qu'on regardait depuis dix secondes. */
+      if (f.seat === S.seat) { banner(t('fx.frozenYou'), 'bad'); buzz([0, 60, 40, 60]); }
       else banner(t('fx.frozenThem', { name: nomDuSiege(f.seat) }), 'good');
       return;
     }
@@ -298,33 +326,14 @@ function unEffet(f) {
 
 /* Le sceau de gel : plein cadre, 1,6 s. Il dit « ton tour vient d'etre pris »
    a celui qui le subit, et rien a l'autre — qui, lui, sait ce qu'il a fait. */
-/**
- * ⚠️ IL PENDAIT A UNE GRILLE, ET UNE GRILLE NE PROMET PAS DE CADRE.
- *
- * Le sceau etait pose dans `.dc-arena` — un conteneur `display: grid` — avec
- * `position: absolute; inset: 0`. Sur le papier la boite de reference est alors
- * le rembourrage du conteneur ; en pratique, un enfant absolu d'une grille est
- * un cas ou les moteurs ne s'accordent pas, et selon qu'il herite ou non d'une
- * zone de grille il se cale sur TOUTE l'arene ou sur UNE SEULE RANGEE. C'est
- * ce qui a fait apparaitre le gel de travers sur le plateau — « l'effet de gel
- * n'est pas a la bonne position sur la grille ».
- *
- * Il pend maintenant a l'ECRAN de jeu, qui n'est pas une grille : sa boite de
- * reference ne depend plus de rien d'autre que de lui-meme. La regle CSS ne
- * change pas ; c'est le point d'accrochage qui cesse d'etre discutable.
- */
-function sceauDeGel() {
-  const ecran = document.getElementById('dc-screen-game');
-  if (!ecran) return;
-  const ancien = ecran.querySelector('.dc-gel');
-  if (ancien) ancien.remove();
-  const el = document.createElement('div');
-  el.className = 'dc-gel';
-  el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
-    + '<span>' + esc(t('fx.frozenYou')) + '</span>';
-  ecran.appendChild(el);
-  setTimeout(() => el.remove(), 1600);
-}
+/* ⛔ `sceauDeGel()` A ETE SUPPRIME. C'etait un sceau plein cadre de 1,6 s, pose
+   au milieu de l'ecran — donc nulle part en particulier — et deja mal ancre :
+   il pendait a `.dc-arena`, un conteneur en grille, ou un enfant absolu se cale
+   tantot sur tout, tantot sur une rangee selon le moteur.
+   Le givre est maintenant POSE SUR LE PLATEAU gele, a sa taille, et il y reste
+   tant que dure le gel : c'est `renderGel()` dans dice_match.js, nourri par
+   l'etat `gele` que le serveur envoie desormais dans son instantane. */
+
 
 function annonceBonus(f) {
   const arene = document.querySelector('#dc-screen-game .dc-arena');

@@ -240,6 +240,7 @@ export const EN = {
   'shop.B006.name': 'Freeze the enemy',
   'shop.B006.desc': 'Your opponent skips their next turn. You play twice in a row.',
   'fx.freeze': 'Turn frozen!',
+  'fx.frozenWait': 'Their turn is frozen',
   'fx.frozenYou': 'Your turn is frozen',
   'fx.frozenThem': '{name} skips a turn — frozen',
   'cap.trait.freeze': 'One turn frozen',

@@ -232,6 +232,9 @@ export const FR = {
   'shop.B006.name': 'Geler l’adversaire',
   'shop.B006.desc': 'Votre adversaire saute son prochain tour. Vous jouez deux fois de suite.',
   'fx.freeze': 'Tour gelé !',
+  /* Le givre reste sur le plateau tant que le gel dure : chaque camp a besoin
+     de sa phrase, celle qui subit et celle qui l'a jetee. */
+  'fx.frozenWait': 'Son tour est gelé',
   'fx.frozenYou': 'Votre tour est gelé',
   'fx.frozenThem': '{name} passe son tour — gelé',
   'cap.trait.freeze': 'Un tour gelé',

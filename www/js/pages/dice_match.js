@@ -420,7 +420,40 @@ function paint(full, frozen, settle) {
   renderArrondi(st);
   renderQuarters(st);
   renderBoost(st);
+  renderGel(st);
   renderBet(st, full);
+}
+
+/**
+ * LE GIVRE RESTE SUR LE PLATEAU TANT QUE LE GEL DURE.
+ *
+ * ⚠️ IL N'A D'ABORD ETE QU'UN ECLAIR. Le serveur n'annoncait le gel qu'au
+ * moment ou il PREND effet — l'effet `frozen`, emis quand le tour est saute —
+ * et le client en faisait un sceau plein cadre de 1,6 s. Entre le jeton joue et
+ * le tour vole, rien : la victime ne savait pas ce qui l'attendait, et quand
+ * elle l'apprenait c'etait deja passe. « Il faut que l'effet soit sur la grille,
+ * a la bonne taille, et pendant TOUT le gel, pour comprendre. »
+ *
+ * L'etat `gele` voyage maintenant dans l'instantane. Le givre se pose donc sur
+ * LE PLATEAU de celui qui va perdre son tour — pas au milieu de l'ecran — et il
+ * y reste jusqu'a ce que le tour soit effectivement saute. On lit alors la
+ * situation en regardant l'endroit ou elle se joue.
+ */
+function renderGel(st) {
+  for (let seat = 0; seat < 2; seat++) {
+    const board = boardOf(seat);
+    const wrap = board && board.parentNode;
+    if (!wrap || !wrap.classList.contains('dc-boardwrap')) continue;
+    const gele = !!(st.gele && st.gele[seat]) && st.phase === 'playing';
+    const pose = wrap.querySelector('.dc-gel');
+    if (!gele) { if (pose) pose.remove(); continue; }
+    if (pose) continue;                       // deja la : on ne le refait pas
+    const el = document.createElement('div');
+    el.className = 'dc-gel';
+    el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
+      + '<span>' + esc(t(seat === S.seat ? 'fx.frozenYou' : 'fx.frozenWait')) + '</span>';
+    wrap.appendChild(el);
+  }
 }
 
 /* A chaque instant UN SEUL plateau compte : celui qui a la main est eclaire,
