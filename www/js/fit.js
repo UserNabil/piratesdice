@@ -48,6 +48,17 @@ function plafondCase() {
   return Math.max(104, cote / 4.2);
 }
 
+/** Le total des ecarts d'un conteneur : un de moins que ses enfants dans le flux. */
+function ecarts(boite, cs) {
+  let dans = 0;
+  for (const enfant of boite.children) {
+    if (getComputedStyle(enfant).position === 'absolute') continue;
+    if (enfant.hasAttribute('hidden')) continue;
+    dans++;
+  }
+  return Math.max(0, dans - 1) * parseFloat(cs.rowGap || '0');
+}
+
 function apply() {
   const wrap = document.getElementById('dicewrap');
   if (!wrap) return;
@@ -95,12 +106,15 @@ function apply() {
           + parseFloat(bcs.marginBottom || '0');
   }
   const boardsCs = getComputedStyle(boards);
-  /* Les ecarts se COMPTENT, ils ne s'estiment pas : l'arene a trois enfants
-     (plateaux, eventail, bandeau) donc deux ecarts, et le bloc des plateaux en
-     a trois (face, carte, moi) donc deux aussi. Le « 3 x » d'avant datait de la
-     quatrieme rangee disparue et retranchait un ecart fantome. */
-  const gaps = 2 * parseFloat(cs.rowGap || '6')
-             + 2 * parseFloat(boardsCs.rowGap || '4');
+  /* ⚠️ LES ECARTS SE COMPTENT, ET ON NE COMPTE QUE CE QUI EST DANS LE FLUX.
+     Le nombre a d'abord ete un « 3 x » herite d'une quatrieme rangee disparue,
+     puis un « 2 x » ecrit a la main pour trois enfants — juste ce jour-la. Le
+     lendemain, l'eventail de la cale est passe en absolu : l'arene n'a plus que
+     deux enfants dans son flux, donc UN ecart, et le « 2 x » retranchait de
+     nouveau un ecart fantome.
+     Une constante ecrite a la main a la forme du DOM du jour se perime a la
+     refonte suivante, en silence. On compte donc les enfants. */
+  const gaps = ecarts(arena, cs) + ecarts(boards, boardsCs);
   const height = inner - used - gaps;
 
   const fixed = 2 * (2 * GAP + 2 * FRAME) + 2 * PLATE + 4 * STACK_GAP;

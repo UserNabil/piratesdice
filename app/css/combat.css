@@ -219,7 +219,12 @@
     inset 0 -10px 16px rgba(0, 0, 0, .30);
   /* Le jonc creme de la maquette, releve a (250,233,226). Le blanc pur faisait
      un cerne de tableur autour des deux capitaines. */
-  --cbt-joueur-jonc: 3px solid #F7E2C0;
+  /* ⚠️ L'EPAISSEUR EST UN REGLAGE A PART, ET CE N'EST PAS UNE COQUETTERIE : le
+     compte a rebours se peint EXACTEMENT sur ce jonc (voir `.dc-pc-clock` dans
+     dice.css). Une valeur enfermee dans le raccourci `border` ne se relit pas ;
+     les deux se decaleraient au premier changement d'epaisseur. */
+  --cbt-joueur-jonc-ep: 3px;
+  --cbt-joueur-jonc: var(--cbt-joueur-jonc-ep) solid #F7E2C0;
   /* ⚠️ LES PROPORTIONS VIENNENT DE LA MAQUETTE, PAS DU CONFORT. Sur ses 852 px
      de large, la carte fait 168 de haut et le portrait 118 — soit 19,7 % et
      13,9 % de la largeur de l'ecran. En pixels fixes (36 px de portrait pour
@@ -247,20 +252,15 @@
 
   /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
 
-  /* ⚠️ LA LARGEUR DISPONIBLE DECIDE, PAS UNE TAILLE CHOISIE. Quatre boutons, le
-     gobelet, le libelle du tour et les ecarts font 382 px : au-dela de 390 px
-     ca passe, en dessous la barre se replie et les bonus retombent SOUS le
-     lancer. C'est pourquoi la valeur du portrait est un `clamp`, pas un nombre. */
-  --cbt-bonus-taille: 46px;
-  /* ⚠️ LE RATELIER NE DOIT PAS FAIRE GRANDIR LE BANDEAU : cale sur la hauteur du
-     medaillon, il se loge dans une place qui existe deja. Mesure : a 36 px il
-     poussait le bandeau du bas de 61 a 87 px. */
-  --cbt-bonus-taille-moi: 45px;
-  --cbt-bonus-ecart: clamp(6px, 1vw, 12px);
-  --cbt-bonus-courbure: 11px;
-  --cbt-bonus-marge: 7px;
-  --cbt-bonus-fond: radial-gradient(104% 104% at 50% 26%, var(--deep-hi, #3A2A63) 0%, var(--deep, #2A1D4A) 46%, #081a0e 100%);
-  --cbt-bonus-jonc: inset 0 3px 7px rgba(0, 0, 0, .75), inset 0 0 0 2px var(--gold-lo, #E08A05), 0 2px 5px rgba(0, 0, 0, .5);
+  /* Le jeton de l'eventail. Il ne partage plus sa ligne avec rien : c'est le
+     rayon de l'arc qui l'empeche de rencontrer son voisin, pas une largeur
+     disponible. */
+  --cbt-bonus-taille: 52px;
+  /* Le RAYON de l'arc : la distance entre le centre du sac et chaque jeton.
+     Trop court, les jetons se chevauchent ; trop long, le premier sort de
+     l'ecran — c'est `anglesEventail` qui choisit alors le quart de tour qui
+     tient, mais il ne peut rien contre un rayon plus grand que la place. */
+  --cbt-bonus-rayon: 104px;
   --cbt-bonus-nombre-taille: 11.5px;
 
   /* ── L'ETAT DU JEU ─────────────────────────────────────────────────────── */
@@ -389,8 +389,6 @@
        Les valeurs du tableau de bord sont deja exprimees pour cet ecran-la. */
     --cbt-joueur-mise-taille: 11.5px;
 
-    --cbt-bonus-taille: clamp(30px, 8.6vw, 42px);
-    --cbt-bonus-ecart: clamp(4px, 1.6vw, 8px);
 
     --cbt-etat-taille: 15px;
 
@@ -418,7 +416,6 @@
    plateaux. Sans ce palier, un 360 px perdait 10 px par bandeau. */
 @media (max-width: 400px) {
   #dicewrap {
-    --cbt-bonus-taille: 46px;
   }
 }
 
@@ -579,16 +576,16 @@
 
 /* ── le ratelier de bonus ─────────────────────────────────────────────────── */
 
-#dicewrap .dc-bonus { gap: var(--cbt-bonus-ecart); }
-
-#dicewrap .dc-bonus-btn {
-  width: var(--cbt-bonus-taille);
-  height: var(--cbt-bonus-taille);
-  padding: var(--cbt-bonus-marge);
-  border-radius: var(--cbt-bonus-courbure);
-  background: var(--cbt-bonus-fond);
-  box-shadow: var(--cbt-bonus-jonc);
-}
+/* ⛔ SIX REGLAGES DE RATELIER SONT MORTS AVEC LA RANGEE. `--cbt-bonus-ecart`,
+   `-marge`, `-courbure`, `-fond`, `-jonc` et `-taille-moi` decrivaient des
+   pastilles carrees alignees dans un bandeau. La cale s'ouvre en ARC autour du
+   sac, et ses jetons sont des ronds a jonc blanc — la meme facture que
+   l'eventail des humeurs, parce que c'est le meme geste. Un reglage qui vise
+   une forme qui n'existe plus ne fait pas « rien » : ici, `border-radius: 11px`
+   et un fond sombre auraient repeint le rond en carre, puisque ce fichier est
+   charge en dernier.
+   Ne restent que la taille du jeton et le RAYON de l'arc. */
+#dicewrap .dc-bonus { --pd-fan-r: var(--cbt-bonus-rayon); }
 
 #dicewrap .dc-bonus-qty { font-size: var(--cbt-bonus-nombre-taille); }
 
@@ -642,10 +639,6 @@
      condition, il rapetissait aussi les bonus du bureau, qui n'ont pourtant
      pas de bandeau ou se serrer. Deux identifiants pour peser autant que
      dice.css. */
-  #dicewrap #dc-pc-me .dc-bonus-btn {
-    width: var(--cbt-bonus-taille-moi);
-    height: var(--cbt-bonus-taille-moi);
-  }
 
   /* ⚠️ `* var(--pd-ui)` N'EST PAS DECORATIF. js/fit.js mesure la place reelle et
      pose cette echelle sur #dicewrap ; toutes les tailles de texte du telephone

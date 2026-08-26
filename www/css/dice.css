@@ -619,37 +619,45 @@
 }
 
 /* ============================================================================
-   LE CERCLE AUTOUR DU PORTRAIT NE DECORE PLUS : IL COMPTE LE TEMPS.
+   LE COMPTE A REBOURS EST LE JONC DE LA CARTE.
 
-   Il y avait ici un cordage torsade dessine en CSS, cale a -17 % autour d'un
-   portrait ROND. Depuis les capitaines, le medaillon porte son propre anneau,
-   peint dans l'image et decentre differemment pour chacun : les deux cercles ne
-   coincidaient plus. Retour du telephone, mot pour mot — « les cercles sont mal
-   places, on ne sait pas vraiment qui est le joueur en cours ».
+   ⚠️ DEUX FOIS IL A ETE POSE AU MAUVAIS ENDROIT, ET LES DEUX FOIS POUR LA MEME
+   RAISON : on l'accrochait a ce qui etait rond plutot qu'a ce qui etait LU.
+   D'abord un cordage torsade a -17 % autour du portrait ; puis un anneau
+   conique a -9 %, qui se battait avec l'anneau que CHAQUE CAPITAINE porte deja
+   peint dans son image, decentre differemment pour chacun. « Les cercles sont
+   mal places. »
 
-   Un seul cercle desormais, et il veut dire quelque chose : le temps qui reste
-   avant que l'IA joue a la place de celui qui n'a rien fait. Le meme pixel
-   repond donc aux deux reproches — le cercle en trop, et la minuterie qui
-   manquait.
+   Il fait maintenant le tour de la carte du milieu. C'est le meme objet que
+   celui dont la couleur dit deja a qui est le tour ; le temps qui reste s'y
+   ajoute sans rien recouvrir, sur un perimetre quatre fois plus long qu'un
+   medaillon de 54 px. Rien a accorder avec un dessin livre.
+
+   ⚠️ LE MASQUE N'EST PAS DECORATIF. Un degrade conique remplit un rectangle ;
+   sans les deux masques qui se soustraient (`content-box` moins la boite
+   entiere), la carte serait REPEINTE par le compteur au lieu d'etre cerclee.
    ============================================================================ */
 
 #dicewrap .dc-pc-clock {
   position: absolute;
-  inset: -9%;
-  border-radius: 50%;
+  inset: calc(-1 * var(--cbt-joueur-jonc-ep, 3px));
+  border-radius: calc(var(--cbt-joueur-courbure, 18px) + var(--cbt-joueur-jonc-ep, 3px));
+  padding: var(--cbt-joueur-jonc-ep, 3px);
   pointer-events: none;
   opacity: 0;
   transition: opacity .25s ease;
   /* `--pd-clock` va de 1 a 0 : la part encore peinte, c'est le temps restant. */
   background: conic-gradient(var(--gold-hi) calc(var(--pd-clock, 1) * 360deg),
-                             rgba(0, 0, 0, .45) 0);
-  -webkit-mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
-          mask: radial-gradient(closest-side, #0000 0 86%, #000 88%);
+                             rgba(0, 0, 0, .35) 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
 }
 
 #dicewrap .dc-pc-timed .dc-pc-clock { opacity: 1; }
 #dicewrap .dc-pc-urgent .dc-pc-clock {
-  background: conic-gradient(#ff7a6a calc(var(--pd-clock, 1) * 360deg), rgba(0, 0, 0, .45) 0);
+  background: conic-gradient(#ff7a6a calc(var(--pd-clock, 1) * 360deg), rgba(0, 0, 0, .35) 0);
   animation: dc-clock-urgent 1s ease-in-out infinite;
 }
 
@@ -1128,40 +1136,49 @@
    entier SOUS le gobelet — c'est-a-dire hors du regard, la ou l'admin ne l'a pas
    trouve. En deux flancs de trois boutons au maximum, la ligne tient meme a
    320 px de large. */
-#dicewrap .dc-bonus {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 1vw, 12px);
-  padding: 0;
-  z-index: 4;
-  pointer-events: none;
-  --pd-rim: 0;
-  --pd-round: 999px;
-  --pd-rivet: 7px;
-  --pd-rivet-in: 8px 16px;
-}
+/* ⛔ CE BLOC DECRIVAIT UNE RANGEE, ET IL N'Y A PLUS DE RANGEE. Il datait du
+   ratelier pose dans la carte du joueur ; il a survecu au passage a l'eventail
+   du bas, ou il ne servait plus qu'a poser des variables de panneau sur un
+   conteneur qui n'en dessine aucun. La cale s'ouvre desormais EN ARC (voir
+   « l'eventail de la cale » plus bas) : une seule description, pas deux. */
 
+/* Le jeton, pose sur l'arc. Meme facture que les humeurs — rond, jonc blanc,
+   fond d'or — parce que c'est le meme geste : on presse, on lit, on glisse, on
+   relache. Deux eventails qui ne se ressemblent pas s'apprennent deux fois. */
 #dicewrap .dc-bonus-btn {
-  position: relative;
-  z-index: 2;
-  pointer-events: auto;
-  width: 46px; height: 46px;
-  padding: 7px;
-  border: 0;
+  position: absolute;
+  left: var(--pd-fan-x, 50%);
+  top: var(--pd-fan-y, 50%);
+  width: var(--cbt-bonus-taille, 48px);
+  height: var(--cbt-bonus-taille, 48px);
+  margin: calc(var(--cbt-bonus-taille, 48px) / -2) 0 0 calc(var(--cbt-bonus-taille, 48px) / -2);
+  padding: 5px;
+  box-sizing: border-box;
+  border: 4px solid var(--blanc);
+  border-radius: 50%;
   cursor: pointer;
-  --pd-round: 10px;
-  background: radial-gradient(104% 104% at 50% 26%, var(--deep-hi) 0%, var(--deep) 46%, #081a0e 100%);
-  box-shadow:
-    inset 0 3px 7px rgba(0, 0, 0, .75),
-    inset 0 0 0 2px var(--gold-lo),
-    0 2px 5px rgba(0, 0, 0, .5);
-  border-radius: 10px;
-  transition: filter .12s, transform .12s, box-shadow .12s;
+  pointer-events: auto;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: 0 4px 0 var(--gold-lo), 0 7px 14px rgba(0, 0, 0, .45);
+  transform: rotate(var(--pd-angle, 0deg)) translateY(calc(-1 * var(--pd-fan-r, 112px)));
+  animation: dc-fan-in .22s cubic-bezier(.2, 1.5, .4, 1) backwards;
+  transition: filter .12s;
 }
 
-#dicewrap .dc-bonus-btn img { width: 100%; height: 100%; object-fit: contain; }
-#dicewrap .dc-bonus-btn:hover:not(:disabled) { filter: brightness(1.14); transform: translateY(-2px); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .7), inset 0 0 0 2px var(--gold), 0 4px 9px rgba(0, 0, 0, .5); }
+/* ⚠️ SANS CE CONTRE-PIVOT, LE DESSIN PENCHE. Le jeton est place par une
+   rotation ; tout ce qu'il contient tourne avec lui. On defait l'angle a
+   l'interieur — exactement ce que fait `.dc-fan-btn > span` pour les humeurs. */
+#dicewrap .dc-bonus-in {
+  display: block;
+  position: relative;
+  width: 100%; height: 100%;
+  transform: rotate(calc(-1 * var(--pd-angle, 0deg)));
+}
+
+#dicewrap .dc-bonus-btn img { width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+#dicewrap .dc-bonus-btn:hover:not(:disabled) { filter: brightness(1.14); }
+#dicewrap .dc-bonus-btn:active { filter: brightness(1.2); }
 #dicewrap .dc-bonus-btn:disabled { filter: saturate(.3) brightness(.62); cursor: not-allowed; }
 
 #dicewrap .dc-bonus-qty {
@@ -1447,6 +1464,31 @@
   color: var(--txt); cursor: pointer;
   transition: transform .1s, box-shadow .1s, filter .15s;
 }
+/* ⚠️ L'APPUI LONG SUR LE SAC OUVRAIT LE MENU D'IMAGE D'iOS. « Partager… »,
+   « Enregistrer dans Photos », « Copier » : le systeme voyait un `<img>` tenu
+   sous le doigt et proposait ses actions, par-dessus l'eventail qu'on venait
+   d'ouvrir. Vu sur simulateur, le geste etait donc inutilisable la ou il est
+   le seul moyen de jouer un effet.
+
+   La lecon avait deja ete apprise pour le portrait — `#dc-pc-me
+   .dc-pc-portrait` porte ces trois lignes depuis l'eventail des humeurs — mais
+   elle n'avait pas suivi le ratelier quand il est descendu dans le bandeau.
+   `-webkit-touch-callout` NE S'HERITE PAS du `user-select: none` du corps :
+   il faut le poser sur l'element tenu, et sur l'image qu'il contient.
+
+   `touch-action: none` compte autant : sans lui le navigateur se reserve le
+   droit de lire le contact comme un debut de defilement, emet `pointercancel`
+   et emporte l'appui maintenu avec lui. */
+#dicewrap .dc-foot-btn,
+#dicewrap .dc-foot-btn img,
+#dicewrap .dc-bonus-btn,
+#dicewrap .dc-bonus-btn img {
+  touch-action: none;
+  -webkit-user-select: none;
+          user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
 #dicewrap .dc-foot-btn:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px rgba(255,225,150,.55), 0 1px 0 rgba(0,0,0,.45); }
 #dicewrap .dc-foot-btn[hidden] { display: none; }
 #dicewrap .dc-foot-btn:disabled { opacity: .45; cursor: default; }
@@ -1479,17 +1521,30 @@
 
 /* Ferme, il ne prend aucune place — c'est tout l'interet : le ratelier vivait
    dans la carte du joueur et lui coupait son nom en quatre lignes. */
+/* ⚠️ UNE RANGEE N'EST PAS UN EVENTAIL. Les jetons s'alignaient au-dessus du
+   bandeau, serres entre le sac et le gobelet : deux ou trois pastilles minuscules
+   dans une bande de 96 px — « l'affichage de mes bonus n'est pas bon, ils
+   doivent s'afficher comme l'ouverture des emojis ».
+
+   Les humeurs s'ouvrent en arc autour de leur ancre depuis le debut, avec un
+   calcul qui choisit deja le quart de tour qui tient a l'ecran. La cale s'ouvre
+   donc de la meme facon, autour du SAC — celui qu'on tient sous le pouce — et
+   c'est le MEME calcul (`anglesEventail`), pas une seconde copie qui derivera.
+
+   ⚠️ LE CONTENEUR NE MESURE RIEN. Il est hors flux et large de zero : le centre
+   de l'arc est pose en `--pd-fan-x/y` par le JS, et chaque jeton s'en ecarte de
+   son angle. Un conteneur qui aurait une taille rendrait de la place au bandeau
+   pour un eventail qui flotte au-dessus de lui. */
 #dicewrap .dc-bonus {
-  display: flex; justify-content: center; align-items: flex-end;
-  gap: clamp(6px, 2vw, 12px);
-  max-height: 0; opacity: 0; overflow: hidden; pointer-events: none;
-  transition: max-height .18s ease, opacity .18s ease, padding .18s ease;
-  padding: 0;
+  position: absolute;
+  left: 0; top: 0;
+  width: 0; height: 0;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
 }
-#dicewrap .dc-bonus-open {
-  max-height: 96px; opacity: 1; pointer-events: auto;
-  padding: 6px 4px 8px;
-}
+#dicewrap .dc-bonus-open { opacity: 1; pointer-events: auto; }
 
 #dicewrap .dc-gel {
   position: absolute; inset: 0; z-index: 40;

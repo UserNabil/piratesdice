@@ -298,16 +298,31 @@ function unEffet(f) {
 
 /* Le sceau de gel : plein cadre, 1,6 s. Il dit « ton tour vient d'etre pris »
    a celui qui le subit, et rien a l'autre — qui, lui, sait ce qu'il a fait. */
+/**
+ * ⚠️ IL PENDAIT A UNE GRILLE, ET UNE GRILLE NE PROMET PAS DE CADRE.
+ *
+ * Le sceau etait pose dans `.dc-arena` — un conteneur `display: grid` — avec
+ * `position: absolute; inset: 0`. Sur le papier la boite de reference est alors
+ * le rembourrage du conteneur ; en pratique, un enfant absolu d'une grille est
+ * un cas ou les moteurs ne s'accordent pas, et selon qu'il herite ou non d'une
+ * zone de grille il se cale sur TOUTE l'arene ou sur UNE SEULE RANGEE. C'est
+ * ce qui a fait apparaitre le gel de travers sur le plateau — « l'effet de gel
+ * n'est pas a la bonne position sur la grille ».
+ *
+ * Il pend maintenant a l'ECRAN de jeu, qui n'est pas une grille : sa boite de
+ * reference ne depend plus de rien d'autre que de lui-meme. La regle CSS ne
+ * change pas ; c'est le point d'accrochage qui cesse d'etre discutable.
+ */
 function sceauDeGel() {
-  const arene = document.querySelector('#dc-screen-game .dc-arena');
-  if (!arene) return;
-  const ancien = arene.querySelector('.dc-gel');
+  const ecran = document.getElementById('dc-screen-game');
+  if (!ecran) return;
+  const ancien = ecran.querySelector('.dc-gel');
   if (ancien) ancien.remove();
   const el = document.createElement('div');
   el.className = 'dc-gel';
   el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
     + '<span>' + esc(t('fx.frozenYou')) + '</span>';
-  arene.appendChild(el);
+  ecran.appendChild(el);
   setTimeout(() => el.remove(), 1600);
 }
 

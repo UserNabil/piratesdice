@@ -223,13 +223,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      la ligne et les bonus retombent SOUS le lancer — le defaut meme qu'on
      corrige. En liant la taille a la largeur de l'ecran, la rangee tient de
      320 px a la tablette sans jamais se replier. */
-  #dicewrap .dc-bonus { gap: clamp(4px, 1.6vw, 8px); padding: 0; }
-  /* Ferme, l'eventail ne prend aucune place ; ouvert, il se deploie au-dessus
-     du bandeau. Le ratelier ne pese donc plus jamais sur la hauteur du plateau. */
-  #dicewrap .dc-bonus-btn {
-    width: clamp(30px, 8.6vw, 42px);
-    height: clamp(30px, 8.6vw, 42px);
-  }
+  /* ⛔ CES TROIS REGLES DECRIVAIENT LA RANGEE, ET LA RANGEE N'EXISTE PLUS. La
+     cale s'ouvre en ARC autour du sac : il n'y a plus d'ecart a serrer, plus de
+     rembourrage a retirer, et la taille du jeton vient de `--cbt-bonus-taille`.
+     Laissees en place, elles gagnaient sur combat.css — qui ne declare plus de
+     largeur — et rendaient au jeton ses 42 px de pastille de rangee. */
 
   /* ⚠️ ON NE LE CACHE PLUS SOUS 360 px, ET LA RAISON A DISPARU. On le sacrifiait
      parce qu'il occupait une ligne du flux et coutait la place de deux bonus.
@@ -371,7 +369,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-pc-portrait { width: 36px; height: 36px; }
   #dicewrap .dc-pc-total { font-size: 22px; }
   #dicewrap .dc-pc-name { font-size: 12px; }
-  #dicewrap .dc-bonus-btn { width: 46px; height: 46px; }
 }
 
 /* ============================================================================
@@ -453,6 +450,73 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .pd-btn-icone img { display: block; }
 
 .pd-danger { color: #ff9a90 !important; }
+
+/* ============================================================================
+   LES MESSAGES — ET LA FEUILLE QUI MANQUAIT.
+
+   ⛔ `ui/toast.js` N'AVAIT AUCUN STYLE. Pas un seul : ni `#pd-toasts`, ni
+   `.pd-toast`, nulle part dans le depot. Son propre en-tete annonce pourtant
+   « la version mobile : un bandeau, EN BAS, au-dessus du pouce ». Le conteneur
+   etait donc ajoute nu a `document.body`, c'est-a-dire un bloc ordinaire tout
+   en haut de la page : chaque avertissement — « ce n'est pas votre tour »,
+   « la boutique est fermee », le refus du serveur — s'ecrivait par-dessus le
+   bandeau du jeu, SOUS L'ENCOCHE, la ou l'iPhone dessine deja son heure et sa
+   pastille noire. « Le message d'alerte ne s'affiche pas la ou il faut. »
+
+   ⚠️ ET C'EST LE GENRE DE MANQUE QUI NE SE VOIT PAS EN LISANT LE JS. Le code
+   pose les bonnes classes, l'appel a `toast()` est correct partout ; seule
+   l'absence d'une regle CSS separait « un message » de « un message lisible ».
+   Un `grep` sur le nom de classe l'a montre en une seconde — encore fallait-il
+   penser a le faire plutot qu'a relire la fonction qui, elle, marchait.
+   ============================================================================ */
+
+#pd-toasts {
+  position: fixed;
+  z-index: 9000;
+  left: 50%;
+  transform: translateX(-50%);
+  /* En bas, au-dessus du pouce ET au-dessus du bandeau des trois boutons :
+     un message pose dessus serait masque par la main qui vient d'appuyer. */
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  width: min(92vw, 460px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.pd-toast {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 11px 18px;
+  border-radius: 14px;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--txt, #FFFFFF);
+  background: linear-gradient(180deg, rgba(58, 34, 110, .97), rgba(30, 18, 64, .97));
+  box-shadow: inset 0 0 0 2px rgba(255, 225, 150, .55), 0 6px 16px rgba(0, 0, 0, .55);
+  /* Il arrive par le bas, comme le bandeau qu'il commente. */
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.pd-toast.on { opacity: 1; transform: none; }
+
+/* Trois tons, et ils veulent dire quelque chose : un refus n'est pas une
+   reussite, et le joueur doit le savoir avant d'avoir lu la phrase. */
+.pd-toast-warn { box-shadow: inset 0 0 0 2px rgba(255, 190, 90, .85), 0 6px 16px rgba(0, 0, 0, .55); }
+.pd-toast-bad  { color: #ffd0c8;
+  box-shadow: inset 0 0 0 2px rgba(255, 120, 100, .85), 0 6px 16px rgba(0, 0, 0, .55); }
+.pd-toast-good { color: #dcffd0;
+  box-shadow: inset 0 0 0 2px rgba(140, 220, 110, .85), 0 6px 16px rgba(0, 0, 0, .55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-toast { transition: none; opacity: 1; transform: none; }
+}
 .pd-glyph { font-size: 19px; line-height: 1; color: var(--gold-hi, #FFE479);
   text-shadow: 0 0 6px rgba(255, 210, 130, .45), 0 1px 2px rgba(0, 0, 0, .9); }
 
@@ -650,9 +714,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
   /* Le ratelier vide n'a pas besoin de deux lignes dans la zone du pouce. */
 
-  /* Plus de rembourrage sur les flancs : ils encadrent le gobelet, et 30 px de
-     marge de chaque cote suffisaient a faire passer la barre a la ligne. */
-  #dicewrap .dc-bonus { padding: 0; }
 }
 
 /* ============================================================================

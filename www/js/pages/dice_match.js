@@ -228,8 +228,15 @@ const FAN_MARGE = 26;
  * autre pour le bureau : la meme regle vaut pour une tablette, pour un ecran
  * partage, et pour le jour ou le bandeau changera de place.
  */
-function fanAngles(portrait) {
-  const r = portrait.getBoundingClientRect();
+/**
+ * ⚠️ CETTE FONCTION NE CONNAIT PLUS LES HUMEURS, ET C'EST CE QUI PERMET DE LA
+ * PARTAGER. Elle comptait `MOODS.length` en dur : la cale a bonus ne pouvait
+ * donc pas s'ouvrir comme l'eventail des humeurs sans recopier tout le calcul —
+ * et deux copies d'une regle de placement, c'est une copie qui derive.
+ * L'ancre et le nombre d'objets sont maintenant des arguments.
+ */
+export function anglesEventail(ancre, combien) {
+  const r = ancre.getBoundingClientRect();
   const cx = r.left + r.width / 2;
   const cy = r.top + r.height / 2;
   const besoin = FAN_RAYON + FAN_MARGE;
@@ -238,16 +245,30 @@ function fanAngles(portrait) {
   const droite = window.innerWidth - cx > besoin;
   const haut = cy > besoin;
 
-  /* 0° pointe vers le haut, les angles positifs vont vers la droite. */
+  /* 0° pointe vers le haut, les angles positifs vont vers la droite.
+     ⚠️ UN QUART DE TOUR QUI VA JUSQU'A L'HORIZONTALE RETOMBE SUR LE BANDEAU.
+     L'ancre collee a gauche ouvrait de 0° a 90° : le dernier jeton se retrouvait
+     A LA HAUTEUR de son ancre, c'est-a-dire par-dessus le bouton de lancer —
+     vu au banc d'essai. L'ecart de 90° est bon, c'est son ASSIETTE qui ne
+     l'etait pas : bascule de vingt degres vers le haut, l'arc garde sa largeur
+     et ses deux extremites restent au-dessus du bandeau. */
   let debut = -60;
-  let pas = 30;
-  if (!gauche) { debut = 0; pas = 22.5; }            // colle a gauche : on ouvre a droite
-  else if (!droite) { debut = -90; pas = 22.5; }     // colle a droite : on ouvre a gauche
-  if (!haut) {                                       // pas de place au-dessus : on bascule
-    debut = 180 - debut - pas * (MOODS.length - 1);
-    debut = -debut;
-  }
-  return MOODS.map((_, i) => debut + i * pas);
+  let ouverture = 120;
+  if (!gauche) { debut = -20; ouverture = 90; }      // colle a gauche : on ouvre a droite
+  else if (!droite) { debut = -70; ouverture = 90; } // colle a droite : on ouvre a gauche
+  if (!haut) debut = -(180 - debut - ouverture);     // pas de place au-dessus : on bascule
+
+  /* ⚠️ UN SEUL OBJET N'EST PAS « LE PREMIER D'UNE SERIE ». Il se posait au bord
+     de l'arc — a -20° pour une ancre collee a gauche, c'est-a-dire a moitie
+     hors de l'ecran. Un eventail d'un seul jeton, c'est un jeton AU MILIEU de
+     la place disponible. Vu a l'ecran avec le seul effet offert par le
+     capitaine. */
+  if (combien <= 1) return combien ? [debut + ouverture / 2] : [];
+
+  const pas = ouverture / (combien - 1);
+  const angles = [];
+  for (let i = 0; i < combien; i++) angles.push(debut + i * pas);
+  return angles;
 }
 
 function openFan(portrait) {
@@ -258,7 +279,7 @@ function openFan(portrait) {
      portrait, la ou le pouce arrive deja. Chaque bouton est tourne de son angle
      puis REDRESSE par une seconde rotation sur le glyphe — sans quoi les emojis
      penchent et deviennent illisibles. */
-  const angles = fanAngles(portrait);
+  const angles = anglesEventail(portrait, MOODS.length);
   MOODS.forEach((humeur, i) => {
     const b = document.createElement('button');
     b.className = 'dc-fan-btn';
@@ -522,10 +543,17 @@ function renderPlayerCard(sel, st, seat, isMe) {
      C'est le CSS qui pose les quatre morceaux (voir `.dc-pc-theirs` et
      `.dc-pc-mine` dans dice.css) ; ici on se contente de ne plus les emboiter. */
   el.innerHTML = `
+    <!-- ⚠️ LE COMPTE A REBOURS A QUITTE LE PORTRAIT POUR LE JONC DE LA CARTE.
+         Il tournait autour de l'avatar, ou il se battait avec l'anneau que
+         chaque capitaine porte DEJA peint dans son image : deux cercles
+         concentriques mal accordes, et le temps qui reste illisible sur 54 px
+         de diametre. Le jonc de la carte fait tout le tour du rectangle du
+         milieu — il est quatre fois plus long, il ne recouvre aucun dessin, et
+         c'est deja lui qu'on regarde pour savoir a qui est le tour. -->
+    <span class="dc-pc-clock" aria-hidden="true"></span>
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
-      <span class="dc-pc-clock" aria-hidden="true"></span>
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
@@ -733,18 +761,50 @@ export function renderBonusRack() {
   /* L'effet offert ne se compte pas deux fois : s'il en reste aussi en cale, il
      n'apparait qu'une seule fois, gratuit — c'est celui-la qu'on depense d'abord. */
   const boutons = owned.filter((i) => i.identify !== offert);
+  /* ⚠️ UN INTERIEUR EN PLUS, ET IL N'EST PAS DECORATIF. Le jeton est pose sur
+     l'arc par une rotation ; sans un enfant qui la DEFAIT, le dessin et son
+     compteur penchent de l'angle du jeton — c'est exactement le piege qu'on
+     avait deja rencontre avec les humeurs, et la meme parade. */
   const bouton = (id, titre, badge, cadeau) => `
       <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}"
               data-id="${esc(id)}" data-nom="${esc(titre)}"
               title="${esc(titre)} — ${esc(t('bonus.left', { n: left }))}">
-        <img src="${bonusArt(id)}" alt="">
-        <span class="dc-bonus-qty">${esc(String(badge))}</span>
+        <span class="dc-bonus-in">
+          <img src="${bonusArt(id)}" alt="">
+          <span class="dc-bonus-qty">${esc(String(badge))}</span>
+        </span>
       </button>`;
 
   const tous = (offert ? [bouton(offert, t('shop.' + offert + '.name'), t('bonus.free'), true)] : [])
     .concat(boutons.map((i) => bouton(i.identify, i.description, i.quantity, false)));
 
   rack.innerHTML = tous.join('');
+
+  /* ⚠️ UNE RANGEE N'EST PAS UN EVENTAIL. Les jetons s'alignaient au-dessus du
+     bandeau, serres entre le sac et le gobelet — « l'affichage de mes bonus
+     n'est pas bon, ils doivent s'afficher comme l'ouverture des emojis ». Les
+     humeurs, elles, s'ouvrent en arc autour de leur ancre depuis le debut, avec
+     un calcul qui choisit deja le quart de tour qui tient a l'ecran. C'est ce
+     calcul qu'on partage (`anglesEventail`) plutot que d'en ecrire un second.
+     L'ancre est le SAC : c'est lui qu'on tient sous le pouce. */
+  const sac = $('#dc-bag');
+  const jetons = Array.from(rack.querySelectorAll('.dc-bonus-btn'));
+  if (sac && jetons.length) {
+    const ancre = sac.getBoundingClientRect();
+    const scene = rack.offsetParent
+      ? rack.offsetParent.getBoundingClientRect()
+      : { left: 0, top: 0 };
+    /* Le centre de l'arc, dans le repere de l'eventail.
+       ⚠️ LE HAUT DU SAC, PAS SON MILIEU. Centre sur le bouton, l'arc partait de
+       l'interieur du bandeau : ses jetons les plus bas se posaient dessus. En
+       remontant l'origine au bord superieur du bandeau, tout l'eventail s'ouvre
+       au-dessus de la main qui le tient — ce qui est le seul endroit ou on peut
+       a la fois le voir et le viser. */
+    rack.style.setProperty('--pd-fan-x', (ancre.left + ancre.width / 2 - scene.left) + 'px');
+    rack.style.setProperty('--pd-fan-y', (ancre.top - scene.top) + 'px');
+    const angles = anglesEventail(sac, jetons.length);
+    jetons.forEach((b, i) => b.style.setProperty('--pd-angle', angles[i] + 'deg'));
+  }
 
   /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
      NOM : il n'y a pas de survol, donc pas d'infobulle. Le joueur appuyait sur un
