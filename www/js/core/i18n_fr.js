@@ -115,6 +115,8 @@ export const FR = {
   'game.rollFirst': 'lancez d’abord votre dé',
   'game.waitTurn': 'attendez votre tour',
   'game.waitingTable': 'On installe la table…',
+  'game.pausedThem': '{name} a perdu la liaison — la table ferme dans {n} s',
+  'game.pausedYou': 'Liaison perdue — on vous garde votre place',
   'game.alreadyRolled': 'dé déjà lancé — choisissez une colonne',
   'game.yourScore': 'votre score',
   'game.theirScore': 'son score',

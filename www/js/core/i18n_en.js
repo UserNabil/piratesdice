@@ -130,6 +130,8 @@ export const EN = {
   'game.rollFirst': 'roll your die first',
   'game.waitTurn': 'wait for your turn',
   'game.waitingTable': 'Setting the table…',
+  'game.pausedThem': '{name} lost the connection — the table closes in {n}s',
+  'game.pausedYou': 'Connection lost — your seat is being held',
   'game.alreadyRolled': 'you already rolled — pick a column',
   'game.yourScore': 'your score',
   'game.theirScore': 'their score',

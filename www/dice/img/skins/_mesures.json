@@ -4,7 +4,8 @@
     "images": 12,
     "chaudes": true,
     "rayon": 30.7,
-    "corps": 0.895
+    "corps": 0.926,
+    "note": "corps remis a l echelle le 2026-08-26 : il valait 0.891x0.863, trop petit pour son logement"
   },
   "S003": {
     "dossier": "obsidian",

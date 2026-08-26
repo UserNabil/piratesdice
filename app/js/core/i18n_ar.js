@@ -114,6 +114,8 @@ export const AR = {
   'game.rollFirst': 'ارمِ نردك أولًا',
   'game.waitTurn': 'انتظر دورك',
   'game.waitingTable': 'نُجهّز الطاولة…',
+  'game.pausedThem': 'انقطع اتصال {name} — تُغلق الطاولة خلال {n} ثانية',
+  'game.pausedYou': 'انقطع الاتصال — مقعدك محفوظ',
   'game.alreadyRolled': 'رميت النرد — اختر عمودًا',
   'game.yourScore': 'نتيجتك',
   'game.theirScore': 'نتيجته',

@@ -138,6 +138,8 @@ const EN_APP = {
   'say.jack.B006.1': 'Shh. Your turn\'s having a nap, let it sleep.',
   'say.jack.B006.2': 'Frozen! Don\'t thank me, it was on the house.',
   'game.waitingTable': 'Setting the table…',
+  'game.pausedThem': '{name} lost the connection — the table closes in {n}s',
+  'game.pausedYou': 'Connection lost — your seat is being held',
 
   'set.notInMatch': 'Not during a match: changing account closes the table and costs your stake.',
   'set.guest': 'Guest (this phone)',

@@ -112,6 +112,8 @@ export const ES = {
   'game.rollFirst': 'tira primero el dado',
   'game.waitTurn': 'espera tu turno',
   'game.waitingTable': 'Preparando la mesa…',
+  'game.pausedThem': '{name} perdió la conexión — la mesa cierra en {n} s',
+  'game.pausedYou': 'Conexión perdida — te guardamos el sitio',
   'game.alreadyRolled': 'ya has tirado — elige una columna',
   'game.yourScore': 'tu puntuación',
   'game.theirScore': 'su puntuación',

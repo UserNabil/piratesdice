@@ -1662,9 +1662,22 @@
    et le bois du cadre s'assombrit avec le reste, ce qui est le but : c'est tout
    le plateau qui gele.
    Le sceau, lui, appartient a la GRILLE, et il se mesure plus bas. */
+/* ⚠️ LA BOITE EST LA GRILLE, PAS LE PLATEAU, ET SURTOUT PAS LE BLOC.
+   Trois boites ont ete essayees et deux etaient fausses : le BLOC (plateau plus
+   la rangee de plaques de score, donc le givre debordait sur les totaux) puis
+   le PLATEAU entier (donc le givre mordait sur le cadre). Ce sont les NEUF
+   CASES qu'on gele, rien d'autre — « l'image doit etre uniquement sur la
+   grille, pas sur la zone des totaux de colonne ».
+   La grille commence apres le lisere du plateau : c'est la seule epaisseur a
+   retrancher, `--pd-frame` n'etant pas pose en rembourrage sur `.dc-board`
+   (verifie : il ne sert qu'a la rangee de plaques). Mesure au banc : plateau
+   108→393, cases 112→389. */
 #dicewrap .dc-gel {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: auto;
+  top: var(--cbt-plateau-lisere, 4px);
+  left: var(--cbt-plateau-lisere, 4px);
+  right: var(--cbt-plateau-lisere, 4px);
+  bottom: auto;
   aspect-ratio: 1;
   z-index: 12;
   display: grid;
@@ -1713,12 +1726,16 @@
    largeur `auto` vient de la taille intrinseque du fichier — pas des quatre
    decalages : le sceau s'est affiche a 512 px, un coin dans le plateau et le
    reste dehors. On donne donc les deux : d'ou il part, et ce qu'il mesure. */
+/* ⛔ ET PLUS DE DEBORDEMENT DE 15 %. Il compensait une boite trop petite d'un
+   cote et trop grande de l'autre ; la boite etant enfin la bonne, le sceau la
+   remplit exactement. Il tient donc dans la grille, sans mordre ni sur le cadre
+   ni sur les plaques de score. */
 #dicewrap .dc-gel img {
   position: absolute;
-  left: -7.5%;
-  top: -7.5%;
-  width: 115%;
-  height: 115%;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
   filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
 }

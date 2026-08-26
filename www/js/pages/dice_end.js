@@ -25,6 +25,11 @@ import { captainArt, captainTrait } from './dice_lobby.js';
    bourse, l'attente lue dans l'etat du serveur, et `renderBet`. `dice_match.js`
    ne l'appelle plus et le conteneur `#dc-bet` n'existe plus dans l'arene. */
 export function onOver(m) {
+  /* ⚠️ CELUI QUI PART A DEJA CHOISI. `requestClose` pose ce drapeau avant
+     d'envoyer `leave` : l'annonce de fin qui suit lui est destinee autant qu'a
+     l'autre, mais elle n'a plus rien a lui apprendre. On l'avale une fois — et
+     une seule, pour que la partie suivante retrouve sa carte de fin. */
+  if (S.quitting) { S.quitting = false; return; }
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
   const delta = m.ratingAfter - m.ratingBefore;

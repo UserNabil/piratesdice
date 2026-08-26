@@ -897,7 +897,21 @@ function renderTurn(st) {
   if (!el) return;
   /* Ce qui concerne la TABLE et non un joueur reste au centre, en haut : une
      pause ou une fin de partie n'appartiennent a personne. */
-  if (st.paused) { direEtat(el, t('game.paused'), 'dc-turn-paused dc-turn-haut', false); return; }
+  /* ⚠️ « EN PAUSE » NE DISAIT NI QUI NI JUSQU'A QUAND. Deux mots dans une
+     pastille au-dessus de la carte, pendant que l'adversaire tentait de
+     revenir : le joueur restait devant une table muette sans savoir si elle
+     repartirait. Le serveur publie maintenant le siege absent et le temps qu'on
+     lui laisse ; on le dit, avec les secondes qui descendent. */
+  if (st.paused) {
+    const qui = st.pausedSeat === S.seat
+      ? t('game.pausedYou')
+      : t('game.pausedThem', {
+          name: (st.players[st.pausedSeat] || {}).name || t('game.opponent'),
+          n: Math.ceil((st.pausedMs || 0) / 1000),
+        });
+    direEtat(el, qui, 'dc-turn-paused dc-turn-haut', false);
+    return;
+  }
   /* La phase d'attente ne dure plus qu'un battement — le temps que les deux
      sieges soient la — mais elle existe encore, et un ecran muet pendant une
      seconde se lit comme une panne. */

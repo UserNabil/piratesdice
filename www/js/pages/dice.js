@@ -275,7 +275,19 @@ function requestClose() {
   };
   if (!live) { sortir(); return undefined; }
   uiConfirm(t('game.leaveConfirm'), t('game.leaveTitle'), t('game.leaveOk'))
-    .then((yes) => { if (yes) { if (S.net) S.net.send({ t: 'leave' }); sortir(); } });
+    .then((yes) => {
+      if (!yes) return;
+      /* ⚠️ QUITTER RAMENAIT AU MENU… PUIS OUVRAIT LA CARTE DE FIN PAR-DESSUS.
+         Le serveur declare forfait et annonce la fin AUX DEUX JOUEURS — c'est
+         ce qu'il doit faire, l'adversaire a besoin de le savoir. Mais celui qui
+         part, lui, vient de decider : lui montrer « defaite, rejouer ? » sur le
+         menu qu'il a demande, c'est lui redonner un ecran dont il sortait.
+         On note donc qu'on part de son plein gre, et on laisse passer la
+         prochaine annonce de fin — une seule, et seulement pour cette partie. */
+      S.quitting = true;
+      if (S.net) S.net.send({ t: 'leave' });
+      sortir();
+    });
   return undefined;
 }
 

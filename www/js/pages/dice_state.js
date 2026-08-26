@@ -65,7 +65,14 @@ const ARRONDI_ORIGINE = 27;
  * sur les pixels VRAIMENT opaques (alpha >= 200) — la boite alpha brute inclut
  * un halo diffus et asymetrique qui ment de dix pixels.
  */
-const CORPS = { S002: 0.895, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.910, S007: 0.920 };
+/* ⚠️ L'OR ETAIT PLUS PETIT QUE LES AUTRES, ET CA SE VOYAIT DANS SON LOGEMENT.
+   Son corps n'occupait que 0,891 x 0,863 de sa toile quand les autres jeux en
+   remplissent 0,93 : pose dans la meme case, il laissait un vide tout autour —
+   « les des dores sont plus petits, il reste du vide dans leurs slots ». Ce
+   n'etait pas un reglage a corriger mais les DOUZE IMAGES : elles ont ete
+   remises a l'echelle sur leur corps opaque et recentrees dessus (le halo,
+   asymetrique, faisait deriver le centrage). Mesure apres : 0,926. */
+const CORPS = { S002: 0.926, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.910, S007: 0.920 };
 const CORPS_ORIGINE = 0.923;
 
 /**
@@ -165,6 +172,10 @@ export const S = {
   visualLock: 0,
   rolling: false,
   awaySaid: false,
+  /* Vrai entre le moment ou l'on DECIDE de quitter et l'annonce de fin qui
+     suit : elle est alors avalee, celui qui part n'a pas besoin qu'on lui
+     apprenne qu'il est parti. */
+  quitting: false,
   wasNativeFull: false,
   sfx: null,
 };
