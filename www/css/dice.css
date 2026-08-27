@@ -1025,6 +1025,17 @@
 /* La colonne benie : une plaque qui ne ressemble a aucune autre, pour toute la
    partie. Ce n'est pas une decoration — c'est ce qui permet de refaire le calcul
    quand un total ne tombe pas juste. */
+/* La colonne qui ne rapporte encore rien : la plaque reste, elle s'eteint.
+   ⚠️ AVANT LE `-boost` DANS LE FICHIER, ET C'EST DELIBERE : une colonne benie a
+   zero doit rester VERTE — c'est la benediction qu'on veut voir, pas le zero. */
+#dicewrap .dc-colscore-zero {
+  color: rgba(255, 255, 255, .55);
+  border-color: rgba(255, 255, 255, .45);
+  background: linear-gradient(180deg, #6E6486, #4B4363);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .35), 0 6px 10px rgba(0, 0, 0, .35);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+}
+
 #dicewrap .dc-colscore-boost {
   background: linear-gradient(180deg, #B6F36A, var(--vert));
   box-shadow: 0 4px 0 #4E8C15, 0 6px 10px rgba(0, 0, 0, .4),

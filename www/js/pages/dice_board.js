@@ -155,7 +155,15 @@ export function renderBoard(board, grid, colScores, settle) {
 
     const label = board.parentNode
       && board.parentNode.querySelector('.dc-colscore[data-col="' + col + '"]');
-    if (label) label.textContent = colScores[col] > 0 ? String(colScores[col]) : '';
+    /* ⚠️ UNE COLONNE A ZERO GARDE SA PLAQUE, ET ELLE AFFICHE ZERO. Le chiffre
+       etait efface : il restait une pastille doree et vide, qui ressemblait a
+       un compteur en panne plutot qu'a un score nul. Quatre plaques, quatre
+       chiffres, toujours — et celle qui ne rapporte encore rien s'eteint au
+       lieu de disparaitre. */
+    if (label) {
+      label.textContent = String(colScores[col]);
+      label.classList.toggle('dc-colscore-zero', !colScores[col]);
+    }
   }
 }
 
