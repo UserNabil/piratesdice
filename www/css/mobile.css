@@ -996,3 +996,15 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    curseur. L'atelier vit maintenant sur le Mac (`outils/studio.py`) et
    l'appareil ne garde que l'apercu. Une centaine de lignes de style pour un
    panneau qui n'existe plus, c'est une centaine de lignes qui mentent. */
+
+
+/* Le numero de build, en bas des reglages. Discret : il ne sert qu'a repondre a
+   « quelle version ai-je installee ? », et cette question ne se pose que quand
+   quelque chose ne va pas. */
+.pd-version {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: .04em;
+  opacity: .45;
+  margin: 10px 0 2px;
+}

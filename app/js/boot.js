@@ -105,6 +105,14 @@ function wireBackButton() {
 
 /* ── les reglages : son, compte, langue, conditions. Rien d'autre. ───────── */
 
+/** « 1.0 (build 33) » — ce que le telephone a REELLEMENT installe. */
+function versionLisible() {
+  const c = window.PD_CONFIG || {};
+  /* On ne recopie que des chiffres : ce texte part dans du HTML. */
+  const build = String(c.build || '').replace(/[^0-9a-z.]/gi, '');
+  return '1.0' + (build ? ' (build ' + build + ')' : '');
+}
+
 function row(label, body) {
   return `<div class="pd-row"><span class="pd-row-lbl">${label}</span>${body}</div>`;
 }
@@ -183,6 +191,14 @@ function settingsMarkup() {
       ${row(t('set.terms'), `<a class="pd-link-art" href="${TERMS_URL}" target="_blank"
              rel="noopener" title="${t('set.terms')}"
              aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
+
+      <!-- ⚠️ LE NUMERO DE BUILD S'AFFICHE, ET CE N'EST PAS UN DETAIL. Sans lui,
+           personne — ni le testeur, ni moi — ne peut dire quelle version tourne
+           sur un telephone : un correctif envoye et un correctif installe sont
+           deux choses differentes, et on a perdu un aller-retour a confondre
+           les deux (« j'ai encore l'ancien message » sur la build precedente).
+           Il est discret, en bas, et il repond a la question d'un coup d'oeil. -->
+      <div class="pd-version">${versionLisible()}</div>
 
       <!-- Fermer ne s'ecrit plus : la croix EST le mot. -->
       <div class="pd-ask-row"><button class="dc-btn dc-btn-art pd-btn-icone" data-close
