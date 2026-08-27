@@ -679,9 +679,18 @@
      inactif » : c'etait ça. Le trace, lui, reste exactement sur le jonc — meme
      courbure, meme centre ; seule la corde deborde d'un pixel et demi de part
      et d'autre, ce qui est ce qu'on attend d'un cordage pose sur un cadre. */
-  --pd-meche-ep: calc(var(--cbt-joueur-jonc-ep, 3px) * 2);
+  --pd-jonc: var(--cbt-joueur-jonc-ep, 3px);
+  --pd-meche-ep: calc(var(--pd-jonc) * 2);
   position: absolute;
-  inset: calc(-1 * var(--pd-meche-ep));
+  /* ⛔ LA BOITE SUIVAIT L'EPAISSEUR DE LA CORDE, ET LES COINS NE COLLAIENT PLUS.
+     Un enfant absolu se mesure sur la boite de REMBOURRAGE : pour couvrir le
+     jonc, il faut donc reculer d'exactement une epaisseur de jonc — pas d'une
+     epaisseur de corde. Avec six pixels de recul pour un jonc de trois, l'anneau
+     sortait de la carte de trois pixels et son arrondi, lui, restait celui du
+     cadre : deux courbures concentriques qui ne se suivaient pas.
+     La boite vaut maintenant la boite de BORDURE de la carte — meme rectangle,
+     donc meme courbure — et la corde, plus epaisse, deborde symetriquement. */
+  inset: calc(-1 * var(--pd-jonc));
   border-radius: var(--cbt-joueur-courbure, 18px);
   pointer-events: none;
   opacity: 0;

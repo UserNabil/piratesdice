@@ -469,15 +469,21 @@ function traceDuJonc(clock) {
   if (!r.width || !r.height) return null;
   const svg = clock.querySelector('.dc-pc-meche');
   if (!svg) return null;
-  const ep = parseFloat(getComputedStyle(clock).getPropertyValue('--pd-meche-ep')) || 6;
-  const m = ep / 2;
-  const w = r.width - ep;
-  const h = r.height - ep;
+  const style = getComputedStyle(clock);
+  const ep = parseFloat(style.getPropertyValue('--pd-meche-ep')) || 6;
+  /* ⚠️ LE TRACE SUIT LE JONC, PAS L'EPAISSEUR DE LA CORDE. Le cordage est plus
+     epais que le cadre — c'est ce qui le rend lisible — mais sa LIGNE DE COEUR
+     doit passer au milieu du jonc, sinon l'anneau se decale vers l'interieur et
+     ses coins cessent de suivre ceux de la carte. */
+  const jonc = parseFloat(style.getPropertyValue('--pd-jonc')) || 3;
+  const m = jonc / 2;
+  const w = r.width - jonc;
+  const h = r.height - jonc;
   /* ⚠️ LE RAYON LU EST CELUI DU BORD EXTERIEUR ; LA CORDE PASSE AU MILIEU DU
      JONC. Sans cette demi-epaisseur en moins, la corde coupait le coin — un
      arc trop large a l'interieur d'un cadre plus serre. */
   const rad = Math.max(0, Math.min(
-    (parseFloat(getComputedStyle(clock).borderTopLeftRadius) || 16) - m,
+    (parseFloat(style.borderTopLeftRadius) || 16) - m,
     w / 2, h / 2));
   /* On part du HAUT AU MILIEU et on tourne dans le sens des aiguilles : c'est
      la ou l'oeil se pose en premier, et le sens qu'il attend. */
@@ -572,17 +578,23 @@ function brulerLaMeche(clock, trace, part) {
 function stopClock() {
   if (clockTimer) { clearInterval(clockTimer); clockTimer = 0; }
   const game = $('#dc-screen-game');
-  if (game) game.querySelectorAll('.dc-pc').forEach((c) => c.classList.remove('dc-pc-timed'));
+  if (!game) return;
+  game.querySelectorAll('.dc-pc').forEach((c) => {
+    c.classList.remove('dc-pc-timed');
+    /* ⚠️ ET L'URGENCE AVEC. Elle n'etait retiree que par la reecriture de
+       `className` dans le rendu de la carte — une dependance a l'ordre des
+       appels, pas une regle : le jour ou ce rendu a cesse de tout effacer, la
+       carte gardait sa flamme affolee jusqu'a la fin de la partie. */
+    c.classList.remove('dc-pc-urgent');
+  });
 }
 
 export function startClock(st) {
   stopClock();
-  const total = (S.rules && S.rules.awayMs) || 0;
-  if (!total || st.phase !== 'playing' || st.awayMs === null || st.awayMs === undefined) return;
+  if (st.phase !== 'playing') return;
 
   const carte = $(st.turn === S.seat ? '#dc-pc-me' : '#dc-pc-foe');
   if (!carte) return;
-  const fin = Date.now() + st.awayMs;
   const tour = st.turn;
   carte.classList.add('dc-pc-timed');
 
@@ -590,6 +602,23 @@ export function startClock(st) {
   /* Le trace se refait a l'ouverture du tour : la carte a pu changer de taille
      entre-temps (rotation de l'ecran, clavier, une autre longueur de nom). */
   let corde = clock ? traceDuJonc(clock) : null;
+
+  /* ⛔ SANS PENDULE, LA CARTE RESTAIT NUE — ET C'EST CE QU'ON A PRIS POUR UNE
+     CARTE ETEINTE. « C'est mon tour et mon rectangle reste inactif. » Le
+     serveur n'arme pas toujours la veille d'absence : jamais pour l'IA, jamais
+     pendant une pause, plus du tout apres le dernier tour saute. On sortait
+     alors sans rien poser, et le jonc du joueur qui a la main n'avait pas plus
+     de corde que celui d'en face.
+     La corde dit D'ABORD a qui est le tour ; le compte a rebours n'est qu'une
+     precision de plus. Sans pendule, elle est simplement entiere. */
+  const total = (S.rules && S.rules.awayMs) || 0;
+  const minutee = !!total && st.awayMs !== null && st.awayMs !== undefined;
+  if (!minutee) {
+    carte.style.setProperty('--pd-clock', '1');
+    if (clock) brulerLaMeche(clock, corde, 1);
+    return;
+  }
+  const fin = Date.now() + st.awayMs;
 
   const peindre = () => {
     if (!S.state || S.state.phase !== 'playing' || S.state.turn !== tour) { stopClock(); return; }
