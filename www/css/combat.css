@@ -212,8 +212,18 @@
      et le relief revient par `--cbt-joueur-biseau`, en ombres INTERIEURES : une
      arete de lumiere en haut, une ombre portee en bas. La couleur du milieu
      reste alors exactement celle de la maquette. */
-  --cbt-joueur-fond-adverse: #1665BB;
-  --cbt-joueur-fond-moi: #6317C0;
+  /* ⛔ ET CES DEUX APLATS N'ETAIENT PAS CEUX DES PLATEAUX. Ils viennent de la
+     maquette, releves au coeur des cartes ; les grilles, elles, portent les
+     couleurs de camp (`--cbt-camp-*`). Deux violets voisins et deux bleus
+     voisins, a dix centimetres l'un de l'autre sur le meme ecran : l'oeil ne
+     lit pas « deux nuances », il lit « une erreur ». La carte porte donc
+     EXACTEMENT le degrade de son plateau — meme couleurs, meme angle. Le
+     relief, lui, reste dans le biseau : ce sont des ombres interieures, elles
+     ne changent pas la teinte. */
+  --cbt-joueur-fond-adverse:
+    linear-gradient(160deg, var(--cbt-camp-adverse-1), var(--cbt-camp-adverse-2));
+  --cbt-joueur-fond-moi:
+    linear-gradient(160deg, var(--cbt-camp-moi-1), var(--cbt-camp-moi-2));
   --cbt-joueur-biseau:
     inset 0 3px 0 rgba(255, 255, 255, .17),
     inset 0 -10px 16px rgba(0, 0, 0, .30);
