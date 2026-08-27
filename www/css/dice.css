@@ -940,7 +940,8 @@
 #dicewrap .dc-board {
   --pd-plank: 26px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* ⚠️ QUATRE COLONNES : la meme forme que `rules.COLUMNS` cote serveur. */
+  grid-template-columns: repeat(4, 1fr);
   gap: clamp(6px, .8vw, 11px);
   --pd-frame: clamp(10px, 1.4vh, 16px);
   --pd-rim: 3px;
@@ -967,7 +968,7 @@
    au lieu d'en reclamer une. */
 #dicewrap .dc-scores {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(6px, .8vw, 11px);
   /* ⚠️ `width: 0` PLUS `min-width: 100%`, ET C'EST TOUT L'INTERET.
      Mesure du 2026-08-21 : le plateau passait de 224 a 240 px des la premiere

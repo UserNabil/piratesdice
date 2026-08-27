@@ -36,13 +36,19 @@ export function cupArt(ready) {
        + '" alt="" draggable="false">';
 }
 
-const COLUMNS = 3;
+/* ⚠️ LA MEME FORME QUE LE SERVEUR, ET IL EST L'AUTORITE. Ces trois nombres
+   doivent suivre `src/game/rules.js` : un plateau dessine a trois colonnes pour
+   un moteur qui en compte quatre laisserait la derniere invisible — et injouable
+   — sans qu'aucune erreur ne le dise. */
+const COLUMNS = 4;
 const COLUMN_SIZE = 3;
-const CELLS = 9;
+const CELLS = COLUMNS * COLUMN_SIZE;
 
 function cellsOfColumn(col) {
   const base = col * COLUMN_SIZE;
-  return [base, base + 1, base + 2];
+  const out = [];
+  for (let i = 0; i < COLUMN_SIZE; i++) out.push(base + i);
+  return out;
 }
 
 /**

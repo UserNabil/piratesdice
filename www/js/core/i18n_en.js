@@ -104,7 +104,7 @@ export const EN = {
   'connect.retry': 'Try again',
 
   'menu.title': "The captains' duel",
-  'menu.pitch': 'Three columns, nine dice. A die you place destroys every enemy die of the '
+  'menu.pitch': 'Four columns, twelve dice. A die you place destroys every enemy die of the '
     + 'same value in the same column. Highest total when a board fills up wins.',
   'menu.solo': 'Challenge the AI',
   'menu.multi': 'Challenge a player',
@@ -296,7 +296,7 @@ export const EN = {
   'ladder.d': 'D',
 
   'rules.title': 'The rules of the table',
-  'rules.1': 'On your turn, roll the die, then drop it into one of your three columns.',
+  'rules.1': 'On your turn, roll the die, then drop it into one of your four columns.',
   'rules.2': 'A column scores <b>value × count²</b>: three 4s in one column are worth 36, not 12.',
   'rules.3': 'Dropping a die <b>destroys every enemy die of that value in the same column</b> — '
     + 'denying your opponent matters more than building.',

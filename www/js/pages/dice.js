@@ -326,7 +326,7 @@ function onKey(ev) {
     if (S.state.dice[S.seat] === null) { ev.preventDefault(); S.net.send({ t: 'roll' }); }
     return;
   }
-  if (['1', '2', '3'].includes(ev.key) && S.state.dice[S.seat] !== null) {
+  if (['1', '2', '3', '4'].includes(ev.key) && S.state.dice[S.seat] !== null) {
     ev.preventDefault();
     S.net.send({ t: 'place', column: parseInt(ev.key, 10) - 1 });
   }

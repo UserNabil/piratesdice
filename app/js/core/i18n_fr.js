@@ -91,7 +91,7 @@ export const FR = {
      plus — et c'est exactement la formulation qu'Apple lit comme du jeu
      d'argent. Le titre dit maintenant ce qu'on fait vraiment : un duel. */
   'menu.title': 'Le duel des capitaines',
-  'menu.pitch': 'Trois colonnes, neuf dés. Un dé que vous posez détruit tous les dés '
+  'menu.pitch': 'Quatre colonnes, douze dés. Un dé que vous posez détruit tous les dés '
     + 'adverses de même valeur dans la même colonne. Le plus haut total gagne quand un plateau est plein.',
   'menu.solo': 'Affronter l’IA',
   'menu.multi': 'Défier un joueur',
@@ -309,7 +309,7 @@ export const FR = {
   'ladder.d': 'N',
 
   'rules.title': 'Les règles de la table',
-  'rules.1': 'À votre tour, lancez le dé, puis posez-le dans une de vos trois colonnes.',
+  'rules.1': 'À votre tour, lancez le dé, puis posez-le dans une de vos quatre colonnes.',
   'rules.2': 'Une colonne vaut <b>valeur × occurrences²</b> : trois 4 dans une colonne valent 36, pas 12.',
   'rules.3': 'Poser un dé <b>détruit tous les dés adverses de cette valeur dans la même colonne</b> — '
     + 'gêner l’autre rapporte plus que construire.',

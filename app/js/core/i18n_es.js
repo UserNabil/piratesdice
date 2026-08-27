@@ -86,7 +86,7 @@ export const ES = {
   'connect.retry': 'Reintentar',
 
   'menu.title': 'El duelo de capitanes',
-  'menu.pitch': 'Tres columnas, nueve dados. El dado que colocas destruye todos los dados '
+  'menu.pitch': 'Cuatro columnas, doce dados. El dado que colocas destruye todos los dados '
     + 'rivales del mismo valor en la misma columna. Gana el total más alto cuando un tablero se llena.',
   'menu.solo': 'Retar a la IA',
   'menu.multi': 'Retar a un jugador',
@@ -302,7 +302,7 @@ export const ES = {
   'ladder.d': 'E',
 
   'rules.title': 'Las reglas de la mesa',
-  'rules.1': 'En tu turno, tira el dado y colócalo en una de tus tres columnas.',
+  'rules.1': 'En tu turno, tira el dado y colócalo en una de tus cuatro columnas.',
   'rules.2': 'Una columna vale <b>valor × repeticiones²</b>: tres 4 valen 36, no 12.',
   'rules.3': 'Colocar un dado <b>destruye todos los dados rivales de ese valor en la misma columna</b> — '
     + 'estorbar al rival da más que construir.',
