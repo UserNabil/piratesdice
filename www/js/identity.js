@@ -253,7 +253,12 @@ async function jetonApple(p) {
 }
 
 async function claimApple(jeton) {
-  const body = await post('/api/apple', { identityToken: jeton.idToken, name: jeton.name });
+  /* ⚠️ ON ENVOIE L'IDENTIFIANT DE L'APPAREIL AVEC. C'est lui qui dit au serveur
+     QUEL pirate joue ici : sans lui, relier un compte Apple creait un joueur
+     neuf et laissait les pieces, les achats et le classement derriere. */
+  const body = await post('/api/apple', {
+    identityToken: jeton.idToken, name: jeton.name, deviceId: deviceId(),
+  });
   return {
     url: serverBase(), ws: wsFrom(serverBase()),
     token: body.token, expires: body.expires, player: body.player, google: true,
@@ -273,7 +278,7 @@ async function codeGoogle(games, interactive) {
 }
 
 async function claimGoogle(code) {
-  const body = await post('/api/google', { authCode: code });
+  const body = await post('/api/google', { authCode: code, deviceId: deviceId() });
   return {
     url: serverBase(), ws: wsFrom(serverBase()),
     token: body.token, expires: body.expires, player: body.player, google: true,
