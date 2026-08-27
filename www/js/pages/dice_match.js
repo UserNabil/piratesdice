@@ -228,6 +228,8 @@ function closeFan() {
   if (fanTimer) { clearTimeout(fanTimer); fanTimer = 0; }
   const ouvert = document.querySelector('.dc-fan');
   if (ouvert) ouvert.remove();
+  const jeu = $('#dc-screen-game');
+  if (jeu && !caleOuverte()) jeu.classList.remove('dc-assombri');
 }
 
 /* Le rayon de l'arc — LA MEME VALEUR QUE `--pd-fan-r` dans la feuille de style —
@@ -421,28 +423,32 @@ function calerEventail(jetons, angles, zones, rayon) {
   }
 }
 
+/**
+ * L'EVENTAIL DES HUMEURS — UNE RANGEE, PAS UN ARC.
+ *
+ * ⛔ L'ARC S'OUVRAIT AUTOUR DU MEDAILLON, ET IL N'Y AVAIT PAS LA PLACE. Le
+ * portrait est colle au bord de sa carte, dans une bande de cent pixels de haut
+ * coincee entre les deux plateaux : un arc de rayon 112 en sortait forcement.
+ * Mesure a l'ecran : cinq jetons, l'un sur le plateau du haut, l'un sur le nom,
+ * l'un sur le plateau du bas, et le dernier a cheval sur le medaillon qu'on
+ * venait de toucher. « Les icones s'ouvrent mal » — elles s'ouvraient la ou il
+ * n'y avait rien a leur donner.
+ *
+ * La ou il y a de la place, c'est AU-DESSUS DU POUCE, juste au-dessus du
+ * bandeau : la meme bande que la cale des effets, et le seul endroit de l'ecran
+ * qu'aucun plateau ne dispute. Cinq dessins alignes, en grand, sur un fond
+ * assombri — on les lit d'un coup d'oeil et on en vise un sans viser.
+ */
 function openFan(portrait) {
   closeFan();
+  const jeu = $('#dc-screen-game');
+  if (!jeu) return;
   const fan = document.createElement('div');
   fan.className = 'dc-fan';
-  /* Un eventail, pas une rangee : les cinq humeurs s'ouvrent en arc autour du
-     portrait, la ou le pouce arrive deja. Chaque bouton est tourne de son angle
-     puis REDRESSE par une seconde rotation sur le glyphe — sans quoi les emojis
-     penchent et deviennent illisibles. */
-  /* La taille reelle du jeton compte : c'est elle qui decide s'il tient au bord.
-     `.dc-fan-btn` fait 38 px plus son jonc de 4, soit 46. */
-  const pied = document.querySelector('#dicewrap .dc-foot');
-  const zones = [pied && pied.getBoundingClientRect()];
-  const rayon = FAN_RAYON;
-  const angles = anglesEventail(portrait, MOODS.length, {
-    rayon, taille: 46, evite: zones,
-  });
-  const jetons = [];
+
   MOODS.forEach((humeur, i) => {
     const b = document.createElement('button');
     b.className = 'dc-fan-btn';
-    b.style.setProperty('--pd-angle', angles[i] + 'deg');
-    jetons.push(b);
     /* Le glyphe reste l'intitule : un dessin sans nom n'est rien pour qui
        ecoute son ecran, et il sert de secours si l'image manque. */
     b.setAttribute('aria-label', humeur.glyphe);
@@ -450,10 +456,20 @@ function openFan(portrait) {
     b.onclick = (ev) => { ev.stopPropagation(); sendMood(i); closeFan(); };
     fan.appendChild(b);
   });
-  portrait.appendChild(fan);
-  calerEventail(jetons, angles, zones, rayon);
-  /* Il se referme seul : un eventail oublie ouvert masque le plateau. */
-  fanTimer = setTimeout(closeFan, 4000);
+
+  jeu.appendChild(fan);
+  jeu.classList.add('dc-assombri');
+  /* La rangee se pose au-dessus du bandeau, quel qu'il mesure. */
+  const pied = $('#dicewrap .dc-foot');
+  if (pied) {
+    const r = pied.getBoundingClientRect();
+    const scene = jeu.getBoundingClientRect();
+    fan.style.bottom = (scene.bottom - r.top + 12) + 'px';
+  }
+  /* ⚠️ HUIT SECONDES, PAS QUATRE. Il s'ouvrait au bout d'un appui long : le
+     compte a rebours commencait donc quand le doigt etait deja la. Ouvert d'un
+     clic, il faut le temps de LIRE cinq dessins avant d'en viser un. */
+  fanTimer = setTimeout(closeFan, 8000);
 }
 
 /**
@@ -468,26 +484,22 @@ function openFan(portrait) {
  * pointeur : sans cette ecoute, la minuterie survivait et l'eventail s'ouvrait
  * en plein geste de defilement.
  */
+/* ⛔ IL FALLAIT APPUYER QUATRE CENT VINGT MILLISECONDES, ET PERSONNE NE LE
+   SAVAIT. Un appui long est un geste qu'on ne decouvre pas : on tape sur son
+   propre portrait, rien ne se passe, on en conclut qu'il ne fait rien. La cale
+   des effets vient de perdre le meme geste pour la meme raison — un clic ouvre,
+   un clic ailleurs ferme. Deux eventails, un seul geste a apprendre. */
 function wireMoodFan() {
   const ecran = $('#dc-screen-game');
   if (!ecran) return;
-  let attente = 0;
-  let depart = null;
-
-  const annuler = () => { if (attente) { clearTimeout(attente); attente = 0; } depart = null; };
 
   ecran.addEventListener('pointerdown', (ev) => {
     const portrait = ev.target.closest('#dc-pc-me .dc-pc-portrait');
-    if (!portrait) { closeFan(); return; }
-    depart = { x: ev.clientX, y: ev.clientY };
-    attente = setTimeout(() => { attente = 0; openFan(portrait); }, 420);
+    if (!portrait) { if (!ev.target.closest('.dc-fan')) closeFan(); return; }
+    ev.preventDefault();
+    if (document.querySelector('.dc-fan')) { closeFan(); return; }
+    openFan(portrait);
   });
-  ecran.addEventListener('pointermove', (ev) => {
-    if (!attente || !depart) return;
-    if (Math.abs(ev.clientX - depart.x) > 10 || Math.abs(ev.clientY - depart.y) > 10) annuler();
-  });
-  ecran.addEventListener('pointerup', annuler);
-  ecran.addEventListener('pointercancel', annuler);
   ecran.addEventListener('contextmenu', (ev) => {
     /* L'appui long ouvre le menu du navigateur sur Android : on le refuse LA ou
        le geste nous appartient, et nulle part ailleurs. */

@@ -2337,15 +2337,23 @@
   border-left: 4px solid var(--blanc);
 }
 
-/* Une humeur n'est pas une phrase : pas de fond, juste le glyphe, en grand. */
+/* ⛔ UNE HUMEUR N'EST PAS UNE PHRASE — ET ON LUI METTAIT QUAND MEME UNE BULLE.
+   Le commentaire disait deja « pas de fond, juste le glyphe » ; la regle, elle,
+   heritait du cadre blanc, du fond dore, de l'ombre en bloc et de la pointe. Le
+   dessin d'humeur EST DEJA une pastille cernee et ombree : on l'enfermait dans
+   une seconde pastille, plus petite que lui, d'ou ce jeton ecrase colle au coin
+   de la carte. La bulle disparait, le dessin grandit. */
 #dicewrap .dc-bulle-mood {
-  padding: 4px 10px;
-  font-size: 30px;
-  line-height: 1.1;
-  background: linear-gradient(170deg, var(--violet-hi), var(--violet));
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  max-width: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .55));
 }
-#dicewrap .dc-bulle-mood::after { background: var(--violet-hi); }
-#dicewrap .dc-bulle-me.dc-bulle-mood::after { background: var(--violet); }
+#dicewrap .dc-bulle-mood::after { display: none; }
+#dicewrap .dc-bulle-mood .dc-mood-art { width: 52px; height: 52px; }
 
 /* ⚠️ CETTE ANIMATION PORTAIT LE CENTRAGE. La bulle etait calee a 50 % puis
    ramenee par `translateX(-50%)` ; l'animation devait donc repeter ce decalage,
@@ -2360,49 +2368,52 @@
 /* L'eventail : cinq boutons poses en arc autour du portrait. Chacun est tourne
    de son angle, pousse vers l'exterieur, puis le GLYPHE est redresse par la
    rotation inverse — sinon les emojis penchent et deviennent illisibles. */
+/* ⛔ C'ETAIT UN ARC AUTOUR DU MEDAILLON, ET IL N'Y AVAIT PAS LA PLACE (voir
+   `openFan`). C'est une RANGEE, posee au-dessus du bandeau — la seule bande que
+   les plateaux ne disputent pas — sur un fond assombri qui dit que c'est un
+   menu et pas cinq dessins tombes sur la grille. */
 #dicewrap .dc-fan {
   position: absolute;
-  inset: 0;
-  z-index: 9;
+  inset-inline: 0;
+  bottom: 88px;
+  z-index: 31;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(6px, 2vw, 14px);
   pointer-events: none;
 }
 
-/* ⚠️ LE RAYON N'EST PAS UN GOUT, IL SE CALCULE. Deux boutons voisins sont
-   separes par la corde `2 R sin(θ/2)` : a 22,5° d'ecart et 64 px de rayon elle
-   valait 25 px pour des boutons de 42, qui se recouvraient donc aux deux tiers
-   — vu sur l'appareil. Avec 112 px de rayon la corde fait 44 px, soit 38 px de
-   bouton et 6 px d'air, et ca tient encore dans un ecran de 320 px de large. */
-#dicewrap .dc-fan { --pd-fan-r: 112px; }
+/* ⛔ `--pd-fan-r` A DISPARU AVEC L'ARC : une rangee n'a pas de rayon. Le
+   calcul de corde qu'il portait vaut toujours — il vit dans la cale des
+   effets, qui, elle, s'ouvre bien en eventail (`--cbt-bonus-rayon`). */
 
 #dicewrap .dc-fan-btn {
-  position: absolute;
-  inset-inline-start: 50%;
-  top: 50%;
-  width: 38px;
-  height: 38px;
-  margin: -19px 0 0 -19px;
-  padding: 0;
+  position: relative;
+  width: clamp(44px, 13vw, 58px);
+  height: clamp(44px, 13vw, 58px);
+  padding: 4px;
+  box-sizing: border-box;
   border: 4px solid var(--blanc);
   border-radius: 50%;
-  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
-  box-shadow: 0 4px 0 var(--gold-lo), 0 7px 14px rgba(0, 0, 0, .45);
+  background: linear-gradient(180deg, var(--violet-hi), var(--violet));
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .42), 0 8px 16px rgba(0, 0, 0, .5);
   cursor: pointer;
   pointer-events: auto;
-  transform: rotate(var(--pd-angle)) translateY(calc(-1 * var(--pd-fan-r)));
-  animation: dc-fan-in .22s cubic-bezier(.2, 1.5, .4, 1) backwards;
+  animation: dc-fan-in .16s ease-out both;
 }
 
 #dicewrap .dc-fan-btn > span {
   display: block;
+  width: 100%;
+  height: 100%;
   font-size: 20px;
-  line-height: 30px;
-  transform: rotate(calc(-1 * var(--pd-angle)));
 }
 
 #dicewrap .dc-fan-btn:active { filter: brightness(1.15); }
 
 @keyframes dc-fan-in {
-  from { transform: rotate(var(--pd-angle)) translateY(0); opacity: 0; }
+  from { transform: translateY(10px) scale(.8); opacity: 0; }
 }
 
 /* ⚠️ `touch-action: none` EST CE QUI FAIT EXISTER L'APPUI LONG.
@@ -2410,9 +2421,12 @@
    debut de defilement : il attend, puis emet `pointercancel` et prend la main.
    Notre minuterie de 420 ms tombait dans cette fenetre — l'eventail s'ouvrait a
    la souris et JAMAIS au doigt, ce qui est la pire des pannes puisque le geste
-   n'existe que sur telephone. En declarant que ce carre de 42 px ne participe a
-   aucun geste du navigateur, le contact nous appartient du debut a la fin.
-   `user-select: none` empeche en prime la poignee de selection de texte. */
+   n'existe que sur telephone.
+   ⛔ L'APPUI LONG LUI-MEME A DISPARU — un geste qu'on ne decouvre pas est un
+   geste qui n'existe pas : on tape sur son portrait, rien ne vient, on en
+   conclut qu'il ne fait rien. Un CLIC ouvre la rangee. `touch-action: none`
+   reste : il empeche le navigateur de prendre le contact pour un debut de
+   defilement, et `user-select: none` la poignee de selection de texte. */
 #dicewrap #dc-pc-me .dc-pc-portrait {
   cursor: pointer;
   touch-action: none;

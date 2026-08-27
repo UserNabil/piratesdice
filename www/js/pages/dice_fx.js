@@ -611,6 +611,18 @@ export function startClock(st) {
      de corde que celui d'en face.
      La corde dit D'ABORD a qui est le tour ; le compte a rebours n'est qu'une
      precision de plus. Sans pendule, elle est simplement entiere. */
+  /* ⛔ LA FLAMME PARTAIT DE LA OU ELLE S'ETAIT ARRETEE. Elle glisse d'un point
+     a l'autre en 220 ms — ce qu'on veut entre deux battements de la pendule,
+     et exactement ce qu'on ne veut pas au PREMIER : elle traversait la carte en
+     diagonale depuis la fin du tour precedent avant de se poser au depart de la
+     meche. « Elle commence au mauvais endroit puis elle arrive au bon. »
+     On pose donc la premiere position SANS transition, et on la rend ensuite. */
+  const flamme = clock ? clock.querySelector('.dc-pc-flamme') : null;
+  if (flamme) {
+    flamme.style.transition = 'none';
+    requestAnimationFrame(() => { flamme.style.transition = ''; });
+  }
+
   const total = (S.rules && S.rules.awayMs) || 0;
   const minutee = !!total && st.awayMs !== null && st.awayMs !== undefined;
   if (!minutee) {
