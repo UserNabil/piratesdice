@@ -217,15 +217,39 @@ export async function signIn(opts) {
  * compte a cette application : le joueur ne voit alors rien passer. La fenetre
  * ne s'ouvre que lorsqu'il l'a demandee lui-meme, depuis les reglages.
  */
+/**
+ * Le JWT d'Apple, OU QU'IL SOIT RANGE.
+ *
+ * ⛔ LE GREFFON MET LE JETON D'IDENTITE DANS `accessToken.token`, ET LE CODE
+ * D'AUTORISATION DANS `idToken`. Les deux champs sont inverses par rapport a
+ * leur nom (`AppleProvider.swift` : `idToken:` recoit
+ * `appleIDCredential.authorizationCode`). On envoyait donc au serveur un code
+ * opaque de quelques caracteres la ou il attend un jeton signe en trois
+ * morceaux — d'ou « malformed identityToken » a l'ecran, et une liaison de
+ * compte impossible.
+ *
+ * On ne se fie donc pas au NOM du champ mais a sa FORME : un jeton d'identite
+ * est un JWT, trois parties separees par des points. Le jour ou le greffon
+ * remettra ses champs a l'endroit, ce code marchera encore.
+ */
+function jwtApple(out) {
+  for (const candidat of [out && out.accessToken && out.accessToken.token,
+                          out && out.idToken]) {
+    if (typeof candidat === 'string' && candidat.split('.').length === 3) return candidat;
+  }
+  return null;
+}
+
 async function jetonApple(p) {
   const rep = await p.login({ provider: 'apple', options: { scopes: ['name'] } });
   const out = rep && rep.result ? rep.result : null;
-  if (!out || !out.idToken) return null;
+  const jwt = jwtApple(out);
+  if (!jwt) return null;
   /* ⚠️ APPLE NE DONNE LE NOM QU'A LA PREMIERE CONNEXION, jamais ensuite. On le
      transmet s'il vient ; le serveur ne le redemandera pas. */
   const prof = out.profile || {};
   const nom = [prof.givenName, prof.familyName].filter(Boolean).join(' ').trim();
-  return { idToken: out.idToken, name: nom || undefined };
+  return { idToken: jwt, name: nom || undefined };
 }
 
 async function claimApple(jeton) {

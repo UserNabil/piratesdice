@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
-"""
-outils/vitrine_apple.py — POSER LES CAPTURES SUR L'APP STORE.
 
-    PD_ASC_KEY_ID=… PD_ASC_ISSUER=… python3 outils/vitrine_apple.py
-    … --langues en-US --formats APP_IPHONE_67
-
-⚠️ CHEZ APPLE, UNE IMAGE S'ENVOIE EN TROIS TEMPS. On RESERVE une place (nom et
-taille du fichier), Apple rend une ou plusieurs adresses d'envoi, on y depose
-les octets, puis on CONFIRME avec l'empreinte MD5 du fichier. Une image
-reservee et jamais confirmee reste en travers de la fiche : ce script confirme
-toujours, ou supprime ce qu'il vient de creer.
-
-⚠️ ET ON REMPLACE, ON N'AJOUTE PAS. Un jeu de captures qui melange l'ancienne
-interface et la nouvelle est pire que l'ancienne seule : le jeu existant est
-donc vide avant d'etre rempli.
-"""
 import argparse
 import hashlib
 import json
