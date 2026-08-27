@@ -209,14 +209,25 @@ function buildGame() {
      est une facon de dire « non » — on la respecte.
      ⚠️ MAIS PAS UN GESTE SUR LE PLATEAU : c'est la que se choisit la cible. Ni
      sur le gobelet, qui porte deja l'annulation explicite pendant la visee. */
+  /* ⚠️ EN CAPTURE, ET C'EST TOUT LE POINT. Ce gestionnaire doit passer AVANT
+     ceux du plateau : c'est lui qui decide si le geste ferme la cale ou joue un
+     coup, et il ne peut pas decider apres coup. */
   document.addEventListener('pointerdown', (ev) => {
     const dans = (sel) => !!ev.target.closest(sel);
     if (dans('#dc-bonus') || dans('#dc-bag')) return;
-    fermerCale();
+
+    /* ⛔ LE GESTE QUI FERME NE DOIT RIEN JOUER. Vecu, et perdu : cale ouverte,
+       de deja lance, un doigt sur la grille pour refermer — et le de s'est
+       pose la ou le doigt passait. « Ce n'est pas ce que je voulais faire, et
+       j'ai perdu. » Un menu ouvert prend le geste suivant POUR LUI : on ferme,
+       et on avale le clic qui va avec. Le coup se joue au geste d'apres, quand
+       le joueur voit de nouveau son plateau en entier. */
+    if (caleOuverte()) { fermerCale(); avaler(ev); return; }
+
     if (dans('.dc-board') || dans('#dc-cup') || dans('.dc-foot-btn')) return;
     const vise = S.state && S.state.pending && S.state.pending.seat === S.seat;
     if (vise && S.net) S.net.send({ t: 'unbonus' });
-  });
+  }, true);
   wireMoodFan();
 }
 
@@ -495,11 +506,18 @@ function wireMoodFan() {
 
   ecran.addEventListener('pointerdown', (ev) => {
     const portrait = ev.target.closest('#dc-pc-me .dc-pc-portrait');
-    if (!portrait) { if (!ev.target.closest('.dc-fan')) closeFan(); return; }
+    if (!portrait) {
+      /* Meme regle que la cale : le geste qui ferme ne joue pas. */
+      if (!ev.target.closest('.dc-fan') && document.querySelector('.dc-fan')) {
+        closeFan();
+        avaler(ev);
+      }
+      return;
+    }
     ev.preventDefault();
     if (document.querySelector('.dc-fan')) { closeFan(); return; }
     openFan(portrait);
-  });
+  }, true);
   ecran.addEventListener('contextmenu', (ev) => {
     /* L'appui long ouvre le menu du navigateur sur Android : on le refuse LA ou
        le geste nous appartient, et nulle part ailleurs. */
@@ -879,6 +897,23 @@ function renderPlayerCard(sel, st, seat, isMe) {
    refermait au relachement : ouvrir pour REGARDER demandait de ne pas lever le
    pouce, et un tapotement la faisait disparaitre avant qu'on ait rien lu. Un
    clic l'ouvre, un clic ailleurs la ferme — et desarme l'effet au passage. */
+
+/**
+ * Avaler un geste : il a servi a fermer un menu, il ne servira a rien d'autre.
+ *
+ * ⚠️ IL FAUT TUER LE `click`, PAS SEULEMENT LE `pointerdown`. Ce sont deux
+ * evenements distincts : arreter le premier n'empeche pas le second de partir,
+ * et c'est le second que le plateau ecoute. On pose donc un garde a usage
+ * unique, en capture, qui intercepte le clic qui suit — et qui se retire seul
+ * si aucun ne vient (un glissement, un doigt qui sort de l'ecran).
+ */
+function avaler(ev) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  const tuer = (e) => { e.preventDefault(); e.stopPropagation(); };
+  document.addEventListener('click', tuer, { capture: true, once: true });
+  setTimeout(() => document.removeEventListener('click', tuer, true), 700);
+}
 
 function caleOuverte() {
   const rack = $('#dc-bonus');
