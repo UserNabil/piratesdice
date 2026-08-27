@@ -217,6 +217,7 @@ export const S = {
   quitting: false,
   wasNativeFull: false,
   sfx: null,
+  musique: null,
 };
 
 /** Filled by dice.js at boot: { showMenu, renderWallet }. */

@@ -284,6 +284,9 @@ function unEffet(f) {
     }
 
     if (f.kind === 'bonus') {
+      /* Un effet joue doit s'ENTENDRE : c'est le seul coup du jeu qui ne se
+         voit pas forcement sur le plateau. */
+      if (S.sfx) S.sfx.play('effet', 0.34);
       annonceBonus(f);
       return;
     }
@@ -302,6 +305,7 @@ function unEffet(f) {
        temps qu'il faut pour comprendre, puis s'efface. */
     if (f.kind === 'freeze') {
       /* Celui qui gele agit ; le gel, lui, tombe sur l'autre plateau. */
+      if (S.sfx) S.sfx.play('gel', 0.38);
       banner(t('fx.freeze'), f.seat === S.seat ? 'good' : 'bad', 1 - f.seat);
       return;
     }
@@ -312,6 +316,9 @@ function unEffet(f) {
          cet effet-ci n'arrive qu'au moment ou le tour est effectivement saute,
          c'est-a-dire quand le givre s'en va. Rejouer un sceau par-dessus, c'est
          annoncer une seconde fois ce qu'on regardait depuis dix secondes. */
+      /* Le givre se brise : le tour saute maintenant, et l'oreille le sait
+         avant que l'oeil ait retrouve le plateau. */
+      if (S.sfx) S.sfx.play('degel', 0.34);
       if (f.seat === S.seat) { banner(t('fx.frozenYou'), 'bad', f.seat); buzz([0, 60, 40, 60]); }
       else banner(t('fx.frozenThem', { name: nomDuSiege(f.seat) }), 'good', f.seat);
       return;

@@ -18,6 +18,7 @@ import { toast } from '../ui/toast.js';
 import { uiConfirm } from '../ui/dialogs.js';
 import { DiceNet, diceStatus } from './dice_net.js';
 import { Sfx } from './dice_board.js';
+import { Musique } from '../ui/musique.js';
 import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js';
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
@@ -64,24 +65,47 @@ function build() {
   S.sfx = new Sfx(ASSETS + 'sfx/');
   /* ⚠️ `coin` est le son des PIECES (achat, gain), `dice` celui du DE. La pose
      d'un de jouait dropCoin.mp3 : on entendait de la monnaie tomber sur le
-     plateau. Les noms disent maintenant ce qu'ils sont. */
-  S.sfx.load('dice', 'diceDrop.mp3');
-  S.sfx.load('coin', 'dropCoin.mp3');
-  S.sfx.load('boom', 'boom.mp3');
-  S.sfx.load('start', 'begin.mp3');
-  S.sfx.load('open', 'rulesBookSound.mp3');
-  S.sfx.load('shut', 'closeRulesBook.mp3');
+     plateau. Les noms disent maintenant ce qu'ils sont.
+
+     ⚠️ ET UN NOM PAR EVENEMENT, PAS PAR FICHIER. Le jeu appelle `play('dice')`
+     sans savoir quel echantillon est derriere : changer de banque de sons se
+     fait alors ici, en une ligne, et pas dans dix fichiers. */
+  S.sfx.load('dice', 'dice_roll.mp3');
+  S.sfx.load('pose', 'dice_land_hard.mp3');
+  S.sfx.load('coin', 'coin_reward.mp3');
+  S.sfx.load('boom', 'explosion.mp3');
+  S.sfx.load('start', 'game_start.mp3');
+  S.sfx.load('open', 'ui_open.mp3');
+  S.sfx.load('shut', 'ui_close.mp3');
+  S.sfx.load('tour', 'your_turn.mp3');
+  S.sfx.load('effet', 'bonus_activate.mp3');
+  S.sfx.load('gel', 'ice_crack.mp3');
+  S.sfx.load('degel', 'ice_break.mp3');
+  S.sfx.load('trouve', 'match_found.mp3');
+  S.sfx.load('gagne', 'victory_stinger.mp3');
+  S.sfx.load('perdu', 'defeat_stinger.mp3');
+  S.sfx.load('nul', 'draw_stinger.mp3');
+  S.sfx.load('onglet', 'ui_tab.mp3');
+
+  /* La musique est un canal a part : elle boucle, elle survit aux changements
+     d'ecran, et elle se tait quand l'application passe derriere. */
+  S.musique = new Musique(ASSETS + 'music/');
 
   $('#dc-close').onclick = () => requestClose();
   $('#dc-full').onclick = () => toggleFull();
   $('#dc-mute').onclick = () => {
     S.sfx.muted = !S.sfx.muted;
+    /* Un seul interrupteur pour tout le son : couper les effets et laisser la
+       musique serait un reglage qui ment. */
+    if (S.musique) S.musique.muted = S.sfx.muted;
     $('#dc-mute').classList.toggle('dc-icon-off', S.sfx.muted);
     $('#dc-mute').title = t(S.sfx.muted ? 'hdr.unmute' : 'hdr.mute');
     const hp = $('#dc-mute img');
     if (hp) hp.src = ASSETS + 'img/icon_sound_' + (S.sfx.muted ? 'off' : 'on') + '.png';
   };
-  wrap.querySelectorAll('.dc-tab').forEach((b) => { b.onclick = () => togglePanel(b.dataset.panel); });
+  wrap.querySelectorAll('.dc-tab').forEach((b) => {
+    b.onclick = () => { if (S.sfx) S.sfx.play('onglet', 0.22); togglePanel(b.dataset.panel); };
+  });
 
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('fullscreenchange', syncFull);
@@ -387,6 +411,8 @@ function renderWallet() {
 /* Le pont vit dans dice_lobby.js : choix du capitaine et salon prive y sont
    deux ecrans a part entiere, et ce fichier n'a pas a les porter. */
 function showMenu() {
+  /* Le pont a sa boucle ; l'arene aura la sienne. */
+  if (S.musique) S.musique.jouer('menu');
   renderMenu($('#dc-screen-menu'));
 }
 

@@ -84,7 +84,12 @@ export function onOver(m) {
      jusqu'a ce qu'un nouveau dessin arrive : le retirer n'etait pas la reponse.
      Et rien ne passe plus AVANT la ligne qui affiche le verdict. */
   el.classList.add('on');
-  S.sfx.play(m.outcome === 'win' ? 'coin' : 'shut', 0.3);
+  /* ⚠️ LA FANFARE PASSE DEVANT LA BOUCLE, ELLE NE S'Y AJOUTE PAS. Deux musiques
+     en meme temps, meme d'accord entre elles, font une bouillie : la boucle de
+     partie s'arrete, le verdict sonne, et le pont reprend la sienne quand le
+     joueur y revient. */
+  if (S.musique) S.musique.arreter();
+  S.sfx.play(m.outcome === 'win' ? 'gagne' : (m.outcome === 'loss' ? 'perdu' : 'nul'), 0.4);
 
   const leave = () => { el.classList.remove('on'); S.state = null; S.seat = -1; UI.showMenu(); };
   UI.leaveMatch = leave;                     // la barre laterale s'en sert aussi

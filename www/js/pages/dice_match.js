@@ -22,6 +22,11 @@ import { announce, renderForesee, startClock, MOODS, moodArt, sendMood } from '.
 import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
 export function onMatch(m) {
+  /* Une des trois boucles de partie, jamais la meme deux fois de suite. */
+  if (S.musique) S.musique.jouer('partie');
+  /* Trouver quelqu'un est un evenement : on l'entend. En solo, le depart est
+     deja annonce par `start`. */
+  if (S.sfx && m.mode === 'multi') S.sfx.play('trouve', 0.4);
   S.queued = false;
   S.lastScores = null;
   S.seat = m.seat;
@@ -181,26 +186,18 @@ function buildGame() {
   sac.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); basculerCale(); }
   });
-  document.addEventListener('pointerup', (ev) => {
-    if (!caleOuverte()) return;
-    /* ⚠️ RELACHER SUR UN EFFET DOIT LE JOUER, ET UN `click` N'ARRIVERA PAS.
-       L'appui a commence sur le sac : le navigateur ne synthetise un clic que
-       si la pression et le relachement partagent la meme cible. Sans cela, le
-       joueur ouvrirait la cale, glisserait sur son canon, relacherait — et rien
-       ne se passerait. On lit donc ce qui se trouve SOUS le doigt au moment ou
-       il se leve, et on declenche le bouton nous-memes. */
-    const dessous = document.elementFromPoint(ev.clientX, ev.clientY);
-    const jeton = dessous && dessous.closest('.dc-bonus-btn');
-    /* ⚠️ UN SIMPLE APPUI LAISSE LA CALE OUVERTE. Elle se refermait au
-       relachement : ouvrir pour REGARDER demandait de garder le pouce sur
-       l'ecran, et un tapotement rendait la cale invisible avant qu'on ait lu
-       quoi que ce soit. « Le bouton bonus doit au clic ouvrir le menu bonus. »
-       On ne referme donc que si le doigt se leve SUR un effet — le geste
-       glisse-et-relache continue de le jouer. */
-    if (!jeton) return;
-    fermerCale();
-    jeton.click();
-  });
+  /* ⛔ CE GESTIONNAIRE FERMAIT LA CALE AVANT QUE LE CLIC N'ARRIVE, ET LE CLIC
+     TOMBAIT SUR LE PLATEAU. Il datait de l'eventail qu'on ouvrait a l'appui
+     maintenu : au relachement, il refermait la cale puis declenchait le jeton
+     lui-meme. Depuis que la cale s'ouvre au clic, le navigateur envoie DE TOUTE
+     FACON son propre clic apres le relachement — et comme la cale venait d'etre
+     fermee, ce clic-la trouvait la colonne SOUS le jeton. Resultat vecu : « j'ai
+     un de en main, je clique sur un bonus, ça depose le de PUIS ça joue le
+     bonus » — le de perdu dans une colonne qu'on n'avait pas choisie, et
+     l'effet gaspille sur un tour qui n'existait plus.
+     Le jeton a son propre `onclick` : il suffit de le laisser faire, et de
+     fermer la cale DEDANS, une fois le clic recu. */
+
   document.addEventListener('pointercancel', () => { if (caleOuverte()) fermerCale(); });
 
   /* ⚠️ CLIQUER AILLEURS FERME LA CALE **ET** DESARME L'EFFET. Un jeton joue
@@ -563,7 +560,10 @@ export function onState(msg) {
   }
 
   /* La pose : le MEME de, joue plus sec et plus haut que le lancer. */
-  if (placed) { S.sfx.play('dice', 0.42, 1.28); markPlaced(boardOf(placed.seat), placed.cell); }
+  /* ⚠️ LA POSE A SON SON, ELLE N'EST PLUS LE LANCER JOUE PLUS VITE. On tirait
+     les deux d'un seul echantillon faute d'en avoir deux ; la banque en fournit
+     un vrai — un de qui touche le bois, pas un de qui roule en accelere. */
+  if (placed) { S.sfx.play('pose', 0.42); markPlaced(boardOf(placed.seat), placed.cell); }
 
   let settleIn = 0;
   if (destroyed.length) {
@@ -1004,6 +1004,7 @@ function renderExit(st) {
    s'efface. Ce qui ne change pas — une partie en pause, une partie finie —
    reste affiche : la, l'information EST l'immobilite. */
 let dernierEtat = '';
+let dernierTour = -1;
 let minuteurEtat = 0;
 
 function direEtat(el, texte, classe, passager) {
@@ -1064,6 +1065,11 @@ function renderTurn(st) {
   if (st.phase === 'ready') { direEtat(el, t('game.waitingTable'), 'dc-turn-haut', false); return; }
   if (st.phase === 'over') { direEtat(el, t('game.matchOver'), 'dc-turn-haut', false); return; }
   const mine = st.turn === S.seat;
+  /* ⚠️ UN SEUL SON PAR CHANGEMENT DE MAIN. `renderTurn` passe a chaque etat —
+     un de lance, une pastille qui bouge — et sonner a chaque fois ferait un
+     tic-tac permanent. On ne sonne que lorsque la main CHANGE de cote. */
+  if (mine && dernierTour !== st.turn) S.sfx.play('tour', 0.3);
+  dernierTour = st.turn;
   direEtat(el,
     mine ? t('game.yourTurn')
          : t('game.playing', { name: (st.players[st.turn] || {}).name || t('game.opponent') }),
@@ -1190,12 +1196,22 @@ export function renderBonusRack() {
     const epuise = left <= 0 && !cadeau;
     const redondant = b.dataset.id === 'B006' && dejaGele;
     b.classList.toggle('dc-bonus-mute', !myTurn() || epuise || redondant);
-    b.onclick = () => {
+    b.onclick = (ev) => {
+      /* ⚠️ CE CLIC NE VA NULLE PART D'AUTRE. La cale se dessine PAR-DESSUS le
+         plateau : tout ce qui remonte ou retombe finit sur une colonne. */
+      ev.preventDefault();
+      ev.stopPropagation();
       const nom = b.dataset.nom || '';
+      /* Un refus laisse la cale OUVERTE : le joueur vient de lire pourquoi, il
+         doit pouvoir viser un autre jeton sans tout rouvrir. */
       if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
       if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
       if (redondant) { toast(t('fx.alreadyFrozen'), 'warn'); return; }
       S.net.send({ t: 'bonus', identify: b.dataset.id });
+      /* L'effet part : la cale n'a plus rien a montrer, et le plateau doit
+         redevenir visible — c'est lui qu'on va viser si l'effet demande une
+         cible. */
+      fermerCale();
     };
   });
 }
