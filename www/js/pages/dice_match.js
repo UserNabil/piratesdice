@@ -1157,42 +1157,21 @@ export function renderBonusRack() {
 
   rack.innerHTML = tous.join('');
 
-  /* ⚠️ UNE RANGEE N'EST PAS UN EVENTAIL. Les jetons s'alignaient au-dessus du
-     bandeau, serres entre le sac et le gobelet — « l'affichage de mes bonus
-     n'est pas bon, ils doivent s'afficher comme l'ouverture des emojis ». Les
-     humeurs, elles, s'ouvrent en arc autour de leur ancre depuis le debut, avec
-     un calcul qui choisit deja le quart de tour qui tient a l'ecran. C'est ce
-     calcul qu'on partage (`anglesEventail`) plutot que d'en ecrire un second.
-     L'ancre est le SAC : c'est lui qu'on tient sous le pouce. */
-  const sac = $('#dc-bag');
-  const jetons = Array.from(rack.querySelectorAll('.dc-bonus-btn'));
-  if (sac && jetons.length) {
-    const ancre = sac.getBoundingClientRect();
+  /* ⛔ L'EVENTAIL A VECU. Il tenait pour trois jetons ; a cinq ou six, l'arc se
+     resserrait jusqu'a ce qu'ils se recouvrent — « ça affiche mal quand tu as
+     plusieurs bonus ». Un arc a une longueur, donc un nombre de places : au-dela
+     il ne reste que le choix de mal l'afficher. Une GRILLE, elle, n'a pas cette
+     limite ; elle passe a la ligne.
+     Elle se pose au meme endroit que la rangee des humeurs — juste au-dessus du
+     bandeau, la seule bande que les plateaux ne disputent pas — et c'est le CSS
+     qui la centre : plus un seul angle a calculer. */
+  const pied = $('#dicewrap .dc-foot');
+  if (pied) {
+    const r = pied.getBoundingClientRect();
     const scene = rack.offsetParent
       ? rack.offsetParent.getBoundingClientRect()
-      : { left: 0, top: 0 };
-    /* Le centre de l'arc, dans le repere de l'eventail.
-       ⚠️ LE HAUT DU SAC, PAS SON MILIEU. Centre sur le bouton, l'arc partait de
-       l'interieur du bandeau : ses jetons les plus bas se posaient dessus. En
-       remontant l'origine au bord superieur du bandeau, tout l'eventail s'ouvre
-       au-dessus de la main qui le tient — ce qui est le seul endroit ou on peut
-       a la fois le voir et le viser. */
-    rack.style.setProperty('--pd-fan-x', (ancre.left + ancre.width / 2 - scene.left) + 'px');
-    rack.style.setProperty('--pd-fan-y', (ancre.top - scene.top) + 'px');
-    const style = getComputedStyle(rack);
-    const rayon = parseFloat(style.getPropertyValue('--pd-fan-r')) || FAN_RAYON;
-    const taille = parseFloat(getComputedStyle(jetons[0]).width) || 52;
-    /* Le bandeau du bas est interdit : c'est de la que sort l'eventail, et le
-       pouce qui le tient s'y trouve deja. */
-    const pied = document.querySelector('#dicewrap .dc-foot');
-    const zones = [pied && pied.getBoundingClientRect()];
-    const angles = anglesEventail(sac, jetons.length, {
-      rayon, taille,
-      /* La MEME origine que celle posee en variables juste au-dessus. */
-      origine: { x: ancre.left + ancre.width / 2, y: ancre.top },
-      evite: zones,
-    });
-    calerEventail(jetons, angles, zones, rayon);
+      : { bottom: window.innerHeight };
+    rack.style.bottom = (scene.bottom - r.top + 12) + 'px';
   }
 
   /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
@@ -1265,9 +1244,13 @@ function renderQuarters(st) {
       const col = parseInt(plaque.dataset.col, 10);
       const m = q[col];
       if (typeof m !== 'number') return;
-      /* On n'ecrit rien sur une colonne neutre : un « x1 » partout ne dit rien
-         et vole la place des deux qui comptent. */
-      plaque.dataset.quart = m === 1 ? '' : ('×' + String(m).replace('.', ','));
+      /* ⛔ LA COLONNE NEUTRE N'AFFICHAIT RIEN, ET SON SILENCE SE LISAIT MAL.
+         L'idee etait de ne pas voler la place aux deux qui comptent — mais sur
+         quatre colonnes, une pastille absente ressemble a une pastille qui n'a
+         pas fini de charger, pas a « celle-ci vaut son prix ». Les quatre
+         parlent maintenant, et c'est la COULEUR qui hierarchise : dorée pour
+         celle qui rapporte, terne pour celle qui coute, neutre pour x1. */
+      plaque.dataset.quart = '×' + String(m).replace('.', ',');
       plaque.classList.toggle('dc-colscore-riche', m > 1);
       plaque.classList.toggle('dc-colscore-pauvre', m < 1);
     });

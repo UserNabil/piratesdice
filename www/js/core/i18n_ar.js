@@ -83,6 +83,7 @@ export const AR = {
 
   'connect.boarding': 'جارٍ الصعود إلى السفينة…',
   'connect.outOfReach': 'تعذّر الوصول إلى خادم اللعبة',
+  'connect.dropped': 'انقطع الاتصال بخادم اللعبة.',
   'connect.tried': 'جرّبنا {url}',
   'connect.retryingIn': 'إعادة المحاولة بعد {n} ثانية…',
   'connect.retry': 'إعادة المحاولة',
@@ -96,6 +97,9 @@ export const AR = {
   'menu.elo': 'إيلو',
   'menu.coins': 'عملات',
   'menu.waiting': 'في انتظار منافس',
+  'menu.noOne': 'لا أحد في الأفق',
+  'menu.noOneHint': 'لا أحد يبحث عن مباراة الآن. أعد البحث، أو واجه الآلة في هذه الأثناء.',
+  'menu.retry': 'أعد البحث',
   'menu.waitingHint': 'على قبطان آخر أن يفتح اللعبة ويختار «تحدَّ لاعبًا».',
   'menu.cancel': 'إلغاء',
 
@@ -162,6 +166,18 @@ export const AR = {
   'shop.S006.name': 'نرد السلطان',
 
   'shop.S006.desc': 'ذهب منقوش ولازورد. مظهر فقط.',
+
+  'shop.S008.name': 'نرد قرمزي',
+
+  'shop.S008.desc': 'طلاء قرمزي وجمر في النقاط. مظهر فقط.',
+
+  'shop.S009.name': 'نرد رمادي',
+
+  'shop.S009.desc': 'عاج وسخام، نقاط من حجر مصقول. مظهر فقط.',
+
+  'shop.S010.name': 'نرد الجمشت',
+
+  'shop.S010.desc': 'جمشت منحوت على عاج. مظهر فقط.',
 
   'shop.M001.name': 'نقش التنين',
 

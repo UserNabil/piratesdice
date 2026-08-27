@@ -1195,8 +1195,15 @@
   z-index: 12;
   padding: 5px 14px;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(58,34,110,.96), rgba(30,18,64,.96));
-  box-shadow: inset 0 0 0 2px rgba(255,225,150,.5), 0 4px 10px rgba(0,0,0,.5);
+  /* ⚠️ ELLE SE POSE SUR LE PLATEAU : ELLE DOIT LAISSER VOIR A TRAVERS. A 96 %
+     d'opacite, l'alerte cachait purement et simplement la rangee de cases
+     qu'elle survole — « les messages d'alerte obstruent l'affichage ». Un flou
+     d'arriere-plan garde le texte lisible sans effacer ce qu'il y a dessous ;
+     la ou le flou n'existe pas, l'aplat translucide suffit. */
+  background: linear-gradient(180deg, rgba(58,34,110,.62), rgba(30,18,64,.62));
+  -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 2px rgba(255,225,150,.4), 0 4px 10px rgba(0,0,0,.35);
   white-space: nowrap;
   opacity: 0; pointer-events: none;
   transition: opacity .2s ease, transform .2s ease;
@@ -1300,12 +1307,9 @@
    fond d'or — parce que c'est le meme geste : on presse, on lit, on glisse, on
    relache. Deux eventails qui ne se ressemblent pas s'apprennent deux fois. */
 #dicewrap .dc-bonus-btn {
-  position: absolute;
-  left: var(--pd-fan-x, 50%);
-  top: var(--pd-fan-y, 50%);
-  width: var(--cbt-bonus-taille, 48px);
-  height: var(--cbt-bonus-taille, 48px);
-  margin: calc(var(--cbt-bonus-taille, 48px) / -2) 0 0 calc(var(--cbt-bonus-taille, 48px) / -2);
+  position: relative;
+  width: var(--cbt-bonus-taille, 52px);
+  height: var(--cbt-bonus-taille, 52px);
   padding: 5px;
   box-sizing: border-box;
   border: 4px solid var(--blanc);
@@ -1314,11 +1318,9 @@
   /* ⚠️ PAS DE `pointer-events: auto` ICI. Voir `.dc-bonus` : il annulait le
      `none` du parent et rendait la cale fermee cliquable. */
   pointer-events: none;
-  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
-  box-shadow: 0 4px 0 var(--gold-lo), 0 7px 14px rgba(0, 0, 0, .45);
-  transform: rotate(var(--pd-angle, 0deg)) translateY(calc(-1 * var(--pd-fan-r, 112px)));
-  animation: dc-fan-in .22s cubic-bezier(.2, 1.5, .4, 1) backwards;
-  transition: filter .12s;
+  background: linear-gradient(180deg, var(--violet-hi), var(--violet));
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .42), 0 8px 16px rgba(0, 0, 0, .5);
+  animation: dc-fan-in .16s ease-out both;
 }
 
 /* ⚠️ SANS CE CONTRE-PIVOT, LE DESSIN PENCHE. Le jeton est place par une
@@ -1330,7 +1332,6 @@
   display: block;
   position: relative;
   width: 100%; height: 100%;
-  transform: rotate(calc(-1 * var(--pd-angle, 0deg)));
 }
 
 #dicewrap .dc-bonus-btn img { width: 100%; height: 100%; object-fit: contain; display: block;
@@ -1733,10 +1734,20 @@
    element invisible de cette facon ne recoit plus rien, quoi que disent ses
    enfants. */
 #dicewrap .dc-bonus {
+  /* ⛔ C'ETAIT UN EVENTAIL, ET UN ARC N'A QU'UN NOMBRE DE PLACES. A trois jetons
+     il respirait ; a cinq ou six ils se recouvraient. Une grille passe a la
+     ligne — elle n'a pas de limite a atteindre. Elle se pose au-dessus du
+     bandeau, comme la rangee des humeurs : meme endroit, meme geste. */
   position: absolute;
-  left: 0; top: 0;
-  width: 0; height: 0;
+  inset-inline: 0;
+  bottom: 96px;
   z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(8px, 2.4vw, 16px);
+  padding: 0 clamp(10px, 5vw, 40px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -2174,6 +2185,14 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, .55);
 }
 
+/* La colonne neutre parle aussi, mais plus bas : ni or ni ardoise, juste le
+   chiffre. Une pastille absente ressemblait a une pastille pas encore chargee. */
+#dicewrap .dc-colscore:not(.dc-colscore-riche):not(.dc-colscore-pauvre)::after {
+  background: rgba(24, 16, 40, .72);
+  color: rgba(255, 255, 255, .78);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .35);
+}
+
 /* Le dernier de pose se signale par une LUEUR, pas seulement par son dessin.
 
    ⚠️ TROIS JEUX DE DES SONT LIVRES SANS ETAT ACTIF — c'est un choix d'auteur, pas
@@ -2218,21 +2237,26 @@
   padding: 12px 20px 12px 14px;
   border: var(--liseré) solid var(--blanc);
   border-radius: 24px 20px 26px 22px;
-  background: var(--trame), linear-gradient(160deg, var(--violet), var(--violet-dk));
-  background-size: var(--trame-taille), auto;
-  box-shadow: 0 8px 0 rgba(0, 0, 0, .4), 0 16px 34px rgba(0, 0, 0, .55);
+  background: linear-gradient(160deg, rgba(136, 80, 248, .74), rgba(58, 30, 120, .74));
+  -webkit-backdrop-filter: blur(7px);
+          backdrop-filter: blur(7px);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .3), 0 16px 34px rgba(0, 0, 0, .42);
   animation: dc-cast-in .2s cubic-bezier(.2, 1.4, .4, 1);
   pointer-events: none;
 }
 
 /* Ce qui vient de l'adversaire ET vise le joueur est cercle de rouge : la
    couleur dit « ca te concerne » avant qu'on ait lu le premier mot. */
+/* Meme regle que l'alerte : l'annonce se pose AU MILIEU du jeu, elle ne doit pas
+   le remplacer le temps qu'on la lise. */
 #dicewrap .dc-cast-vs {
-  background: var(--trame), linear-gradient(160deg, #C4324B, #7A1B2C);
-  box-shadow: 0 8px 0 rgba(0, 0, 0, .4), 0 16px 34px rgba(0, 0, 0, .55),
-              0 0 0 3px rgba(255, 96, 120, .55);
+  background: linear-gradient(160deg, rgba(196, 50, 75, .72), rgba(122, 27, 44, .72));
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .3), 0 16px 34px rgba(0, 0, 0, .4),
+              0 0 0 3px rgba(255, 96, 120, .45);
 }
-#dicewrap .dc-cast-me { background: var(--trame), linear-gradient(160deg, var(--gold), var(--gold-lo)); }
+#dicewrap .dc-cast-me {
+  background: linear-gradient(160deg, rgba(248, 208, 64, .78), rgba(198, 150, 26, .78));
+}
 
 #dicewrap .dc-cast-art {
   width: 46px;

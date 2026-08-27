@@ -98,20 +98,64 @@ function wireCaptains(el) {
   });
 }
 
+/* ── L'ATTENTE D'UN ADVERSAIRE A UNE FIN ──────────────────────────────────
+   Deux minutes : au-dela, il ne se passe rien parce qu'il n'y a personne, pas
+   parce que le jeu cherche encore. On arrete la roue et on le DIT — avec de
+   quoi relancer, parce qu'un joueur peut arriver a la minute suivante. */
+const ATTENTE_MAX_MS = 120000;
+let attenteDebut = 0;
+let attenteTimer = 0;
+
+function lancerAttente(redessiner) {
+  if (!attenteDebut) attenteDebut = Date.now();
+  if (attenteTimer || !redessiner) return;
+  const reste = Math.max(500, ATTENTE_MAX_MS - (Date.now() - attenteDebut));
+  attenteTimer = setTimeout(() => { attenteTimer = 0; redessiner(); }, reste);
+}
+
+function arreterAttente() {
+  if (attenteTimer) { clearTimeout(attenteTimer); attenteTimer = 0; }
+  attenteDebut = 0;
+}
+
+function attenteDepassee() {
+  return !!attenteDebut && (Date.now() - attenteDebut) >= ATTENTE_MAX_MS;
+}
+
+/** La recherche repart de zero : appelee quand on entre dans une partie. */
+export function oublierAttente() { arreterAttente(); }
+
 /* ──────────────────────────────────────────────────────── le menu du pont ── */
 
 export function renderMenu(el) {
   screen('menu');
 
   if (S.queued) {
+    /* ⛔ LA ROUE TOURNAIT SANS FIN. « Il n'y a personne en ligne » n'est pas une
+       panne, mais une roue qui tourne pendant dix minutes ressemble a une panne
+       — et le joueur n'a aucun moyen de savoir laquelle des deux il regarde. Au
+       bout de deux minutes, on le dit et on lui rend la main. */
+    const trop = attenteDepassee();
     el.innerHTML = `
       <div class="dc-menu"><div class="dc-menu-card pd-panel">
-        <img class="dc-wheel" src="${ASSETS}img/icon_loader.png" alt="">
-        <h3>${esc(t('menu.waiting'))}</h3>
-        <p>${esc(t('menu.waitingHint'))}</p>
+        ${trop ? '' : `<img class="dc-wheel" src="${ASSETS}img/icon_loader.png" alt="">`}
+        <h3>${esc(t(trop ? 'menu.noOne' : 'menu.waiting'))}</h3>
+        <p>${esc(t(trop ? 'menu.noOneHint' : 'menu.waitingHint'))}</p>
+        ${trop ? `<button class="dc-btn" id="dc-requeue">${esc(t('menu.retry'))}</button>` : ''}
         <button class="dc-btn dc-btn-ghost" id="dc-unqueue">${esc(t('menu.cancel'))}</button>
       </div></div>`;
-    $('#dc-unqueue').onclick = () => S.net.send({ t: 'cancel' });
+    $('#dc-unqueue').onclick = () => { arreterAttente(); S.net.send({ t: 'cancel' }); };
+    const relancer = $('#dc-requeue');
+    if (relancer) {
+      relancer.onclick = () => {
+        /* On repart d'une file propre : le serveur nous y a peut-etre garde. */
+        if (S.net) S.net.send({ t: 'cancel' });
+        lancerAttente();
+        if (S.net) S.net.send({ t: 'play', mode: 'multi' });
+        renderMenu(el);
+      };
+    }
+    if (!trop) lancerAttente(() => renderMenu(el));
     return;
   }
 
@@ -228,6 +272,8 @@ export function onRoomFail(msg) {
 
 /** Le pont redevient le pont : appele quand une partie demarre ou qu'on revient. */
 export function resetLobby() {
+  /* Une partie commence : le compte a rebours de l'attente n'a plus d'objet. */
+  arreterAttente();
   lobby = null;
   hostCode = '';
 }

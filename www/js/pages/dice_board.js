@@ -312,6 +312,29 @@ export class Sfx {
     this.base = base;
     this.muted = false;
     this.cache = new Map();
+    /* ⛔ LE JEU CONTINUAIT DE PARLER DEPUIS L'ECRAN D'ACCUEIL DU TELEPHONE. Un
+       son declenche juste avant que l'application passe en arriere-plan finit
+       de se jouer dehors — et sur iOS un `<audio>` deja lance survit au
+       passage. « Le son persiste alors que je suis sur le home, ce n'est pas
+       normal » : non, et c'est a nous de le couper.
+       On garde donc les voix en cours pour pouvoir les faire taire, et on
+       refuse d'en ouvrir de nouvelles tant que l'ecran n'est pas revenu. */
+    this.voix = new Set();
+    this.dehors = false;
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        this.dehors = document.hidden;
+        if (document.hidden) this.taire();
+      });
+    }
+  }
+
+  /** Couper net tout ce qui est en train de sonner. */
+  taire() {
+    for (const voix of this.voix) {
+      try { voix.pause(); voix.currentTime = 0; } catch (_) { /* deja finie */ }
+    }
+    this.voix.clear();
   }
 
   load(name, file) {
@@ -326,13 +349,15 @@ export class Sfx {
    * plus vite et plus fort, il devient le claquement sec d'un de qui se pose.
    */
   play(name, volume, rate) {
-    if (this.muted) return;
+    if (this.muted || this.dehors) return;
     const source = this.cache.get(name);
     if (!source) return;
     try {
       const voice = source.cloneNode();
       voice.volume = volume === undefined ? 0.35 : volume;
       if (rate) voice.playbackRate = rate;
+      this.voix.add(voice);
+      voice.addEventListener('ended', () => this.voix.delete(voice), { once: true });
       const p = voice.play();
       if (p && p.catch) p.catch(() => { /* autoplay policy — not worth a message */ });
     } catch (_) { /* no audio device */ }

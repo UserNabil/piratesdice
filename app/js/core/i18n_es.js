@@ -81,6 +81,7 @@ export const ES = {
 
   'connect.boarding': 'Subiendo a bordo…',
   'connect.outOfReach': 'No se alcanza el servidor del juego',
+  'connect.dropped': 'Se ha perdido la conexión con el servidor.',
   'connect.tried': 'Se intentó {url}',
   'connect.retryingIn': 'Reintentando en {n} s…',
   'connect.retry': 'Reintentar',
@@ -94,6 +95,9 @@ export const ES = {
   'menu.elo': 'elo',
   'menu.coins': 'monedas',
   'menu.waiting': 'Esperando a un rival',
+  'menu.noOne': 'No hay nadie',
+  'menu.noOneHint': 'Ahora mismo nadie busca partida. Vuelve a buscar, o enfréntate a la máquina mientras tanto.',
+  'menu.retry': 'Buscar de nuevo',
   'menu.waitingHint': 'Otro capitán debe abrir el juego y elegir «Retar a un jugador».',
   'menu.cancel': 'Cancelar',
 
@@ -160,6 +164,18 @@ export const ES = {
   'shop.S006.name': 'Dados del sultán',
 
   'shop.S006.desc': 'Oro cincelado y lapislázuli. Solo apariencia.',
+
+  'shop.S008.name': 'Dados carmesí',
+
+  'shop.S008.desc': 'Laca escarlata, brasas en los puntos. Solo apariencia.',
+
+  'shop.S009.name': 'Dados de ceniza',
+
+  'shop.S009.desc': 'Marfil y hollín, puntos de piedra pulida. Solo apariencia.',
+
+  'shop.S010.name': 'Dados de amatista',
+
+  'shop.S010.desc': 'Amatista tallada sobre marfil. Solo apariencia.',
 
   'shop.M001.name': 'Grabado del dragón',
 

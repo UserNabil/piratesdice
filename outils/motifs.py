@@ -54,7 +54,7 @@ MOTIFS = [('M001', 'dragon', (0, 0)),
 # S007) ajouteraient huit megaoctets pour des combinaisons que personne ne peut
 # acheter. Le client sait retomber sur le jeu nu quand la combinaison n'existe
 # pas ; le jour ou l'un d'eux revient au catalogue, il suffit de l'ajouter ici.
-JEUX = ['D000', 'S002', 'S006']
+JEUX = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010']
 
 MOTIFS_PAR_ID = {ident: nom for ident, nom, _ in MOTIFS}
 

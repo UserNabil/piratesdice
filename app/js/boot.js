@@ -77,6 +77,20 @@ async function splashOff() {
 
 /* ── le bouton RETOUR d'Android ──────────────────────────────────────────── */
 
+/* ⚠️ SUR IOS, `visibilitychange` NE SUFFIT PAS TOUJOURS. Le systeme met la vue
+   web en pause a sa facon, et l'evenement du web n'arrive pas toujours quand
+   l'application passe derriere. Le greffon, lui, le sait : on l'ecoute AUSSI,
+   et les deux chemins font la meme chose — couper le son. */
+function wireArrierePlan() {
+  const cap = window.Capacitor;
+  if (!cap || !cap.Plugins || !cap.Plugins.App) return;
+  cap.Plugins.App.addListener('appStateChange', ({ isActive }) => {
+    if (!S.sfx) return;
+    S.sfx.dehors = !isActive;
+    if (!isActive) S.sfx.taire();
+  });
+}
+
 function wireBackButton() {
   const fire = () => {
     const ev = new CustomEvent('pd-back', { cancelable: true });
@@ -336,6 +350,7 @@ async function start() {
   UI.standalone = true;
   initDice();
   wireBackButton();
+  wireArrierePlan();
   await reglerBarreEtat();
   /* La connexion se fait SEULE : c'est la promesse de la fiche. Si Google n'est
      pas joignable (appareil sans services Play, ou refus), on retombe sur le

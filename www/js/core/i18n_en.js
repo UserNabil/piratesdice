@@ -95,6 +95,7 @@ export const EN = {
 
   'connect.boarding': 'Boarding the ship…',
   'connect.outOfReach': 'The game server is out of reach',
+  'connect.dropped': 'The link to the game server dropped.',
   'connect.tried': 'Tried {url}',
   'connect.viaSsh': ' (through the tool’s SSH tunnel)',
   'connect.noSsh': ' — and the SSH tunnel could not be opened either',
@@ -112,6 +113,9 @@ export const EN = {
   'menu.elo': 'elo',
   'menu.coins': 'coins',
   'menu.waiting': 'Waiting for a challenger',
+  'menu.noOne': 'Nobody around',
+  'menu.noOneHint': 'No one is looking for a match right now. Search again, or take on the machine in the meantime.',
+  'menu.retry': 'Search again',
   'menu.waitingHint': 'Another captain has to open the game and pick “Challenge a player”.',
   'menu.cancel': 'Cancel',
 

@@ -82,6 +82,7 @@ export const FR = {
 
   'connect.boarding': 'On monte à bord…',
   'connect.outOfReach': 'Le serveur du jeu est injoignable',
+  'connect.dropped': 'La liaison avec le serveur s’est interrompue.',
   'connect.tried': 'Essayé {url}',
   'connect.retryingIn': 'Nouvelle tentative dans {n} s…',
   'connect.retry': 'Réessayer',
@@ -99,6 +100,9 @@ export const FR = {
   'menu.elo': 'elo',
   'menu.coins': 'pièces',
   'menu.waiting': 'En attente d’un adversaire',
+  'menu.noOne': 'Personne en vue',
+  'menu.noOneHint': 'Aucun joueur ne cherche de partie en ce moment. Relancez la recherche, ou affrontez la machine en attendant.',
+  'menu.retry': 'Relancer la recherche',
   'menu.waitingHint': 'Un autre capitaine doit ouvrir le jeu et choisir « Défier un joueur ».',
   'menu.cancel': 'Annuler',
 
@@ -167,6 +171,18 @@ export const FR = {
   'shop.S006.name': 'Dés du sultan',
 
   'shop.S006.desc': 'Or ciselé et lapis. Apparence seulement.',
+
+  'shop.S008.name': 'Dés cramoisis',
+
+  'shop.S008.desc': 'Laque écarlate, braises dans les points. Apparence seulement.',
+
+  'shop.S009.name': 'Dés de cendre',
+
+  'shop.S009.desc': 'Ivoire et suie, points de pierre polie. Apparence seulement.',
+
+  'shop.S010.name': 'Dés d’améthyste',
+
+  'shop.S010.desc': 'Améthyste taillée sur ivoire. Apparence seulement.',
 
   'shop.M001.name': 'Gravure du dragon',
 

@@ -155,7 +155,14 @@ async function connect() {
          qui n'existe plus. */
       if (byUs) return;
       S.net = null;
-      if (S.open) connectFailed('the connection to the game server dropped');
+      if (!S.open) return;
+      /* ⛔ ON NE MONTRE PLUS LA PAGE D'ECHEC AU PREMIER SOUFFLE. « Je ferme mon
+         telephone, je le rouvre, et j'ai une page qui me dit serveur
+         indisponible » : la socket ne survit pas a la mise en veille, c'est
+         normal — ce qui ne l'est pas, c'est de traiter ce reveil comme une
+         panne. On se rebranche en silence ; l'ecran d'echec n'apparait que si
+         plusieurs tentatives echouent vraiment. */
+      relancerPlusTard();
     },
   });
 
@@ -237,18 +244,28 @@ const RELANCE_MAX = 15000;
 let relanceDelai = RELANCE_MIN;
 let relanceTimer = 0;
 
+/* Combien de tentatives silencieuses avant d'afficher l'echec. Trois suffisent :
+   un reveil de telephone se rattrape a la premiere, une vraie panne se voit a la
+   troisieme, et entre les deux le joueur ne lit rien d'inquietant. */
+const RELANCE_MUETTE = 3;
+let relanceEssais = 0;
+
 function arreterRelance() {
   if (relanceTimer) { clearTimeout(relanceTimer); relanceTimer = 0; }
   relanceDelai = RELANCE_MIN;
+  relanceEssais = 0;
 }
 
 function relancerPlusTard() {
   if (relanceTimer) return;                     // une seule tentative en vol
   const dans = relanceDelai;
   relanceDelai = Math.min(RELANCE_MAX, relanceDelai * 2);
+  relanceEssais += 1;
+  const bruyant = relanceEssais > RELANCE_MUETTE;
   relanceTimer = setTimeout(() => {
     relanceTimer = 0;
     if (!S.open) return;                        // le joueur est parti : on se tait
+    if (bruyant) { connectFailed(t('connect.dropped')); return; }
     connect();
   }, dans);
 }
