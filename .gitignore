@@ -22,3 +22,8 @@ ios/App/output/
 signing/
 __pycache__/
 dist/
+
+# Les captures brutes (PNG pleine resolution) : 144 Mo de sources dont seules
+# les versions JPEG partent chez Play et chez Apple. `outils/vitrine.py` les
+# refait en quelques minutes.
+store/captures/

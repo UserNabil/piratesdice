@@ -196,6 +196,65 @@ def _empreinte():
     return list(im.getdata())
 
 
+def bouton_or():
+    """OU EST LE BOUTON D'OR, MESURE SUR L'ECRAN — pas suppose.
+
+    ⛔ SA POSITION ETAIT UNE CONSTANTE, ET LA CARTE D'ACCUEIL EST DEVENUE
+    ELASTIQUE. Depuis qu'elle se mesure en hauteur d'ecran, ses trois boutons
+    montent et descendent avec l'appareil : la fraction 0,641 tombait dans le
+    VIDE entre « affronter l'IA » et « defier un joueur ». Le geste ne portait
+    pas, le parcours restait au pont, et les cinq captures suivantes montraient
+    le meme menu. Mesure du 2026-08-27 : le bouton est a 0,619.
+
+    On le CHERCHE donc : c'est le seul aplat dore qui traverse la moitie de la
+    largeur. Le porte-monnaie et les pastilles de score sont dores aussi, mais
+    ils sont petits — le seuil de largeur les ecarte.
+    """
+    from PIL import Image
+    tmp = "/tmp/_pd_or.png"
+    sh("xcrun simctl io %s screenshot '%s'" % (APPAREIL, tmp))
+    if not os.path.exists(tmp):
+        return None
+    im = Image.open(tmp).convert("RGB")
+    w, h = im.size
+    px = im.load()
+    bandes, dans, debut = [], False, 0
+    pas = max(1, h // 700)
+    # ⚠️ ON NE REGARDE NI L'ENTETE NI LE BAS. Le bandeau du haut porte un
+    # LISERE DORE sur toute la largeur : mesure du 2026-08-27, le bouton a ete
+    # « trouve » a 0,112, c'est-a-dire dans le bandeau. Le bas, lui, portera le
+    # bouton de lancer des qu'une partie sera ouverte.
+    for y in range(int(h * 0.25), int(h * 0.92), pas):
+        n = 0
+        for x in range(0, w, 8):
+            r, g, b = px[x, y]
+            if r > 200 and g > 150 and b < 130:
+                n += 1
+        large = n > (w // 8) * 0.5
+        if large and not dans:
+            dans, debut = True, y
+        elif not large and dans:
+            dans = False
+            bandes.append((debut, y))
+    if dans:
+        bandes.append((debut, int(h * 0.92)))
+    if not bandes:
+        return None
+    # Les deux aretes d'un meme bouton (le texte, entre elles, n'est pas dore)
+    # doivent compter pour UNE bande.
+    fusion = [list(bandes[0])]
+    for d, f in bandes[1:]:
+        if d - fusion[-1][1] < h * 0.05:
+            fusion[-1][1] = f
+        else:
+            fusion.append([d, f])
+    d, f = max(fusion, key=lambda b: b[1] - b[0])
+    # Un bouton fait quelques pourcents de haut ; un lisere, un dixieme de ça.
+    if (f - d) < h * 0.015:
+        return None
+    return (d + f) / 2.0 / h
+
+
 def _ecart(a, b):
     """La difference moyenne entre deux empreintes, sur 255."""
     if not a or not b or len(a) != len(b):
@@ -292,6 +351,8 @@ DEFIER   = (0.50, 0.641)
 ONGLETS  = {"boutique": (0.45, 0.082), "classement": (0.625, 0.082),
             "regles": (0.785, 0.082)}
 FERMER      = (0.92, 0.082)
+# Un point qui ne joue rien : entre le plateau d'en face et le bandeau du haut.
+VIDE        = (0.06, 0.30)
 ABANDON_OUI = (0.712, 0.249)
 FIN_LE_PONT = (0.666, 0.548)
 
@@ -343,7 +404,10 @@ def main():
     # La mise a ete retiree du jeu (Apple refuse la simulation de pari sur un
     # compte individuel) : la partie demarre desormais des le defi lance. Deux
     # gestes de trop, et c'etait tout le parcours qui se decalait.
-    taper(*DEFIER)                         # affronter l'IA — on arrive dans l'arene
+    y = bouton_or() or DEFIER[1]
+    if abs(y - DEFIER[1]) > 0.01:
+        print("   ↺ « affronter l'IA » mesure a %.3f (constante : %.3f)" % (y, DEFIER[1]))
+    taper(DEFIER[0], y)                    # affronter l'IA — on arrive dans l'arene
 
     # ⚠️ UN PLATEAU VIDE NE DONNE ENVIE A PERSONNE. On joue quelques tours avant
     # de photographier : ce qu'on vend est la partie, pas l'ecran de depart.
@@ -352,11 +416,16 @@ def main():
         taper(*COLONNES[tour % 3])
     prendre("2_plateau")                   # l'arene, des poses des deux cotes
 
-    # ⚠️ LA CALE S'OUVRE A L'APPUI MAINTENU, PAS AU CLIC. Un clic l'ouvre et la
-    # referme dans le meme geste : la capture montrait le bandeau nu.
-    relacher = tenir(*CALE, duree=1.4)
+    # ⛔ ELLE S'OUVRAIT A L'APPUI MAINTENU, ELLE S'OUVRE MAINTENANT AU CLIC.
+    # « On ne doit plus rester appuye longtemps » : un appui long est un geste
+    # qu'on ne decouvre pas. Le parcours suivait l'ancien geste — il tenait le
+    # bouton, la cale s'ouvrait puis se refermait, et les trois captures
+    # suivantes montraient le meme ecran. Vu le 2026-08-27.
+    taper(*CALE)
     prendre("3_cale")                      # l'eventail des effets, fond assombri
-    relacher()
+    # Un geste dans le vide referme la cale SANS jouer de coup (c'est la regle
+    # depuis qu'un clic de fermeture a coute une partie a l'admin).
+    taper(*VIDE, attendre=False)
     attendre_calme()
 
     for nom, onglet in (("4_boutique", "boutique"), ("5_classement", "classement"),
