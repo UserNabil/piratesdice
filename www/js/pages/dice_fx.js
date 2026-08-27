@@ -425,6 +425,150 @@ function annonceBonus(f) {
  */
 let clockTimer = 0;
 
+/* ⛔ LA JAUGE ETAIT UN DEGRADE CONIQUE, ET C'ETAIT LE MAUVAIS OUTIL. Un dégradé
+   conique se mesure en ANGLE depuis le centre : sur un rectangle, la meme
+   seconde couvre trois fois plus de bord dans un coin qu'au milieu d'un cote,
+   et rien ne permet de dire OU en est la limite — donc rien ne permet d'y poser
+   quoi que ce soit.
+
+   C'est une MECHE : elle brule le long du jonc, a vitesse constante, et la
+   flamme se tient exactement au point qui brule. Un trace SVG donne les deux —
+   `stroke-dashoffset` mange la corde a vitesse constante, `getPointAtLength`
+   dit ou en est le feu. Il n'y a plus rien a estimer.
+
+   Trois traits superposes font la corde : la cendre (tout le tour, dessous), la
+   corde restante, et une torsade en pointilles par-dessus — c'est elle qui
+   donne le cordage plutot qu'un simple tuyau. */
+const MECHE = { ancre: [77 / 181, 253 / 362] };   // la braise, dans l'image
+
+/* La corde elle-meme est une IMAGE, pas un trait. Deux traits superposes
+   faisaient un tuyau raye ; le cordage, lui, a une torsade qui tourne, une
+   lumiere sur le dessus et un cerne noir — cela se dessine, cela ne se decrit
+   pas en CSS. On la pose donc par MORCEAUX le long du jonc, chacun tourne dans
+   le sens de la corde a cet endroit : elle suit les coins au lieu de les
+   couper. */
+const CORDE = new Image();
+CORDE.src = ASSETS + 'img/fx_corde.png';
+/* ⚠️ LA PREMIERE PEINTURE PEUT ARRIVER AVANT L'IMAGE. Sans ce rappel, le tour
+   ou l'on ouvre l'application se joue avec un jonc nu : la corde n'apparait
+   qu'au tour suivant, et on croit a un defaut d'affichage. */
+CORDE.addEventListener('load', () => {
+  const clock = $('.dc-pc-timed .dc-pc-clock');
+  if (clock) {
+    const trace = clock.querySelector('.dc-meche-trace');
+    const part = parseFloat(getComputedStyle(clock.parentElement)
+      .getPropertyValue('--pd-clock')) || 1;
+    brulerLaMeche(clock, trace, part);
+  }
+});
+
+const PAS = 4;          // longueur d'un morceau, en pixels d'ecran
+
+function traceDuJonc(clock) {
+  const r = clock.getBoundingClientRect();
+  if (!r.width || !r.height) return null;
+  const svg = clock.querySelector('.dc-pc-meche');
+  if (!svg) return null;
+  const ep = parseFloat(getComputedStyle(clock).getPropertyValue('--pd-meche-ep')) || 6;
+  const m = ep / 2;
+  const w = r.width - ep;
+  const h = r.height - ep;
+  /* ⚠️ LE RAYON LU EST CELUI DU BORD EXTERIEUR ; LA CORDE PASSE AU MILIEU DU
+     JONC. Sans cette demi-epaisseur en moins, la corde coupait le coin — un
+     arc trop large a l'interieur d'un cadre plus serre. */
+  const rad = Math.max(0, Math.min(
+    (parseFloat(getComputedStyle(clock).borderTopLeftRadius) || 16) - m,
+    w / 2, h / 2));
+  /* On part du HAUT AU MILIEU et on tourne dans le sens des aiguilles : c'est
+     la ou l'oeil se pose en premier, et le sens qu'il attend. */
+  const d = [
+    'M', m + w / 2, m,
+    'H', m + w - rad,
+    'A', rad, rad, 0, 0, 1, m + w, m + rad,
+    'V', m + h - rad,
+    'A', rad, rad, 0, 0, 1, m + w - rad, m + h,
+    'H', m + rad,
+    'A', rad, rad, 0, 0, 1, m, m + h - rad,
+    'V', m + rad,
+    'A', rad, rad, 0, 0, 1, m + rad, m,
+    'Z',
+  ].join(' ');
+  svg.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
+  svg.querySelectorAll('path').forEach((p) => p.setAttribute('d', d));
+
+  /* La toile ou l'on peint la corde. Elle est en pixels REELS : a moitie de
+     resolution, un cordage devient une bouillie. */
+  const toile = clock.querySelector('.dc-meche-corde');
+  if (toile) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    toile.width = Math.round(r.width * dpr);
+    toile.height = Math.round(r.height * dpr);
+    toile.style.width = r.width + 'px';
+    toile.style.height = r.height + 'px';
+    toile.__dpr = dpr;
+    toile.__ep = ep;
+  }
+  return svg.querySelector('.dc-meche-trace');
+}
+
+/** Peindre la corde restante, morceau par morceau, le long du jonc. */
+function peindreCorde(clock, trace, brule) {
+  const toile = clock.querySelector('.dc-meche-corde');
+  if (!toile || !trace || !CORDE.complete || !CORDE.naturalWidth) return;
+  const ctx = toile.getContext('2d');
+  const dpr = toile.__dpr || 1;
+  const ep = toile.__ep || 6;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, toile.width, toile.height);
+
+  const total = trace.getTotalLength();
+  if (!total) return;
+  /* ⚠️ LA TORSADE DOIT RETOMBER SUR SES PIEDS. Un motif repete a sa longueur
+     naturelle laisse un morceau coupe la ou la boucle se referme. On etire donc
+     legerement le motif pour qu'il tienne un nombre ENTIER de fois. */
+  const naturel = ep * (CORDE.naturalWidth / CORDE.naturalHeight);
+  const tours = Math.max(1, Math.round(total / naturel));
+  const long = total / tours;
+  const bouts = Math.max(2, Math.ceil(long / PAS));
+  const dl = long / bouts;
+  const dsx = CORDE.naturalWidth / bouts;
+
+  for (let t = 0; t < tours; t++) {
+    for (let k = 0; k < bouts; k++) {
+      const debut = t * long + k * dl;
+      if (debut + dl <= brule) continue;              // deja consume
+      const a = trace.getPointAtLength(debut);
+      const b = trace.getPointAtLength(Math.min(debut + dl, total));
+      const angle = Math.atan2(b.y - a.y, b.x - a.x);
+      ctx.save();
+      ctx.translate(a.x, a.y);
+      ctx.rotate(angle);
+      /* Un demi-pixel de recouvrement : sans lui, on voit la couture entre deux
+         morceaux des que l'ecran arrondit. */
+      ctx.drawImage(CORDE, k * dsx, 0, dsx, CORDE.naturalHeight,
+                    0, -ep / 2, dl + 0.5, ep);
+      ctx.restore();
+    }
+  }
+}
+
+/** Poser la corde et la flamme pour une part restante donnee (1 → 0). */
+function brulerLaMeche(clock, trace, part) {
+  if (!trace) return;
+  const total = trace.getTotalLength();
+  if (!total) return;
+  const brule = (1 - part) * total;
+  peindreCorde(clock, trace, brule);
+
+  const flamme = clock.querySelector('.dc-pc-flamme');
+  if (!flamme) return;
+  const pt = trace.getPointAtLength(Math.min(brule, total - 0.01));
+  const large = flamme.offsetWidth || 40;
+  const haut = flamme.offsetHeight || 80;
+  flamme.style.transform = 'translate(' + (pt.x - large * MECHE.ancre[0]) + 'px,'
+    + (pt.y - haut * MECHE.ancre[1]) + 'px)';
+}
+
 function stopClock() {
   if (clockTimer) { clearInterval(clockTimer); clockTimer = 0; }
   const game = $('#dc-screen-game');
@@ -442,11 +586,21 @@ export function startClock(st) {
   const tour = st.turn;
   carte.classList.add('dc-pc-timed');
 
+  const clock = carte.querySelector('.dc-pc-clock');
+  /* Le trace se refait a l'ouverture du tour : la carte a pu changer de taille
+     entre-temps (rotation de l'ecran, clavier, une autre longueur de nom). */
+  let corde = clock ? traceDuJonc(clock) : null;
+
   const peindre = () => {
     if (!S.state || S.state.phase !== 'playing' || S.state.turn !== tour) { stopClock(); return; }
     const reste = Math.max(0, fin - Date.now());
-    carte.style.setProperty('--pd-clock', (reste / total).toFixed(3));
+    const part = reste / total;
+    carte.style.setProperty('--pd-clock', part.toFixed(3));
     carte.classList.toggle('dc-pc-urgent', reste < 8000);
+    if (clock) {
+      if (!corde || !corde.getTotalLength()) corde = traceDuJonc(clock);
+      brulerLaMeche(clock, corde, part);
+    }
     if (reste <= 0) stopClock();
   };
   peindre();

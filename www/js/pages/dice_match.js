@@ -175,14 +175,14 @@ function buildGame() {
      Le relachement SUR un effet le joue : c'est `dc-bonus-btn` qui s'en charge,
      et on ne referme qu'apres, pour ne pas lui retirer sa cible. */
   const sac = $('#dc-bag');
-  sac.addEventListener('pointerdown', (ev) => { ev.preventDefault(); ouvrirCale(); });
+  sac.addEventListener('pointerdown', (ev) => { ev.preventDefault(); basculerCale(); });
   /* Un clavier ou un lecteur d'ecran n'appuie pas : il active. La bascule reste
      donc disponible, sinon la cale serait hors d'atteinte sans doigt. */
   sac.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); basculerCale(); }
   });
   document.addEventListener('pointerup', (ev) => {
-    if (!caleTenue) return;
+    if (!caleOuverte()) return;
     /* ⚠️ RELACHER SUR UN EFFET DOIT LE JOUER, ET UN `click` N'ARRIVERA PAS.
        L'appui a commence sur le sac : le navigateur ne synthetise un clic que
        si la pression et le relachement partagent la meme cible. Sans cela, le
@@ -191,13 +191,31 @@ function buildGame() {
        il se leve, et on declenche le bouton nous-memes. */
     const dessous = document.elementFromPoint(ev.clientX, ev.clientY);
     const jeton = dessous && dessous.closest('.dc-bonus-btn');
+    /* ⚠️ UN SIMPLE APPUI LAISSE LA CALE OUVERTE. Elle se refermait au
+       relachement : ouvrir pour REGARDER demandait de garder le pouce sur
+       l'ecran, et un tapotement rendait la cale invisible avant qu'on ait lu
+       quoi que ce soit. « Le bouton bonus doit au clic ouvrir le menu bonus. »
+       On ne referme donc que si le doigt se leve SUR un effet — le geste
+       glisse-et-relache continue de le jouer. */
+    if (!jeton) return;
     fermerCale();
-    if (jeton) jeton.click();
+    jeton.click();
   });
-  document.addEventListener('pointercancel', () => { if (caleTenue) fermerCale(); });
-  /* Un eventail laisse ouvert au clavier se ferme au premier geste ailleurs. */
+  document.addEventListener('pointercancel', () => { if (caleOuverte()) fermerCale(); });
+
+  /* ⚠️ CLIQUER AILLEURS FERME LA CALE **ET** DESARME L'EFFET. Un jeton joue
+     attend une cible : tant qu'elle n'est pas choisie, le joueur est en visee,
+     et rien hors du plateau ne devait le sortir de la. Un geste dans le vide
+     est une facon de dire « non » — on la respecte.
+     ⚠️ MAIS PAS UN GESTE SUR LE PLATEAU : c'est la que se choisit la cible. Ni
+     sur le gobelet, qui porte deja l'annulation explicite pendant la visee. */
   document.addEventListener('pointerdown', (ev) => {
-    if (!ev.target.closest('#dc-bonus') && !ev.target.closest('#dc-bag')) fermerCale();
+    const dans = (sel) => !!ev.target.closest(sel);
+    if (dans('#dc-bonus') || dans('#dc-bag')) return;
+    fermerCale();
+    if (dans('.dc-board') || dans('#dc-cup') || dans('.dc-foot-btn')) return;
+    const vise = S.state && S.state.pending && S.state.pending.seat === S.seat;
+    if (vise && S.net) S.net.send({ t: 'unbonus' });
   });
   wireMoodFan();
 }
@@ -784,8 +802,16 @@ function renderPlayerCard(sel, st, seat, isMe) {
      comparer, et un ecart se lit alors sans traverser l'ecran.
      Le ratelier n'est plus ICI : il vit dans l'eventail de la cale, sinon il
      disputait sa largeur au nom et le coupait en quatre lignes. */
-  el.className = 'dc-pc' + (isMe ? ' dc-pc-mine' : ' dc-pc-theirs')
-               + (active ? ' dc-pc-active' : ' dc-pc-idle');
+  /* ⚠️ ON BASCULE, ON NE REECRIT PAS. `el.className = …` effacait tout ce que
+     les autres passes avaient pose — la meche du tour (`dc-pc-timed`) en
+     premier — et ne marchait que parce que `paint()` appelle la pendule JUSTE
+     apres. Un ordre d'appel n'est pas un contrat : le jour ou quelqu'un rendra
+     une carte ailleurs, la meche disparaitra sans que rien ne le dise. */
+  el.classList.add('dc-pc');
+  el.classList.toggle('dc-pc-mine', isMe);
+  el.classList.toggle('dc-pc-theirs', !isMe);
+  el.classList.toggle('dc-pc-active', active);
+  el.classList.toggle('dc-pc-idle', !active);
   /* ⚠️ LE NOM EST SORTI DU BLOC D'IDENTITE, ET C'EST CE QUI LE FAIT TENIR.
      Il vivait avec l'elo et les pastilles dans une seule colonne, coincee entre
      le portrait et le score : « BARTHOLOMEW » disposait de 77 px pour 88, donc
@@ -804,7 +830,14 @@ function renderPlayerCard(sel, st, seat, isMe) {
          de diametre. Le jonc de la carte fait tout le tour du rectangle du
          milieu — il est quatre fois plus long, il ne recouvre aucun dessin, et
          c'est deja lui qu'on regarde pour savoir a qui est le tour. -->
-    <span class="dc-pc-clock" aria-hidden="true"></span>
+    <span class="dc-pc-clock" aria-hidden="true">
+      <svg class="dc-pc-meche" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path class="dc-meche-cendre"></path>
+        <path class="dc-meche-trace"></path>
+      </svg>
+      <canvas class="dc-meche-corde"></canvas>
+      <img class="dc-pc-flamme" src="${ASSETS}img/fx_meche.png" alt="">
+    </span>
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
@@ -830,8 +863,10 @@ function renderPlayerCard(sel, st, seat, isMe) {
    carte du joueur, lui disputait sa largeur et coupait les noms — « Ann / e /
    Bon / ny ». Ferme, il ne coute plus rien ; ouvert, il se deploie AU-DESSUS du
    bandeau, sans quoi le pouce qui l'ouvre le recouvrirait. */
-/* Vrai tant que le doigt tient la cale ouverte : au relachement, on ferme. */
-let caleTenue = false;
+/* ⛔ LA CALE N'EST PLUS TENUE PAR UN DOIGT. Elle s'ouvrait a l'appui et se
+   refermait au relachement : ouvrir pour REGARDER demandait de ne pas lever le
+   pouce, et un tapotement la faisait disparaitre avant qu'on ait rien lu. Un
+   clic l'ouvre, un clic ailleurs la ferme — et desarme l'effet au passage. */
 
 function caleOuverte() {
   const rack = $('#dc-bonus');
@@ -839,7 +874,6 @@ function caleOuverte() {
 }
 
 function fermerCale() {
-  caleTenue = false;
   const rack = $('#dc-bonus');
   if (rack) rack.classList.remove('dc-bonus-open');
   const sac = $('#dc-bag');
@@ -853,7 +887,6 @@ function ouvrirCale() {
   if (!rack || caleOuverte()) return;
   renderBonusRack();
   if (!rack.children.length) { toast(t('bonus.empty'), 'warn'); return; }
-  caleTenue = true;
   rack.classList.add('dc-bonus-open');
   const sac = $('#dc-bag');
   if (sac) sac.classList.add('dc-foot-on');
@@ -864,7 +897,6 @@ function ouvrirCale() {
 function basculerCale() {
   if (caleOuverte()) { fermerCale(); return; }
   ouvrirCale();
-  caleTenue = false;            // ouverte au clavier : elle ne suit aucun doigt
 }
 
 function renderExit(st) {
@@ -1001,6 +1033,14 @@ function renderCup(st) {
   if (!S.rolling) ecrin.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
   cup.classList.toggle('dc-cup-ready', canRoll);
   cup.classList.toggle('dc-cup-armed', die !== null && st.turn === S.seat);
+  /* ⚠️ QUAND CE N'EST PAS MON TOUR, LE BOUTON DOIT LE DIRE AVANT QU'ON APPUIE.
+     Il gardait son or et son relief pendant tout le tour d'en face : on le
+     visait, et on recevait un mot d'attente en retour. Un bouton qui a l'air
+     jouable et ne l'est pas fait perdre un geste a chaque tour.
+     Il reste CLIQUABLE, et c'est deliberé : eteint, il explique ; desactive,
+     il se tairait. */
+  cup.classList.toggle('dc-cup-eteint',
+    st.phase === 'playing' && st.turn !== S.seat);
   cup.disabled = st.phase !== 'playing';
 
   /* ⚠️ LE DE ADVERSE SE POSAIT DANS LE COIN DE LA CARTE, JUSTE AU-DESSUS DU

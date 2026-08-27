@@ -656,32 +656,103 @@
    coins — « l'arrondi du timer doit etre le meme que celui du rectangle ».
    Le `padding` de 3 px peint alors le minuteur PAR-DESSUS le jonc creme, au
    pixel pres, au lieu de dessiner un second cerne a cote. */
+/* ── LA MECHE DU TOUR ─────────────────────────────────────────────────────
+   ⛔ C'ETAIT UN DEGRADE CONIQUE, ET IL MENTAIT SUR DEUX POINTS. Il se mesure en
+   angle depuis le centre : sur un rectangle, une meme seconde couvre trois fois
+   plus de bord dans un coin qu'au milieu d'un cote — le temps ne descendait pas
+   a vitesse constante. Et surtout, un degrade n'a pas de POSITION : impossible
+   d'y accrocher quoi que ce soit.
+
+   C'est une meche : elle brule le long du jonc a vitesse constante, et la
+   flamme se tient au point qui brule. Trois traits font le cordage — la cendre
+   dessous, la corde restante, une torsade en pointilles par-dessus. */
 #dicewrap .dc-pc-clock {
+  /* ⚠️ LA MECHE FAIT LA TAILLE DU JONC, PAS UNE TAILLE A ELLE. Posee a dix
+     pixels, elle debordait de la carte et arrondissait ses coins plus large que
+     le cadre : deux bordures concentriques mal accordees, exactement ce qu'on
+     avait deja corrige en sortant l'horloge de l'avatar. Elle occupe donc le
+     jonc — meme epaisseur, meme courbure — et rien d'autre. */
+  /* ⚠️ UN PEU PLUS EPAIS QUE LE JONC, ET C'EST OBLIGE. Le cordage est un
+     DESSIN : il porte son cerne noir. Ramene aux trois pixels du jonc, il ne
+     restait que le cerne — un anneau noir autour de la carte active, qui se
+     lisait comme une carte ETEINTE. « C'est mon tour et mon rectangle reste
+     inactif » : c'etait ça. Le trace, lui, reste exactement sur le jonc — meme
+     courbure, meme centre ; seule la corde deborde d'un pixel et demi de part
+     et d'autre, ce qui est ce qu'on attend d'un cordage pose sur un cadre. */
+  --pd-meche-ep: calc(var(--cbt-joueur-jonc-ep, 3px) * 2);
   position: absolute;
-  inset: calc(-1 * var(--cbt-joueur-jonc-ep, 3px));
+  inset: calc(-1 * var(--pd-meche-ep));
   border-radius: var(--cbt-joueur-courbure, 18px);
-  padding: var(--cbt-joueur-jonc-ep, 3px);
   pointer-events: none;
   opacity: 0;
   transition: opacity .25s ease;
-  /* `--pd-clock` va de 1 a 0 : la part encore peinte, c'est le temps restant. */
-  background: conic-gradient(var(--gold-hi) calc(var(--pd-clock, 1) * 360deg),
-                             rgba(0, 0, 0, .35) 0);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
+  overflow: visible;
+}
+
+#dicewrap .dc-pc-meche {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+}
+
+/* ⛔ LA CENDRE A DISPARU, ET C'EST ELLE QUI FAISAIT LE MAL. Un trait sombre sur
+   tout le tour, sous la corde : des que le feu avait mange un quart du jonc, la
+   carte ACTIVE portait un cadre noir la ou l'autre gardait son liseré creme —
+   le signal exactement a l'envers. « Retire-moi les bordures noires derriere le
+   loader, qu'on voie quelque chose. »
+   Ce qui a brule ne laisse donc rien : le jonc de la carte reapparait dessous,
+   tel qu'il est partout ailleurs. La corde qui reste suffit a dire le temps. */
+#dicewrap .dc-meche-cendre { stroke: none; }
+
+/* Le trace ne se voit pas : il ne sert qu'a MESURER — ou passe la corde, et ou
+   en est le feu. C'est la toile au-dessus qui porte le dessin. */
+#dicewrap .dc-meche-trace { stroke: none; fill: none; }
+
+/* ⛔ LA CORDE ETAIT DEUX TRAITS SUPERPOSES, ET CA FAISAIT UN TUYAU RAYE. Un
+   cordage a une torsade qui tourne, une lumiere sur le dessus et un cerne noir :
+   cela se dessine, cela ne se decrit pas en CSS. C'est donc une image, posee
+   par morceaux le long du jonc, chacun tourne dans le sens de la corde a cet
+   endroit — elle epouse les coins au lieu de les couper. */
+#dicewrap .dc-meche-corde {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+/* La flamme : un APNG, pose par le JS au point exact ou la corde s'arrete.
+   ⚠️ SA TAILLE EST FIXE ET SON ANCRE CONNUE (la braise, a 77/181 x 253/362 dans
+   l'image) : le calcul de position en depend, et une taille qui changerait avec
+   l'ecran ferait deriver le feu du cordage. */
+#dicewrap .dc-pc-flamme {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 52px;
+  transform-origin: 0 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform .22s linear, opacity .25s ease;
+  filter: drop-shadow(0 0 6px rgba(255, 150, 40, .75));
 }
 
 #dicewrap .dc-pc-timed .dc-pc-clock { opacity: 1; }
-#dicewrap .dc-pc-urgent .dc-pc-clock {
-  background: conic-gradient(#ff7a6a calc(var(--pd-clock, 1) * 360deg), rgba(0, 0, 0, .35) 0);
-  animation: dc-clock-urgent 1s ease-in-out infinite;
-}
+#dicewrap .dc-pc-timed .dc-pc-flamme { opacity: 1; }
 
-@keyframes dc-clock-urgent {
-  0%, 100% { filter: none; }
-  50% { filter: drop-shadow(0 0 8px rgba(255, 122, 106, .8)); }
+/* La derniere ligne droite : la corde rougeoie et le feu s'emballe. */
+#dicewrap .dc-pc-urgent .dc-meche-corde {
+  filter: saturate(1.5) hue-rotate(-14deg) brightness(1.06);
+}
+#dicewrap .dc-pc-urgent .dc-pc-flamme { animation: dc-meche-urgent .9s ease-in-out infinite; }
+
+@keyframes dc-meche-urgent {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 150, 40, .75)); }
+  50% { filter: drop-shadow(0 0 13px rgba(255, 90, 40, .95)) brightness(1.15); }
+}
 }
 
 /* ── QUI JOUE, SANS AVOIR A CHERCHER ──────────────────────────────────────
@@ -1142,6 +1213,13 @@
    une largeur calee sur la case le ferait deborder de son bandeau. Ne restent
    ici que les etats — pret, arme — qui n'ont rien a voir avec sa geometrie. */
 #dicewrap .dc-cup:disabled { opacity: .4; cursor: default; }
+/* Le tour d'en face : le bouton s'eteint, sans disparaitre. Il repond encore —
+   c'est lui qui dit pourquoi il ne fait rien. */
+#dicewrap .dc-cup-eteint {
+  filter: saturate(.22) brightness(.62);
+  opacity: .8;
+}
+#dicewrap .dc-cup-eteint .dc-cup-art { filter: none; }
 #dicewrap .dc-cup-art { width: 100%; height: 100%; object-fit: contain; display: block;
   filter: brightness(1.15) drop-shadow(0 4px 7px rgba(0, 0, 0, .6)); }
 /* ⛔ LA PULSATION ETAIT UN `filter` SUR LE BOUTON, ET C'EST CE QUI SCINTILLAIT.
@@ -1212,7 +1290,9 @@
   border: 4px solid var(--blanc);
   border-radius: 50%;
   cursor: pointer;
-  pointer-events: auto;
+  /* ⚠️ PAS DE `pointer-events: auto` ICI. Voir `.dc-bonus` : il annulait le
+     `none` du parent et rendait la cale fermee cliquable. */
+  pointer-events: none;
   background: linear-gradient(180deg, var(--gold-hi), var(--gold));
   box-shadow: 0 4px 0 var(--gold-lo), 0 7px 14px rgba(0, 0, 0, .45);
   transform: rotate(var(--pd-angle, 0deg)) translateY(calc(-1 * var(--pd-fan-r, 112px)));
@@ -1223,6 +1303,8 @@
 /* ⚠️ SANS CE CONTRE-PIVOT, LE DESSIN PENCHE. Le jeton est place par une
    rotation ; tout ce qu'il contient tourne avec lui. On defait l'angle a
    l'interieur — exactement ce que fait `.dc-fan-btn > span` pour les humeurs. */
+#dicewrap .dc-bonus-open .dc-bonus-btn { pointer-events: auto; }
+
 #dicewrap .dc-bonus-in {
   display: block;
   position: relative;
@@ -1617,16 +1699,34 @@
    de l'arc est pose en `--pd-fan-x/y` par le JS, et chaque jeton s'en ecarte de
    son angle. Un conteneur qui aurait une taille rendrait de la place au bandeau
    pour un eventail qui flotte au-dessus de lui. */
+/* ⛔ UN EFFET FERME RESTAIT CLIQUABLE, ET C'EST UN DEFAUT DE CASCADE, PAS DE
+   LOGIQUE. La cale porte `pointer-events: none` quand elle est fermee — mais
+   ses jetons portaient `pointer-events: auto`, et un enfant qui se declare
+   cliquable REPREND la main sur un parent qui ne l'est pas. Les jetons etaient
+   donc invisibles (`opacity: 0`) et parfaitement vivants : « des fois je
+   n'ouvre meme pas l'inventaire et en cliquant a cote ça m'active un bonus
+   direct, comme s'il etait affiche mais cache ». C'etait exactement ça.
+
+   Deux verrous plutot qu'un : les jetons ne redeviennent cliquables que SOUS
+   `.dc-bonus-open`, et la cale fermee passe en `visibility: hidden` — un
+   element invisible de cette facon ne recoit plus rien, quoi que disent ses
+   enfants. */
 #dicewrap .dc-bonus {
   position: absolute;
   left: 0; top: 0;
   width: 0; height: 0;
   z-index: 30;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity .18s ease;
+  transition: opacity .18s ease, visibility 0s linear .18s;
 }
-#dicewrap .dc-bonus-open { opacity: 1; pointer-events: auto; }
+#dicewrap .dc-bonus-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .18s ease, visibility 0s;
+}
 
 /* ⚠️ CE SCEAU ETAIT PLEIN CADRE, ET IL NE DURAIT QUE 1,6 s. Il se posait au
    milieu de l'ecran — donc nulle part en particulier — et disparaissait avant
@@ -2350,7 +2450,7 @@
      APNG. Une feuille de style ne peut pas l'arreter — la seule facon de
      respecter le reglage serait de servir une image fixe, ce qui n'a pas ete
      demande. `.dc-cup-ready::after` l'y remplace : lui bat vraiment. */
-  #dicewrap .dc-ghost, #dicewrap .dc-cup-ready::after, #dicewrap .dc-pc-urgent .dc-pc-clock,
+  #dicewrap .dc-ghost, #dicewrap .dc-cup-ready::after, #dicewrap .dc-pc-urgent .dc-pc-flamme,
   #dicewrap .dc-settled > .dc-face { animation: none; }
   #dicewrap .dc-blast, #dicewrap .dc-dust, #dicewrap .dc-rollfx { display: none; }
   #dicewrap .dc-boardwrap { transition: none; }
