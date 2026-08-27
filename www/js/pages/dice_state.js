@@ -52,7 +52,7 @@ const BONUS_ART = {
  * fini. C'est le logement qui s'adapte.
  */
 const ARRONDI = { S002: 30.7, S003: 25.1, S004: 25.1, S005: 21.3, S006: 31.4, S007: 15.9,
-                  S008: 19.8, S009: 14.1, S010: 30.7 };
+                  S008: 30.9, S009: 27.2, S010: 34.7 };
 const ARRONDI_ORIGINE = 27;
 
 /**
@@ -76,7 +76,7 @@ const ARRONDI_ORIGINE = 27;
 /* Les trois derniers sont arrives normalises : leur corps a ete remis a
    l'echelle des autres (0,926) avant d'entrer dans le depot. */
 const CORPS = { S002: 0.926, S003: 0.926, S004: 0.928, S005: 0.905, S006: 0.910, S007: 0.920,
-                S008: 0.926, S009: 0.926, S010: 0.926 };
+                S008: 0.922, S009: 0.926, S010: 0.926 };
 const CORPS_ORIGINE = 0.923;
 
 /**

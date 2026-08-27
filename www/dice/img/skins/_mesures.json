@@ -43,24 +43,24 @@
     "dossier": "rouge",
     "images": 12,
     "chaudes": true,
-    "rayon": 19.8,
-    "corps": 0.926,
-    "note": "corps remis a l echelle (0,926) et recentre le 2026-08-27, comme les autres jeux"
+    "rayon": 30.9,
+    "corps": 0.922,
+    "note": "decoupe par forme (chaque de sur la sienne) et remis a l echelle le 2026-08-28"
   },
   "S009": {
     "dossier": "gris",
     "images": 12,
     "chaudes": true,
-    "rayon": 14.1,
+    "rayon": 27.2,
     "corps": 0.926,
-    "note": "corps remis a l echelle (0,926) et recentre le 2026-08-27, comme les autres jeux"
+    "note": "decoupe par forme (chaque de sur la sienne) et remis a l echelle le 2026-08-28"
   },
   "S010": {
     "dossier": "violet",
     "images": 12,
     "chaudes": true,
-    "rayon": 30.7,
+    "rayon": 34.7,
     "corps": 0.926,
-    "note": "corps remis a l echelle (0,926) et recentre le 2026-08-27, comme les autres jeux"
+    "note": "decoupe par forme (chaque de sur la sienne) et remis a l echelle le 2026-08-28"
   }
 }
