@@ -2514,17 +2514,19 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 
-/* ⚠️ LES ICONES DES REGLAGES PRENNENT LE MEME CONTOUR QUE LA CROIX, ET PLUS
-   EPAIS. Elles etaient dessinees pour se poser sur un fond clair : sur le
-   violet de la carte, leur propre cerne blanc — fin, d'un pixel ou deux dans le
-   dessin — disparaissait, et les autocollants se fondaient dans le panneau. Le
-   meme contour partout, a 3 px, les detache toutes de la meme facon.
+/* ⛔ LE CONTOUR NE VA QU'A LA CROIX, ET LA REGLE UNIQUE ETAIT L'ERREUR. « Le
+   meme contour pour les cinq dessins » sonnait juste et donnait un resultat
+   faux : quatre d'entre eux PORTENT DEJA leur cerne blanc, dessine. On en
+   ajoutait donc un second par-dessus le premier — et la ou la silhouette est
+   decoupee, le parchemin des regles et la carte des conditions, 3 px de chaque
+   cote referment les creux entre le ruban, la fleche et les dents du papier.
+   Le liseré cessait de suivre la forme : il l'empatait.
 
-   Le haut-parleur, la note, le parchemin des regles, la boussole des conditions
-   et la croix : cinq dessins, une seule regle. */
-#dicewrap .pd-btn-icone,
-#dicewrap .pd-link-art,
-#dicewrap .pd-vol-btn {
+   La croix, elle, n'a pas de cerne blanc — son bord est bleu nuit — et sa
+   silhouette est un disque : le contour lui en donne un, franc, sans rien
+   fermer. C'est le seul dessin de la carte qui en manquait, et c'est le seul
+   qui le recoit. */
+#dicewrap .pd-btn-icone {
   filter:
     drop-shadow(3px 0 0 #FFFFFF) drop-shadow(-3px 0 0 #FFFFFF)
     drop-shadow(0 3px 0 #FFFFFF) drop-shadow(0 -3px 0 #FFFFFF);
