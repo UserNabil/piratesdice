@@ -13,7 +13,8 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
-import { S, ASSETS, screen } from './dice_state.js';
+import { S, UI, ASSETS, screen } from './dice_state.js';
+import { jetons } from './dice_cale.js';
 
 const CAPTAIN_IDS = ['read', 'teach', 'ching', 'omalley', 'jack'];
 const DEFAULT_CAPTAIN = 'read';
@@ -266,6 +267,9 @@ export function renderMenu(el) {
         <button class="dc-btn dc-btn-ghost dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-friend">
           <img src="${ASSETS}img/menu_friend.png" alt="">${esc(t('menu.friend'))}</button>
       </div>
+      ${(!S.net || !S.net.ready)
+        ? `<div class="dc-hors-ligne">${esc(t('offline.bandeau', { n: jetons().length }))}</div>`
+        : ''}
       <div class="dc-menu-stats">
         <span><b>${S.me ? S.me.games : 0}</b> ${esc(t('menu.matches'))}</span>
         <!-- ⛔ « ELO » EST UN MOT D'INITIE, ET IL NE DIT RIEN AU JOUEUR. C'est le
@@ -281,9 +285,26 @@ export function renderMenu(el) {
     </div></div>`;
 
   wireCaptains(el);
-  $('#dc-solo').onclick = () => { S.sfx.play('start', 0.25); S.net.send({ t: 'play', mode: 'solo' }); };
-  $('#dc-multi').onclick = () => S.net.send({ t: 'play', mode: 'multi' });
-  $('#dc-friend').onclick = () => { lobby = 'guest'; renderMenu(el); };
+  /* ⚠️ LE MEME BOUTON, RESEAU OU PAS. « Affronter l'IA » ne doit pas se
+     dedoubler en « en ligne » et « hors ligne » : le joueur ne veut pas choisir
+     un mode de transport, il veut jouer. Si la liaison est la, on demande au
+     serveur ; sinon on joue sur le telephone avec un jeton, et la partie
+     rejoindra le serveur toute seule au retour. */
+  $('#dc-solo').onclick = () => {
+    S.sfx.play('start', 0.25);
+    if (S.net && S.net.ready) { S.net.send({ t: 'play', mode: 'solo' }); return; }
+    if (UI.jouerHorsLigne) UI.jouerHorsLigne();
+  };
+  $('#dc-multi').onclick = () => {
+    /* ⛔ ET LES DEUX AUTRES MODES DEMANDENT QUELQU'UN EN FACE. Sans reseau, on le
+       DIT plutot que de laisser un bouton tourner dans le vide. */
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    S.net.send({ t: 'play', mode: 'multi' });
+  };
+  $('#dc-friend').onclick = () => {
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    lobby = 'guest'; renderMenu(el);
+  };
 }
 
 /* ─────────────────────────────────────────────────────── le salon prive ──── */

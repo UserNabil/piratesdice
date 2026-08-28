@@ -27,6 +27,8 @@ import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
+import { ouvrirPartieHorsLigne } from './dice_solo.js';
+import * as cale from './dice_cale.js';
 import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines } from './dice_lobby.js';
 
 /* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
@@ -241,6 +243,13 @@ async function connect() {
       S.me = m.me; S.inventory = m.inventory || []; S.shop = m.shop || [];
       S.rules = m.rules || S.rules;
       if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains;
+      /* ⚠️ ON REMPLIT LA CALE MAINTENANT, PAS QUAND ON EN AURA BESOIN. Un joueur
+         qui entre dans le metro n'a plus personne a qui demander : les jetons
+         doivent deja etre dans sa poche. Et les parties qui attendent partent
+         dans la foulee — c'est le seul moment ou l'on est sur d'avoir le
+         reseau. */
+      S.net.send({ t: 'jetons' });
+      envoyerLesParties();
       renderWallet();
       showMenu();
     },
@@ -254,6 +263,28 @@ async function connect() {
     /* Le serveur peut renvoyer la liste en cours de session (seuils modifies,
        nouveau capitaine) : on la prend, l'ecran suivant la lira. */
     captains: (m) => { if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains; },
+    jetons: (m) => {
+      cale.rangerJetons(m.jetons, m.regles);
+      if (UI.showMenu && S.open && !S.state) showMenu();
+    },
+    /* ⛔ ON OUBLIE CE QUE LE SERVEUR A TRAITE, ACCEPTE OU REFUSE. Garder une
+       partie refusee la ferait renvoyer a chaque connexion, indefiniment : un
+       bouchon qui ne se resorbe jamais, pour une partie qui ne rapportera
+       jamais rien. */
+    horsligne: (m) => {
+      const traites = (m.verdicts || []).map((v) => v.jeton);
+      const reste = cale.oublierParties(traites);
+      const gagnees = (m.verdicts || []).filter((v) => v.ok && v.credite);
+      if (gagnees.length) {
+        toast(t('offline.credite', { n: gagnees.length }), 'ok');
+        S.succes = null; S.historique = null;
+      }
+      const refusees = (m.verdicts || []).filter((v) => !v.ok);
+      if (refusees.length) toast(t('offline.refuse', { n: refusees.length }), 'warn');
+      /* S'il en reste, on continue par petits paquets : c'est le serveur qui
+         donne le rythme, pas le telephone. */
+      if (reste) setTimeout(envoyerLesParties, 1200);
+    },
     /* La liste arrive apres l'avoir demandee : on la range et on repeint si la
        page est encore ouverte — le joueur a pu changer d'onglet entre-temps. */
     historique: (m) => {
@@ -588,10 +619,66 @@ function refreshPanel() {
   else if (S.panel === 'replay') renderReplays(body);
 }
 
+/**
+ * Renvoyer les parties jouees hors ligne, CINQ A LA FOIS.
+ *
+ * ⛔ PAS TOUT D'UN COUP. Vingt parties arrivees ensemble, c'est vingt rejeux et
+ * vingt transactions cote serveur, pendant que d'autres joueurs attendent leur
+ * tour de de. Le serveur en prend cinq, rend la main, et redemande la suite :
+ * le bouchon ne se forme jamais parce qu'on ne le laisse pas se former.
+ */
+export function envoyerLesParties() {
+  if (!S.net || !S.net.ready) return;
+  const attente = cale.enAttente();
+  if (!attente.length) return;
+  S.net.send({ t: 'horsligne', parties: attente.slice(0, 5).map((p) => ({ jeton: p.jeton, journal: p.journal })) });
+}
+
+/**
+ * Lancer une partie contre la machine SANS reseau.
+ *
+ * ⚠️ LE VRAI RESEAU EST MIS DE COTE, PAS COUPE. On garde `S.net` sous le coude :
+ * a la fin de la partie, la connexion peut etre revenue, et il serait absurde de
+ * la refaire.
+ */
+export function jouerHorsLigne() {
+  const jeton = cale.prendreUnJeton();
+  if (!jeton) { toast(t('offline.plusDeJetons'), 'warn'); return false; }
+
+  const vrai = S.net;
+  const poche = ouvrirPartieHorsLigne({
+    jeton: jeton.id,
+    graine: jeton.graine,
+    moi: 0,
+    capitaines: [(S.me && S.me.captain) || 'read', 'teach'],
+    parures: [{ skin: S.me && S.me.skin, motif: S.me && S.me.motif }, null],
+    noms: [(S.me && S.me.name) || '', 'IA'],
+    regles: cale.reglesHorsLigne(),
+  }, {
+    match: (m) => { resetLobby(); onMatch(m); },
+    state: onState,
+    over: (m) => {
+      /* La partie est finie : on la range pour le retour du reseau, PUIS on
+         rend la main au vrai serveur. */
+      cale.garderPartie(jeton.id, poche.partie.auJournal());
+      S.net = vrai;
+      onOver(m);
+      envoyerLesParties();
+    },
+    idle: () => { S.net = vrai; S.state = null; S.seat = -1; showMenu(); },
+    error: (m) => toast(messageServeur(m.msg), 'warn'),
+  });
+  S.net = poche;
+  return true;
+}
+
 /* ───────────────────────────────────────────────────────────────── wiring ── */
 
 export function initDice() {
   UI.showMenu = showMenu;
+  /* Le pont declenche la partie hors ligne : c'est lui qui porte le bouton, et
+     il n'a pas a connaitre le faux serveur. */
+  UI.jouerHorsLigne = jouerHorsLigne;
   /* Le panneau lateral se repeint depuis l'arene : elle sait quand la partie
      commence, ce que la boutique ne peut pas deviner toute seule. */
   UI.refreshPanel = refreshPanel;

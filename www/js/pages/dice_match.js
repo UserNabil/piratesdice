@@ -856,22 +856,20 @@ function renderPlayerCard(sel, st, seat, isMe) {
      113 px pour 88, et la question ne se repose plus.
      C'est le CSS qui pose les quatre morceaux (voir `.dc-pc-theirs` et
      `.dc-pc-mine` dans dice.css) ; ici on se contente de ne plus les emboiter. */
+  /* ⛔ LA MECHE ETAIT REFAITE A NEUF A CHAQUE INSTANTANE DU SERVEUR, ET ELLE NE
+     CHANGE JAMAIS. Elle vivait dans ce `innerHTML` : chaque rendu de carte
+     jetait son SVG, sa toile et sa flamme pour en reposer des identiques —
+     donc jetait aussi le decoupage de la corde, qui doit alors se remesurer
+     point par point. Mesure au banc, six tours contre l'IA, processeur bride
+     six fois : 7787 `getPointAtLength` pour 2324 ms, soit 7 % du temps de la
+     partie passe a redecouper une corde que personne n'a touchee. Trente
+     redessins de carte, trente redecoupages.
+     La meche est donc SORTIE du gabarit : on la detache, on reecrit la carte,
+     on la remet. Elle est en position absolue sur le jonc — sa place dans
+     l'ordre des enfants ne change rien a ce qu'on voit. */
+  const horloge = el.querySelector('.dc-pc-clock') || meche();
+  horloge.remove();
   el.innerHTML = `
-    <!-- ⚠️ LE COMPTE A REBOURS A QUITTE LE PORTRAIT POUR LE JONC DE LA CARTE.
-         Il tournait autour de l'avatar, ou il se battait avec l'anneau que
-         chaque capitaine porte DEJA peint dans son image : deux cercles
-         concentriques mal accordes, et le temps qui reste illisible sur 54 px
-         de diametre. Le jonc de la carte fait tout le tour du rectangle du
-         milieu — il est quatre fois plus long, il ne recouvre aucun dessin, et
-         c'est deja lui qu'on regarde pour savoir a qui est le tour. -->
-    <span class="dc-pc-clock" aria-hidden="true">
-      <svg class="dc-pc-meche" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path class="dc-meche-cendre"></path>
-        <path class="dc-meche-trace"></path>
-      </svg>
-      <canvas class="dc-meche-corde"></canvas>
-      <img class="dc-pc-flamme" src="${ASSETS}img/fx_meche.png" alt="">
-    </span>
     <div class="dc-pc-portrait">
       <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
       <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
@@ -884,6 +882,32 @@ function renderPlayerCard(sel, st, seat, isMe) {
     </div>
     <div class="dc-pc-total" data-v="${st.totals[seat]}"
          aria-label="${esc(t(isMe ? 'game.yourScore' : 'game.theirScore'))}">${st.totals[seat]}</div>`;
+  el.insertAdjacentElement('afterbegin', horloge);
+}
+
+/**
+ * LA MECHE DE LA CARTE, FABRIQUEE UNE SEULE FOIS.
+ *
+ * ⚠️ LE COMPTE A REBOURS A QUITTE LE PORTRAIT POUR LE JONC DE LA CARTE. Il
+ * tournait autour de l'avatar, ou il se battait avec l'anneau que chaque
+ * capitaine porte DEJA peint dans son image : deux cercles concentriques mal
+ * accordes, et le temps qui reste illisible sur 54 px de diametre. Le jonc de
+ * la carte fait tout le tour du rectangle du milieu — il est quatre fois plus
+ * long, il ne recouvre aucun dessin, et c'est deja lui qu'on regarde pour
+ * savoir a qui est le tour.
+ */
+function meche() {
+  const el = document.createElement('span');
+  el.className = 'dc-pc-clock';
+  el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = `
+      <svg class="dc-pc-meche" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path class="dc-meche-cendre"></path>
+        <path class="dc-meche-trace"></path>
+      </svg>
+      <canvas class="dc-meche-corde"></canvas>
+      <img class="dc-pc-flamme" src="${ASSETS}img/fx_meche.png" alt="">`;
+  return el;
 }
 
 /*

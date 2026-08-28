@@ -442,6 +442,19 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 
 
+
+/* Le bandeau hors ligne : il dit ou l'on en est, sans dramatiser. Sans reseau,
+   le jeu marche encore — c'est justement ce qu'on veut faire comprendre. */
+#dicewrap .dc-hors-ligne {
+  margin: 8px 0 0;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--gold-hi, #FFE479);
+  background: rgba(0, 0, 0, .32);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .4);
+}
+
 /* ============================================================================
    LA BARRE DU BAS : LA NAVIGATION SOUS LE POUCE.
 

@@ -507,21 +507,97 @@ function traceDuJonc(clock) {
     'Z',
   ].join(' ');
   svg.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
-  svg.querySelectorAll('path').forEach((p) => p.setAttribute('d', d));
+  /* ⛔ ET ON NE REECRIT QUE SI LE TRACE A VRAIMENT CHANGE. `startClock` passe
+     ici a CHAQUE instantane du serveur, donc plusieurs fois par tour, pour une
+     carte qui garde la meme taille du debut a la fin de la partie. Reposer le
+     meme `d` remet le trace a zero aux yeux du moteur : la longueur retenue et
+     le decoupage de la corde etaient jetes a chaque coup, et tout etait a
+     remesurer point par point. */
+  svg.querySelectorAll('path').forEach((p) => {
+    if (p.getAttribute('d') === d) return;
+    p.setAttribute('d', d);
+    p.__len = undefined;
+    p.__corde = null;
+  });
 
   /* La toile ou l'on peint la corde. Elle est en pixels REELS : a moitie de
      resolution, un cordage devient une bouillie. */
   const toile = clock.querySelector('.dc-meche-corde');
   if (toile) {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    toile.width = Math.round(r.width * dpr);
-    toile.height = Math.round(r.height * dpr);
-    toile.style.width = r.width + 'px';
-    toile.style.height = r.height + 'px';
+    const lw = Math.round(r.width * dpr);
+    const lh = Math.round(r.height * dpr);
+    /* ⚠️ ECRIRE `width` SUR UNE TOILE L'EFFACE, MEME POUR LA MEME VALEUR. Le
+       cordage disparaissait donc a chaque instantane du serveur, et ne
+       revenait qu'au battement suivant de la pendule. */
+    if (toile.width !== lw || toile.height !== lh) {
+      toile.width = lw;
+      toile.height = lh;
+      toile.style.width = r.width + 'px';
+      toile.style.height = r.height + 'px';
+    }
     toile.__dpr = dpr;
     toile.__ep = ep;
   }
   return svg.querySelector('.dc-meche-trace');
+}
+
+/**
+ * La longueur du trace, retenue.
+ *
+ * ⛔ `getTotalLength` EST UN PARCOURS, PAS UNE LECTURE. Il etait appele trois
+ * fois par battement de pendule pour un trace qui ne change qu'au redessin :
+ * 180 appels et 123 ms sur douze secondes d'arene immobile, processeur bride
+ * six fois. `traceDuJonc` efface la valeur quand il reecrit le `d` — c'est le
+ * seul endroit ou la longueur peut changer.
+ */
+function longueurDuTrace(trace) {
+  if (trace.__len === undefined) trace.__len = trace.getTotalLength();
+  return trace.__len;
+}
+
+/**
+ * LES MORCEAUX DE LA CORDE, MESURES UNE FOIS POUR TOUTES.
+ *
+ * ⛔ LE DECOUPAGE ETAIT REFAIT CINQ FOIS PAR SECONDE, ET IL NE CHANGE JAMAIS.
+ * `getPointAtLength` demande au moteur SVG de parcourir le trace jusqu'a une
+ * abscisse : c'est l'appel le plus cher de tout le jeu, et on en faisait deux
+ * par morceau, cent-trente morceaux par battement, cinq battements par seconde
+ * — pour retrouver a chaque fois EXACTEMENT les memes points, puisque le jonc
+ * ne bouge pas pendant un tour. Mesure au banc, processeur bride six fois,
+ * douze secondes d'arene ou il ne se passe rien : 7876 appels, 2379 ms, soit un
+ * cinquieme du temps de l'appareil brule a redecouper une corde immobile.
+ *
+ * Le decoupage ne depend que de la LONGUEUR du trace et de l'epaisseur du
+ * cordage. On le garde donc sur le trace lui-meme, sous cette cle : la carte
+ * qui change de taille refait son trace, donc sa cle, donc son decoupage.
+ */
+function morceauxDeLaCorde(trace, total, ep) {
+  const cle = total.toFixed(2) + ':' + ep;
+  if (trace.__corde && trace.__corde.cle === cle) return trace.__corde;
+  /* ⚠️ LA TORSADE DOIT RETOMBER SUR SES PIEDS. Un motif repete a sa longueur
+     naturelle laisse un morceau coupe la ou la boucle se referme. On etire donc
+     legerement le motif pour qu'il tienne un nombre ENTIER de fois. */
+  const naturel = ep * (CORDE.naturalWidth / CORDE.naturalHeight);
+  const tours = Math.max(1, Math.round(total / naturel));
+  const long = total / tours;
+  const bouts = Math.max(2, Math.ceil(long / PAS));
+  const dl = long / bouts;
+  const dsx = CORDE.naturalWidth / bouts;
+  const morceaux = [];
+  for (let t = 0; t < tours; t++) {
+    for (let k = 0; k < bouts; k++) {
+      const debut = t * long + k * dl;
+      const a = trace.getPointAtLength(debut);
+      const b = trace.getPointAtLength(Math.min(debut + dl, total));
+      morceaux.push({
+        fin: debut + dl, x: a.x, y: a.y,
+        angle: Math.atan2(b.y - a.y, b.x - a.x), sx: k * dsx,
+      });
+    }
+  }
+  trace.__corde = { cle, morceaux, dl, dsx };
+  return trace.__corde;
 }
 
 /** Peindre la corde restante, morceau par morceau, le long du jonc. */
@@ -534,41 +610,29 @@ function peindreCorde(clock, trace, brule) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, toile.width, toile.height);
 
-  const total = trace.getTotalLength();
+  const total = longueurDuTrace(trace);
   if (!total) return;
-  /* ⚠️ LA TORSADE DOIT RETOMBER SUR SES PIEDS. Un motif repete a sa longueur
-     naturelle laisse un morceau coupe la ou la boucle se referme. On etire donc
-     legerement le motif pour qu'il tienne un nombre ENTIER de fois. */
-  const naturel = ep * (CORDE.naturalWidth / CORDE.naturalHeight);
-  const tours = Math.max(1, Math.round(total / naturel));
-  const long = total / tours;
-  const bouts = Math.max(2, Math.ceil(long / PAS));
-  const dl = long / bouts;
-  const dsx = CORDE.naturalWidth / bouts;
+  const decoupe = morceauxDeLaCorde(trace, total, ep);
+  const dl = decoupe.dl;
+  const dsx = decoupe.dsx;
 
-  for (let t = 0; t < tours; t++) {
-    for (let k = 0; k < bouts; k++) {
-      const debut = t * long + k * dl;
-      if (debut + dl <= brule) continue;              // deja consume
-      const a = trace.getPointAtLength(debut);
-      const b = trace.getPointAtLength(Math.min(debut + dl, total));
-      const angle = Math.atan2(b.y - a.y, b.x - a.x);
-      ctx.save();
-      ctx.translate(a.x, a.y);
-      ctx.rotate(angle);
-      /* Un demi-pixel de recouvrement : sans lui, on voit la couture entre deux
-         morceaux des que l'ecran arrondit. */
-      ctx.drawImage(CORDE, k * dsx, 0, dsx, CORDE.naturalHeight,
-                    0, -ep / 2, dl + 0.5, ep);
-      ctx.restore();
-    }
+  for (const m of decoupe.morceaux) {
+    if (m.fin <= brule) continue;                     // deja consume
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.rotate(m.angle);
+    /* Un demi-pixel de recouvrement : sans lui, on voit la couture entre deux
+       morceaux des que l'ecran arrondit. */
+    ctx.drawImage(CORDE, m.sx, 0, dsx, CORDE.naturalHeight,
+                  0, -ep / 2, dl + 0.5, ep);
+    ctx.restore();
   }
 }
 
 /** Poser la corde et la flamme pour une part restante donnee (1 → 0). */
 function brulerLaMeche(clock, trace, part) {
   if (!trace) return;
-  const total = trace.getTotalLength();
+  const total = longueurDuTrace(trace);
   if (!total) return;
   const brule = (1 - part) * total;
   peindreCorde(clock, trace, brule);
@@ -646,7 +710,7 @@ export function startClock(st) {
     carte.style.setProperty('--pd-clock', part.toFixed(3));
     carte.classList.toggle('dc-pc-urgent', reste < 8000);
     if (clock) {
-      if (!corde || !corde.getTotalLength()) corde = traceDuJonc(clock);
+      if (!corde || !corde.isConnected || !longueurDuTrace(corde)) corde = traceDuJonc(clock);
       brulerLaMeche(clock, corde, part);
     }
     if (reste <= 0) stopClock();

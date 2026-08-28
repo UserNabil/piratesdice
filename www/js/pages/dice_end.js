@@ -114,6 +114,11 @@ export function onOver(m) {
           delta: (m.coinDelta + (m.orSucces || 0) >= 0 ? '+' : '') + (m.coinDelta + (m.orSucces || 0)) }))}
         <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
       ${reason}
+      <!-- ⛔ HORS LIGNE, RIEN N'EST ACQUIS TANT QUE LE SERVEUR N'A PAS VERIFIE.
+           Annoncer des pieces ici serait une promesse qu'on ne tient pas : la
+           partie peut encore etre refusee, ou tomber au-dela du plafond du
+           jour. On dit ce qui est vrai — elle est jouee, elle attend. -->
+      ${m.horsLigne ? `<div class="dc-over-line dc-dim">${esc(t('over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
         <button class="dc-btn" id="dc-again">${esc(t('over.again'))}</button>
