@@ -1703,7 +1703,21 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-over,
 .pd-ask,
 .pd-first {
-  align-content: start;
+  /* ⛔ `start` NE LAISSAIT AUCUN ESPACE A ABSORBER, DONC LE `margin-top: auto`
+     CI-DESSOUS NE POUSSAIT RIEN. L'intention etait ecrite juste en dessous —
+     les cartes descendent vers le bas, la ou le pouce arrive — et elle n'etait
+     pas appliquee : la rangee etait posee en haut a la taille de son contenu,
+     il n'y avait donc pas de place libre au-dessus de la carte, et toutes les
+     boites du jeu restaient collees au bord haut avec du vide dessous.
+
+     ⚠️ `safe` EST CE QUI PERMET D'ECRIRE `end` SANS RISQUE. Un alignement en
+     fin de conteneur fait deborder par le HAUT quand le contenu est trop grand
+     — et un debordement par le haut est irrattrapable : on ne peut pas
+     remonter au-dessus du point de depart d'un defilement. `safe` retombe sur
+     `start` dans ce cas precis, et seulement dans celui-la. C'est exactement la
+     raison pour laquelle `start` avait ete choisi, et `safe end` la couvre sans
+     abandonner l'intention. */
+  align-content: safe end;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -2744,3 +2758,88 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 #dicewrap .dc-room-publier img { width: 26px; height: 26px; }
+
+
+/* ============================================================================
+   LA FICHE D'UN HAUT FAIT.
+
+   La ligne de la liste est faite pour PARCOURIR : un dessin de 42 px, un nom, et
+   une phrase qui se coupe a deux lignes. La fiche est faite pour COMPRENDRE :
+   le dessin en grand, la phrase entiere, ou l'on en est, et ce que ca rapporte.
+   ============================================================================ */
+
+#dicewrap .dc-fiche-carte { text-align: center; }
+
+#dicewrap .dc-fiche-art {
+  display: block;
+  width: 108px;
+  height: 108px;
+  margin: 2px auto 14px;
+  border-radius: 50%;
+  background-color: #2A1546;
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 3px rgba(201, 162, 39, .55), 0 3px 10px rgba(0, 0, 0, .55);
+}
+
+/* Gagne, le dessin s'allume — comme dans la liste, pour qu'on reconnaisse
+   l'etat sans avoir a lire. */
+#dicewrap .dc-fiche-art-on {
+  box-shadow: inset 0 0 0 3px var(--gold-hi, #FFE479), 0 0 16px rgba(255, 228, 121, .5);
+}
+
+#dicewrap .dc-fiche-txt {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--txt-dim, #C9BCEA);
+}
+
+#dicewrap .dc-fiche-etat {
+  margin: 0 0 14px;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 14px;
+  letter-spacing: .6px;
+  color: var(--gold-hi, #FFE479);
+}
+
+#dicewrap .dc-fiche-bloc {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, .26);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .25);
+}
+
+#dicewrap .dc-fiche-titre {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--txt-dim, #C9BCEA);
+}
+
+#dicewrap .dc-fiche-compte {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+  font-size: 12.5px;
+  color: var(--txt-dim, #C9BCEA);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La recompense au centre, et lisible : dans la liste elle est en retrait pour
+   ne pas voler la vedette au nom ; ici, c'est une des trois choses qu'on vient
+   lire. */
+#dicewrap .dc-fiche-prix {
+  justify-content: center;
+  gap: 6px;
+  font-size: 15px;
+  opacity: 1;
+}
+
+#dicewrap .dc-fiche-prendre { width: auto; margin: 0; padding: 0 18px; }
+
+/* La ligne de la liste se touche : elle doit le montrer. */
+#dicewrap .dc-suc[data-fiche] { cursor: pointer; }

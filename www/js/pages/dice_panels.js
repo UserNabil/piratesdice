@@ -370,7 +370,8 @@ function ligneSucces(s) {
      differentes, et une seule appelle un bouton. */
   const aPrendre = fait && s.reclame === false;
   return '<li class="dc-suc' + (fait ? ' dc-suc-on' : '')
-      + (aPrendre ? ' dc-suc-du' : '') + '">'
+      + (aPrendre ? ' dc-suc-du' : '') + '" data-fiche="' + esc(s.identify) + '"'
+      + ' tabindex="0" role="button">'
     + '<span class="dc-suc-art" style="background-image:url(' + ASSETS + 'img/succes/'
       + esc(s.identify) + '.png)"></span>'
     + '<span class="dc-suc-txt"><b>' + esc(nom) + '</b><span>' + esc(txt) + '</span>'
@@ -509,6 +510,82 @@ export function renderSucces(body) {
   brancherTri(body);
 }
 
+/**
+ * LA FICHE D'UN HAUT FAIT.
+ *
+ * ⛔ LA LIGNE NE POUVAIT PAS TOUT DIRE. Elle porte un dessin de 42 px, un nom et
+ * une phrase qui se coupe a deux lignes : sur cent lignes, c'est le bon format
+ * pour PARCOURIR, et le mauvais pour COMPRENDRE. « Rasez une colonne adverse
+ * entiere d'une seule pose : trois des… » s'arretait la, et le joueur ne savait
+ * pas ce qu'on lui demandait — c'est-a-dire la seule chose qui l'interesse quand
+ * il touche la ligne.
+ *
+ * La fiche montre le dessin en grand, la phrase entiere, ou l'on en est, et ce
+ * que ca rapporte. Elle vit UNIQUEMENT ici : ailleurs, un haut fait n'est qu'une
+ * banniere de fin de partie, et une banniere qu'on peut ouvrir serait une
+ * interruption de plus au moment ou l'on vient de gagner.
+ *
+ * ⚠️ ELLE SE FERME COMME TOUTES LES AUTRES BOITES DU JEU : clic sur le voile,
+ * bouton RETOUR d'Android, croix. Une boite qui se ferme autrement que ses
+ * voisines s'apprend une deuxieme fois.
+ */
+function ouvrirFicheSucces(id) {
+  const s = (S.succes || []).find((x) => x.identify === id);
+  if (!s) return;
+  const fait = !!s.gagne;
+  const aPrendre = fait && s.reclame === false;
+
+  const voile = document.createElement('div');
+  voile.className = 'pd-ask dc-fiche';
+  voile.innerHTML = '<div class="pd-ask-card pd-panel dc-fiche-carte">'
+    + '<span class="dc-fiche-art' + (fait ? ' dc-fiche-art-on' : '') + '"'
+      + ' style="background-image:url(' + ASSETS + 'img/succes/' + esc(id) + '.png)"></span>'
+    + '<h3>' + esc(t('suc.' + id + '.name')) + '</h3>'
+    + '<p class="dc-fiche-txt">' + esc(t('suc.' + id + '.txt')) + '</p>'
+    + (fait
+        ? '<p class="dc-fiche-etat">' + esc(t('suc.fiche.obtenu')) + '</p>'
+        : '<div class="dc-fiche-bloc"><span class="dc-fiche-titre">'
+            + esc(t('suc.fiche.progres')) + '</span>'
+            + barre(s.valeur, s.cible)
+            + '<em class="dc-fiche-compte">' + s.valeur + ' / ' + s.cible + '</em></div>')
+    + '<div class="dc-fiche-bloc"><span class="dc-fiche-titre">'
+      + esc(t('suc.fiche.recompense')) + '</span>'
+      + '<span class="dc-suc-prix dc-fiche-prix">' + recompense(s) + '</span></div>'
+    + '<div class="pd-ask-row">'
+      + (aPrendre
+          ? '<button class="dc-suc-tout dc-fiche-prendre" data-prendre-fiche>'
+              + esc(t('suc.prendre')) + '</button>'
+          : '')
+      + '<button class="pd-btn-icone" data-fermer title="' + esc(t('set.close'))
+        + '" aria-label="' + esc(t('set.close')) + '">'
+        + '<img src="' + ASSETS + 'img/icon_close.png" alt=""></button>'
+    + '</div>'
+    + '</div>';
+  (document.getElementById('dicewrap') || document.body).appendChild(voile);
+
+  const fermer = () => {
+    voile.remove();
+    document.removeEventListener('pd-back', surRetour);
+  };
+  const surRetour = (ev) => { ev.preventDefault(); fermer(); };
+  voile.querySelector('[data-fermer]').onclick = fermer;
+  voile.onclick = (ev) => { if (ev.target === voile) fermer(); };
+  document.addEventListener('pd-back', surRetour);
+  const prendre = voile.querySelector('[data-prendre-fiche]');
+  if (prendre) {
+    prendre.onclick = () => {
+      if (!S.net) { toast(t('connect.outOfReach'), 'warn'); return; }
+      prendre.disabled = true;
+      S.net.send({ t: 'reclamer', succes: [id] });
+      /* On referme tout de suite : la page derriere se repeint a la reponse du
+         serveur, et laisser la fiche ouverte par-dessus montrerait encore le
+         bouton d'un haut fait deja recupere. */
+      fermer();
+    };
+  }
+  requestAnimationFrame(() => voile.classList.add('on'));
+}
+
 /** Les filtres et les familles qui se replient. */
 function brancherTri(body) {
   for (const b of body.querySelectorAll('[data-filtre]')) {
@@ -520,6 +597,16 @@ function brancherTri(body) {
          donc devant du vide, et le filtre a l'air de n'avoir rien donne. */
       renderSucces(body);
       body.scrollTop = 0;
+    };
+  }
+  for (const l of body.querySelectorAll('[data-fiche]')) {
+    l.onclick = () => ouvrirFicheSucces(l.dataset.fiche);
+    /* Au clavier et pour les lecteurs d'ecran : une ligne annoncee comme un
+       bouton doit repondre a Entree et a Espace. */
+    l.onkeydown = (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      ev.preventDefault();
+      ouvrirFicheSucces(l.dataset.fiche);
     };
   }
   for (const b of body.querySelectorAll('[data-famille]')) {
@@ -553,7 +640,14 @@ function brancherRecolte(body) {
   const tout = body.querySelector('[data-prendre-tout]');
   if (tout) tout.onclick = () => envoyer(tout, null);
   for (const b of body.querySelectorAll('[data-prendre]')) {
-    b.onclick = () => envoyer(b, [b.dataset.prendre]);
+    b.onclick = (ev) => {
+      /* ⚠️ LE BOUTON EST DANS LA LIGNE, ET LA LIGNE OUVRE LA FICHE. Sans cette
+         ligne, recuperer une recompense ouvrirait la fiche par-dessus dans le
+         meme geste : le joueur verrait une boite s'ouvrir sans l'avoir demandee,
+         juste apres avoir touche « Recuperer ». */
+      ev.stopPropagation();
+      envoyer(b, [b.dataset.prendre]);
+    };
   }
 }
 
