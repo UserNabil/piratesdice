@@ -30,6 +30,12 @@ export function onOver(m) {
      l'autre, mais elle n'a plus rien a lui apprendre. On l'avale une fois — et
      une seule, pour que la partie suivante retrouve sa carte de fin. */
   if (S.quitting) { S.quitting = false; return; }
+  /* ⚠️ LA PAGE DES SUCCES EST PERIMEE DES QU'UNE PARTIE SE TERMINE. Les
+     compteurs viennent de bouger cote serveur ; garder la liste en cache
+     montrerait « 47 / 50 » a quelqu'un qui vient de passer 50. On l'oublie, la
+     page la redemandera a la prochaine ouverture. */
+  S.succes = null;
+  if (S.me && typeof m.bourseMaudite === 'number') S.me.premium = m.bourseMaudite;
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
   const seal = m.outcome === 'win' ? 'seal_victory' : (m.outcome === 'loss' ? 'seal_defeat' : 'seal_draw');

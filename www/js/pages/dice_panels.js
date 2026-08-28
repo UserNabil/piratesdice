@@ -9,8 +9,9 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
-import { S, UI, ASSETS, bonusArt } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, bonusArt } from './dice_state.js';
 import { renderBonusRack } from './dice_match.js';
+import { messageServeur } from './dice_refus.js';
 
 /**
  * Un appel a l'API du jeu, qui ne plante pas quand la socket est tombee.
@@ -29,7 +30,10 @@ async function api(chemin, methode, corps) {
   try {
     return await S.net.rest(chemin, methode, corps);
   } catch (e) {
-    toast((e && e.message) || t('connect.outOfReach'), 'warn');
+    /* Le serveur refuse en anglais ; le joueur lit sa langue. La table des
+       refus vit dans dice.js et sert aussi la socket : un seul endroit ou
+       traduire ce que dit le serveur. */
+    toast(messageServeur((e && e.message) || '') || t('connect.outOfReach'), 'warn');
     return null;
   }
 }
@@ -168,9 +172,19 @@ export async function renderShop(body) {
     b.onclick = async () => {
       b.disabled = true;
       try {
-        const out = await api('/api/purchase', 'POST', { identify: b.dataset.buy, quantity: 1 });
+        const out = await api('/api/purchase', 'POST',
+          { identify: b.dataset.buy, quantity: 1, devise: b.dataset.devise || 'basic' });
+        /* ⛔ `api()` NE JETTE PAS, ELLE REND `null` — ET ELLE A DEJA PARLE. Sans
+           cette ligne, le refus du serveur produisait un second message, en
+           anglais et incomprehensible : « cannot read properties of null ». Le
+           joueur voyait deux alertes pour un seul refus, dont une qui parlait de
+           JavaScript. */
+        if (!out) { b.disabled = false; return; }
         S.inventory = out.inventory || S.inventory;
-        if (S.me) S.me.coins = out.coins;
+        if (S.me) {
+          if (typeof out.coins === 'number') S.me.coins = out.coins;
+          if (typeof out.premium === 'number') S.me.premium = out.premium;
+        }
         S.sfx.play('coin', 0.35);
         toast(t('shop.bought'), 'ok');
         if (UI.renderWallet) UI.renderWallet(); renderBonusRack(); renderShop(body);
@@ -218,6 +232,26 @@ function vignette(p) {
   return ASSETS + 'img/skins/' + p.identify + '/die_5.png';
 }
 
+/**
+ * Avec quelle monnaie cet article se paie-t-il, et combien.
+ *
+ * ⛔ `basic_price` PEUT ETRE NUL, ET C'ETAIT UN PIEGE MORTEL. Le bouton
+ * affichait litteralement « null », et surtout : `S.me.coins < null` vaut
+ * FALSE — donc le bouton restait actif, le joueur cliquait, et le serveur
+ * repondait 400. Un prix absent ne veut pas dire gratuit ; il veut dire « pas
+ * dans cette monnaie ». On choisit donc la devise AVANT de comparer quoi que ce
+ * soit, et un article sans aucun prix n'est pas vendable du tout.
+ */
+function tarif(p) {
+  const or = p.basic_price;
+  const maudit = p.premium_price;
+  if (or === null || or === undefined) {
+    return (maudit === null || maudit === undefined)
+      ? null : { devise: 'premium', prix: maudit };
+  }
+  return { devise: 'basic', prix: or };
+}
+
 function bouton(p, have) {
   const possede = (have.get(p.identify) || 0) > 0;
   if (porte(p) && possede) {
@@ -227,10 +261,85 @@ function bouton(p, have) {
       + ' data-' + quoi + '="' + esc(actif ? '' : p.identify) + '">'
       + esc(t(actif ? 'skin.remove' : 'skin.wear')) + '</button>';
   }
-  const trop = S.me && S.me.coins < p.basic_price;
-  return '<button class="dc-btn dc-btn-sm" data-buy="' + esc(p.identify) + '"'
-    + (trop ? ' disabled' : '') + '>' + p.basic_price
-    + '<img class="dc-coin" src="' + ASSETS + 'img/icon_coin.png" alt=""></button>';
+  const tar = tarif(p);
+  if (!tar) return '';
+  const bourse = S.me ? (tar.devise === 'premium' ? (S.me.premium || 0) : (S.me.coins || 0)) : 0;
+  const trop = S.me && bourse < tar.prix;
+  const piece = tar.devise === 'premium'
+    ? PIECE_MAUDITE
+    : '<img class="dc-coin" src="' + ASSETS + 'img/icon_coin.png" alt="">';
+  return '<button class="dc-btn dc-btn-sm' + (tar.devise === 'premium' ? ' dc-btn-maudit' : '') + '"'
+    + ' data-buy="' + esc(p.identify) + '" data-devise="' + tar.devise + '"'
+    + (trop ? ' disabled' : '') + '>' + tar.prix + piece + '</button>';
+}
+
+/* ══════════════════════════════════════════════════════════════════ succes ══
+   LA PAGE DES SUCCES.
+
+   ⚠️ ELLE MONTRE CE QU'ON N'A PAS, ET C'EST TOUT SON INTERET. Une page qui
+   n'afficherait que les succes gagnes serait une vitrine a trophees : on la
+   consulte une fois, apres coup. Celle-ci doit donner envie, donc elle montre la
+   route — le compteur en cours contre la cible, et ce que la porte rapporte.
+
+   ⚠️ ET ELLE NE COMPTE RIEN. Tout vient du serveur, y compris le progres : le
+   client qui calculerait lui-meme « 47 des detruits » afficherait un chiffre que
+   personne ne peut verifier, et qui serait faux des la premiere partie jouee sur
+   un autre telephone.
+
+   ⛔ L'ICONE N'EST PAS UNE `<img>`, ET C'EST DELIBERE. Les cent dessins n'existent
+   pas encore ; une balise image sur un fichier absent affiche l'icone cassee du
+   navigateur — cent fois. En fond CSS, une image manquante ne laisse voir que le
+   medaillon dessine dessous, qui est deja presentable. Le jour ou les dessins
+   arrivent, ils se posent dedans sans une ligne de code.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+const FAMILLES = ['metier', 'plateau', 'guerre', 'effets', 'quarts', 'curiosites'];
+
+function barre(valeur, cible) {
+  const part = cible > 0 ? Math.max(0, Math.min(1, valeur / cible)) : 0;
+  return '<span class="dc-suc-jauge"><i style="width:' + Math.round(part * 100) + '%"></i></span>';
+}
+
+function ligneSucces(s) {
+  const nom = t('suc.' + s.identify + '.name');
+  const txt = t('suc.' + s.identify + '.txt');
+  const fait = s.gagne;
+  return '<li class="dc-suc' + (fait ? ' dc-suc-on' : '') + '">'
+    + '<span class="dc-suc-art" style="background-image:url(' + ASSETS + 'img/succes/'
+      + esc(s.identify) + '.png)"></span>'
+    + '<span class="dc-suc-txt"><b>' + esc(nom) + '</b><span>' + esc(txt) + '</span>'
+    + (fait ? '' : barre(s.valeur, s.cible) + '<em>' + s.valeur + ' / ' + s.cible + '</em>')
+    + '</span>'
+    + '<span class="dc-suc-prix">' + s.reward + PIECE_MAUDITE + '</span>'
+    + '</li>';
+}
+
+export function renderSucces(body) {
+  /* ⚠️ ON DEMANDE UNE FOIS, PUIS ON REPEINT. Redemander a chaque ouverture
+     ferait clignoter la page pour rien : les compteurs ne bougent qu'en fin de
+     partie, et `over` invalide deja la liste. */
+  if (!S.succes) {
+    body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
+      + '<p class="dc-empty">' + esc(t('rank.loading')) + '</p>';
+    if (S.net) S.net.send({ t: 'succes' });
+    return;
+  }
+  const liste = S.succes;
+  const gagnes = liste.filter((s) => s.gagne).length;
+  const total = liste.reduce((n, s) => n + (s.gagne ? 0 : s.reward), 0);
+  const parFamille = new Map();
+  for (const s of liste) {
+    if (!parFamille.has(s.famille)) parFamille.set(s.famille, []);
+    parFamille.get(s.famille).push(s);
+  }
+  const ordre = FAMILLES.filter((f) => parFamille.has(f))
+    .concat([...parFamille.keys()].filter((f) => !FAMILLES.includes(f)));
+
+  body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
+    + '<p class="dc-suc-tete">' + esc(t('suc.done', { n: gagnes, total: liste.length }))
+    + (total ? ' · ' + esc(t('suc.reste', { n: total })) : '') + '</p>'
+    + ordre.map((f) => '<h4 class="dc-suc-fam">' + esc(t('suc.fam.' + f)) + '</h4>'
+        + '<ul class="dc-suc-liste">' + parFamille.get(f).map(ligneSucces).join('') + '</ul>').join('');
 }
 
 /* Les trois premieres places portent leur medaille. Au-dela, le rang chiffre :

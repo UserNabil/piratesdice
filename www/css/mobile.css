@@ -426,6 +426,150 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 
+
+
+/* ============================================================================
+   LA PAGE DES HAUTS FAITS.
+
+   ⚠️ ELLE EN CONTIENT CENT, DONC ELLE SE PARCOURT AU POUCE. Chaque ligne tient
+   sur une hauteur fixe, avec le dessin a gauche, le texte au milieu et le gain
+   a droite : c'est la seule disposition qui reste lisible quand on fait defiler
+   vite. Les titres de famille sont collants — on sait toujours dans quel
+   chapitre on se trouve.
+
+   ⛔ LE MEDAILLON EST DESSINE EN CSS, PAS CHARGE. Les cent icones n'existent
+   pas encore ; le fond est donc un medaillon complet qui se suffit, et l'image
+   se pose PAR-DESSUS quand elle arrive. Une `<img>` sur un fichier absent
+   aurait affiche cent icones cassees.
+   ============================================================================ */
+
+#dicewrap .dc-suc-tete {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  color: var(--txt-dim, #C9BCEA);
+}
+
+#dicewrap .dc-suc-fam {
+  position: sticky;
+  top: -2px;
+  z-index: 2;
+  margin: 16px 0 8px;
+  padding: 6px 2px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-hi, #FFE479);
+  background: linear-gradient(180deg, rgba(46, 22, 84, .96), rgba(46, 22, 84, .78));
+}
+
+#dicewrap .dc-suc-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+#dicewrap .dc-suc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .26);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .22);
+  /* Un haut fait pas encore gagne est en retrait, pas efface : on doit pouvoir
+     le lire, c'est meme la seule raison de l'afficher. */
+  opacity: .72;
+}
+
+#dicewrap .dc-suc-on {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(120, 82, 8, .38), rgba(60, 38, 4, .3));
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 121, .55);
+}
+
+#dicewrap .dc-suc-art {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background-color: #2A1546;
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 2px rgba(201, 162, 39, .55), 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+#dicewrap .dc-suc-on .dc-suc-art { box-shadow: inset 0 0 0 2px var(--gold-hi, #FFE479), 0 0 8px rgba(255, 228, 121, .45); }
+
+#dicewrap .dc-suc-txt { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+#dicewrap .dc-suc-txt b { font-size: 14px; color: var(--txt, #FFFFFF); }
+#dicewrap .dc-suc-txt > span { font-size: 12.5px; color: var(--txt-dim, #C9BCEA); overflow-wrap: anywhere; }
+#dicewrap .dc-suc-txt em { font-size: 11px; font-style: normal; color: var(--txt-dim, #C9BCEA); font-variant-numeric: tabular-nums; }
+
+#dicewrap .dc-suc-jauge {
+  display: block;
+  height: 5px;
+  margin-top: 3px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .5);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .3);
+  overflow: hidden;
+}
+
+#dicewrap .dc-suc-jauge i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6A48B8, #B79BF0);
+}
+
+#dicewrap .dc-suc-prix {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #D9C9FF;
+}
+
+#dicewrap .dc-suc-on .dc-suc-prix { opacity: .45; }
+
+/* L'onglet dessine se cale comme les icones des trois autres. */
+#dicewrap .dc-tab-svg { width: 18px; height: 18px; flex: 0 0 auto; }
+
+/* ============================================================================
+   LES DEUX BOURSES.
+
+   ⚠️ LA SECONDE N'APPARAIT QU'UNE FOIS GAGNEE. Un compteur a zero pour une
+   monnaie qu'on n'a jamais vue n'apprend rien et vole la place au nom du
+   joueur sur un petit ecran. Son apparition, elle, est un evenement.
+   ============================================================================ */
+
+#dicewrap .dc-bourses {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+#dicewrap .dc-coins-maudites {
+  /* Le violet la separe de l'or au premier coup d'oeil : deux compteurs de la
+     meme couleur cote a cote se lisent comme un seul nombre coupe en deux. */
+  color: #D9C9FF;
+}
+
+#dicewrap .dc-maudite {
+  width: 17px; height: 17px;
+  display: inline-block;
+  vertical-align: -3px;
+  margin-inline-start: 3px;
+}
+
+/* Dans la boutique, le bouton d'un article maudit porte la meme couleur que la
+   monnaie qu'il demande : on sait ce qu'on va payer avant de lire le chiffre. */
+#dicewrap .dc-btn-maudit {
+  background: linear-gradient(180deg, #6A48B8, #3B2270);
+  color: #EDE3FF;
+  box-shadow: inset 0 1px 0 rgba(226, 210, 255, .55), inset 0 0 0 1px rgba(20, 8, 40, .7);
+}
+
+#dicewrap .dc-btn-maudit .dc-maudite { width: 15px; height: 15px; }
+
 /* ============================================================================
    LES CAPITAINES QU'ON N'A PAS ENCORE.
 

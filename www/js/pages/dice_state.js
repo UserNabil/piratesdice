@@ -196,6 +196,39 @@ export function fxUrl(file, lifeMs) {
   return url;
 }
 
+/* ============================================================================
+   LA MONNAIE MAUDITE, DESSINEE PLUTOT QUE CHARGEE.
+
+   ⚠️ ELLE NE S'ACHETE PAS, ELLE SE GAGNE. C'est le point a ne jamais perdre de
+   vue : la fiche de la boutique declare « aucun achat » aux deux magasins. La
+   monnaie maudite recompense les succes, un point c'est tout — elle n'a ni prix
+   ni pack, et rien dans le jeu ne doit laisser croire le contraire.
+
+   Le dessin est en SVG pour la meme raison que le cadenas : le depot n'a qu'une
+   piece d'or, et teinter la piece d'or en violet aurait donne deux monnaies
+   qu'on confond au premier coup d'oeil. Un crane sur un jeton sombre se
+   distingue a seize pixels, qui est la taille ou on la lira le plus souvent.
+   ============================================================================ */
+export const PIECE_MAUDITE = `<svg class="dc-maudite" viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="12" cy="12" r="10.4" fill="#2A1546" stroke="#7C5CC4" stroke-width="1.6"/>
+  <circle cx="12" cy="12" r="7.6" fill="none" stroke="#B79BF0" stroke-width=".9" opacity=".65"/>
+  <path d="M12 6.2c-3 0-5 2-5 4.6 0 1.6.8 2.6 1.7 3.2v1.4c0 .5.4.9.9.9h4.8c.5 0 .9-.4.9-.9v-1.4
+           c.9-.6 1.7-1.6 1.7-3.2 0-2.6-2-4.6-5-4.6z" fill="#D9C9FF"/>
+  <circle cx="10" cy="11" r="1.35" fill="#2A1546"/>
+  <circle cx="14" cy="11" r="1.35" fill="#2A1546"/>
+  <path d="M11.1 14.4h1.8" stroke="#2A1546" stroke-width="1.1" stroke-linecap="round"/>
+</svg>`;
+
+/* L'onglet des succes, en attendant son dessin. Meme raison que le cadenas :
+   une `<img>` sur un fichier absent affiche l'icone cassee du navigateur, en
+   haut de l'ecran et en permanence. */
+export const MEDAILLE = `<svg class="dc-tab-svg" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M8.2 2.5h7.6l-2.2 6.1H10.4z" fill="#C9A227"/>
+  <circle cx="12" cy="15.2" r="6.3" fill="#FFE479" stroke="#8A5B12" stroke-width="1.3"/>
+  <path d="M12 11.4l1.28 2.6 2.87.42-2.08 2.02.49 2.86L12 17.96l-2.56 1.34.49-2.86-2.08-2.02
+           2.87-.42z" fill="#8A5B12"/>
+</svg>`;
+
 export const S = {
   net: null,
   open: false,
@@ -211,6 +244,10 @@ export const S = {
      que le serveur en exige 40. On garde une liste de secours pour le premier
      rendu, et celle du serveur ecrase des l'accueil. */
   captains: [],
+  /* Les succes, charges a l'ouverture de leur page — pas a l'accueil : cent
+     lignes dans le message de bienvenue retarderaient le premier ecran pour une
+     page que l'on n'ouvre pas a chaque session. */
+  succes: null,
   rules: { maxBonusPerMatch: 3, aiReward: 20, rankReward: 100 },
   panel: null,
   queued: false,

@@ -134,6 +134,22 @@ function captainCard(id) {
     </div>`;
 }
 
+/**
+ * Repeindre le seul bandeau des capitaines, sans refaire le pont.
+ *
+ * ⚠️ REFAIRE TOUT LE MENU AURAIT COUTE PLUS QUE CA NE RAPPORTE. `renderMenu`
+ * remet aussi le salon prive a zero : un joueur en train de saisir un code
+ * l'aurait vu disparaitre parce qu'un capitaine a ete refuse a l'autre bout.
+ * On ne redessine que ce qui a menti.
+ */
+export function repeindreCapitaines() {
+  const bloc = document.querySelector('#dicewrap .dc-caps');
+  if (!bloc) return;
+  const hote = bloc.parentElement;
+  bloc.outerHTML = captainStrip();
+  wireCaptains(hote);
+}
+
 function wireCaptains(el) {
   el.querySelectorAll('[data-cap]').forEach((b) => {
     b.onclick = () => {

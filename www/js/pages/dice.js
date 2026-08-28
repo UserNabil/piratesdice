@@ -15,17 +15,18 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
+import { messageServeur } from './dice_refus.js';
 import { uiConfirm } from '../ui/dialogs.js';
 import { DiceNet, diceStatus } from './dice_net.js';
 import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
-import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, MEDAILLE, screen, bonusArt, preloadAssets } from './dice_state.js';
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
-import { renderRules, renderShop, renderRanking } from './dice_panels.js';
-import { renderMenu, onRoom, onRoomFail, resetLobby, captainArt } from './dice_lobby.js';
+import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby, captainArt, repeindreCapitaines } from './dice_lobby.js';
 
 function shellMarkup() {
   return `
@@ -36,6 +37,7 @@ function shellMarkup() {
       <nav class="dc-tabs">
         <button class="dc-tab" data-panel="shop"><img src="${ASSETS}img/icon_shop.png" alt=""> ${esc(t('tab.shop'))}</button>
         <button class="dc-tab" data-panel="ranking"><img src="${ASSETS}img/icon_ranking.png" alt=""> ${esc(t('tab.ranking'))}</button>
+        <button class="dc-tab" data-panel="succes">${MEDAILLE} ${esc(t('tab.succes'))}</button>
         <button class="dc-tab" data-panel="rules"><img src="${ASSETS}img/icon_rules.png" alt=""> ${esc(t('tab.rules'))}</button>
       </nav>
       <div class="dc-acts">
@@ -218,11 +220,21 @@ async function connect() {
     },
     me: (m) => {
       S.me = m.me; S.inventory = m.inventory || [];
-      renderWallet(); refreshPanel(); renderBonusRack();
+      /* Le bandeau des capitaines depend de `games` et du capitaine porte : il
+         se repeint avec la bourse, sinon un refus du serveur ou une partie de
+         plus laisserait un cadenas perime a l'ecran. */
+      renderWallet(); repeindreCapitaines(); refreshPanel(); renderBonusRack();
     },
     /* Le serveur peut renvoyer la liste en cours de session (seuils modifies,
        nouveau capitaine) : on la prend, l'ecran suivant la lira. */
     captains: (m) => { if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains; },
+    /* La liste arrive apres l'avoir demandee : on la range et on repeint si la
+       page est encore ouverte — le joueur a pu changer d'onglet entre-temps. */
+    succes: (m) => {
+      S.succes = Array.isArray(m.liste) ? m.liste : [];
+      if (S.me && typeof m.premium === 'number') { S.me.premium = m.premium; renderWallet(); }
+      if (S.panel === 'succes') refreshPanel();
+    },
     queued: () => { S.queued = true; showMenu(); },
     idle: () => { S.queued = false; S.seat = -1; S.state = null; showMenu(); },
     room: (m) => onRoom(m, $('#dc-screen-menu')),
@@ -235,7 +247,21 @@ async function connect() {
        toast, mais aucun etat ne suivait, donc rien ne rallumait le bouton et
        la partie semblait morte. Et le message arrivait en anglais brut au
        milieu d'un jeu en francais. */
-    error: (m) => { toast(messageServeur(m.msg), 'warn'); rendreLaMain(); },
+    /* ⛔ ET UN REFUS DOIT DEFAIRE CE QUE L'ECRAN AVAIT DEJA PEINT. Le choix du
+       capitaine s'allume avant la reponse du serveur — c'est voulu, attendre
+       donnerait un ecran qui hesite. Mais depuis que le serveur peut REFUSER un
+       capitaine pas encore gagne, l'optimisme devient un mensonge : le
+       medaillon restait allume jusqu'au message suivant. On redemande donc
+       l'etat, qui repeindra la verite. */
+    error: (m) => {
+      toast(messageServeur(m.msg), 'warn');
+      rendreLaMain();
+      /* `refresh` est le message qui existe : il renvoie un `me` frais, et
+         c'est `me` qui repeint le pont. Il n'y a pas de message `me` entrant —
+         l'inventer aurait produit un refus « unknown message » par-dessus le
+         premier refus. */
+      if (m.msg === 'captain locked' && S.net) S.net.send({ t: 'refresh' });
+    },
     denied: (m) => connectFailed(m.msg || 'the game server refused the token'),
     closed: (byUs) => {
       /* ⚠️ `S.net` DOIT TOMBER AVEC LA CONNEXION. La relance automatique et les
@@ -259,30 +285,7 @@ async function connect() {
   catch (e) { connectFailed(e.message); }
 }
 
-/* Les refus que le serveur formule en anglais, dits dans la langue du joueur.
-   Un message inconnu passe tel quel : mieux vaut une phrase anglaise qu'un
-   silence, et sa presence signale la cle qui manque. */
-const REFUS = {
-  /* ⛔ TROIS REFUS DE MISE ONT DISPARU AVEC LA MISE. « betting is closed »,
-     « your bet is already placed » et « enter a whole number of coins » ne
-     peuvent plus etre emis : le message reseau `bet` n'existe plus. Une
-     traduction qui attend un message impossible ne sert qu'a faire croire que
-     le mecanisme est encore la. « not enough coins » reste : la boutique, elle,
-     refuse toujours un achat trop cher. */
-  'not enough coins': 'err.coins',
-  'not your turn': 'game.waitTurn',
-  'you already rolled': 'game.alreadyRolled',
-  'the match has not started': 'err.notStarted',
-  'you are not in a match': 'err.noMatch',
-  'you are already in a match': 'err.inMatch',
-  'you cannot change captain during a match': 'err.captainLocked',
-};
 
-function messageServeur(brut) {
-  if (!brut) return t('err.refused');
-  const cle = REFUS[brut];
-  return cle ? t(cle) : brut;
-}
 
 /* Rouvrir ce qu'un envoi avait ferme par avance.
    ⚠️ ELLE EST VIDE, ET C'EST VOULU. Son seul client etait le bouton de mise, qui
@@ -469,8 +472,17 @@ function renderWallet() {
       <b>${esc(S.me.name)}</b>
       <span>${esc(t('hdr.record', { rating: S.me.rating, wins: S.me.wins, losses: S.me.losses, draws: S.me.draws }))}</span>
     </div>
-    <div class="dc-coins" title="${esc(t('hdr.coins'))}">${S.me.coins}
-      <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>`;
+    <div class="dc-bourses">
+      <div class="dc-coins" title="${esc(t('hdr.coins'))}">${S.me.coins}
+        <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
+      <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a
+           zero, en permanence, pour une monnaie qu'on n'a pas encore rencontree,
+           n'apprend rien et prend la place du nom du joueur sur les petits
+           ecrans. Elle apparait au premier succes — et cette apparition est
+           elle-meme une recompense. -->
+      ${S.me.premium ? `<div class="dc-coins dc-coins-maudites" title="${esc(t('hdr.cursed'))}"
+        >${S.me.premium}${PIECE_MAUDITE}</div>` : ''}
+    </div>`;
 }
 
 /* Le pont vit dans dice_lobby.js : choix du capitaine et salon prive y sont
@@ -505,6 +517,7 @@ function refreshPanel() {
   if (S.panel === 'rules') renderRules(body);
   else if (S.panel === 'shop') renderShop(body);
   else if (S.panel === 'ranking') renderRanking(body);
+  else if (S.panel === 'succes') renderSucces(body);
 }
 
 /* ───────────────────────────────────────────────────────────────── wiring ── */
