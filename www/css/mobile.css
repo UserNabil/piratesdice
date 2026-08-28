@@ -554,17 +554,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ============================================================================ */
 
 #dicewrap .dc-top {
-  /* La banniere dechiree remplace le fond raye : meme traitement en neuf zones,
-     pour que les pointes des extremites gardent leur forme quelle que soit la
-     largeur de l'ecran. */
+  /* ⛔ LA BANNIERE DECHIREE A ETE RETIREE D'ICI. Elle etait posee en neuf zones
+     par `border-image`, ce qui obligeait a lui reserver 34 px de bordure de
+     chaque cote — et surtout ce `border-image` et ce `background: none`
+     recouvraient `pd-panel`, la recette du panneau de l'accueil, que la barre
+     porte desormais. Une declaration qui ne fait plus rien n'est pas neutre :
+     celle-ci empechait le nouveau fond de s'afficher. */
   --pd-bar-h: 58px;
-  border-style: solid;
-  border-width: 0 34px;
-  border-image-source: url("../dice/img/bar_top_bg.png");
-  border-image-slice: 0 150 0 150 fill;
-  border-image-repeat: stretch;
-  background: none;
-  box-shadow: none;
   /* ⚠️ LA BANNIERE NE TOUCHE PLUS LES BORDS. Elle est DESSINEE comme une
      banderole, avec des pointes dechirees a chaque bout : collee au bord, on ne
      voit plus qu'elle a une fin — elle passe pour un bandeau plein, et ses
@@ -719,11 +715,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      dernier onglet se retrouve sous la poignee de navigation d'Android et sous
      la barre d'accueil de l'iPhone. */
   padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-  background:
-    repeating-linear-gradient(1.2deg,
-      rgba(0, 0, 0, .14) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 12px),
-    linear-gradient(0deg, var(--violet, #6B2FD6) 0%, var(--violet-md, #5A26B8) 60%, var(--violet-dk, #3E1880) 100%);
-  box-shadow: 0 -2px 0 rgba(201, 162, 39, .55), 0 -8px 18px rgba(0, 0, 0, .35);
+  /* ⛔ LE FOND RAYE ET SON JONC DORE ONT ETE RETIRES : la barre porte
+     `pd-panel`, et ces deux declarations le recouvraient. */
   z-index: 3;
 }
 
@@ -1984,13 +1977,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    (le plancher), 956 en paysage -> 58, le plafond. Plus rien hors de l'ecran.
    ============================================================================ */
 
+/* ⚠️ LA BANDEROLE DECHIREE A CEDE LA PLACE AU PANNEAU DE L'ACCUEIL. Les deux
+   barres portent maintenant `pd-panel`, exactement comme la carte qui porte les
+   capitaines et les boutons : meme lisere blanc, memes coins inegaux, meme
+   trame. Il n'y a donc plus rien a redeclarer ici — c'est tout l'interet, une
+   seule recette et pas deux qui derivent.
+
+   ⛔ ET LES POINTES DECHIREES RENDENT 68 PX DE LARGEUR. Elles etaient dessinees
+   dans l'image et il fallait leur reserver 0,9 fois la hauteur DE CHAQUE COTE :
+   sur un ecran de 440 px, un sixieme de la barre servait a porter deux pointes.
+   Cette largeur revient au contenu, et c'est elle qui permet a la barre d'etre
+   enfin plus haute — 52 px au lieu de 46 sur le meme telephone.
+
+   Le diviseur, refait sans les pointes :
+       plaques 118 + 118 + 132 + reglages 58 = 6,345 h + 1 h
+       + 3 jours x 0,12 h + 2 creux x 0,10 h  = 7,905 h
+   plus 20 px de marges et 8 px de lisere, fixes, retires avant la division. */
 #dicewrap .dc-top {
-  --pd-bar-h: clamp(32px, calc((100vw - env(safe-area-inset-left, 0px)
-              - env(safe-area-inset-right, 0px) - 20px) / 9.1), 58px);
-  gap: calc(var(--pd-bar-h) * 10 / 58);
-  padding: calc(var(--pd-bar-h) * 6 / 58) calc(var(--pd-bar-h) * 2 / 58)
-           calc(var(--pd-bar-h) * 10 / 58);
-  border-width: 0 calc(var(--pd-bar-h) * 34 / 58);
+  --pd-bar-h: clamp(34px, calc((100vw - env(safe-area-inset-left, 0px)
+              - env(safe-area-inset-right, 0px) - 28px) / 8.03), 58px);
+  gap: calc(var(--pd-bar-h) * .12);
+  /* 0,16 et non 0,10 : a 0,10 la plaque d'or touchait presque le lisere blanc,
+     et une plaque collee au bord se lit comme une plaque coupee. */
+  padding: calc(var(--pd-bar-h) * .16);
 }
 
 /* La bourse n'est qu'un rail : pas de fond, pas de creux, et son seul jour
@@ -2048,10 +2057,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    `--pd-bas-h`. La barre change de taille selon l'ecran, jamais de forme.
 
    Le diviseur vient de l'addition :
-       pointes 2 x 0,906 + parchemins 4 x 0,84 + medaillon 1,15 + 4 jours x 0,12
-       = 6,92 h ; les 16 px de marges laterales sont fixes, donc retires avant.
-   On divise par 6,95 pour garder un cheveu de jeu : a 6,80, mesure au banc,
-   il manquait 3 px et le dernier parchemin mordait sur la pointe droite.
+       parchemins 4 x 0,84 + medaillon 1,15 + 4 jours x 0,14 + 2 creux x 0,10
+       = 5,27 h ; les 16 px de marges et les 8 px de lisere sont fixes, donc
+   retires avant la division. Sans les pointes dechirees, qui reservaient 0,9 h
+   de chaque cote, la barre passe de 49 a 72 px de haut sur le meme telephone.
 
    ⚠️ ET LE MEDAILLON DEBORDE PAR LE HAUT. C'est voulu : un bouton d'accueil qui
    tient sagement dans la ligne est un bouton comme les autres. Il monte de
@@ -2061,26 +2070,20 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 #dicewrap .dc-bas {
   --pd-bas-h: clamp(46px, calc((100vw - env(safe-area-inset-left, 0px)
-              - env(safe-area-inset-right, 0px) - 16px) / 6.95), 72px);
+              - env(safe-area-inset-right, 0px) - 24px) / 5.3), 72px);
   flex: none;
   height: var(--pd-bas-h);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: calc(var(--pd-bas-h) * .12);
+  gap: calc(var(--pd-bas-h) * .14);
   /* La barre systeme du telephone passe SOUS la banderole : sans cette marge, le
      medaillon se retrouve sous la poignee d'Android et sous la barre d'accueil
      de l'iPhone — c'est-a-dire sous un endroit que le doigt n'atteint pas. */
   margin: 0 8px calc(env(safe-area-inset-bottom, 0px) + 2px);
-  padding: 0 calc(var(--pd-bas-h) * .06);
-  border-style: solid;
-  border-width: 0 calc(var(--pd-bas-h) * 240 / 265);
-  border-image-source: url("../dice/img/bar_bas_bg.png");
-  border-image-slice: 0 235 0 240 fill;
-  border-image-repeat: stretch;
-  background: none;
-  box-shadow: none;
+  padding: 0 calc(var(--pd-bas-h) * .10);
+  /* Le medaillon deborde par le haut : la barre ne doit pas le couper. */
   overflow: visible;
 }
 
@@ -2126,8 +2129,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-onglet-d { background-image: url("../dice/img/slot_bas_d.png"); }
 
 #dicewrap .dc-onglet img {
-  width: 58%;
-  height: 58%;
+  /* 78 % et non 58 : « on les voit a peine ». Le parchemin est un cadre, pas un
+     sujet — c'est le dessin au milieu qu'on doit reconnaitre d'un coup d'oeil,
+     et a 58 % il flottait au centre d'une surface vide deux fois plus grande. */
+  width: 78%;
+  height: 78%;
   object-fit: contain;
   /* Un onglet au repos RECULE, il ne disparait pas : on doit reconnaitre les
      quatre dessins sans avoir a les toucher. */
@@ -2146,10 +2152,22 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-onglet-home img { width: 100%; height: auto; filter: none; }
 
 /* La page ou l'on est : le parchemin se souleve et s'allume. */
+/* ⛔ PLUS DE HALO. Une lueur doree derriere le bouton se lisait comme un effet
+   d'ambiance, pas comme un etat : elle disait « ce bouton brille », pas « vous
+   etes ici ». Un contour blanc, lui, est le meme signe que le lisere des
+   panneaux — il designe, il ne decore pas.
+
+   ⚠️ QUATRE OMBRES PORTEES, ET PAS UN `outline`. Un `outline` dessinerait le
+   RECTANGLE du bouton ; le parchemin, lui, a des bords ronges et le medaillon
+   est fait d'os en croix. Une ombre portee sans flou suit la silhouette reelle,
+   celle du dessin : quatre, decalees dans les quatre sens, en font un contour
+   complet qui epouse la forme. */
 #dicewrap .dc-onglet.on {
   background-color: transparent;
   transform: translateY(calc(var(--pd-bas-h) * -.06));
-  filter: drop-shadow(0 0 calc(var(--pd-bas-h) * .1) rgba(255, 196, 64, .9));
+  filter:
+    drop-shadow(2.5px 0 0 #FFFFFF) drop-shadow(-2.5px 0 0 #FFFFFF)
+    drop-shadow(0 2.5px 0 #FFFFFF) drop-shadow(0 -2.5px 0 #FFFFFF);
 }
 
 #dicewrap .dc-onglet.on img { filter: none; transform: scale(1.06); }
@@ -2198,3 +2216,106 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 @media (orientation: portrait), (max-width: 820px) {
   #dicewrap .dc-panel { box-sizing: border-box; }
 }
+
+
+/* ============================================================================
+   LE DECOR COUVRE L'ECRAN ENTIER.
+
+   ⛔ IL S'ARRETAIT AU CORPS. Le ciel violet, sa trame de points et ses rayons
+   etaient peints sur `.dc-body` — c'est-a-dire SOUS la barre du haut. Tout ce
+   qui est au-dessus (la marge de l'encoche, que la coque reserve) ne montrait
+   que le degrade plat de la coque : une bande violette unie en haut de l'ecran,
+   d'une autre couleur que le reste, et qui trahissait la couture.
+
+   Le decor descend donc d'un cran, sur la COQUE, et le corps devient
+   transparent. Une seule surface peinte, du bord haut au bord bas.
+
+   ⚠️ ET L'ASSOMBRISSEMENT REJOINT LA PILE. Il vivait dans `.dc-body::after`,
+   donc il se serait arrete la ou le decor s'arretait avant : la couture aurait
+   simplement change de nature. En premiere couche du meme fond, il couvre la
+   meme surface que lui, par construction.
+
+   Le decor est nomme une fois ici pour que les PAGES s'en servent aussi : une
+   page pleine doit etre opaque, et se peindre du meme ciel que ce qu'elle
+   recouvre est la seule facon qu'elle n'ait pas l'air d'une carte posee dessus.
+   ============================================================================ */
+
+#dicewrap {
+  --pd-decor:
+    linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .34)),
+    var(--trame),
+    repeating-conic-gradient(from 0deg at 50% 8%,
+      rgba(255, 255, 255, .05) 0deg 1.6deg, transparent 1.6deg 9deg),
+    radial-gradient(120% 90% at 50% 4%, #6A3BC4 0%, #3C2170 46%, #241C33 100%);
+  --pd-decor-taille: auto, 14px 14px, auto, auto;
+}
+
+#dicewrap .dc-shell {
+  background: var(--pd-decor);
+  background-size: var(--pd-decor-taille);
+}
+
+#dicewrap .dc-body { background: none; }
+#dicewrap .dc-body::after { content: none; }
+
+
+/* ============================================================================
+   LES LIENS DU BAS OUVRENT DES PAGES, PAS DES FEUILLES.
+
+   ⛔ C'ETAIT UNE MODALE, ET CA SE VOYAIT. La boutique montait du bas comme un
+   tiroir : coins arrondis, lisere blanc en haut, ombre portee, et le menu qui
+   restait visible en dessous. On lisait « quelque chose est pose par-dessus le
+   jeu », donc on cherchait comment le refermer — alors que la boutique n'est
+   pas une interruption, c'est un LIEU.
+
+   Une page occupe donc tout l'espace entre les deux barres, se peint du meme
+   ciel que le reste, et arrive par la droite comme on tourne une page. Les deux
+   barres ne bougent pas : c'est a elles qu'on voit qu'on n'a pas quitte le jeu,
+   et c'est par la barre du bas qu'on revient.
+   ============================================================================ */
+
+#dicewrap .dc-panel {
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: calc(var(--pd-bar-h, 52px) * .3) 14px calc(var(--pd-bar-h, 52px) * .4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* ⛔ LA PAGE NE PEINT PLUS SON PROPRE CIEL, ET ELLE NE GLISSE PLUS.
+     Peinte, elle REDEMARRAIT le decor a son bord haut : le coeur clair du
+     degrade radial reapparaissait sous la barre du haut, en bande large et
+     nettement plus claire que le reste — exactement le raccord dont on venait de
+     se debarrasser en haut de l'ecran, revenu 80 px plus bas.
+
+     La transparence le supprime a la source, mais elle interdit la glissade :
+     une page transparente qui arrive par la droite laisse voir le menu AU
+     TRAVERS pendant tout son trajet. On echange donc le mouvement contre la
+     continuite — et c'est le bon echange, parce qu'une barre d'onglets ne
+     glisse pas non plus : elle change de page, d'un coup. Le menu s'efface au
+     meme instant (voir `dc-en-page`), donc il n'y a jamais deux choses a
+     l'ecran. */
+  background: none;
+  transform: none;
+}
+
+/* Ce qui est derriere une page ouverte n'a rien a y faire : la page est
+   transparente, et sans cela on lirait le menu a travers la boutique. */
+#dicewrap.dc-en-page .dc-screen { visibility: hidden; }
+
+/* Le filet dore courait en haut de la feuille pour marquer sa poignee. Une page
+   n'a pas de poignee : elle n'a pas de bord. */
+#dicewrap .dc-panel::before { content: none; }
+
+#dicewrap .dc-panel.on { transform: none; }
+
+
+/* ⚠️ EN PARTIE, LA BARRE DU BAS S'EFFACE. Les grilles se jouent en hauteur : les
+   72 px de navigation valent une rangee de cases, et on ne navigue pas pendant
+   qu'on joue. Le corps est en `flex: 1` — il reprend la place sans qu'on ait
+   rien a calculer, et `fit.js` remesure de lui-meme puisqu'il observe la taille
+   du corps. */
+#dicewrap.dc-en-partie .dc-bas { display: none; }

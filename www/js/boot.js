@@ -102,8 +102,18 @@ function wireBackButton() {
   if (cap && cap.Plugins && cap.Plugins.App) {
     cap.Plugins.App.addListener('backButton', () => {
       if (fire()) return;
-      const tab = document.querySelector('#dicewrap .dc-tab.on');
-      if (tab) { tab.click(); return; }
+      /* ⛔ IL CHERCHAIT `.dc-tab.on`, QUI N'EXISTE PLUS. C'etait la classe des
+         onglets du bandeau du haut ; depuis que la navigation est passee en bas,
+         le selecteur ne trouvait rien et le bouton RETOUR sautait cette branche
+         — sur une page ouverte, il tombait donc sur la sortie de partie ou sur
+         la fermeture de l'application. Retour, depuis une page, ramene a
+         l'accueil : c'est le seul sens qu'il puisse avoir ici. */
+      const page = document.querySelector(
+        '#dicewrap .dc-onglet.on[data-panel]:not([data-panel="accueil"])');
+      if (page) {
+        const accueil = document.querySelector('#dicewrap .dc-onglet[data-panel="accueil"]');
+        if (accueil) { accueil.click(); return; }
+      }
       /* ⚠️ RETOUR sur une partie TERMINEE laissait le joueur devant un plateau
          mort, sans aucune sortie : la carte de resultat s'etait fermee et rien
          ne la ramenait. Le retour renvoie donc au pont. */
@@ -502,23 +512,13 @@ function fermerLesPortes() {
   } catch (_) { /* certaines WebViews refusent la reaffectation : le clic reste garde */ }
 }
 
-function addSheetBar() {
-  const panel = document.getElementById('dc-panel');
-  if (!panel || panel.querySelector('.pd-sheet-bar')) return;
-  const bar = document.createElement('div');
-  bar.className = 'pd-sheet-bar';
-  /* ⚠️ `&times;` N'EST PAS NOTRE CROIX. C'etait un glyphe de la police du
-     systeme — fin, gris, different sur chaque telephone — au milieu d'un jeu
-     ou tout le reste est dessine. Le jeu a SA croix ; c'est elle qu'on pose. */
-  bar.innerHTML = '<span class="pd-sheet-spacer"></span><span class="pd-grab"></span>'
-    + '<button class="pd-sheet-close" title="' + t('set.close') + '" aria-label="'
-    + t('set.close') + '"><img src="' + ASSETS + 'img/icon_close.png" alt=""></button>';
-  bar.querySelector('.pd-sheet-close').onclick = () => {
-    const tab = document.querySelector('#dicewrap .dc-tab.on');
-    if (tab) tab.click();
-  };
-  panel.insertBefore(bar, panel.firstChild);
-}
+/* ⛔ LA BARRE DE FEUILLE A ETE RETIREE, AVEC SA CROIX ET SA POIGNEE. Elles
+   disaient toutes les deux la meme chose — « ceci est pose par-dessus, tirez ou
+   fermez » — et c'est precisement ce que les pages ne sont plus. La croix etait
+   d'ailleurs MORTE depuis que la navigation est passee en bas : elle cherchait
+   `.dc-tab.on`, la classe des anciens onglets du bandeau, et ne trouvait rien.
+   Un bouton de fermeture qui ne ferme pas, sur chaque page, depuis la refonte.
+   On quitte une page par la barre du bas, comme on y est venu. */
 
 /* ── les mouvements : le module ne connait pas le jeu, on lui explique ───── */
 
@@ -550,7 +550,6 @@ async function start() {
   await signIn({ interactive: false });
   await openDice();
   addHeaderButtons();
-  addSheetBar();
   fermerLesPortes();
   startFitting();
   wireMotion();

@@ -72,7 +72,7 @@ function shellMarkup() {
          navigation, et on gardait sous la main... rien. Le haut ne garde plus
          que ce qui se LIT d'un coup d'oeil : le classement et les deux bourses.
          Tout ce qui se touche descend. -->
-    <header class="dc-top">
+    <header class="dc-top pd-panel">
       <div class="dc-wallet" id="dc-wallet"></div>
       <div class="dc-acts dc-acts-nue">
         <!-- Un GRELOT ne dit pas « son coupe » : il dit « notification ». Le
@@ -102,7 +102,7 @@ function shellMarkup() {
          il salit le dessin et repete ce que le dessin dit deja. Le nom survit
          la ou il sert : dans l'infobulle et dans l'etiquette pour les lecteurs
          d'ecran. -->
-    <nav class="dc-bas" id="dc-bas">${ONGLETS.map((o) => (o.cote === 'home' ? `
+    <nav class="dc-bas pd-panel" id="dc-bas">${ONGLETS.map((o) => (o.cote === 'home' ? `
       <button class="dc-onglet dc-onglet-home" data-panel="${o.id}"
               title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
       ><img src="${ASSETS}img/slot_bas_home.png" alt=""></button>` : `
@@ -761,10 +761,16 @@ function animerAccueil(bouton) {
 }
 
 function marquerOnglets() {
-  $('#dicewrap').querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
+  const coque = $('#dicewrap');
+  coque.querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
     const sien = b.dataset.panel === 'accueil' ? !S.panel : b.dataset.panel === S.panel;
     b.classList.toggle('on', sien);
   });
+  /* La page est transparente pour que le fond de l'application soit continu :
+     il faut donc effacer ce qu'elle recouvre, sans quoi on lirait le menu au
+     travers. La marque est posee sur la coque parce que les ecrans et la page
+     sont des freres — aucun ne peut atteindre l'autre par un selecteur. */
+  coque.classList.toggle('dc-en-page', !!S.panel);
 }
 
 function refreshPanel() {

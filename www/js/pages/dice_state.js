@@ -257,6 +257,13 @@ export function screen(name) {
     const el = $('#dc-screen-' + s);
     if (el) el.classList.toggle('on', s === name);
   });
+  /* ⚠️ LA BARRE DU BAS S'EFFACE PENDANT LA PARTIE, et c'est ici qu'on le dit —
+     pas dans le code de l'arene. La barre est une SOEUR du corps, hors de lui :
+     aucun selecteur partant de l'ecran de jeu ne peut l'atteindre. Une marque
+     sur la coque, en revanche, la met a portee du style, et elle se pose au seul
+     endroit qui sait deja de quel ecran on parle. */
+  const coque = $('#dicewrap');
+  if (coque) coque.classList.toggle('dc-en-partie', name === 'game');
 }
 
 export function boardOf(seat) {
