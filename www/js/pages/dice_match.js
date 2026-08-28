@@ -713,13 +713,27 @@ function renderGel(st) {
 /* A chaque instant UN SEUL plateau compte : celui qui a la main est eclaire,
    l'autre recule. C'est ce qui remplace « deux rectangles equivalents ». */
 function stageBoards(st) {
+  /* ⛔ EXIGER `phase === 'playing'` LAISSAIT LES DEUX PLATEAUX NEUTRES. Toute
+     phase qui n'est pas exactement celle-la — l'instant `ready` d'une table qui
+     se met en place, une reprise apres coupure, tout etat intermediaire que le
+     serveur enverrait un jour — retirait `dc-live` A TOUS LES DEUX sans poser
+     `dc-idle` sur aucun : plus d'anneau dore, plus de retrait, deux rectangles
+     identiques. C'est exactement ce que decrit « mon rectangle n'est plus actif
+     quand c'est mon tour », et c'est le seul chemin du code qui le produise.
+
+     Je n'ai pas su le reproduire — huit changements de camp, un effet joue, la
+     cale ouverte et refermee : tout etait juste. Mais une condition qui n'a
+     aucune raison d'etre la n'a pas besoin d'etre reproduite pour etre retiree.
+     Ce qui compte est le TOUR ; la seule phase qui doit eteindre les deux, c'est
+     la fin de partie, ou il n'y a plus de tour du tout. */
+  const fini = st.phase === 'over';
   for (let seat = 0; seat < 2; seat++) {
     const board = boardOf(seat);
     const wrap = board && board.parentNode;
     if (!wrap || !wrap.classList.contains('dc-boardwrap')) continue;
-    const live = st.phase === 'playing' && st.turn === seat;
+    const live = !fini && st.turn === seat;
     wrap.classList.toggle('dc-live', live);
-    wrap.classList.toggle('dc-idle', st.phase === 'playing' && !live);
+    wrap.classList.toggle('dc-idle', !fini && !live);
   }
 }
 

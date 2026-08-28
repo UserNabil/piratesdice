@@ -72,8 +72,14 @@
      ramenait donc la valeur a 1 et le plateau en attente ne reculait PAS du
      tout — seul le `brightness(.82)` agissait, soit 18 % sur un plateau colore,
      c'est-a-dire rien. Le point avait saute a la frappe. */
-  --cbt-plateau-attente: brightness(.82) saturate(.85);
-  --cbt-plateau-attente-opacite: .78;
+  /* ⚠️ ET LE RETRAIT SE VOIT ENFIN. `.82` de luminosite sur un plateau colore
+     est une nuance : mise a cote d'un plateau BLEU quand le sien est violet,
+     elle disparait — deux teintes differentes ne se comparent pas en clarte.
+     Le plateau en attente perd donc aussi sa COULEUR : desature, il recule
+     franchement sans s'eteindre, et l'anneau dore de l'autre n'a plus de
+     rival. */
+  --cbt-plateau-attente: brightness(.70) saturate(.35);
+  --cbt-plateau-attente-opacite: .72;
 
   /* Les deux camps. Le mien est VIOLET, celui d'en face BLEU : les deux
      plateaux etaient du meme violet et on cherchait lequel etait le sien. */

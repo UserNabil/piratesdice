@@ -2880,7 +2880,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    accompli. La liste est plafonnee en HAUTEUR, pas en nombre — elle defile, et
    la carte de fin garde sa taille quoi qu'il arrive. */
 #dicewrap .dc-over-suc-liste {
-  max-height: 30vh;
+  /* ⚠️ QUATRE LIGNES, ET PAS UNE PART DE L'ECRAN. `30vh` donnait une liste dont
+     la hauteur suivait le TELEPHONE : sur un grand, sept hauts faits tenaient et
+     la carte de fin passait sous le bord bas ; sur un petit, trois. Une carte de
+     fin doit tenir a l'ecran quel que soit le nombre de hauts faits gagnes —
+     c'est la liste qui defile, pas la carte qui grandit.
+     Mesure : une ligne fait 38 px, les jours 4 px. Quatre lignes = 164 px. */
+  max-height: calc(4 * 38px + 3 * 4px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -2965,10 +2971,28 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    dessin depasse, et elle suit sa taille. */
 #dicewrap { --pd-menu-art: clamp(88px, 26vw, 132px); }
 
+/* ⚠️ LA RESERVE VAUT LE DEBORDEMENT REEL, PAS UN TIERS AU JUGE. Le dessin est
+   centre sur un bouton d'environ 52 px : il ne depasse donc que de la moitie de
+   la difference. `0,34 x art` reservait 39 px la ou 31 suffisent — seize
+   pixels perdus en haut et en bas d'une carte qui, elle, deborde deja. */
 #dicewrap .dc-menu-btns {
-  padding-top: calc(var(--pd-menu-art) * .34);
-  padding-bottom: calc(var(--pd-menu-art) * .34);
+  --pd-menu-debord: max(0px, calc((var(--pd-menu-art) - 52px) / 2));
+  padding-top: var(--pd-menu-debord);
+  padding-bottom: var(--pd-menu-debord);
+  gap: clamp(4px, 1vh, 12px);
 }
+
+/* ⛔ ET LA CARTE D'ACCUEIL DEBORDAIT A TOUTES LES TAILLES. Mesure : 15 px de
+   trop sur 440 x 956, 60 sur 390 x 844, 80 sur 360 x 780, 154 sur 360 x 640.
+   Elle defile depuis ce matin, donc rien ne se perdait — mais une page
+   d'accueil qui defile pour quinze pixels est une page mal reglee, pas une page
+   longue. On resserre ce qui ne porte pas de sens : les marges du texte, l'air
+   autour des medaillons, et le pas des boutons. Le contenu, lui, ne bouge
+   pas. */
+#dicewrap .dc-menu-card p { margin-bottom: clamp(2px, .8vh, 10px); }
+#dicewrap .dc-btn-art.dc-btn-deborde { margin-top: .28em; margin-bottom: .28em; }
+#dicewrap .dc-caps { padding-top: clamp(3px, .8vh, 9px); margin-bottom: clamp(3px, .8vh, 10px); }
+#dicewrap .dc-menu-stats { margin-top: clamp(2px, .6vh, 9px); }
 
 /* ⚠️ ET LE DESSIN PREND LE LISERE DU BOUTON. Il portait deja son propre cerne,
    fin, dessine pour un fond clair ; pose sur le violet a cote d'un bouton
@@ -2978,4 +3002,47 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    bord. */
 #dicewrap .dc-btn-art.dc-btn-deborde > img {
   filter: url(#pd-cerne-gros) drop-shadow(0 4px 7px rgba(0, 0, 0, .55));
+}
+
+
+/* ⛔ L'EN-TETE DU CLASSEMENT ETAIT ECRIT EN #a08f74 — un brun-gris. Sur le
+   violet du panneau, il ne ressort pas : « # CAPITAINE … V D N » se devinait
+   plus qu'il ne se lisait. Cette couleur venait d'un fond clair ; elle n'a
+   jamais ete relue sur celui-la. Le gris-violet clair est celui de TOUS les
+   libelles secondaires du jeu — il se lit, et il ne dit pas autre chose que ce
+   qu'il est. */
+#dicewrap .dc-ladder th { color: var(--txt-dim, #C9BCEA); }
+
+/* ⛔ ET LE BOUTON D'ACHAT REDEVIENT DORE. Le recolorer en violet le faisait lire
+   comme DESACTIVE — « on dirait qu'il est desactive » — parce que dans ce jeu
+   l'or est la couleur de ce qu'on peut faire : le bouton de lancer, celui des
+   effets, celui de rejouer. Un bouton d'achat d'une autre couleur que les
+   autres boutons d'achat n'annonce pas une autre monnaie, il annonce un autre
+   ETAT. La monnaie, c'est la piece a cote du nombre qui la dit. */
+#dicewrap .dc-btn-maudit {
+  --b1: initial;
+  --b2: initial;
+  --b3: initial;
+  color: var(--ink, #2A1A00);
+}
+
+/* Le pas des grands boutons et l'interligne du texte : les deux derniers postes
+   ou l'on peut prendre sans rien retirer. */
+#dicewrap .dc-menu-card .dc-btn-big {
+  padding-top: clamp(6px, 1.2vh, 13px);
+  padding-bottom: clamp(5px, 1vh, 11px);
+}
+
+#dicewrap .dc-menu-card p { line-height: 1.32; }
+
+/* ⚠️ SUR UN ECRAN ETROIT, LES MEDAILLONS CEDENT LES DERNIERS PIXELS. A 360 px
+   de large il manquait encore vingt pixels pour que la carte tienne entiere.
+   Le medaillon d'un capitaine est le seul element de la carte qu'on peut
+   reduire sans rien retirer : on le reconnait a sa couleur et a sa silhouette
+   bien avant de lire son visage. */
+@media (max-width: 380px) {
+  #dicewrap .dc-cap { width: clamp(40px, 12.5vw, 50px); height: clamp(40px, 12.5vw, 50px); }
+  #dicewrap .dc-caps-head { margin-bottom: clamp(2px, .6vh, 6px); }
+  #dicewrap .dc-menu-stats { margin-top: clamp(1px, .4vh, 6px); }
+  #dicewrap .dc-menu-card h2 { margin-bottom: clamp(3px, .8vh, 9px); }
 }
