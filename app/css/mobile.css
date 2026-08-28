@@ -2969,7 +2969,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    La rangee de boutons reserve donc la hauteur du debordement, en haut comme en
    bas. C'est une reservation, pas une marge de style : elle vaut ce que le
    dessin depasse, et elle suit sa taille. */
-#dicewrap { --pd-menu-art: clamp(88px, 26vw, 132px); }
+/* ⚠️ 24,5 vw ET NON 26. Rendre l'air entre les boutons a recreuse douze pixels
+   de debordement : le dessin et la reserve qu'il impose sont les deux seuls
+   postes qui paient les DEUX a la fois — un dessin plus petit deborde moins, et
+   reserve moins. Un vingtieme de taille en moins pour que la carte tienne
+   entiere : c'est le bon echange. */
+#dicewrap { --pd-menu-art: clamp(84px, 24.5vw, 126px); }
 
 /* ⚠️ LA RESERVE VAUT LE DEBORDEMENT REEL, PAS UN TIERS AU JUGE. Le dessin est
    centre sur un bouton d'environ 52 px : il ne depasse donc que de la moitie de
@@ -3046,3 +3051,24 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-menu-stats { margin-top: clamp(1px, .4vh, 6px); }
   #dicewrap .dc-menu-card h2 { margin-bottom: clamp(3px, .8vh, 9px); }
 }
+
+
+/* ⛔ LE DESSIN PASSE DEVANT LES BOUTONS, ET C'EST UNE HISTOIRE D'EMPILEMENT.
+   Il deborde de son bouton et mord sur ceux d'a cote : sans rang, c'est le
+   bouton SUIVANT qui le recouvre — le dernier dessine gagne. Un `z-index` sur
+   l'image suffit au repos : un bouton `position: relative` sans `z-index` ne
+   cree PAS de contexte d'empilement, donc l'image, elle, se compare directement
+   aux boutons voisins et passe devant.
+
+   ⚠️ MAIS A L'APPUI, LE BOUTON EN CREE UN. `.dc-btn:active` porte
+   `transform: translateY(5px)` — et une transformation cree un contexte
+   d'empilement : l'image s'y retrouve enfermee, son rang ne vaut plus que
+   DEDANS, et le bouton voisin la recouvre a nouveau. « Sinon au click ils
+   seront decoupes » : exactement cela. On leve donc le bouton ENTIER pendant
+   l'appui — lui et son dessin montent ensemble au-dessus des autres. */
+#dicewrap .dc-btn-art.dc-btn-deborde > img { z-index: 2; }
+#dicewrap .dc-btn-art.dc-btn-deborde:active { z-index: 3; }
+
+/* Et un peu d'air rendu entre les boutons : serres a 0,28 em, les dessins se
+   chevauchaient franchement l'un l'autre. */
+#dicewrap .dc-btn-art.dc-btn-deborde { margin-top: .42em; margin-bottom: .42em; }

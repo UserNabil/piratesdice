@@ -863,3 +863,43 @@
 #dicewrap .dc-foot-btn:active {
   box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 1px 0 rgba(0, 0, 0, .45);
 }
+
+
+/* ============================================================================
+   LE PLATEAU EN ATTENTE PORTE UN VOILE, PAS SEULEMENT UN FILTRE.
+
+   ⛔ TROIS FOIS SIGNALE, TROIS FOIS INTROUVABLE AU BANC. Huit changements de
+   camp, un effet joue, la cale ouverte et refermee, le parent du plateau
+   verifie a chaque tour : tout etait juste ici. Mais un defaut qu'on ne
+   reproduit pas reste un defaut, et il avait toujours la meme forme — « on ne
+   voit plus lequel est actif, ni pour moi ni pour l'ennemi ».
+
+   Le retrait reposait sur `filter` et `opacity`, deux proprietes qui
+   s'HERITENT et se composent : n'importe quel `filter` pose plus haut dans
+   l'arbre — l'assombrissement de la cale, une animation, un effet a venir — les
+   remplace ou les annule, et le retrait disparait sans que rien n'echoue. C'est
+   la seule facon dont les deux plateaux peuvent se ressembler alors que leurs
+   classes sont justes.
+
+   Un VOILE est un element : il se peint par-dessus, il ne se compose avec rien,
+   et aucun reglage plus haut ne peut l'effacer. Le filtre reste — il fait le
+   gros du retrait quand tout va bien — et le voile garantit qu'il reste
+   toujours quelque chose a voir.
+   ============================================================================ */
+
+#dicewrap .dc-boardwrap { position: relative; }
+
+#dicewrap .dc-boardwrap.dc-idle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: rgba(12, 5, 28, .38);
+  transition: opacity .18s ease;
+}
+
+/* Le plateau qui a la main n'a aucun voile — et son anneau dore passe devant
+   celui d'en face, quoi qu'il arrive. */
+#dicewrap .dc-boardwrap.dc-live { z-index: 3; }
