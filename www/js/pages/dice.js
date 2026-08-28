@@ -70,11 +70,18 @@ function build() {
      ⚠️ ET UN NOM PAR EVENEMENT, PAS PAR FICHIER. Le jeu appelle `play('dice')`
      sans savoir quel echantillon est derriere : changer de banque de sons se
      fait alors ici, en une ligne, et pas dans dix fichiers. */
-  S.sfx.load('dice', 'dice_roll.mp3');
+  /* ⛔ LE LANCER REPREND SON ANCIEN SON. Celui de la nouvelle banque roule plus
+     longtemps et plus haut : entendu a chaque tour, il « donne mal a la tete ».
+     Un son qu'on entend cinquante fois par partie n'a pas le droit d'etre
+     brillant — c'est la premiere qualite qu'on lui demande, avant d'etre beau.
+     La pose, elle, garde le nouveau : elle est plus rare et plus sourde. */
+  S.sfx.load('dice', 'diceDrop.mp3');
   S.sfx.load('pose', 'dice_land_hard.mp3');
   S.sfx.load('coin', 'coin_reward.mp3');
   S.sfx.load('boom', 'explosion.mp3');
-  S.sfx.load('start', 'game_start.mp3');
+  /* Le depart aussi reprend l'ancien : c'est le son qu'on entend en ouvrant une
+     partie, et l'oreille l'associe deja au jeu. */
+  S.sfx.load('start', 'begin.mp3');
   S.sfx.load('open', 'ui_open.mp3');
   S.sfx.load('shut', 'ui_close.mp3');
   S.sfx.load('tour', 'your_turn.mp3');
