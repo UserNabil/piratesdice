@@ -1368,7 +1368,17 @@ function renderTargeting(st) {
   game.classList.toggle('dc-targeting-col', !!(pending && pending.column));
   [0, 1].forEach((seat) => {
     const board = boardOf(seat);
-    if (board) board.classList.toggle('dc-target', !!pending && pending.target === seat);
+    if (!board) return;
+    const vise = !!pending && pending.target === seat;
+    board.classList.toggle('dc-target', vise);
+    /* ⛔ LA GRILLE QU'ON VISE EST CELLE D'EN FACE — DONC CELLE QUI EST EN
+       RETRAIT. Le voile de l'attente la recouvrait pendant toute la visee :
+       « la grille adverse ne s'active pas pour que le joueur puisse voir ». On
+       demande au joueur de choisir une case sur un plateau qu'on assombrit.
+       La marque va sur l'ENVELOPPE parce que c'est elle qui porte le voile, et
+       qu'aucun selecteur ne remonte d'un enfant a son parent. */
+    const env = board.parentNode;
+    if (env && env.classList.contains('dc-boardwrap')) env.classList.toggle('dc-vise', vise);
   });
   /* ⚠️ UN EFFET ARME NE POUVAIT PLUS ETRE DESARME. Le serveur sait pourtant le
      faire depuis le debut — le message `unbonus` et `cancelBonus()` existent —

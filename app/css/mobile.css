@@ -2533,10 +2533,19 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ATTENDENT. Un palmares monte et ne redescend jamais : le badge deviendrait
    permanent, donc invisible. Celui-ci disparait quand la recolte est finie,
    et c'est ce qui lui donne son sens. */
+/* ⛔ LE BADGE ETAIT ACCROCHE AU BOUTON, PAS AU DESSIN. Depuis que les onglets
+   n'ont plus de parchemin, le dessin n'occupe que 62 % de la boite du bouton :
+   un badge cale sur le coin du BOUTON flotte donc a une dizaine de pixels du
+   dessin, dans le vide — « le badge n'est pas sur l'icone ». Il se cale
+   maintenant sur le coin du DESSIN, en suivant sa taille : quand l'onglet est
+   actif et que le dessin grandit a 84 %, le badge le suit tout seul. */
+#dicewrap .dc-onglet { --pd-ic: 62%; }
+#dicewrap .dc-onglet.on { --pd-ic: 84%; }
+
 #dicewrap .dc-pastille {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: calc((100% - var(--pd-ic, 62%)) / 2 - 7px);
+  right: calc((100% - var(--pd-ic, 62%)) / 2 - 7px);
   min-width: 20px;
   height: 20px;
   padding: 0 5px;

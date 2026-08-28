@@ -1011,3 +1011,9 @@
 #dicewrap .dc-cell > .dc-face { filter: none; }
 #dicewrap .dc-cup-armed .dc-face { filter: none; }
 #dicewrap .dc-cup-art { filter: none; }
+
+
+/* La grille qu'on vise redevient pleinement visible, meme si ce n'est pas son
+   tour : c'est l'objet de l'action en cours. */
+#dicewrap .dc-boardwrap.dc-vise::after { display: none; }
+#dicewrap .dc-boardwrap.dc-vise.dc-idle { filter: none; opacity: 1; }
