@@ -445,6 +445,8 @@ export const FR = {
   'shop.rayon.bonus': 'Effets',
   'shop.opening': 'On ouvre les caisses…',
   'shop.owned': 'en cale : {n}',
+  'shop.legendaire': 'Légendaire',
+  'shop.legendaireAide': 'Ne s’achète pas — se gagne sur un haut fait légendaire.',
   'shop.bought': 'acheté — c’est dans votre cale',
   'shop.B001.name': 'Relancer le dé',
 

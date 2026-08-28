@@ -262,7 +262,16 @@ function bouton(p, have) {
       + esc(t(actif ? 'skin.remove' : 'skin.wear')) + '</button>';
   }
   const tar = tarif(p);
-  if (!tar) return '';
+  /* ⛔ UN ARTICLE SANS PRIX N'EST PAS UNE ERREUR D'AFFICHAGE, C'EST UNE
+     RECOMPENSE. Les quatre ornements ne s'achetent avec aucune bourse : ils se
+     gagnent aux hauts faits legendaires. Rendre une chaine vide laissait une
+     carte muette, dont personne ne pouvait deviner ni le prix ni le moyen de
+     l'obtenir — le joueur en aurait conclu a un bogue. La mention dit ce qu'il
+     en est, et elle donne un but. */
+  if (!tar) {
+    return '<span class="dc-legendaire" title="' + esc(t('shop.legendaireAide')) + '">'
+      + '<img src="' + ASSETS + 'img/icon_trophy.png" alt="">' + esc(t('shop.legendaire')) + '</span>';
+  }
   const bourse = S.me ? (tar.devise === 'premium' ? (S.me.premium || 0) : (S.me.coins || 0)) : 0;
   const trop = S.me && bourse < tar.prix;
   const piece = tar.devise === 'premium'
@@ -347,7 +356,7 @@ export function renderSucces(body) {
      partie, et `over` invalide deja la liste. */
   if (!S.succes) {
     body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
-      + '<p class="dc-empty">' + esc(t('rank.loading')) + '</p>';
+      + '<p class="dc-empty">' + esc(t('ladder.reading')) + '</p>';
     if (S.net) S.net.send({ t: 'succes' });
     return;
   }

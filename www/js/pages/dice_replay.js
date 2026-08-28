@@ -78,7 +78,7 @@ function ligneHistoire(p) {
 export function renderReplays(body) {
   if (!S.historique) {
     body.innerHTML = '<h3>' + esc(t('tab.replay')) + '</h3>'
-      + '<p class="dc-empty">' + esc(t('rank.loading')) + '</p>';
+      + '<p class="dc-empty">' + esc(t('ladder.reading')) + '</p>';
     if (S.net) S.net.send({ t: 'historique' });
     return;
   }

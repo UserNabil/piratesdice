@@ -440,6 +440,8 @@ export const AR = {
   'shop.rayon.bonus': 'تأثيرات',
   'shop.opening': 'جارٍ فتح الصناديق…',
   'shop.owned': 'لديك: {n}',
+  'shop.legendaire': 'أسطوري',
+  'shop.legendaireAide': 'لا يُباع — يُنال بإنجاز أسطوري.',
   'shop.bought': 'تم الشراء — صار في عنبرك',
   'shop.B001.name': 'إعادة رمي النرد',
 

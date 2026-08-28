@@ -41,14 +41,25 @@ from scipy import ndimage
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(ICI)
 PLANCHE = os.path.join(RACINE, 'assets', 'motifs_source.png')
+PLANCHE_2 = os.path.join(RACINE, 'assets', 'motifs_source_2.png')
 SKINS = os.path.join(RACINE, 'www', 'dice', 'img', 'skins')
 BASE = os.path.join(RACINE, 'www', 'dice', 'img')
 
-# L'ordre de la planche : deux lignes, deux colonnes.
-MOTIFS = [('M001', 'dragon', (0, 0)),
-          ('M002', 'tentacule', (0, 1)),
-          ('M003', 'os', (1, 0)),
-          ('M004', 'joyaux', (1, 1))]
+# L'ordre de la planche : deux lignes, deux colonnes. Le quatrieme champ dit
+# DE QUELLE PLANCHE vient le morceau — il y en a deux depuis que quatre
+# ornements sont venus s'ajouter aux quatre premiers.
+MOTIFS = [('M001', 'dragon', (0, 0), 1),
+          ('M002', 'tentacule', (0, 1), 1),
+          ('M003', 'os', (1, 0), 1),
+          ('M004', 'joyaux', (1, 1), 1),
+          # ⚠️ LES QUATRE ORNEMENTS NE S'ACHETENT PAS. Ils sont la recompense
+          # des hauts faits legendaires — les huit plus durs du jeu. Un objet
+          # qu'on ne peut pas acheter est le seul qui dise vraiment quelque
+          # chose de celui qui le porte.
+          ('M005', 'lanternes', (0, 0), 2),
+          ('M006', 'paon', (0, 1), 2),
+          ('M007', 'vigne', (1, 0), 2),
+          ('M008', 'ailes', (1, 1), 2)]
 
 # ⚠️ ON NE GRAVE QUE LES JEUX EN VENTE. Les quatre jeux retires (S003 a S005,
 # S007) ajouteraient huit megaoctets pour des combinaisons que personne ne peut
@@ -56,7 +67,7 @@ MOTIFS = [('M001', 'dragon', (0, 0)),
 # pas ; le jour ou l'un d'eux revient au catalogue, il suffit de l'ajouter ici.
 JEUX = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010']
 
-MOTIFS_PAR_ID = {ident: nom for ident, nom, _ in MOTIFS}
+MOTIFS_PAR_ID = {ident: nom for ident, nom, _, _ in MOTIFS}
 
 MARGE = 4          # de pixels entre le motif et le cadre du de
 SATURER = 1.35
@@ -150,10 +161,12 @@ def graver(chemin_de, motif):
 
 
 def morceaux():
-    planche = Image.open(PLANCHE).convert('RGBA')
-    cote = planche.width // 2
+    planches = {1: Image.open(PLANCHE).convert('RGBA'),
+                2: Image.open(PLANCHE_2).convert('RGBA')}
     out = {}
-    for ident, nom, (i, j) in MOTIFS:
+    for ident, nom, (i, j), num in MOTIFS:
+        planche = planches[num]
+        cote = planche.width // 2
         out[ident] = (nom, planche.crop((j * cote, i * cote, (j + 1) * cote, (i + 1) * cote)))
     return out
 
@@ -190,10 +203,14 @@ def tout(ecrire=True):
 
 def planche_de_controle():
     pieces = morceaux()
-    sortie = Image.new('RGBA', (256 * 4, 256 * len(JEUX)), (12, 10, 20, 255))
+    sortie = Image.new('RGBA', (256 * len(pieces), 256 * len(JEUX)), (12, 10, 20, 255))
     for ligne, jeu in enumerate(JEUX):
         for col, (ident, (nom, motif)) in enumerate(pieces.items()):
-            chemin = os.path.join(dossier_du_jeu(jeu), 'die_%d.png' % (col + 1))
+            # ⚠️ LA FACE TOURNE AVEC LA COLONNE, ET ELLE BOUCLE. Ecrit pour
+            # quatre motifs, ce calcul demandait `die_7` des qu'il y en a eu
+            # huit — un fichier qui n'existe pas. Une planche de controle qui
+            # tombe est une planche qu'on n'ouvre plus.
+            chemin = os.path.join(dossier_du_jeu(jeu), 'die_%d.png' % (col % 6 + 1))
             sortie.paste(graver(chemin, motif), (col * 256, ligne * 256))
     chemin = os.path.join(RACINE, 'controle_motifs.png')
     sortie.save(chemin)

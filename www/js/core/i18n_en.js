@@ -420,6 +420,8 @@ export const EN = {
   'shop.rayon.bonus': 'Effects',
   'shop.opening': 'Opening the crates…',
   'shop.owned': 'owned: {n}',
+  'shop.legendaire': 'Legendary',
+  'shop.legendaireAide': 'Not for sale — won with a legendary deed.',
   'shop.bought': 'bought — it is in your hold',
   'shop.B001.name': 'Reroll the die',
 

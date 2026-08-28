@@ -438,6 +438,8 @@ export const ES = {
   'shop.rayon.bonus': 'Efectos',
   'shop.opening': 'Abriendo las cajas…',
   'shop.owned': 'en bodega: {n}',
+  'shop.legendaire': 'Legendario',
+  'shop.legendaireAide': 'No está a la venta: se gana con una hazaña legendaria.',
   'shop.bought': 'comprado — está en tu bodega',
   'shop.B001.name': 'Repetir la tirada',
 
