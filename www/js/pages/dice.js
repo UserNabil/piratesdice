@@ -58,7 +58,7 @@ function shellMarkup() {
          Tout ce qui se touche descend. -->
     <header class="dc-top">
       <div class="dc-wallet" id="dc-wallet"></div>
-      <div class="dc-acts">
+      <div class="dc-acts dc-acts-nue">
         <!-- Un GRELOT ne dit pas « son coupe » : il dit « notification ». Le
              haut-parleur, lui, se lit sans legende, et sa version barree dit
              l'etat coupe sans qu'on ait a comparer deux nuances de gris. -->
@@ -559,6 +559,19 @@ function syncFull() {
  * constante sans jamais tronquer un montant, ce qui serait pire que tout : un
  * joueur doit pouvoir lire ce qu'il possede, au chiffre pres.
  */
+/**
+ * « 15 780 » et non « 15780 ».
+ *
+ * ⚠️ ON LAISSE LE TELEPHONE GROUPER LES CHIFFRES. Un espace insere a la main
+ * serait juste en francais et faux ailleurs : l'anglais met une virgule,
+ * l'arabe ses propres chiffres. `toLocaleString` connait la langue du joueur —
+ * et si elle jette, on rend le nombre nu plutot que rien.
+ */
+function nombre(n) {
+  const v = Math.max(0, Number(n) || 0);
+  try { return v.toLocaleString(); } catch (_) { return String(v); }
+}
+
 function tailleBourse(n) {
   const chiffres = String(Math.max(0, Number(n) || 0)).length;
   if (chiffres <= 3) return '';
@@ -578,20 +591,21 @@ function tailleBourse(n) {
  */
 function renderWallet() {
   if (!S.me) return;
+  /* ⚠️ LES TROIS PLAQUES SONT DES IMAGES, PAS DES BOITES DESSINEES EN CSS. Elles
+     portent leur piece, leurs rivets et leur usure : les refaire en degrades et
+     en ombres aurait donne trois rectangles qui ressemblent au jeu sans en etre.
+     Le texte se pose DEDANS ; c'est la seule chose que le CSS ajoute. */
   $('#dc-wallet').innerHTML = `
-    <div class="dc-rang" title="${esc(t('menu.rang'))}">
-      <img class="dc-insigne" src="${ASSETS}img/icon_elo.png" alt="${esc(t('menu.rang'))}">
-      <b>${S.me.rating}</b>
-    </div>
-    <div class="dc-bourses">
-      <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a
-           zero, en permanence, pour une monnaie qu'on n'a pas encore
-           rencontree, n'apprend rien. Elle apparait au premier haut fait — et
-           cette apparition est elle-meme une recompense. -->
-      ${S.me.premium ? `<div class="dc-coins dc-coins-maudites ${tailleBourse(S.me.premium)}"
-        title="${esc(t('hdr.cursed'))}">${S.me.premium}${PIECE_MAUDITE}</div>` : ''}
-      <div class="dc-coins ${tailleBourse(S.me.coins)}" title="${esc(t('hdr.coins'))}">${S.me.coins}
-        <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
+    <div class="dc-plaque dc-plaque-or ${tailleBourse(S.me.coins)}"
+         title="${esc(t('hdr.coins'))}"><span>${nombre(S.me.coins)}</span></div>
+    <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a zero,
+         en permanence, pour une monnaie qu'on n'a pas encore rencontree,
+         n'apprend rien. Elle apparait au premier haut fait, et cette apparition
+         est elle-meme une recompense. -->
+    ${S.me.premium ? `<div class="dc-plaque dc-plaque-maudite ${tailleBourse(S.me.premium)}"
+         title="${esc(t('hdr.cursed'))}"><span>${nombre(S.me.premium)}</span></div>` : ''}
+    <div class="dc-plaque dc-plaque-rang" title="${esc(t('menu.rang'))}">
+      <span>${nombre(S.me.rating)}</span><em>${esc(t('menu.rangCourt'))}</em>
     </div>`;
 }
 

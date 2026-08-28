@@ -343,6 +343,7 @@ export const AR = {
   'menu.solo': 'تحدَّ الذكاء الاصطناعي',
   'menu.multi': 'تحدَّ لاعبًا',
   'menu.matches': 'مباريات',
+  'menu.rangCourt': 'التصنيف',
   'menu.rang': 'نقاط التصنيف',
   'menu.coins': 'عملات',
   'menu.waiting': 'في انتظار منافس',

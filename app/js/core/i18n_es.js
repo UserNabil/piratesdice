@@ -341,6 +341,7 @@ export const ES = {
   'menu.solo': 'Retar a la IA',
   'menu.multi': 'Retar a un jugador',
   'menu.matches': 'partidas',
+  'menu.rangCourt': 'RANGO',
   'menu.rang': 'Puntos de clasificación',
   'menu.coins': 'monedas',
   'menu.waiting': 'Esperando a un rival',

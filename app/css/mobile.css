@@ -455,6 +455,141 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .4);
 }
 
+
+/* ============================================================================
+   LE BANDEAU DU HAUT, SUR SES PLAQUES DESSINEES.
+
+   ⛔ ON NE REFAIT PAS CES PLAQUES EN CSS. Elles portent leur piece, leurs
+   rivets, leur bois use et leurs dechirures : un rectangle a coins arrondis
+   avec un degrade et une ombre y ressemblerait de loin et jurerait de pres —
+   c'est exactement la difference entre un jeu dessine et un jeu habille.
+
+   ⚠️ ET ELLES S'ETIRENT EN NEUF ZONES, PAS EN BLOC. `background-size: 100% 100%`
+   aurait etire l'image ENTIERE : la piece serait devenue ovale des que le
+   nombre passe a cinq chiffres, et les rivets se seraient allonges avec elle.
+   `border-image` decoupe la plaque en neuf : les quatre coins gardent leur
+   taille, la piece reste ronde dans la bordure GAUCHE, et seul le creux du
+   milieu s'allonge. C'est precisement ce pour quoi cette propriete existe.
+
+   Les fractions viennent des images elles-memes : la piece finit a 153 px sur
+   480 pour l'or, a 154 sur 480 pour la maudite, la coupe a 218 sur 560. Elles
+   sont ecrites en clair pour qu'on puisse les refaire si les dessins changent.
+   ============================================================================ */
+
+#dicewrap .dc-top {
+  /* La banniere dechiree remplace le fond raye : meme traitement en neuf zones,
+     pour que les pointes des extremites gardent leur forme quelle que soit la
+     largeur de l'ecran. */
+  --pd-bar-h: 46px;
+  border-style: solid;
+  border-width: 0 26px;
+  border-image-source: url("../dice/img/bar_top_bg.png");
+  border-image-slice: 0 150 0 150 fill;
+  border-image-repeat: stretch;
+  background: none;
+  box-shadow: none;
+  padding: 5px 4px;
+  gap: 8px;
+}
+
+#dicewrap .dc-wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+#dicewrap .dc-plaque {
+  height: var(--pd-bar-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-direction: column;
+  padding: 0 8px 0 2px;
+  border-style: solid;
+  border-image-repeat: stretch;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--gold-hi, #FFE479);
+  text-shadow: 0 2px 3px rgba(0, 0, 0, .75);
+  white-space: nowrap;
+}
+
+#dicewrap .dc-plaque span { display: block; }
+
+/* L'or : la piece a couronne occupe les 153 premiers pixels sur 480, le cadre
+   fait 36 px de large. */
+#dicewrap .dc-plaque-or {
+  border-image-source: url("../dice/img/slot_or.png");
+  border-image-slice: 34 30 34 153 fill;
+  border-width: calc(var(--pd-bar-h) * 34 / 212) calc(var(--pd-bar-h) * 30 / 212)
+                calc(var(--pd-bar-h) * 34 / 212) calc(var(--pd-bar-h) * 153 / 212);
+}
+
+/* La maudite : meme decoupe, et le chiffre en blanc d'argent comme la piece. */
+#dicewrap .dc-plaque-maudite {
+  border-image-source: url("../dice/img/slot_maudit.png");
+  border-image-slice: 34 30 34 154 fill;
+  border-width: calc(var(--pd-bar-h) * 34 / 222) calc(var(--pd-bar-h) * 30 / 222)
+                calc(var(--pd-bar-h) * 34 / 222) calc(var(--pd-bar-h) * 154 / 222);
+  color: #F2F6FF;
+}
+
+/* Le classement : la coupe tient dans les 218 premiers pixels sur 560, et le
+   mot passe SOUS le nombre — c'est ainsi qu'il est dessine. */
+#dicewrap .dc-plaque-rang {
+  border-image-source: url("../dice/img/slot_rang.png");
+  border-image-slice: 38 34 38 218 fill;
+  border-width: calc(var(--pd-bar-h) * 38 / 257) calc(var(--pd-bar-h) * 34 / 257)
+                calc(var(--pd-bar-h) * 38 / 257) calc(var(--pd-bar-h) * 218 / 257);
+}
+
+#dicewrap .dc-plaque-rang em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: .6px;
+  color: #C9AEF5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+
+/* ⚠️ LE NOMBRE MAIGRIT, LA PLAQUE NE GROSSIT PAS. Une plaque qui s'allongerait a
+   chaque piece gagnee pousserait les autres, et la barre danserait a chaque fin
+   de partie. Le creux du milieu a de la place pour cinq chiffres ; au-dela, le
+   texte se resserre. */
+#dicewrap .dc-plaque.dc-coins-c4 { font-size: 16px; }
+#dicewrap .dc-plaque.dc-coins-c5 { font-size: 14px; }
+#dicewrap .dc-plaque.dc-coins-c6 { font-size: 12px; letter-spacing: -.3px; }
+
+/* Les reglages : une plaque carree, donc pas d'etirement du tout. */
+#dicewrap .dc-plaque-reglages {
+  width: var(--pd-bar-h);
+  height: var(--pd-bar-h);
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: url("../dice/img/slot_reglages.png") center / contain no-repeat;
+}
+
+#dicewrap .dc-plaque-reglages:active { transform: translateY(1px); }
+
+/* ⛔ LES TROIS AUTRES BOUTONS DU BANDEAU DISPARAISSENT SUR TELEPHONE. Le son se
+   regle dans les reglages, le plein ecran n'a pas de sens dans une application
+   deja plein ecran, et la croix de fermeture ne ferme rien qu'on veuille
+   fermer. Ils vivaient la depuis la version de bureau. */
+#dicewrap .dc-acts-nue #dc-mute,
+#dicewrap .dc-acts-nue #dc-full,
+#dicewrap .dc-acts-nue #dc-close { display: none; }
+#dicewrap .dc-acts-nue { margin-inline-start: auto; }
+
 /* ============================================================================
    LA BARRE DU BAS : LA NAVIGATION SOUS LE POUCE.
 

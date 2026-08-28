@@ -359,6 +359,7 @@ export const EN = {
   'menu.solo': 'Challenge the AI',
   'menu.multi': 'Challenge a player',
   'menu.matches': 'matches',
+  'menu.rangCourt': 'RANK',
   'menu.rang': 'Rank points',
   'menu.coins': 'coins',
   'menu.waiting': 'Waiting for a challenger',

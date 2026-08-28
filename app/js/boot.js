@@ -392,19 +392,25 @@ function openSettings() {
  * plus difficile a atteindre d'un telephone tenu d'une main, pour un bouton
  * qu'on cherche precisement quand on veut regler quelque chose.
  */
+/**
+ * Le bouton des reglages, sur sa plaque, au bout du bandeau du haut.
+ *
+ * ⚠️ IL N'EST PAS UNE PAGE, DONC IL N'EST PAS DANS LA BARRE DU BAS. Celle-ci
+ * porte des lieux ou l'on va et d'ou l'on revient ; les reglages sont une boite
+ * qui s'ouvre par-dessus et se referme. Les melanger apprendrait au joueur que
+ * la barre du bas fait deux choses differentes.
+ */
 function addHeaderButtons() {
-  const barre = document.querySelector('#dicewrap .dc-bas');
-  if (!barre || document.getElementById('pd-settings-btn')) return;
+  const acts = document.querySelector('#dicewrap .dc-acts');
+  if (!acts || document.getElementById('pd-settings-btn')) return;
 
   const gear = document.createElement('button');
-  gear.className = 'dc-onglet';
+  gear.className = 'dc-plaque-reglages';
   gear.id = 'pd-settings-btn';
   gear.title = t('set.title');
   gear.setAttribute('aria-label', t('set.title'));
-  gear.innerHTML = '<img src="dice/img/icon_settings.png" alt="">'
-    + '<span>' + t('set.title') + '</span>';
   gear.onclick = openSettings;
-  barre.appendChild(gear);
+  acts.appendChild(gear);
 }
 
 /* ── les feuilles : une barre de fermeture visible ────────────────────────

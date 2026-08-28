@@ -346,6 +346,7 @@ export const FR = {
   'menu.solo': 'Affronter l’IA',
   'menu.multi': 'Défier un joueur',
   'menu.matches': 'parties',
+  'menu.rangCourt': 'CLASSEMENT',
   'menu.rang': 'Points de classement',
   'menu.coins': 'pièces',
   'menu.waiting': 'En attente d’un adversaire',
