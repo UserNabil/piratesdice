@@ -560,10 +560,8 @@ export function onState(msg) {
   }
 
   /* La pose : le MEME de, joue plus sec et plus haut que le lancer. */
-  /* ⚠️ LA POSE A SON SON, ELLE N'EST PLUS LE LANCER JOUE PLUS VITE. On tirait
-     les deux d'un seul echantillon faute d'en avoir deux ; la banque en fournit
-     un vrai — un de qui touche le bois, pas un de qui roule en accelere. */
-  if (placed) { S.sfx.play('pose', 0.42); markPlaced(boardOf(placed.seat), placed.cell); }
+  /* La pose : le MEME de, joue plus sec et plus haut que le lancer. */
+  if (placed) { S.sfx.play('dice', 0.42, 1.28); markPlaced(boardOf(placed.seat), placed.cell); }
 
   let settleIn = 0;
   if (destroyed.length) {
