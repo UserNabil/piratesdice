@@ -480,17 +480,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   /* La banniere dechiree remplace le fond raye : meme traitement en neuf zones,
      pour que les pointes des extremites gardent leur forme quelle que soit la
      largeur de l'ecran. */
-  --pd-bar-h: 46px;
+  --pd-bar-h: 58px;
   border-style: solid;
-  border-width: 0 26px;
+  border-width: 0 34px;
   border-image-source: url("../dice/img/bar_top_bg.png");
   border-image-slice: 0 150 0 150 fill;
   border-image-repeat: stretch;
   background: none;
   box-shadow: none;
-  padding: 5px 4px;
-  gap: 8px;
+  /* ⚠️ LA BANNIERE NE TOUCHE PLUS LES BORDS. Elle est DESSINEE comme une
+     banderole, avec des pointes dechirees a chaque bout : collee au bord, on ne
+     voit plus qu'elle a une fin — elle passe pour un bandeau plein, et ses
+     pointes pour un defaut. Un peu d'air de chaque cote, et elle redevient ce
+     qu'elle est. */
+  margin: 0 10px;
+  padding: 6px 2px 10px;
+  gap: 10px;
 }
+
+/* ⛔ LE TRAIT DORE SOUS LE BANDEAU N'A PLUS LIEU D'ETRE. Il soulignait un
+   bandeau rectangulaire qui allait d'un bord a l'autre ; sous une banderole
+   dechiree et detachee des bords, il passe DERRIERE elle et depasse des deux
+   cotes — « je vois un trait dore derriere la top bar ». */
+#dicewrap .dc-top::after { display: none; }
 
 #dicewrap .dc-wallet {
   display: flex;

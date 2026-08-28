@@ -418,6 +418,73 @@ function addHeaderButtons() {
    il fallait deviner qu'un second appui sur l'onglet la refermait — ou
    connaitre le bouton RETOUR d'Android. */
 
+/**
+ * ⛔ L'APPLICATION NE SORT JAMAIS DE L'APPLICATION.
+ *
+ * Une WebView renvoie au navigateur du telephone tout ce qu'elle ne sait pas
+ * afficher elle-meme : un lien `target="_blank"`, un `href` vers un autre
+ * domaine, un `window.open`, une redirection d'un module tiers. Le joueur se
+ * retrouve alors dans Safari, avec des onglets qu'il n'a pas demandes et une
+ * page « connexion impossible » quand il n'a pas de reseau — c'est
+ * exactement ce qui vient d'arriver, et c'est inacceptable : le jeu doit tenir
+ * dans sa fenetre, hors ligne comme en ligne.
+ *
+ * On ferme donc la porte au niveau du document, en phase de CAPTURE — avant
+ * que le clic n'atteigne le lien, et quel que soit le code qui l'a pose. Le
+ * seul lien legitime du jeu, les conditions d'utilisation, passe par le
+ * navigateur INTEGRE quand le telephone en offre un ; sinon il ne fait rien
+ * plutot que d'ejecter le joueur.
+ *
+ * ⚠️ `window.open` EST NEUTRALISE AUSSI. Un plugin, une bibliotheque ou un bout
+ * de code futur peut l'appeler sans passer par un lien : le seul garde-fou qui
+ * tienne est celui qui ne depend de personne.
+ */
+function fermerLesPortes() {
+  const dedans = (url) => {
+    try {
+      const u = new URL(url, document.baseURI);
+      return u.origin === location.origin || u.protocol === 'capacitor:' || u.protocol === 'file:';
+    } catch (_) { return false; }
+  };
+
+  const ouvrirDedans = async (url) => {
+    const cap = window.Capacitor;
+    const nav = cap && cap.Plugins && cap.Plugins.Browser;
+    if (nav && typeof nav.open === 'function') {
+      try { await nav.open({ url, presentationStyle: 'popover' }); return true; }
+      catch (_) { /* pas de navigateur integre : on se tait */ }
+    }
+    return false;
+  };
+
+  document.addEventListener('click', (ev) => {
+    const lien = ev.target && ev.target.closest && ev.target.closest('a[href]');
+    if (!lien) return;
+    const url = lien.getAttribute('href') || '';
+    if (!url || url.startsWith('#')) return;
+    if (dedans(url)) return;
+    /* Tout ce qui sort est arrete ici. */
+    ev.preventDefault();
+    ev.stopPropagation();
+    ouvrirDedans(lien.href).then((ok) => {
+      /* ⚠️ SI LE NAVIGATEUR INTEGRE MANQUE, ON NE FAIT PAS SEMBLANT. Le lien des
+         conditions doit rester JOIGNABLE — les deux boutiques l'exigent, et un
+         lien mort y est un motif de refus. On rend alors la main au systeme
+         plutot que de laisser le joueur devant un bouton qui ne fait rien : la
+         regle « on ne sort pas de l'application » cede devant une obligation
+         legale, et devant elle seule. */
+      if (!ok) window.location.href = lien.href;
+    });
+  }, true);
+
+  try {
+    window.open = function () {
+      console.warn('[porte] window.open refuse : le jeu ne sort pas de sa fenetre');
+      return null;
+    };
+  } catch (_) { /* certaines WebViews refusent la reaffectation : le clic reste garde */ }
+}
+
 function addSheetBar() {
   const panel = document.getElementById('dc-panel');
   if (!panel || panel.querySelector('.pd-sheet-bar')) return;
@@ -467,6 +534,7 @@ async function start() {
   await openDice();
   addHeaderButtons();
   addSheetBar();
+  fermerLesPortes();
   startFitting();
   wireMotion();
   /* ⚠️ LE RIDEAU SE LEVE EN DERNIER, ET C'EST TOUT L'INTERET.

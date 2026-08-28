@@ -598,12 +598,14 @@ function renderWallet() {
   $('#dc-wallet').innerHTML = `
     <div class="dc-plaque dc-plaque-or ${tailleBourse(S.me.coins)}"
          title="${esc(t('hdr.coins'))}"><span>${nombre(S.me.coins)}</span></div>
-    <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a zero,
-         en permanence, pour une monnaie qu'on n'a pas encore rencontree,
-         n'apprend rien. Elle apparait au premier haut fait, et cette apparition
-         est elle-meme une recompense. -->
-    ${S.me.premium ? `<div class="dc-plaque dc-plaque-maudite ${tailleBourse(S.me.premium)}"
-         title="${esc(t('hdr.cursed'))}"><span>${nombre(S.me.premium)}</span></div>` : ''}
+    <!-- ⛔ LA BOURSE MAUDITE S'AFFICHE TOUJOURS, MEME A ZERO. Je l'avais masquee
+         tant qu'elle etait vide, en pensant qu'un compteur a zero n'apprend
+         rien. C'est l'inverse : une monnaie qu'on ne voit jamais est une
+         monnaie qui n'existe pas. A zero, la plaque POSE LA QUESTION — le
+         joueur cherche comment la remplir, et la reponse est dans les hauts
+         faits. Et la barre ne change plus de forme au premier succes. -->
+    <div class="dc-plaque dc-plaque-maudite ${tailleBourse(S.me.premium || 0)}"
+         title="${esc(t('hdr.cursed'))}"><span>${nombre(S.me.premium || 0)}</span></div>
     <div class="dc-plaque dc-plaque-rang" title="${esc(t('menu.rang'))}">
       <span>${nombre(S.me.rating)}</span><em>${esc(t('menu.rangCourt'))}</em>
     </div>`;
