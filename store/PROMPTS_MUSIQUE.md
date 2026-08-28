@@ -1,3 +1,14 @@
+> ⚠️ **CE DOCUMENT A SERVI, ET IL N'EST PLUS LE CHEMIN ACTUEL.** Depuis le
+> 2026-08-28, le jeu tourne sur deux morceaux **composés par l'admin**
+> (« Tavern Waltz » au pont, « Windswept Return » en partie) : pas de
+> générateur, pas de licence tierce, pas de redevance. Voir
+> `www/dice/music/LICENCE.md` pour ce qui est réellement embarqué et ce qui a
+> été fait aux fichiers.
+>
+> Ce qui suit reste utile pour DEUX choses : commander une piste de plus dans le
+> même esprit, et la préparer correctement (l'encodage, la boucle et les pièges
+> de licence des générateurs sont documentés plus bas, mesures à l'appui).
+
 # La musique du jeu — de quoi la faire générer
 
 L'admin a demandé « comme celle de Sea of Thieves ». Ce n'est donc ni du

@@ -65,6 +65,41 @@ export function canal(nom) {
 }
 
 /**
+ * ⛔ LIBERER LE PARAMETRE AVANT DE LUI PARLER, TOUJOURS.
+ *
+ * Un `AudioParam` en pleine automation REFUSE tout : `setTargetAtTime` jette,
+ * `setValueAtTime` jette, et — c'est la ou le piege se referme — la simple
+ * affectation `param.value = x` jette AUSSI. Un `catch` dont le repli jette a
+ * son tour n'est pas un filet de securite : l'exception ressort, et si elle
+ * ressort dans un abonnement, elle est avalee sans un mot.
+ *
+ * C'est exactement ce qui est arrive : bouger un curseur pendant le fondu de
+ * 1,4 s laissait le haut-parleur du bandeau afficher l'etat d'avant, sans
+ * aucune erreur visible. Mesure au banc, pas deduction.
+ *
+ * `cancelAndHoldAtTime` est le seul appel qui interrompe une courbe en cours en
+ * gardant la valeur atteinte — donc sans clic. `cancelScheduledValues` ne
+ * l'annule pas partout, d'ou le second essai.
+ */
+function liberer(param) {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  try {
+    if (param.cancelAndHoldAtTime) param.cancelAndHoldAtTime(t);
+    else param.cancelScheduledValues(t);
+  } catch (_) {
+    try { param.cancelScheduledValues(t); } catch (__) { /* rien a annuler */ }
+  }
+}
+
+/** Poser une valeur, en vingt millisecondes pour ne pas claquer. */
+function viser(param, valeur) {
+  liberer(param);
+  try { param.setTargetAtTime(valeur, ctx.currentTime, 0.02); }
+  catch (_) { try { param.value = valeur; } catch (__) { /* on renonce, sans jeter */ } }
+}
+
+/**
  * Le niveau d'un canal.
  *
  * ⚠️ ON NE POSE PAS LA VALEUR SECHEMENT. Un saut de gain instantane fait un
@@ -75,9 +110,7 @@ export function canal(nom) {
 export function niveauCanal(nom, facteur) {
   const g = canal(nom);
   if (!g) return;
-  const v = Math.max(0, Number(facteur) || 0);
-  try { g.gain.setTargetAtTime(v, ctx.currentTime, 0.02); }
-  catch (_) { g.gain.value = v; }
+  viser(g.gain, Math.max(0, Number(facteur) || 0));
 }
 
 /**
@@ -225,8 +258,43 @@ export function debrancherElement(el) {
 
 /** Le niveau propre d'un element branche (le melange regle dans le code). */
 export function niveauElement(propre, valeur) {
-  if (!propre) return;
-  const v = Math.max(0, Number(valeur) || 0);
-  try { propre.gain.setTargetAtTime(v, ctx.currentTime, 0.02); }
-  catch (_) { propre.gain.value = v; }
+  if (!propre || !ctx) return;
+  viser(propre.gain, Math.max(0, Number(valeur) || 0));
+}
+
+/**
+ * Amener un gain d'une valeur a l'autre, en COURBE DE PUISSANCE CONSTANTE.
+ *
+ * ⚠️ DEUX RAMPES DROITES QUI SE CROISENT FONT UN TROU DE 3 dB EN LEUR MILIEU.
+ * A mi-chemin, chaque piste est a la moitie de son amplitude : la somme des
+ * PUISSANCES vaut alors la moitie, et on entend un creux au beau milieu du
+ * fondu. La racine carree corrige exactement cela — c'est la meme courbe qu'on
+ * a utilisee pour recoudre les boucles elles-memes.
+ */
+export function fondre(propre, depart, arrivee, secondes) {
+  if (!propre || !ctx) return;
+  const t = ctx.currentTime;
+  const d = Math.max(0, Number(depart) || 0);
+  const a = Math.max(0, Number(arrivee) || 0);
+  liberer(propre.gain);
+  try {
+    const N = 48;
+    const courbe = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const u = i / (N - 1);
+      courbe[i] = Math.sqrt(d * d * (1 - u) + a * a * u);
+    }
+    propre.gain.setValueCurveAtTime(courbe, t, Math.max(0.02, secondes));
+  } catch (_) {
+    /* La courbe a ete refusee : on retombe sur une rampe droite, qui vaut
+       toujours mieux qu'une coupure nette. Et si elle est refusee aussi, on
+       renonce EN SILENCE — jeter ici ferait tomber tout l'abonnement. */
+    try {
+      liberer(propre.gain);
+      propre.gain.setValueAtTime(d, ctx.currentTime);
+      propre.gain.linearRampToValueAtTime(a, ctx.currentTime + Math.max(0.02, secondes));
+    } catch (__) {
+      try { propre.gain.value = a; } catch (___) { /* on renonce */ }
+    }
+  }
 }

@@ -26,11 +26,18 @@ const CLE = 'pd.volumes';
 
 /* Ce que vaut 100 % sur chaque curseur, en facteur applique aux niveaux regles
    dans le code. Effets : 100 % = le melange d'origine, pas plus. Musique :
-   60 % = le melange d'origine, donc de la marge pour monter. */
-const PLAFOND = { effets: 1, musique: 1 / 0.6 };
+   70 % = le melange d'origine, donc de la marge pour monter.
+
+   ⚠️ LE DEPART EST A 70 ET NON A 60, ET C'EST UNE QUESTION DE MARGE. A 60, le
+   maximum du curseur valait 1/0,6 = 1,67 : applique au niveau du pont (0,60),
+   la musique atteignait exactement le plein echelle, et les des qui s'y
+   ajoutaient n'avaient plus nulle part ou aller — c'est la que ca sature. A 70,
+   le maximum vaut 1,43 : le joueur peut toujours monter la musique de 3 dB
+   au-dessus du melange regle, et il reste de la place pour le jeu par-dessus. */
+const PLAFOND = { effets: 1, musique: 1 / 0.7 };
 
 /** Position de depart des curseurs, en pour-cent. */
-export const DEFAUT = { effets: 100, musique: 60 };
+export const DEFAUT = { effets: 100, musique: 70 };
 
 const abonnes = new Set();
 let niveaux = null;

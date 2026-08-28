@@ -1,37 +1,70 @@
 # D'où vient cette musique, et ce qu'on a le droit d'en faire
 
-⛔ **CE FICHIER N'EST PAS UNE FORMALITE.** Cinq `.m4a` sont arrivés ici sans une
-ligne sur leur provenance : ni dans le dépôt, ni dans leurs métadonnées. Une
-musique dont on ne sait pas d'où elle vient est une musique qu'on ne peut pas
-défendre — et elle part dans un binaire signé, sur deux boutiques. À chaque
-piste ajoutée ou remplacée : service, date, numéro d'abonnement, date de
-téléchargement. Une ligne, ici, au moment où on la copie.
+⛔ **CE FICHIER N'EST PAS UNE FORMALITE.** Une musique dont on ne sait pas d'où
+elle vient est une musique qu'on ne peut pas défendre — et elle part dans un
+binaire signé, sur deux boutiques. À chaque piste ajoutée ou remplacée :
+d'où elle vient, qui l'a faite, et sous quelle licence. Une ligne, ici, au
+moment où on la copie.
 
-## État au 2026-08-28
+## État au 2026-08-28 — les pistes sont celles de l'admin
 
-| fichier | durée | débit mesuré | provenance |
+| fichier | durée | débit | source |
 |---|---|---|---|
-| `music_menu.m4a` | 96 s | 61 kbps | pack fourni par l'admin, `~/Downloads/pirates_dice_audio_pack` |
-| `music_game_01.m4a` | 120 s | 58 kbps | idem |
-| `music_game_02.m4a` | 120 s | 59 kbps | idem |
-| `music_game_03.m4a` | 120 s | 59 kbps | idem |
-| `music_victory.m4a` | 4 s | 43 kbps | idem |
+| `music_menu.m4a` | 222,4 s (boucle à 220,8 s) | AAC 127 kb/s, stéréo 48 kHz | « Tavern Waltz », composée par l'admin (`~/Downloads/dice_music`) |
+| `music_game_01.m4a` | 83,6 s (boucle à 81,6 s) | AAC 119 kb/s, stéréo 48 kHz | « Windswept Return », composée par l'admin (idem) |
 
-Tous en AAC mono 44,1 kHz, atome `iTunSMPB` présent (le gapless est donc porté
-par le conteneur). Mesures faites à `afinfo`.
+Aucune licence tierce, aucune redevance, aucune attribution due : les deux
+morceaux sont de l'auteur du jeu. C'est la situation la plus simple possible, et
+c'est celle qu'on voulait.
 
-⚠️ **CE SONT DES PLACEHOLDERS, ET C'EST LEUR AUTEUR QUI LE DIT.** Le README du
-pack :
+Les cinq `.m4a` de remplacement qui vivaient ici — placeholders synthétiques
+sans provenance ni licence — ont été retirés le même jour.
 
-> *Music is a synthetic approximation of a restrained maritime chamber-folk
-> palette. For a final commercial soundtrack, replace the procedural instrument
-> timbres with recorded/live or dedicated music-generation renders while keeping
-> the same filenames and durations.*
+## Ce qui a été fait aux fichiers, et pourquoi
 
-Des timbres synthétisés proceduralement : aucun réglage ne les transformera en
-folk de chambre joué. Et **aucune licence ne les accompagne** — c'est le point
-qui bloque, pas le style. Tant que cette ligne n'est pas remplie, ces cinq
-fichiers ne devraient pas partir dans une version publique.
+Les sources sont deux MP3 stéréo 48 kHz (202 et 186 kb/s) de 239,8 s et 120,0 s.
+Aucun des deux ne bouclait : **le premier s'éteint sur ses deux dernières
+secondes, le second fait un fondu de quatre**, puis chacun laisse ~1,1 s de
+silence. En lecture bouclée, on entendait la musique mourir puis repartir.
+
+Le point de coupe n'a pas été choisi à l'oreille ni sur un tempo supposé — un
+tempo estimé à 2 bpm près décale la jointure d'un demi-temps au bout d'une
+minute. Il a été **mesuré** : on cherche l'endroit où la fin ressemble le plus au
+début, sur deux critères — le dessin des attaques (précision rythmique) et la
+couleur harmonique (l'accord de la fin mène-t-il à celui du début).
+
+| | point retenu | écart au reste | gardé |
+|---|---|---|---|
+| Tavern Waltz | 220,789 s | 3,4 σ | 93 % |
+| Windswept Return | 81,600 s | 4,0 σ | 68 % |
+
+Pour Windswept, un point à 65,4 s notait mieux (4,8 σ) mais jetait 45 % du
+morceau : 81,6 s est le compromis, et il reste largement au-dessus du lot.
+
+La jointure est recousue par un fondu croisé à puissance constante (1,6 s et
+2,0 s). Vérification, trois tours bout à bout :
+
+| | saut de niveau au raccord | pires transitions du morceau |
+|---|---|---|
+| piste brute bouclée | 23,7 dB / 26,5 dB | ~11 dB |
+| après recouture | **2,2 dB / 5,4 dB** | ~10,5 dB |
+
+Le raccord est rentré dans le bruit ordinaire du morceau : il ne s'entend plus.
+
+⚠️ **CHAQUE FICHIER GARDE `fondu` SECONDES DE MATIÈRE APRÈS SON POINT DE
+BOUCLE**, et c'est volontaire : le raccord n'est pas cuit dans le fichier, il est
+calculé au vol par le jeu, qui croise deux lecteurs. Raison mesurée dans
+l'application : `audio.loop = true` **cale ~450 ms** dans WKWebView, tampon
+plein et sans aucun déplacement de tête de lecture. Un fichier auto-bouclant
+aurait donc été parfait sur le papier et troué à l'oreille. Ne pas raccourcir un
+fichier à son point de boucle en croyant bien faire — la matière en trop est le
+recouvrement.
+
+⚠️ **Les masters sont les MP3 d'origine**, conservés hors du dépôt. Si les
+pistes doivent être refaites, repartir de là — jamais de ces `.m4a`, qui sont
+déjà un second encodage. Le script qui fabrique les boucles est reproductible
+et documenté ; il vit dans le scratchpad de la session, à recopier dans
+`outils/` s'il doit resservir.
 
 ## Pour les remplacer
 
