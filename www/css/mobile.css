@@ -1952,3 +1952,82 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   opacity: .45;
   margin: 10px 0 2px;
 }
+
+
+/* ============================================================================
+   LA BANNIERE DU HAUT TIENT DANS N'IMPORTE QUELLE LARGEUR.
+
+   ⛔ LE DEFAUT, MESURE. Sur 440 px de large, la banniere offre 352 px de creux
+   et son contenu en demande 486 : la plaque de classement finissait a 448 et
+   sortait de l'ecran par la droite, le bouton des reglages n'etait meme plus
+   dessine. Sur 390 px, 184 px de trop. En paysage — 956 et 844 — rien ne
+   depassait : le defaut n'existait qu'en PORTRAIT, ce qui explique qu'il ait
+   survecu a la refonte, mesuree en paysage.
+
+   ⚠️ ET LES PLAQUES NE PEUVENT PAS MAIGRIR AU CAS PAR CAS. Elles sont DESSINEES :
+   une largeur qui suivrait le nombre ferait danser la barre a chaque piece
+   gagnee — c'est precisement ce qu'on venait de corriger. Une plaque qui se
+   comprimerait seule desalignerait les trois. La seule reponse honnete est de
+   faire respirer L'ENSEMBLE : une seule grandeur, `--pd-bar-h`, dont tout le
+   reste — largeurs, creux, pointes dechirees, corps du texte — est un multiple
+   fixe. La banniere change de TAILLE selon l'ecran ; elle ne change jamais de
+   FORME, et jamais selon le contenu.
+
+   Le diviseur vient de l'addition, a 58 px de haut :
+       pointes 2x34 + creux 2x2 + jour 10 + jours de bourse 2x8
+       + plaques 118 + 118 + 132 + reglages 58            = 524 px, soit 9,03 h
+   On divise par 9,1 pour garder un cheveu de jeu. Les 20 px des marges
+   laterales sont fixes, donc retires avant la division ; les encoches aussi,
+   car la coque les rembourre deja et `100vw` les ignore.
+
+   Verifie au banc apres coup : 440 -> 46 px de haut, 390 -> 41, 320 -> 32
+   (le plancher), 956 en paysage -> 58, le plafond. Plus rien hors de l'ecran.
+   ============================================================================ */
+
+#dicewrap .dc-top {
+  --pd-bar-h: clamp(32px, calc((100vw - env(safe-area-inset-left, 0px)
+              - env(safe-area-inset-right, 0px) - 20px) / 9.1), 58px);
+  gap: calc(var(--pd-bar-h) * 10 / 58);
+  padding: calc(var(--pd-bar-h) * 6 / 58) calc(var(--pd-bar-h) * 2 / 58)
+           calc(var(--pd-bar-h) * 10 / 58);
+  border-width: 0 calc(var(--pd-bar-h) * 34 / 58);
+}
+
+/* La bourse n'est qu'un rail : pas de fond, pas de creux, et son seul jour
+   suit la meme grandeur que le reste. */
+#dicewrap .dc-wallet {
+  gap: calc(var(--pd-bar-h) * 8 / 58);
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+#dicewrap .dc-plaque {
+  width: calc(var(--pd-bar-h) * 118 / 58);
+  height: var(--pd-bar-h);
+  font-size: calc(var(--pd-bar-h) * 17 / 58);
+  padding: 0 calc(var(--pd-bar-h) * 8 / 58) 0 calc(var(--pd-bar-h) * 2 / 58);
+}
+
+#dicewrap .dc-plaque-rang { width: calc(var(--pd-bar-h) * 132 / 58); }
+#dicewrap .dc-plaque-rang em { font-size: calc(var(--pd-bar-h) * 8 / 58); }
+#dicewrap .dc-plaque.dc-coins-c5 { font-size: calc(var(--pd-bar-h) * 15 / 58); }
+
+#dicewrap .dc-plaque-reglages {
+  width: var(--pd-bar-h);
+  height: var(--pd-bar-h);
+}
+
+/* ⚠️ ET ELLES SE PARTAGENT LA BANDEROLE, AU LIEU DE S'ENTASSER A GAUCHE. Les
+   quatre plaques etaient reparties en DEUX paquets — la bourse d'un cote, les
+   actions de l'autre — et `space-between` ne separait donc que ces deux
+   paquets : les trois monnaies collees a gauche, l'engrenage a droite, et 450 px
+   de banderole vide entre les deux. Sur la maquette, les quatre plaques se
+   suivent a jours egaux d'un bout a l'autre.
+
+   `display: contents` efface les deux emballages de la MISE EN PAGE sans les
+   retirer du document : les quatre plaques deviennent les enfants directs de la
+   banderole, `space-between` leur donne trois jours identiques, et les regles
+   qui visent `.dc-acts-nue #dc-mute` continuent de s'appliquer — l'element reste
+   un descendant, seule sa boite disparait. */
+#dicewrap .dc-wallet,
+#dicewrap .dc-acts { display: contents; }

@@ -1,0 +1,18 @@
+<!doctype html><meta charset=utf-8>
+<style>
+ html,body{margin:0;background:#2a1650}
+ .rang{display:flex;gap:60px;padding:60px}
+ .carte{position:relative;width:219px;height:62px;border-radius:26px 22px 28px 24px;
+   background:linear-gradient(160deg,#7b3fd4,#4a1f8a);box-shadow:0 0 0 2px #c9a227 inset}
+ .de{width:40px;height:40px;display:block}
+ /* etat CREUX = 0 % des keyframes reelles */
+ body.creux .carte{filter:drop-shadow(0 0 10px rgba(201,162,39,.3))}
+ body.creux .de   {filter:drop-shadow(0 0 7px rgba(255,176,64,.85))}
+ /* etat SOMMET = 50 % des keyframes reelles */
+ body.sommet .carte{filter:drop-shadow(0 0 22px rgba(255,205,110,.55))}
+ body.sommet .de   {filter:drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 9px rgba(255,140,40,.9))}
+</style>
+<div class=rang>
+  <div class=carte id=carte></div>
+  <img class=de id=de src="dice/img/die_5.png">
+</div>
