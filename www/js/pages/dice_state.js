@@ -205,6 +205,12 @@ export const S = {
   me: null,
   inventory: [],
   shop: [],
+  /* ⚠️ LA LISTE DES CAPITAINES VIENT DU SERVEUR, ET ELLE PORTE LEURS SEUILS.
+     Le client en avait une copie ecrite en dur ; le jour ou un seuil change,
+     deux verites s'installent — l'ecran promet un cadenas a 25 parties pendant
+     que le serveur en exige 40. On garde une liste de secours pour le premier
+     rendu, et celle du serveur ecrase des l'accueil. */
+  captains: [],
   rules: { maxBonusPerMatch: 3, aiReward: 20, rankReward: 100 },
   panel: null,
   queued: false,

@@ -15,6 +15,8 @@ export const EN = {
   'menu.friend': 'Play with a friend',
 
   'cap.choose': 'Choose your captain',
+  'cap.locked': 'Locked — {n} more games',
+  'cap.lockedLong': 'Sails with you after {n} finished games.',
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'One free reroll per match.',
   'cap.teach.name': 'Blackbeard',

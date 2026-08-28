@@ -27,6 +27,35 @@ function known(id) {
   return CAPTAIN_IDS.includes(id);
 }
 
+/**
+ * La liste a dessiner : celle du serveur si elle est arrivee, sinon la notre.
+ *
+ * ⚠️ L'ORDRE EST CELUI DU DEVERROUILLAGE. Les cinq medaillons se lisent de
+ * gauche a droite comme une progression : le premier est a tout le monde, le
+ * dernier se merite. Un ordre au hasard aurait fait de la rangee une grille de
+ * choix ; celui-ci en fait un chemin.
+ */
+function listeCapitaines() {
+  const venue = S.captains;
+  if (Array.isArray(venue) && venue.length) return venue.filter((c) => known(c.id));
+  return CAPTAIN_IDS.map((id) => ({ id, seuil: 0 }));
+}
+
+/** Combien de parties terminees le joueur a-t-il ? */
+function parties() {
+  return (S.me && Number(S.me.games)) || 0;
+}
+
+function seuilDe(id) {
+  const c = listeCapitaines().find((x) => x.id === id);
+  return c ? (Number(c.seuil) || 0) : 0;
+}
+
+/** Ce capitaine est-il gagne ? Le serveur retranchera de toute facon. */
+export function capitaineOuvert(id) {
+  return parties() >= seuilDe(id);
+}
+
 function captainOf(id) {
   return known(id) ? id : DEFAULT_CAPTAIN;
 }
@@ -51,29 +80,57 @@ function mine() {
   return captainOf(S.me && S.me.captain);
 }
 
+/* ⚠️ LE CADENAS EST DESSINE ICI, PAS CHARGE. Le depot n'a pas d'icone de
+   cadenas, et en inventer une au rabais — un emoji, un carre gris — aurait jure
+   avec des medaillons peints a la main. Deux traits de SVG donnent une forme
+   nette a toutes les tailles, aux couleurs du jeu, et sans un octet de plus.
+   Le jour ou l'icone dessinee arrive, cette constante devient une balise img. */
+const CADENAS = `<svg class="dc-verrou-svg" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" fill="none" stroke="currentColor"
+        stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="4.5" y="10" width="15" height="11" rx="2.6" fill="currentColor"/>
+  <circle cx="12" cy="15" r="1.7" fill="rgba(35,20,60,.85)"/>
+</svg>`;
+
 /* ────────────────────────────────────────────────── le choix du capitaine ── */
 
 function captainStrip() {
   const chosen = mine();
+  const jouees = parties();
   return `
     <div class="dc-caps">
       <h4 class="dc-caps-head">${esc(t('cap.choose'))}</h4>
-      <div class="dc-caps-row">${CAPTAIN_IDS.map((id) => `
-        <button class="dc-cap${id === chosen ? ' on' : ''}" data-cap="${id}"
-                title="${esc(captainName(id))}" aria-pressed="${id === chosen}">
+      <div class="dc-caps-row">${listeCapitaines().map((c) => {
+        const id = c.id;
+        const seuil = Number(c.seuil) || 0;
+        const ferme = jouees < seuil;
+        /* ⚠️ LE CADENAS DIT COMBIEN IL RESTE, PAS SEULEMENT « FERME ». Un
+           medaillon grise sans chiffre est une porte sans serrure : on ne sait
+           ni pourquoi elle resiste, ni si elle s'ouvrira un jour. Le compte
+           restant transforme le refus en objectif. */
+        const reste = Math.max(0, seuil - jouees);
+        return `
+        <button class="dc-cap${id === chosen ? ' on' : ''}${ferme ? ' dc-cap-ferme' : ''}"
+                data-cap="${id}" data-ferme="${ferme ? 1 : 0}"
+                title="${esc(ferme ? t('cap.locked', { n: reste }) : captainName(id))}"
+                aria-pressed="${id === chosen}">
           <img class="dc-cap-face" src="${captainArt(id)}" alt="${esc(captainName(id))}">
-        </button>`).join('')}
+          ${ferme ? `<span class="dc-cap-verrou">${CADENAS}<b>${jouees}/${seuil}</b></span>` : ''}
+        </button>`;
+      }).join('')}
       </div>
       <div class="dc-cap-card" id="dc-cap-card">${captainCard(chosen)}</div>
     </div>`;
 }
 
 function captainCard(id) {
+  const seuil = seuilDe(id);
+  const ferme = !capitaineOuvert(id);
   return `
-    <img class="dc-cap-trait" src="${traitArt(id)}" alt="">
+    <img class="dc-cap-trait${ferme ? ' dc-cap-trait-ferme' : ''}" src="${traitArt(id)}" alt="">
     <div class="dc-cap-txt">
       <b>${esc(captainName(id))}</b>
-      <span>${esc(captainTrait(id))}</span>
+      <span>${esc(ferme ? t('cap.lockedLong', { n: seuil }) : captainTrait(id))}</span>
     </div>`;
 }
 
@@ -82,6 +139,17 @@ function wireCaptains(el) {
     b.onclick = () => {
       const id = b.dataset.cap;
       if (id === mine()) return;
+      /* ⚠️ UN CAPITAINE FERME SE PRESENTE QUAND MEME. Le clic ne le choisit
+         pas, mais il montre sa carte : voir le trait qu'on n'a pas encore est
+         ce qui donne envie de le gagner. Un bouton totalement mort
+         n'apprendrait rien a personne. */
+      if (b.dataset.ferme === '1') {
+        const card = $('#dc-cap-card');
+        if (card) card.innerHTML = captainCard(id);
+        if (S.sfx) S.sfx.play('shut', 0.2);
+        toast(t('cap.locked', { n: Math.max(0, seuilDe(id) - parties()) }), 'warn');
+        return;
+      }
       /* On peint tout de suite et on envoie : attendre la reponse du serveur
          pour allumer le medaillon donnerait un ecran qui hesite. La reponse
          `me` repassera par la et confirmera. */

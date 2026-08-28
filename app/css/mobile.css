@@ -425,6 +425,55 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   border-radius: 50%;
 }
 
+
+/* ============================================================================
+   LES CAPITAINES QU'ON N'A PAS ENCORE.
+
+   ⚠️ UN MEDAILLON FERME RESTE VISIBLE ET RESTE CLIQUABLE. Le cacher aurait
+   supprime la seule chose qui donne envie de jouer vingt-cinq parties : savoir
+   qu'il existe. On l'eteint — gris, en retrait — et on pose dessus le compte
+   qui manque. Le clic, lui, montre quand meme sa carte : voir le trait qu'on
+   n'a pas est ce qui fait revenir.
+   ============================================================================ */
+
+/* ⛔ LE BOUTON N'ETAIT PAS POSITIONNE, ET LE BANDEAU SERAIT PARTI AILLEURS. Un
+   enfant absolu se cale sur le premier ancetre POSITIONNE : sans cette ligne,
+   le compte « 3/25 » se serait ancre sur la carte du salon, tres loin du
+   medaillon. C'est la faute classique, et elle ne se voit qu'a l'ecran. */
+#dicewrap .dc-cap { position: relative; }
+
+#dicewrap .dc-cap-ferme .dc-cap-face {
+  filter: grayscale(1) brightness(.55);
+}
+
+#dicewrap .dc-cap-verrou {
+  position: absolute;
+  inset: auto 0 -2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--gold-hi, #FFE479);
+  /* Le bandeau se pose SUR le medaillon eteint : sans fond, le chiffre se
+     perdait dans le dessin gris. */
+  background: linear-gradient(180deg, rgba(20, 10, 35, .2), rgba(20, 10, 35, .88) 45%);
+  border-radius: 0 0 999px 999px;
+  padding: 6px 0 4px;
+  pointer-events: none;
+}
+
+#dicewrap .dc-cap-verrou b {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9);
+}
+
+#dicewrap .dc-verrou-svg { width: 13px; height: 13px; display: block; }
+
+/* La carte du capitaine ferme : le dessin du trait s'eteint aussi, sinon elle
+   promet un pouvoir qu'on ne peut pas encore prendre. */
+#dicewrap .dc-cap-trait-ferme { filter: grayscale(1) brightness(.6); }
+
 /* ============================================================================
    LES DEUX CURSEURS DE VOLUME.
 

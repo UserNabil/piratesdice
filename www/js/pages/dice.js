@@ -212,6 +212,7 @@ async function connect() {
       arreterRelance();
       S.me = m.me; S.inventory = m.inventory || []; S.shop = m.shop || [];
       S.rules = m.rules || S.rules;
+      if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains;
       renderWallet();
       showMenu();
     },
@@ -219,7 +220,9 @@ async function connect() {
       S.me = m.me; S.inventory = m.inventory || [];
       renderWallet(); refreshPanel(); renderBonusRack();
     },
-    captains: () => { /* la liste du serveur : le client a deja la sienne */ },
+    /* Le serveur peut renvoyer la liste en cours de session (seuils modifies,
+       nouveau capitaine) : on la prend, l'ecran suivant la lira. */
+    captains: (m) => { if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains; },
     queued: () => { S.queued = true; showMenu(); },
     idle: () => { S.queued = false; S.seat = -1; S.state = null; showMenu(); },
     room: (m) => onRoom(m, $('#dc-screen-menu')),

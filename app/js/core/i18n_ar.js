@@ -7,6 +7,8 @@ export const AR = {
   'menu.friend': 'العب مع صديق',
 
   'cap.choose': 'اختر قبطانك',
+  'cap.locked': 'مقفل — تبقّى {n} مباراة',
+  'cap.lockedLong': 'ينضم إليك بعد {n} مباراة منتهية.',
   'cap.read.name': 'ماري ريد',
   'cap.read.trait': 'إعادة رمي مجانية واحدة في كل مباراة.',
   'cap.teach.name': 'اللحية السوداء',

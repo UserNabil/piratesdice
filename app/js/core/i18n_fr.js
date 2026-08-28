@@ -6,6 +6,8 @@ export const FR = {
   'menu.friend': 'Jouer avec un ami',
 
   'cap.choose': 'Choisissez votre capitaine',
+  'cap.locked': 'Verrouillé — encore {n} parties',
+  'cap.lockedLong': 'Embarque avec toi après {n} parties terminées.',
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Une relance gratuite par partie.',
   'cap.teach.name': 'Barbe-Noire',
