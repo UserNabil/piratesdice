@@ -42,7 +42,7 @@ GLOBAUX = {
     'matchMedia', 'addEventListener', 'removeEventListener', 'dispatchEvent',
     'CustomEvent', 'Event', 'URL', 'URLSearchParams', 'Audio', 'Image', 'Blob',
     'File', 'FileReader', 'FormData', 'Headers', 'Request', 'Response',
-    'AbortController', 'WebSocket', 'MutationObserver', 'ResizeObserver',
+    'AbortController', 'WebSocket', 'XMLHttpRequest', 'AudioContext', 'MutationObserver', 'ResizeObserver',
     'IntersectionObserver', 'DOMParser', 'TextEncoder', 'TextDecoder',
     'Uint8Array', 'Int32Array', 'Float32Array', 'ArrayBuffer', 'DataView',
     'localStorage', 'sessionStorage', 'navigator', 'location', 'history',
@@ -85,6 +85,13 @@ def declares(src):
         noms.update(re.findall(NOM, m.group(1)))
     for m in re.finditer(r"\(?\s*(" + NOM + r")\s*\)?\s*=>", src):
         noms.add(m.group(1))
+    # ⚠️ UNE FLECHE PASSEE EN ARGUMENT A AUSSI DES PARAMETRES. `new Promise((ok,
+    # non) => {...})` : la liste est precedee d'une parenthese, pas d'un nom, et
+    # la regle du dessus ne la voyait pas — les deux parametres passaient donc
+    # pour des fonctions inconnues. Un verificateur qui crie a tort est un
+    # verificateur qu'on eteint : il apprend cette forme-la.
+    for m in re.finditer(r"[(,]\s*\(([^()]*)\)\s*=>", src):
+        noms.update(re.findall(NOM, m.group(1)))
     for m in re.finditer(r"\bfor\s*\(\s*(?:const|let|var)\s+([^)]+?)\s+(?:of|in)\b", src):
         noms.update(re.findall(NOM, m.group(1)))
     return noms

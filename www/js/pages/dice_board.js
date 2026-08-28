@@ -14,6 +14,7 @@
    ============================================================================ */
 
 import { fxUrl, skinOf } from './dice_state.js';
+import { charger, jouerTampon, dormir, reveiller } from '../ui/bus_audio.js';
 
 const ART = '/dice/img/';
 
@@ -306,7 +307,15 @@ export function blastCells(board, cells, onEachBoom) {
   return cells.length ? (cells.length - 1) * BLAST_STEP + BLAST_SETTLE : 0;
 }
 
-/** Small sound bank. Silent by default is NOT an error: audio may be blocked. */
+/**
+ * Small sound bank. Silent by default is NOT an error: audio may be blocked.
+ *
+ * ⛔ ET LE NIVEAU NE PASSE PLUS PAR `element.volume` : sur iOS, WebKit stocke
+ * cette propriete et ne la transmet jamais au lecteur. Chaque son est decode
+ * une fois puis rejoue par le bus (`ui/bus_audio.js`), ou un `GainNode` agit
+ * sur le signal lui-meme. Le vieux chemin reste en secours, pour la plateforme
+ * qui n'aurait pas de Web Audio.
+ */
 export class Sfx {
   constructor(base) {
     this.base = base;
@@ -331,7 +340,8 @@ export class Sfx {
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         this.dehors = document.hidden;
-        if (document.hidden) this.taire();
+        if (document.hidden) { this.taire(); dormir(); }
+        else reveiller();
       });
     }
   }
@@ -348,6 +358,9 @@ export class Sfx {
     const audio = new Audio(this.base + file);
     audio.preload = 'auto';
     this.cache.set(name, audio);
+    /* Le decodage part en tache de fond : s'il aboutit, le bus prend la main ;
+       sinon l'element reste la et personne ne s'apercoit de rien. */
+    charger(name, this.base + file);
   }
 
   /**
@@ -359,6 +372,10 @@ export class Sfx {
     if (this.muted || this.dehors || !this.niveau) return;
     const source = this.cache.get(name);
     if (!source) return;
+    /* Le bus d'abord : c'est le seul chemin ou le reglage du joueur s'entend
+       sur toutes les plateformes. Le gain du canal porte deja son niveau, on ne
+       lui passe donc que le volume propre a ce son. */
+    if (jouerTampon(name, 'effets', volume, rate)) return;
     try {
       const voice = source.cloneNode();
       /* `volume` d'un <audio> refuse tout ce qui sort de [0,1] — et le refus

@@ -20,6 +20,7 @@ import { DiceNet, diceStatus } from './dice_net.js';
 import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
+import { niveauCanal } from '../ui/bus_audio.js';
 import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js';
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
@@ -154,6 +155,12 @@ function build() {
      l'erreur serait avalee par le try de l'abonnement, et le reglage
      enregistre ne serait jamais applique au lancement. */
   surVolume(() => {
+    /* ⛔ LE NIVEAU QUI COMPTE EST CELUI-CI. Les deux gains du bus agissent sur
+       le signal ; les deux lignes suivantes ne servent qu'au chemin de secours,
+       la ou Web Audio manque. Sur iOS, elles ne font RIEN — c'etait tout le
+       bug : le reglage s'ecrivait et mourait avant le haut-parleur. */
+    niveauCanal('effets', facteur('effets'));
+    niveauCanal('musique', facteur('musique'));
     if (S.sfx) S.sfx.niveau = facteur('effets');
     if (S.musique) S.musique.volume = facteur('musique');
     peindreMute();

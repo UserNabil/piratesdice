@@ -23,6 +23,8 @@
    qu'on desinstalle.
    ============================================================================ */
 
+import { brancherElement, debrancherElement, niveauElement, reveiller, dormir } from './bus_audio.js';
+
 const PISTES = {
   menu: ['music_menu.m4a'],
   partie: ['music_game_01.m4a', 'music_game_02.m4a', 'music_game_03.m4a'],
@@ -46,11 +48,15 @@ export class Musique {
        des, et celui qui la veut en avant doit pouvoir la monter au-dessus du
        melange par defaut — sinon le curseur ne sert qu'a l'eteindre. */
     this.niveau = 1;
+    /* Le gain de la piste dans le bus. Tant qu'il existe, c'est LUI qui porte
+       le niveau : `audio.volume` reste a 1, parce que sur iOS il ne sert a
+       rien et qu'ailleurs il ferait une seconde attenuation par-dessus. */
+    this.gain = null;
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         this.dehors = document.hidden;
-        if (document.hidden) this.suspendre();
+        if (document.hidden) { this.suspendre(); dormir(); }
         else this.reprendre();
       });
     }
@@ -71,9 +77,14 @@ export class Musique {
     try {
       const audio = new Audio(this.base + piste);
       audio.loop = true;
-      audio.volume = this.niveauReel();
       audio.preload = 'auto';
       this.audio = audio;
+      /* ⛔ LE NIVEAU PASSE PAR LE BUS, PAS PAR `volume`. Voir ui/bus_audio.js :
+         sur iOS la propriete est stockee puis ignoree, et le curseur du joueur
+         n'avait aucun effet audible. */
+      this.gain = brancherElement(audio, 'musique');
+      audio.volume = this.gain ? 1 : this.niveauReel();
+      this.appliquerNiveau();
       if (!this.muette && !this.dehors && this.niveau) this.essayerDeJouer();
     } catch (_) { this.audio = null; }
   }
@@ -93,6 +104,7 @@ export class Musique {
         const reprendre = () => {
           this.enAttenteDeGeste = false;
           document.removeEventListener('pointerdown', reprendre, true);
+          reveiller();
           if (!this.muette && !this.dehors && this.audio) {
             const q = this.audio.play();
             if (q && q.catch) q.catch(() => { /* toujours refuse : on renonce */ });
@@ -111,6 +123,19 @@ export class Musique {
   }
 
   /**
+   * Poser le niveau la ou il agit vraiment.
+   *
+   * ⚠️ LE GAIN DE LA PISTE NE PORTE QUE LE MELANGE DE LA SCENE (0,34 au pont,
+   * 0,22 en partie). Le curseur du joueur, lui, est deja porte par le gain du
+   * CANAL, pose une seule fois par `volumes.js` : le multiplier ici aussi
+   * l'appliquerait deux fois, et 60 % donnerait 36 %.
+   */
+  appliquerNiveau() {
+    if (this.gain) { niveauElement(this.gain, this.muette ? 0 : (VOLUME[this.scene] || 0.25)); return; }
+    if (this.audio) { try { this.audio.volume = this.niveauReel(); } catch (_) { /* pas de son */ } }
+  }
+
+  /**
    * Le curseur des reglages, en facteur. On l'applique A CHAUD sur la piste en
    * cours : un reglage de volume qui ne s'entend qu'au morceau suivant ne se
    * regle pas, il se devine. Et a 0 on met en pause plutot que de laisser un
@@ -121,7 +146,7 @@ export class Musique {
     const f = Number(facteur);
     this.niveau = Number.isFinite(f) && f > 0 ? f : 0;
     if (!this.audio) return;
-    try { this.audio.volume = this.niveauReel(); } catch (_) { /* pas de son */ }
+    this.appliquerNiveau();
     if (!this.niveau) this.suspendre();
     else this.reprendre();
   }
@@ -132,12 +157,20 @@ export class Musique {
 
   reprendre() {
     if (this.muette || this.dehors || !this.niveau || !this.audio) return;
+    /* ⚠️ LE BUS DOIT ETRE EVEILLE, SINON LA PISTE JOUE DANS LE VIDE. Un element
+       branche sur un contexte endormi ne sort pas du telephone : `play()`
+       reussit, et on n'entend rien. */
+    reveiller();
     this.essayerDeJouer();
   }
 
   arreter() {
     if (!this.audio) return;
     try { this.audio.pause(); this.audio.currentTime = 0; } catch (_) { /* deja */ }
+    /* Debrancher : un element laisse dans le graphe n'est jamais ramasse, et on
+       en cree un par piste, donc un par partie. */
+    debrancherElement(this.audio);
+    this.gain = null;
     this.audio = null;
     this.scene = null;
   }
@@ -145,7 +178,7 @@ export class Musique {
   /** Le meme interrupteur que les effets : un seul reglage pour tout le son. */
   set muted(valeur) {
     this.muette = !!valeur;
-    if (this.audio) { try { this.audio.volume = this.niveauReel(); } catch (_) { /* pas de son */ } }
+    this.appliquerNiveau();
     if (this.muette) this.suspendre();
     else this.reprendre();
   }

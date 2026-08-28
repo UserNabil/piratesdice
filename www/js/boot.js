@@ -143,16 +143,21 @@ function row(label, body) {
  */
 function volRow(canal, label, valeur) {
   const off = valeur === 0;
-  return `<div class="pd-row pd-vol" data-vol="${canal}">
+  /* ⚠️ CHAQUE CANAL A SON DESSIN, ET C'EST LE SEUL REPERE QUI SE LIT DE LOIN.
+     Deux haut-parleurs identiques l'un sous l'autre obligeaient a lire le
+     libelle pour savoir lequel on coupait. Le pavillon bleu pour les effets, la
+     note rouge pour la musique : ils ont ete dessines pour ca. */
+  const art = canal === 'musique' ? 'music' : 'sound';
+  return `<div class="pd-row pd-vol" data-vol="${canal}" data-vol-art="${art}">
     <span class="pd-row-lbl">${label}</span>
-    <button class="pd-vol-btn${off ? '' : ' on'}" data-vol-mute aria-pressed="${!off}"
-            title="${t(off ? 'set.soundOff' : 'set.soundOn')}"
-            aria-label="${label} — ${t(off ? 'set.soundOff' : 'set.soundOn')}"><img
-            src="${ASSETS}img/icon_sound_${off ? 'off' : 'on'}.png" alt=""></button>
     <input class="pd-vol-slider" type="range" min="0" max="100" step="5"
            value="${valeur}" data-vol-range style="--pd-vol-fill:${valeur}%"
            aria-label="${label}" aria-valuetext="${valeur} %">
     <span class="pd-vol-val" data-vol-val>${valeur} %</span>
+    <button class="pd-vol-btn" data-vol-mute aria-pressed="${!off}"
+            title="${t(off ? 'set.soundOff' : 'set.soundOn')}"
+            aria-label="${label} — ${t(off ? 'set.soundOff' : 'set.soundOn')}"><img
+            src="${ASSETS}img/icon_${art}_${off ? 'off' : 'on'}.png" alt=""></button>
   </div>`;
 }
 
@@ -272,6 +277,7 @@ function openSettings() {
     const curseur = ligne.querySelector('[data-vol-range]');
     const chiffre = ligne.querySelector('[data-vol-val]');
     const nom = ligne.querySelector('.pd-row-lbl').textContent;
+    const art = ligne.dataset.volArt;
 
     const peindre = (v) => {
       const off = v === 0;
@@ -280,13 +286,13 @@ function openSettings() {
       curseur.style.setProperty('--pd-vol-fill', v + '%');
       curseur.setAttribute('aria-valuetext', v + ' %');
       chiffre.textContent = v + ' %';
-      btn.classList.toggle('on', !off);
       btn.setAttribute('aria-pressed', String(!off));
       btn.setAttribute('title', t(off ? 'set.soundOff' : 'set.soundOn'));
       btn.setAttribute('aria-label', nom + ' — ' + t(off ? 'set.soundOff' : 'set.soundOn'));
-      /* ⚠️ `textContent` EFFACERAIT LE DESSIN : le bouton n'a qu'une image. */
+      /* ⚠️ `textContent` EFFACERAIT LE DESSIN : le bouton n'a qu'une image, et
+         c'est elle qui porte l'etat — la barre rouge est dans le dessin. */
       const img = btn.querySelector('img');
-      if (img) img.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
+      if (img) img.src = ASSETS + 'img/icon_' + art + '_' + (off ? 'off' : 'on') + '.png';
       ligne.classList.toggle('pd-vol-off', off);
     };
 
