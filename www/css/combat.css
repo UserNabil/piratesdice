@@ -45,18 +45,35 @@
   /* L'ombre portee du plateau au repos. */
   --cbt-plateau-ombre: 0 8px 0 rgba(0, 0, 0, .34), 0 14px 28px rgba(0, 0, 0, .45);
 
-  /* Le plateau DONT C'EST LE TOUR : relief interieur + halo chaud. */
+  /* Le plateau DONT C'EST LE TOUR : relief interieur + halo chaud.
+
+     ⛔ LE HALO NE SE VOYAIT PAS, ET LES DEUX PLATEAUX SE RESSEMBLAIENT. « C'est
+     mon tour et mon rectangle n'est pas actif » : le signal etait une lueur
+     chaude a 20 % d'opacite, diffusee sur 26 px DERRIERE un plateau deja pose
+     sur un fond violet. A cote, la carte du capitaine change de cadre et le
+     bouton passe a l'or — deux signaux francs, et le plateau, qui est l'endroit
+     ou l'on doit jouer, n'en avait aucun.
+
+     Un anneau DORE de 3 px le cerne desormais. L'or est deja la langue du jeu
+     pour « c'est a vous » : le bouton de lancer, le cadre de la carte active.
+     Un plateau qui la parle se reconnait sans qu'on l'ait appris. */
   --cbt-plateau-halo:
     inset 0 1px 0 rgba(255, 222, 170, .18),
     inset 0 -2px 0 rgba(0, 0, 0, .55),
     inset 0 0 30px rgba(0, 0, 0, .5),
+    0 0 0 3px rgba(255, 206, 90, .95),
     0 12px 30px rgba(0, 0, 0, .55),
-    0 -4px 26px rgba(255, 198, 110, .2);
+    0 0 24px rgba(255, 198, 110, .5);
 
   /* Le plateau qui attend son tour. ⚠️ Assombrir jusqu'a .62 donnait un plateau
-     qui semble desactive, pas en attente. Il recule, il ne s'eteint pas. */
+     qui semble desactive, pas en attente. Il recule, il ne s'eteint pas.
+
+     ⛔ ET SON OPACITE VALAIT `4.5`. Une opacite vit entre 0 et 1 : le navigateur
+     ramenait donc la valeur a 1 et le plateau en attente ne reculait PAS du
+     tout — seul le `brightness(.82)` agissait, soit 18 % sur un plateau colore,
+     c'est-a-dire rien. Le point avait saute a la frappe. */
   --cbt-plateau-attente: brightness(.82) saturate(.85);
-  --cbt-plateau-attente-opacite: 4.5;
+  --cbt-plateau-attente-opacite: .78;
 
   /* Les deux camps. Le mien est VIOLET, celui d'en face BLEU : les deux
      plateaux etaient du meme violet et on cherchait lequel etait le sien. */

@@ -622,17 +622,17 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    fait 36 px de large. */
 #dicewrap .dc-plaque-or {
   border-image-source: url("../dice/img/slot_or.png");
-  border-image-slice: 34 30 34 153 fill;
-  border-width: calc(var(--pd-bar-h) * 34 / 212) calc(var(--pd-bar-h) * 30 / 212)
-                calc(var(--pd-bar-h) * 34 / 212) calc(var(--pd-bar-h) * 153 / 212);
+  border-image-slice: 51 47 51 170 fill;
+  border-width: calc(var(--pd-bar-h) * 51 / 246) calc(var(--pd-bar-h) * 47 / 246)
+                calc(var(--pd-bar-h) * 51 / 246) calc(var(--pd-bar-h) * 170 / 246);
 }
 
 /* La maudite : meme decoupe, et le chiffre en blanc d'argent comme la piece. */
 #dicewrap .dc-plaque-maudite {
   border-image-source: url("../dice/img/slot_maudit.png");
-  border-image-slice: 34 30 34 154 fill;
-  border-width: calc(var(--pd-bar-h) * 34 / 222) calc(var(--pd-bar-h) * 30 / 222)
-                calc(var(--pd-bar-h) * 34 / 222) calc(var(--pd-bar-h) * 154 / 222);
+  border-image-slice: 51 47 51 171 fill;
+  border-width: calc(var(--pd-bar-h) * 51 / 256) calc(var(--pd-bar-h) * 47 / 256)
+                calc(var(--pd-bar-h) * 51 / 256) calc(var(--pd-bar-h) * 171 / 256);
   color: #F2F6FF;
 }
 
@@ -640,9 +640,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    mot passe SOUS le nombre — c'est ainsi qu'il est dessine. */
 #dicewrap .dc-plaque-rang {
   border-image-source: url("../dice/img/slot_rang.png");
-  border-image-slice: 38 34 38 218 fill;
-  border-width: calc(var(--pd-bar-h) * 38 / 257) calc(var(--pd-bar-h) * 34 / 257)
-                calc(var(--pd-bar-h) * 38 / 257) calc(var(--pd-bar-h) * 218 / 257);
+  border-image-slice: 58 54 58 238 fill;
+  border-width: calc(var(--pd-bar-h) * 58 / 297) calc(var(--pd-bar-h) * 54 / 297)
+                calc(var(--pd-bar-h) * 58 / 297) calc(var(--pd-bar-h) * 238 / 297);
 }
 
 /* Le classement porte deux lignes : il lui faut un peu plus de creux. */
@@ -2035,7 +2035,23 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 #dicewrap .dc-plaque-rang { width: calc(var(--pd-bar-h) * 132 / 58); }
-#dicewrap .dc-plaque-rang em { font-size: calc(var(--pd-bar-h) * 8 / 58); }
+/* ⚠️ 16 ET NON 8 : « il est tres petit ». A 8/58 le mot tombait a 7 px sur un
+   telephone — sous le plancher de lisibilite, et surtout deux fois plus petit
+   que le nombre qu'il legende. Un libelle illisible ne dit rien ; autant ne pas
+   le mettre. */
+#dicewrap .dc-plaque-rang em {
+  font-size: calc(var(--pd-bar-h) * 16 / 58);
+  letter-spacing: .2px;
+  /* ⛔ ET IL NE PEUT PLUS DEBORDER DE SA PLAQUE. Double, le mot francais
+     « CLASSEMENT » demandait 82 px dans un creux de 59 : il passait par-dessus
+     le cadre dessine, des deux cotes. Le libelle a ete raccourci en « RANG » —
+     la cle s'appelle `rangCourt`, elle portait le mot long — mais une plaque de
+     taille fixe ne doit pas dependre de la longueur d'une traduction : la
+     prochaine langue ajoutee ne doit pas pouvoir casser la barre du haut. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 #dicewrap .dc-plaque.dc-coins-c5 { font-size: calc(var(--pd-bar-h) * 15 / 58); }
 
 #dicewrap .dc-plaque-reglages {
@@ -2843,3 +2859,82 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* La ligne de la liste se touche : elle doit le montrer. */
 #dicewrap .dc-suc[data-fiche] { cursor: pointer; }
+
+
+/* ⚠️ LE BANDEAU DE FIN MONTRE TOUS LES HAUTS FAITS, ET IL DEFILE. On en gagne
+   parfois quatorze d'un coup : trois affiches et « et 11 de plus » transformait
+   en chiffre le moment de la partie ou l'on est le plus curieux de ce qu'on a
+   accompli. La liste est plafonnee en HAUTEUR, pas en nombre — elle defile, et
+   la carte de fin garde sa taille quoi qu'il arrive. */
+#dicewrap .dc-over-suc-liste {
+  max-height: 30vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+/* Chaque ligne est un bouton : elle ouvre la fiche du haut fait. */
+#dicewrap button.dc-over-suc {
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 4px 2px;
+  text-align: start;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background .12s;
+}
+
+#dicewrap button.dc-over-suc:active { background: rgba(255, 255, 255, .12); }
+
+
+/* ============================================================================
+   LE DESSIN DES BOUTONS DU PONT : PLUS GRAND, ET PLUS MORDU.
+
+   ⛔ C'EST MA CORRECTION DU MATIN QUI LE COUPAIT. La carte d'accueil a recu
+   `overflow-y: auto` pour defiler comme une page — et en CSS, un axe a `auto`
+   force l'autre a `auto` : `overflow-x: visible` est devenu `auto`, donc
+   CLIPPANT. Le dessin de ces boutons est fait pour DEBORDER de son bouton
+   (`dc-btn-deborde`) : il sortait de 21 px vers la gauche, la carte le coupait
+   a 20, et l'admin a vu son capitaine ampute. Mesure au banc : 3 px de marge
+   sur 440 px de large — assez pour passer chez moi, pas chez lui.
+
+   ⚠️ ON NE RETIRE PAS LE DEFILEMENT POUR AUTANT : sans lui, la carte deborde
+   par le bas et la barre la mange. Le dessin sort donc MOINS du bouton, et
+   grandit — deux fois moins de debordement, un sixieme de taille en plus. Il
+   chevauche toujours le bord, ce qui etait l'intention, mais il reste dans la
+   carte, ce qui est la condition.
+   ============================================================================ */
+
+#dicewrap .dc-btn-art.dc-btn-deborde {
+  --pd-menu-art: clamp(88px, 26vw, 132px);
+}
+
+#dicewrap .dc-btn-deborde-g > img { left: calc(var(--pd-menu-art) * -.12); }
+#dicewrap .dc-btn-deborde-d > img { right: calc(var(--pd-menu-art) * -.12); }
+
+/* ⛔ DEUX CLASSES, PARCE QUE LA REGLE D'EN FACE EN A DEUX. Sur telephone,
+   `#dicewrap .dc-menu-card .dc-btn-big` impose `padding: … 30px …` en
+   raccourci : il ecrase un `padding-left` ecrit avec une seule classe, si loin
+   soit-il dans la feuille — la specificite passe avant l'ordre.
+
+   ⚠️ ET CE N'EST PAS UNE REGRESSION DU JOUR : les deux grands boutons du pont
+   avaient donc 30 px de creux la ou il en fallait 90, DEPUIS QUE CETTE REGLE
+   EXISTE. Le libelle passait deja sous le dessin — mesure : 12 px de
+   chevauchement en anglais sur « Challenge a player ». Agrandir le dessin n'a
+   fait que le rendre visible.
+
+   Le meme piege est deja documente vingt lignes plus haut dans `dice.css`, pour
+   la TAILLE des memes dessins. Deux fois la meme cause, au meme endroit. */
+#dicewrap .dc-menu-card .dc-btn-deborde-g,
+#dicewrap .dc-btn-deborde-g { padding-left: calc(var(--pd-menu-art) * .95); }
+#dicewrap .dc-menu-card .dc-btn-deborde-d,
+#dicewrap .dc-btn-deborde-d { padding-right: calc(var(--pd-menu-art) * .95); }
+
+[dir="rtl"] #dicewrap .dc-btn-deborde-g > img { left: auto; right: calc(var(--pd-menu-art) * -.12); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-d > img { right: auto; left: calc(var(--pd-menu-art) * -.12); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-g { padding-left: 1.2em; padding-right: calc(var(--pd-menu-art) * .95); }
+[dir="rtl"] #dicewrap .dc-btn-deborde-d { padding-right: 1.2em; padding-left: calc(var(--pd-menu-art) * .95); }

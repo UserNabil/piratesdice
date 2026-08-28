@@ -10,6 +10,7 @@ import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { S, UI, ASSETS, PIECE_MAUDITE, fxUrl } from './dice_state.js';
 import { captainArt, captainTrait } from './dice_lobby.js';
+import { ouvrirFicheSucces } from './dice_panels.js';
 
 /* ⛔ L'ECRAN DE MISE A ETE SUPPRIME, ET AVEC LUI TOUT LE PARI.
    Apple refuse automatiquement toute application declarant de la « simulation
@@ -40,15 +41,18 @@ import { captainArt, captainTrait } from './dice_lobby.js';
 function hautsFaits(m) {
   const liste = Array.isArray(m.succes) ? m.succes : [];
   if (!liste.length) return '';
-  const montre = liste.slice(0, 3);
-  const reste = liste.length - montre.length;
+  /* ⛔ TROIS SUR QUATORZE, ET « et 11 de plus ». On venait d'en gagner quatorze
+     d'un coup et on n'en voyait que trois : les onze autres etaient un CHIFFRE.
+     C'est le moment de la partie ou l'on est le plus curieux de ce qu'on a
+     accompli, et c'est celui ou on le montrait le moins. La liste les porte
+     tous et defile ; chaque ligne s'ouvre sur sa fiche, comme dans la page. */
   return `<div class="dc-over-succes">
     <h4>${esc(t('over.succes'))}</h4>
-    ${montre.map((s) => `<div class="dc-over-suc">
+    <div class="dc-over-suc-liste">${liste.map((s) => `<button class="dc-over-suc"
+        data-fiche-fin="${esc(s.identify)}" title="${esc(t('suc.' + s.identify + '.name'))}">
       <img src="${ASSETS}img/succes/${esc(s.identify)}.png" alt="">
       <b>${esc(t('suc.' + s.identify + '.name'))}</b>
-    </div>`).join('')}
-    ${reste > 0 ? `<div class="dc-over-suc-plus">${esc(t('over.succesPlus', { n: reste }))}</div>` : ''}
+    </button>`).join('')}</div>
     <div class="dc-over-suc-gain">${m.maudits ? '+' + m.maudits + PIECE_MAUDITE : ''}${
       (m.objets && m.objets.length)
         ? ` <span class="dc-over-objet">${esc(t('over.objet', { n: m.objets.length }))}</span>` : ''}</div>
@@ -157,6 +161,20 @@ export function onOver(m) {
      desormais ne pas compter au classement : lue sur `rated`, « rejouer »
      aurait renvoye au solo quelqu'un qui cherchait un adversaire. */
   const mode = m.mode === 'multi' ? 'multi' : (m.rated ? 'multi' : 'solo');
+  /* Chaque haut fait du bandeau ouvre sa fiche. Le detail vient du message de
+     fin : la liste de la page a ete effacee a l'instant et n'est pas revenue. */
+  for (const b of el.querySelectorAll('[data-fiche-fin]')) {
+    const brut = (Array.isArray(m.succes) ? m.succes : [])
+      .find((x) => x.identify === b.dataset.ficheFin) || {};
+    b.onclick = () => ouvrirFicheSucces(b.dataset.ficheFin, {
+      identify: b.dataset.ficheFin,
+      reward: brut.reward || 0,
+      or: brut.reward_gold || 0,
+      objet: brut.reward_item || null,
+      cible: 0, valeur: 0, gagne: true,
+    });
+  }
+
   $('#dc-again').onclick = () => { leave(); S.net.send({ t: 'play', mode }); };
   $('#dc-back').onclick = leave;
 }

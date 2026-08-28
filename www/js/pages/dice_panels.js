@@ -448,6 +448,16 @@ export function renderSucces(body) {
   const total = liste.reduce((n, s) => n + (s.gagne ? 0 : s.reward), 0);
   const aPrendre = liste.filter((s) => s.gagne && s.reclame === false);
 
+  /* ⛔ LE FILTRE « A PRENDRE » N'A DE SENS QUE SI LA RECOLTE EXISTE. Un serveur
+     d'avant la recolte n'envoie pas l'etat `reclame` : le filtre s'affichait
+     alors a zero, en permanence, et le toucher ne donnait que « Rien ici. » —
+     un bouton qui ne peut RIEN montrer, sur toutes les pages, pour toujours. Il
+     apparait avec la fonction qui le justifie, comme le bouton de recolte et la
+     pastille. */
+  const recolteConnue = liste.some((s) => typeof s.reclame === 'boolean');
+  const filtres = recolteConnue ? FILTRES : FILTRES.filter((f) => f !== 'prendre');
+  if (!recolteConnue && filtreSucces === 'prendre') filtreSucces = 'tous';
+
   const compte = {
     tous: liste.length,
     prendre: aPrendre.length,
@@ -498,7 +508,7 @@ export function renderSucces(body) {
         ? '<button class="dc-suc-tout" data-prendre-tout>'
             + esc(t('suc.prendreTout', { n: aPrendre.length })) + '</button>'
         : '')
-    + '<div class="dc-suc-filtres">' + FILTRES.map((f) =>
+    + '<div class="dc-suc-filtres">' + filtres.map((f) =>
         '<button class="dc-suc-filtre' + (f === filtreSucces ? ' on' : '')
           + (f === 'prendre' && compte.prendre ? ' dc-suc-filtre-du' : '') + '"'
           + ' data-filtre="' + f + '">'
@@ -529,8 +539,13 @@ export function renderSucces(body) {
  * bouton RETOUR d'Android, croix. Une boite qui se ferme autrement que ses
  * voisines s'apprend une deuxieme fois.
  */
-function ouvrirFicheSucces(id) {
-  const s = (S.succes || []).find((x) => x.identify === id);
+export function ouvrirFicheSucces(id, secours) {
+  /* ⚠️ LE BANDEAU DE FIN DE PARTIE APPELLE AVANT QUE LA LISTE SOIT REVENUE. La
+     fin de partie efface `S.succes` et la redemande : entre les deux, un clic
+     sur un haut fait qu'on vient de gagner ne trouverait rien et n'ouvrirait
+     rien du tout. Le serveur envoie deja le detail dans le message de fin — on
+     s'en sert comme secours plutot que de faire attendre le joueur. */
+  const s = (S.succes || []).find((x) => x.identify === id) || secours;
   if (!s) return;
   const fait = !!s.gagne;
   const aPrendre = fait && s.reclame === false;
