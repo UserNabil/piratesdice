@@ -7,7 +7,7 @@
    inoffensif, et offrir les quatre reglages du telephone.
    ============================================================================ */
 
-import { initDice, openDice } from './pages/dice.js';
+import { initDice, openDice, ouvrirPanneau } from './pages/dice.js';
 import { S, UI, ASSETS, myTurn } from './pages/dice_state.js';
 import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
 import { startFitting } from './fit.js';
@@ -230,6 +230,18 @@ function settingsMarkup() {
            mangeait ses couleurs — « on voit mal l'icone et le rectangle autour
            pue ». On enleve le cadre et on rend au dessin sa taille : il se
            suffit, c'est pour cela qu'il a ete dessine ainsi. -->
+      <!-- ⚠️ LES REGLES ONT QUITTE LA BARRE DU BAS, ET ELLES ATTERRISSENT ICI.
+           La barre porte l'accueil AU MILIEU : il lui faut donc un nombre pair
+           de pages autour, sans quoi le bouton central n'est plus un centre. Des
+           cinq pages, « Regles » est la seule ou l'on ne RETOURNE pas — la
+           boutique s'enrichit, le classement bouge, les hauts faits tombent, le
+           journal s'allonge ; les regles se lisent une fois. Les reglages sont
+           precisement l'endroit des choses qu'on consulte rarement et qu'on doit
+           pouvoir retrouver. -->
+      ${row(t('tab.rules'), `<button class="pd-link-art" data-regles
+             title="${t('tab.rules')}" aria-label="${t('tab.rules')}"
+      ><img src="${ASSETS}img/icon_rules.png" alt=""></button>`)}
+
       ${row(t('set.terms'), `<a class="pd-link-art" href="${TERMS_URL}" target="_blank"
              rel="noopener" title="${t('set.terms')}"
              aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
@@ -360,6 +372,11 @@ function openSettings() {
     close();
     toast(t('set.language') + ' ✓');
   };
+
+  /* On ferme AVANT d'ouvrir : les regles s'affichent dans la page du jeu, et
+     laisser les reglages par-dessus donnerait une feuille sous une boite de
+     dialogue — le joueur toucherait le voile en croyant toucher les regles. */
+  wrap.querySelector('[data-regles]').onclick = () => { close(); ouvrirPanneau('rules'); };
 
   const inBtn = wrap.querySelector('[data-signin]');
   if (inBtn) {

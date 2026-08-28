@@ -2031,3 +2031,170 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    un descendant, seule sa boite disparait. */
 #dicewrap .dc-wallet,
 #dicewrap .dc-acts { display: contents; }
+
+
+/* ============================================================================
+   LA BARRE DU BAS, EN OBJETS DESSINES.
+
+   Une banderole dechiree, quatre parchemins cloutes et un medaillon de corde et
+   d'os au milieu — plus un seul rectangle a coins ronds. Les deux parchemins
+   sont des MIROIRS l'un de l'autre : `left_bottom_link` penche d'un cote,
+   `right_bottom_link` de l'autre. Les prendre au hasard ferait pencher les
+   quatre du meme cote et la barre perdrait sa symetrie, qui est tout ce qui la
+   tient autour de l'accueil.
+
+   ⚠️ MEME PRINCIPE QU'EN HAUT : UNE SEULE GRANDEUR. Tout — pointes de la
+   banderole, parchemins, medaillon, jours — est un multiple fixe de
+   `--pd-bas-h`. La barre change de taille selon l'ecran, jamais de forme.
+
+   Le diviseur vient de l'addition :
+       pointes 2 x 0,906 + parchemins 4 x 0,84 + medaillon 1,15 + 4 jours x 0,12
+       = 6,92 h ; les 16 px de marges laterales sont fixes, donc retires avant.
+   On divise par 6,95 pour garder un cheveu de jeu : a 6,80, mesure au banc,
+   il manquait 3 px et le dernier parchemin mordait sur la pointe droite.
+
+   ⚠️ ET LE MEDAILLON DEBORDE PAR LE HAUT. C'est voulu : un bouton d'accueil qui
+   tient sagement dans la ligne est un bouton comme les autres. Il monte de
+   quelques pixels au-dessus de la banderole, et c'est ce depassement qui le
+   designe comme le centre.
+   ============================================================================ */
+
+#dicewrap .dc-bas {
+  --pd-bas-h: clamp(46px, calc((100vw - env(safe-area-inset-left, 0px)
+              - env(safe-area-inset-right, 0px) - 16px) / 6.95), 72px);
+  flex: none;
+  height: var(--pd-bas-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--pd-bas-h) * .12);
+  /* La barre systeme du telephone passe SOUS la banderole : sans cette marge, le
+     medaillon se retrouve sous la poignee d'Android et sous la barre d'accueil
+     de l'iPhone — c'est-a-dire sous un endroit que le doigt n'atteint pas. */
+  margin: 0 8px calc(env(safe-area-inset-bottom, 0px) + 2px);
+  padding: 0 calc(var(--pd-bas-h) * .06);
+  border-style: solid;
+  border-width: 0 calc(var(--pd-bas-h) * 240 / 265);
+  border-image-source: url("../dice/img/bar_bas_bg.png");
+  border-image-slice: 0 235 0 240 fill;
+  border-image-repeat: stretch;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+#dicewrap .dc-onglet {
+  flex: 0 0 auto;
+  width: calc(var(--pd-bas-h) * .84);
+  height: calc(var(--pd-bas-h) * .72);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  /* `100% 100%` et non `contain` : le parchemin EST le bouton, il doit occuper
+     exactement sa boite. `contain` laisserait un liseré vide autour de lui et
+     les quatre ne seraient plus a la meme distance de leurs voisins. */
+  background: center / 100% 100% no-repeat;
+  font-size: 0;
+  transition: transform .14s, filter .14s;
+}
+
+/* ⚠️ LE DESSIN FAIT 42 PX DE LARGE SUR UN ECRAN DE 360, LE DOIGT EN DEMANDE 44.
+   Mesure au banc : 42x36 a 360 px de large, 46x40 a 390 — sous le plancher
+   d'Apple (44) comme sous celui de Google (48). Agrandir le parchemin n'est pas
+   la reponse : il n'y a pas la place, et cinq boutons plus gros se toucheraient.
+   La cible, elle, n'a pas besoin d'etre visible. Ce carre transparent centre sur
+   le bouton porte l'appui sans rien changer au dessin. */
+#dicewrap .dc-onglet { position: relative; }
+
+#dicewrap .dc-onglet::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 46px);
+  height: max(100%, 46px);
+  transform: translate(-50%, -50%);
+}
+
+#dicewrap .dc-onglet-g { background-image: url("../dice/img/slot_bas_g.png"); }
+#dicewrap .dc-onglet-d { background-image: url("../dice/img/slot_bas_d.png"); }
+
+#dicewrap .dc-onglet img {
+  width: 58%;
+  height: 58%;
+  object-fit: contain;
+  /* Un onglet au repos RECULE, il ne disparait pas : on doit reconnaitre les
+     quatre dessins sans avoir a les toucher. */
+  filter: saturate(.75) brightness(.88);
+  transition: filter .14s, transform .14s;
+}
+
+/* Le medaillon n'a pas de parchemin sous lui : il EST son propre bouton. */
+#dicewrap .dc-onglet-home {
+  width: calc(var(--pd-bas-h) * 1.15);
+  height: auto;
+  background: none;
+  transform: translateY(calc(var(--pd-bas-h) * -.1));
+}
+
+#dicewrap .dc-onglet-home img { width: 100%; height: auto; filter: none; }
+
+/* La page ou l'on est : le parchemin se souleve et s'allume. */
+#dicewrap .dc-onglet.on {
+  background-color: transparent;
+  transform: translateY(calc(var(--pd-bas-h) * -.06));
+  filter: drop-shadow(0 0 calc(var(--pd-bas-h) * .1) rgba(255, 196, 64, .9));
+}
+
+#dicewrap .dc-onglet.on img { filter: none; transform: scale(1.06); }
+
+#dicewrap .dc-onglet-home.on {
+  transform: translateY(calc(var(--pd-bas-h) * -.14));
+}
+
+#dicewrap .dc-onglet:active { transform: translateY(calc(var(--pd-bas-h) * .03)); }
+#dicewrap .dc-onglet-home:active { transform: translateY(calc(var(--pd-bas-h) * -.06)); }
+
+
+/* ⛔ LA FEUILLE FERMEE DEPASSAIT SOUS LA BARRE DU BAS. Elle se cachait en se
+   translatant de sa PROPRE hauteur plus 80 px — et sa propre hauteur, feuille
+   vide, ne vaut que son rembourrage. Sur un telephone a barre d'accueil, ce
+   rembourrage grandit de `env(safe-area-inset-bottom)`, la barre du bas prend sa
+   marge, et les 80 px de rabiot ne couvraient plus la distance : mesure sur
+   l'appareil, 17 px de feuille violette a lisere blanc collee sous la
+   banderole, en permanence, sur le menu.
+
+   ⚠️ ON NE RALLONGE PAS LE NOMBRE. C'est la deuxieme fois que cette valeur est
+   corrigee a la hausse (102 % d'abord, puis 100 % + 80 px) : chaque appareil
+   nouveau la remet en question, parce qu'elle essaie de deviner une distance qui
+   depend de la barre du bas, de la marge systeme et du contenu de la feuille.
+   Une feuille fermee ne doit pas etre « assez loin » : elle doit etre INVISIBLE.
+   Le delai sur `visibility` la laisse finir de glisser avant de disparaitre, donc
+   l'animation de fermeture se voit toujours. */
+#dicewrap .dc-panel {
+  visibility: hidden;
+  transition: transform .22s ease, visibility 0s linear .22s;
+}
+
+#dicewrap .dc-panel.on {
+  visibility: visible;
+  transition: transform .22s ease, visibility 0s linear 0s;
+}
+
+
+/* ⛔ LE PLAFOND DE LA FEUILLE NE PLAFONNAIT RIEN. `max-height: calc(100dvh - ... -
+   78px)` etait juste, mais la feuille est en `content-box` : ce plafond ne
+   decrivait que son CONTENU. Ajoutez le lisere de 5 px et les 68 px de
+   rembourrage, et la feuille mesurait 951 px pour un plafond de 878 — mesure au
+   banc sur les hauts faits : le haut de la page commencait 58 px AU-DESSUS du
+   bord de l'ecran, titre compris. Le plafond n'avait pas tort sur la valeur, il
+   avait tort sur ce qu'il mesurait. */
+@media (orientation: portrait), (max-width: 820px) {
+  #dicewrap .dc-panel { box-sizing: border-box; }
+}

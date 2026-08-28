@@ -34,16 +34,32 @@ import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines } from 
 /* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
    l'on se situe, ce qu'on a accompli, ce qu'on a joue, et enfin les regles —
    qu'on ne relit qu'une fois. */
+/**
+ * LA BARRE DU BAS : DEUX PAGES, L'ACCUEIL, DEUX PAGES.
+ *
+ * ⚠️ L'ACCUEIL EST AU MILIEU, DONC IL FAUT UN NOMBRE PAIR DE PAGES AUTOUR. Le
+ * bouton central n'est pas decoratif : c'est le seul repere qui dit « d'ici, je
+ * peux toujours revenir ». Pose de travers — deux pages d'un cote, trois de
+ * l'autre — il cesse d'etre un centre et devient la troisieme icone en partant
+ * de la gauche, c'est-a-dire rien du tout.
+ *
+ * ⛔ C'EST DONC « REGLES » QUI SORT DE LA BARRE, et pas une autre. Les quatre
+ * qui restent sont des lieux ou l'on RETOURNE — la boutique s'enrichit, le
+ * classement bouge, les hauts faits tombent, le journal s'allonge. Les regles,
+ * elles, se lisent une fois : elles ne meritent pas un cinquieme de la
+ * navigation permanente. Elles rejoignent les reglages, qui sont precisement
+ * l'endroit des choses qu'on consulte rarement et qu'on doit pouvoir retrouver.
+ *
+ * `cote` dit quel parchemin porte l'icone : les deux dessins sont des miroirs
+ * l'un de l'autre, et les prendre a l'envers ferait pencher les quatre du meme
+ * cote — la barre perdrait sa symetrie, qui est tout ce qui la tient.
+ */
 const ONGLETS = [
-  { id: 'shop', cle: 'tab.shop', art: 'icon_shop' },
-  { id: 'ranking', cle: 'tab.ranking', art: 'icon_ranking' },
-  { id: 'succes', cle: 'tab.succes', art: 'icon_succes' },
-  /* ⚠️ « JOURNAL DE BORD » NE TIENT PAS SUR UN SIXIEME D'ECRAN, et un libelle
-     coupe par des points de suspension est pire qu'un libelle court : il donne
-     l'impression que l'ecran est trop petit pour le jeu. La page, elle, garde
-     son nom entier — c'est la barre qui abrege, pas le lieu. */
-  { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'icon_replay' },
-  { id: 'rules', cle: 'tab.rules', art: 'icon_rules' },
+  { id: 'shop', cle: 'tab.shop', art: 'icon_shop', cote: 'g' },
+  { id: 'ranking', cle: 'tab.ranking', art: 'icon_ranking', cote: 'g' },
+  { id: 'accueil', cle: 'nav.accueil', art: 'home', cote: 'home' },
+  { id: 'succes', cle: 'tab.succes', art: 'icon_succes', cote: 'd' },
+  { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'icon_replay', cote: 'd' },
 ];
 
 function shellMarkup() {
@@ -76,15 +92,23 @@ function shellMarkup() {
       <aside class="dc-panel" id="dc-panel"><div class="dc-panel-in"></div></aside>
       <div class="dc-over" id="dc-over"></div>
     </div>
-    <!-- ⚠️ LA BARRE DU BAS EST DANS LA ZONE DU POUCE, et elle porte le mot avec
-         le dessin : la place ne manque plus en largeur, et un mot lu une fois
-         apprend ce que le dessin voudra dire ensuite. Elle reste HORS du corps
-         defilant pour ne pas partir avec lui — une navigation qui s'en va quand
-         on descend n'est plus une navigation. -->
-    <nav class="dc-bas" id="dc-bas">${ONGLETS.map((o) => `
-      <button class="dc-onglet" data-panel="${o.id}"
+    <!-- ⚠️ LA BARRE DU BAS EST DANS LA ZONE DU POUCE, et elle reste HORS du
+         corps defilant pour ne pas partir avec lui — une navigation qui s'en va
+         quand on descend n'est plus une navigation.
+
+         ⛔ ET LE MOT S'EN VA. Chaque bouton est desormais un objet DESSINE : un
+         parchemin cloute pour les pages, un medaillon de corde et d'os pour
+         l'accueil. Un libelle de 9,5 px pose sous un parchemin ne se lit pas —
+         il salit le dessin et repete ce que le dessin dit deja. Le nom survit
+         la ou il sert : dans l'infobulle et dans l'etiquette pour les lecteurs
+         d'ecran. -->
+    <nav class="dc-bas" id="dc-bas">${ONGLETS.map((o) => (o.cote === 'home' ? `
+      <button class="dc-onglet dc-onglet-home" data-panel="${o.id}"
               title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
-      ><img src="${ASSETS}img/${o.art}.png" alt=""><span>${esc(t(o.court || o.cle))}</span></button>`).join('')}
+      ><img src="${ASSETS}img/slot_bas_home.png" alt=""></button>` : `
+      <button class="dc-onglet dc-onglet-${o.cote}" data-panel="${o.id}"
+              title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
+      ><img src="${ASSETS}img/${o.art}.png" alt=""></button>`)).join('')}
     </nav>
   </div>`;
 }
@@ -196,8 +220,15 @@ function build() {
     peindreMute();
   });
   wrap.querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
-    b.onclick = () => { if (S.sfx) S.sfx.play('onglet', 0.22); togglePanel(b.dataset.panel); };
+    b.onclick = () => {
+      if (S.sfx) S.sfx.play('onglet', 0.22);
+      if (b.dataset.panel === 'accueil') animerAccueil(b);
+      togglePanel(b.dataset.panel);
+    };
   });
+  /* Au premier affichage aucune page n'est ouverte : c'est l'accueil qui est
+     allume, et il doit le montrer avant qu'on ait touche quoi que ce soit. */
+  marquerOnglets();
 
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('fullscreenchange', syncFull);
@@ -642,8 +673,29 @@ function showMenu() {
 
 /* ─────────────────────────────────────────────── shop / ranking / rules ── */
 
+/** Ouvrir une page depuis l'exterieur — les reglages y envoient les regles. */
+export function ouvrirPanneau(nom) {
+  if (S.panel !== nom) togglePanel(nom);
+}
+
 function togglePanel(name) {
   const panel = $('#dc-panel');
+  /* ⛔ L'ACCUEIL N'EST PAS UNE PAGE : C'EST LEUR ABSENCE. Le faire passer par la
+     meme porte que les autres lui donnerait le comportement d'une bascule — un
+     premier appui ouvrirait une page « accueil » qui n'existe pas, donc vide, et
+     un second la refermerait. Un bouton d'accueil qui, une fois sur deux,
+     n'accueille rien. Il RAMENE, toujours, et ne fait rien quand on y est
+     deja. */
+  if (name === 'accueil') {
+    if (S.panel) {
+      S.panel = null;
+      panel.classList.remove('on');
+      fermerLecteur();
+      S.sfx.play('shut', 0.2);
+    }
+    marquerOnglets();
+    return;
+  }
   if (S.panel === name) {
     S.panel = null;
     panel.classList.remove('on');
@@ -664,8 +716,55 @@ function togglePanel(name) {
     S.sfx.play('open', 0.2);
     refreshPanel();
   }
-  $('#dicewrap').querySelectorAll('.dc-tab, .dc-onglet')
-    .forEach((b) => b.classList.toggle('on', b.dataset.panel === S.panel));
+  marquerOnglets();
+}
+
+/**
+ * Allumer le bouton du lieu ou l'on est.
+ *
+ * ⚠️ ET L'ACCUEIL S'ALLUME QUAND AUCUNE PAGE N'EST OUVERTE. Sans cette ligne, le
+ * medaillon du milieu serait le seul bouton de la barre a n'etre jamais allume :
+ * on l'aurait lu comme desactive, alors qu'il designe l'endroit ou l'on se
+ * trouve la plupart du temps.
+ */
+/**
+ * Le medaillon du milieu roule ses des a l'appui.
+ *
+ * ⛔ UN APNG NE SE REJOUE PAS EN LE RE-AFFECTANT. Reposer la meme adresse dans
+ * `src` ne relance rien : le navigateur reconnait l'URL, ressert l'image deja
+ * decodee et la laisse sur sa derniere image — l'animation ne jouerait qu'une
+ * fois, au premier appui de la partie. Il faut une adresse NEUVE. On alterne
+ * entre deux, et deux seulement : une adresse differente a chaque fois relancerait
+ * bien l'animation, mais ferait garder au cache une copie de 211 Ko par appui.
+ *
+ * ⚠️ ET ON REND LA MAIN AU DESSIN FIXE APRES LE MOUVEMENT, PAS APRES L'ANIMATION.
+ * Elle dure 2,28 s dont 1,5 s ou elle affiche deja, immobile, le dessin au repos —
+ * garder l'APNG a l'ecran pendant cette seconde et demie ne montrerait rien de
+ * plus et retiendrait dix images decodees en memoire. Le relais est invisible :
+ * la derniere image de l'animation EST le fichier au repos, au pixel pres.
+ */
+let relaisAccueil = 0;
+let minuteurAccueil = 0;
+function animerAccueil(bouton) {
+  const img = bouton.querySelector('img');
+  if (!img) return;
+  /* Le minuteur vit ici et pas dans `dataset` : `dataset` ne garde que des
+     chaines, et `clearTimeout('37')` n'annule rien du tout. Deux appuis
+     rapproches auraient laisse le premier minuteur rendre la main au dessin
+     fixe au milieu de la seconde animation. */
+  clearTimeout(minuteurAccueil);
+  relaisAccueil = 1 - relaisAccueil;
+  img.src = `${ASSETS}img/slot_bas_home_anim.png?${relaisAccueil ? 'a' : 'b'}`;
+  minuteurAccueil = setTimeout(() => {
+    img.src = `${ASSETS}img/slot_bas_home.png`;
+  }, 820);
+}
+
+function marquerOnglets() {
+  $('#dicewrap').querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
+    const sien = b.dataset.panel === 'accueil' ? !S.panel : b.dataset.panel === S.panel;
+    b.classList.toggle('on', sien);
+  });
 }
 
 function refreshPanel() {
