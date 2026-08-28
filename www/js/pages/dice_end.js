@@ -8,7 +8,7 @@
 
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
-import { S, UI, ASSETS, fxUrl } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, fxUrl } from './dice_state.js';
 import { captainArt, captainTrait } from './dice_lobby.js';
 
 /* ⛔ L'ECRAN DE MISE A ETE SUPPRIME, ET AVEC LUI TOUT LE PARI.
@@ -24,6 +24,35 @@ import { captainArt, captainTrait } from './dice_lobby.js';
    Sont partis avec : les jetons de montants prets, le champ libre borne sur la
    bourse, l'attente lue dans l'etat du serveur, et `renderBet`. `dice_match.js`
    ne l'appelle plus et le conteneur `#dc-bet` n'existe plus dans l'arene. */
+/**
+ * Les hauts faits debloques par CETTE partie, annonces ici et maintenant.
+ *
+ * ⛔ UN HAUT FAIT DECOUVERT TROIS ECRANS PLUS LOIN N'EST PAS UNE RECOMPENSE,
+ * c'est une archive. Le joueur vient de faire quelque chose de remarquable : on
+ * le lui dit sur la carte de fin, avec le dessin et ce que ca rapporte, pendant
+ * qu'il s'en souvient encore.
+ *
+ * ⚠️ ET ON N'EN MONTRE QUE TROIS. Une partie peut en ouvrir huit d'un coup —
+ * la premiere partie d'un compte en ouvre facilement quatre — et huit lignes
+ * repousseraient les boutons hors de l'ecran. Au-dela, on compte : la page des
+ * hauts faits porte le detail, c'est son role.
+ */
+function hautsFaits(m) {
+  const liste = Array.isArray(m.succes) ? m.succes : [];
+  if (!liste.length) return '';
+  const montre = liste.slice(0, 3);
+  const reste = liste.length - montre.length;
+  return `<div class="dc-over-succes">
+    <h4>${esc(t('over.succes'))}</h4>
+    ${montre.map((s) => `<div class="dc-over-suc">
+      <img src="${ASSETS}img/succes/${esc(s.identify)}.png" alt="">
+      <b>${esc(t('suc.' + s.identify + '.name'))}</b>
+    </div>`).join('')}
+    ${reste > 0 ? `<div class="dc-over-suc-plus">${esc(t('over.succesPlus', { n: reste }))}</div>` : ''}
+    <div class="dc-over-suc-gain">${m.maudits ? '+' + m.maudits + PIECE_MAUDITE : ''}</div>
+  </div>`;
+}
+
 export function onOver(m) {
   /* ⚠️ CELUI QUI PART A DEJA CHOISI. `requestClose` pose ce drapeau avant
      d'envoyer `leave` : l'annonce de fin qui suit lui est destinee autant qu'a
@@ -74,6 +103,7 @@ export function onOver(m) {
       <div class="dc-over-line">${esc(t('over.coins', { delta: (m.coinDelta >= 0 ? '+' : '') + m.coinDelta }))}
         <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
       ${reason}
+      ${hautsFaits(m)}
       <div class="dc-over-btns">
         <button class="dc-btn" id="dc-again">${esc(t('over.again'))}</button>
         <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(t('over.back'))}</button>

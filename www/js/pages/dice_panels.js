@@ -300,6 +300,33 @@ function barre(valeur, cible) {
   return '<span class="dc-suc-jauge"><i style="width:' + Math.round(part * 100) + '%"></i></span>';
 }
 
+/**
+ * Ce qu'un haut fait rapporte, en trois monnaies possibles.
+ *
+ * ⚠️ L'OBJET PASSE EN PREMIER QUAND IL Y EN A UN. C'est la seule des trois
+ * recompenses qu'on VOIT sur la table — un jeu de des, un effet — et c'est donc
+ * elle qui donne envie. Les deux bourses viennent apres, dans l'ordre ou on les
+ * depense : l'or tout de suite, le maudit plus tard.
+ */
+function recompense(s) {
+  const bouts = [];
+  if (s.objet) {
+    bouts.push('<img class="dc-suc-objet" src="' + vignetteDe(s.objet)
+      + '" alt="" title="' + esc(t('shop.' + s.objet + '.name')) + '">');
+  }
+  if (s.or) bouts.push(s.or + '<img class="dc-coin" src="' + ASSETS + 'img/icon_coin.png" alt="">');
+  if (s.reward) bouts.push(s.reward + PIECE_MAUDITE);
+  return bouts.join(' ');
+}
+
+/* La vignette d'un objet offert : une parure se montre par sa face de cinq, un
+   effet par son jeton. */
+function vignetteDe(identify) {
+  if (/^S\d/.test(identify)) return ASSETS + 'img/skins/' + identify + '/die_5.png';
+  if (/^M\d/.test(identify)) return ASSETS + 'img/skins/D000_' + identify + '/die_5.png';
+  return bonusArt(identify);
+}
+
 function ligneSucces(s) {
   const nom = t('suc.' + s.identify + '.name');
   const txt = t('suc.' + s.identify + '.txt');
@@ -310,7 +337,7 @@ function ligneSucces(s) {
     + '<span class="dc-suc-txt"><b>' + esc(nom) + '</b><span>' + esc(txt) + '</span>'
     + (fait ? '' : barre(s.valeur, s.cible) + '<em>' + s.valeur + ' / ' + s.cible + '</em>')
     + '</span>'
-    + '<span class="dc-suc-prix">' + s.reward + PIECE_MAUDITE + '</span>'
+    + '<span class="dc-suc-prix">' + recompense(s) + '</span>'
     + '</li>';
 }
 
@@ -336,7 +363,11 @@ export function renderSucces(body) {
     .concat([...parFamille.keys()].filter((f) => !FAMILLES.includes(f)));
 
   body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
-    + '<p class="dc-suc-tete">' + esc(t('suc.done', { n: gagnes, total: liste.length }))
+    /* ⚠️ « 1 HAUTS FAITS SUR 9 » SE LIT COMME UNE FAUTE, PARCE QUE C'EN EST UNE.
+       Une phrase qui compte doit accorder : deux cles plutot qu'un pluriel
+       force, et le francais comme l'anglais y gagnent. */
+    + '<p class="dc-suc-tete">' + esc(t(gagnes === 1 ? 'suc.done1' : 'suc.done',
+        { n: gagnes, total: liste.length }))
     + (total ? ' · ' + esc(t('suc.reste', { n: total })) : '') + '</p>'
     + ordre.map((f) => '<h4 class="dc-suc-fam">' + esc(t('suc.fam.' + f)) + '</h4>'
         + '<ul class="dc-suc-liste">' + parFamille.get(f).map(ligneSucces).join('') + '</ul>').join('');
