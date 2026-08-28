@@ -794,3 +794,49 @@
 
 /* La hauteur de la barre du centre. */
 
+
+
+/* ============================================================================
+   LES BOUTONS DE LA PARTIE PRENNENT LE LISERE DE TOUT LE RESTE.
+
+   ⛔ ILS PORTAIENT UN JONC DORE TRANSLUCIDE DE 2 PX, quand chaque panneau,
+   chaque plaque et chaque page du jeu porte un lisere BLANC PLEIN de 4 px.
+   Deux grammaires dans le meme ecran : la barre du haut, la carte du milieu, la
+   barre du bas et le ratelier des effets — qui, lui, portait deja le bon —
+   disaient « objet dessine », et les trois boutons du pied disaient autre
+   chose. C'est le seul endroit du jeu qui parlait encore l'ancienne langue.
+
+   ⚠️ EN OMBRE INTERNE, PAS EN BORDURE. Une vraie `border` retire quatre pixels
+   au creux du bouton : les trois libelles descendraient, et `fit.js` mesure la
+   hauteur de ce bandeau pour decider de la taille des cases. Une ombre interne
+   ne touche a aucune geometrie — elle se contente de peindre.
+
+   ⚠️ ET RIEN N'EST POSE SUR LE BOUTON LUI-MEME. Un `filter` sur `.dc-foot-btn`
+   re-rasterise TOUT son sous-arbre a chaque image ; le contenu du gobelet est
+   reecrit image par image pendant que les des roulent, et c'est exactement ce
+   qui le faisait scintiller (retour de l'admin, corrige en son temps). Le
+   lisere est une ombre, pas un filtre : il ne coute rien a l'animation.
+   ============================================================================ */
+
+#dicewrap .dc-foot-btn {
+  box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 3px 0 rgba(0, 0, 0, .45);
+}
+
+#dicewrap .dc-foot-main {
+  box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 3px 0 rgba(90, 50, 10, .55);
+}
+
+/* Arme : le lisere reste, la lueur passe autour. */
+#dicewrap .dc-foot-on {
+  box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 0 14px rgba(255, 205, 110, .6);
+}
+
+#dicewrap .dc-cup-annule {
+  box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 3px 0 rgba(110, 30, 20, .55);
+}
+
+/* Enfonce, l'ombre du dessous se retire ; le lisere, lui, ne bouge pas — c'est
+   le bord de l'objet, pas un etat. */
+#dicewrap .dc-foot-btn:active {
+  box-shadow: inset 0 0 0 var(--liseré) var(--blanc), 0 1px 0 rgba(0, 0, 0, .45);
+}
