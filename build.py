@@ -119,7 +119,21 @@ def travail_a_la_main():
                 continue                       # genere (index.html) ou orphelin
             if seulement_app and not os.path.abspath(src).startswith(os.path.abspath(APP) + os.sep):
                 continue          # autonome : hors d'`app/`, c'est `www/` la source
-            if open(chemin, "rb").read() != open(src, "rb").read():
+            if open(chemin, "rb").read() == open(src, "rb").read():
+                continue
+            # ⛔ « DIFFERENT » NE VEUT PAS DIRE « EDITE A LA MAIN », ET LA
+            # CONFUSION A COUTE DES TRADUCTIONS. Editer `app/js/core/i18n_fr.js`
+            # rend `www/` different de sa source : le controle criait au danger a
+            # chaque modification legitime, on prenait l'habitude de repondre
+            # PD_ECRASER=1 sans lire — et le jour ou l'on avait vraiment ecrit
+            # dans `www/`, la meme touche a efface le travail sans un mot. Dix
+            # cles de traduction, dans trois langues, perdues ainsi.
+            #
+            # La DATE tranche ce que le contenu ne peut pas dire : si la copie de
+            # `www/` est plus recente que sa source, c'est elle qu'on a touchee
+            # en dernier — c'est du travail a la main, et c'est le seul cas qui
+            # merite d'arreter le build.
+            if os.path.getmtime(chemin) > os.path.getmtime(src) + 1:
                 ecarts.append(rel)
     return sorted(ecarts)
 

@@ -383,6 +383,49 @@ function ligneSucces(s) {
     + '</li>';
 }
 
+/**
+ * LA PAGE DES HAUTS FAITS.
+ *
+ * ⛔ CENT LIGNES A PLAT NE SONT PAS UNE PAGE, C'EST UN LISTING. Six titres
+ * collants, cent lignes de meme poids, et aucun moyen de repondre a la seule
+ * question qu'on se pose en arrivant : « qu'est-ce qui est a moi, la, tout de
+ * suite ? » Il fallait faire defiler l'ensemble en lisant chaque ligne pour
+ * trouver les trois qui attendent une recolte.
+ *
+ * Trois choses reglent cela, et aucune n'est decorative :
+ *
+ *   UN FILTRE. Quatre etats, quatre boutons : tout, ce qui attend d'etre
+ *   recupere, ce qui est fait, ce qui est en cours. Chacun porte SON compte —
+ *   un filtre qui ne dit pas combien il cache oblige a l'essayer pour le savoir.
+ *
+ *   DES FAMILLES QUI SE REPLIENT, et qui portent leur avancement dans leur
+ *   en-tete. Six sections de dix-sept lignes se parcourent ; six en-tetes avec
+ *   « 7 / 17 » et une jauge se LISENT. On ouvre celle qui interesse.
+ *
+ *   UNE JAUGE GENERALE en haut. « 45 sur 100 » est un chiffre ; une barre est
+ *   une distance, et c'est ce qu'on vient mesurer.
+ */
+const FILTRES = ['tous', 'prendre', 'faits', 'encours'];
+let filtreSucces = 'tous';
+/* ⚠️ LES SECTIONS REPLIEES SURVIVENT AU REPEINT. La page se redessine a chaque
+   recolte et a chaque changement de filtre : sans cette memoire, toutes les
+   familles se rouvriraient sous le doigt du joueur juste apres qu'il en a
+   referme cinq. */
+const famillesFermees = new Set();
+
+function passeLeFiltre(s) {
+  if (filtreSucces === 'prendre') return !!s.gagne && s.reclame === false;
+  if (filtreSucces === 'faits') return !!s.gagne;
+  if (filtreSucces === 'encours') return !s.gagne;
+  return true;
+}
+
+function jaugeLarge(fait, total) {
+  const part = total > 0 ? Math.max(0, Math.min(1, fait / total)) : 0;
+  return '<span class="dc-suc-jauge dc-suc-jauge-large"><i style="width:'
+    + Math.round(part * 100) + '%"></i></span>';
+}
+
 export function renderSucces(body) {
   /* ⚠️ ON DEMANDE UNE FOIS, PUIS ON REPEINT. Redemander a chaque ouverture
      ferait clignoter la page pour rien : les compteurs ne bougent qu'en fin de
@@ -402,6 +445,15 @@ export function renderSucces(body) {
   const liste = S.succes;
   const gagnes = liste.filter((s) => s.gagne).length;
   const total = liste.reduce((n, s) => n + (s.gagne ? 0 : s.reward), 0);
+  const aPrendre = liste.filter((s) => s.gagne && s.reclame === false);
+
+  const compte = {
+    tous: liste.length,
+    prendre: aPrendre.length,
+    faits: gagnes,
+    encours: liste.length - gagnes,
+  };
+
   const parFamille = new Map();
   for (const s of liste) {
     if (!parFamille.has(s.famille)) parFamille.set(s.famille, []);
@@ -410,7 +462,25 @@ export function renderSucces(body) {
   const ordre = FAMILLES.filter((f) => parFamille.has(f))
     .concat([...parFamille.keys()].filter((f) => !FAMILLES.includes(f)));
 
-  const aPrendre = liste.filter((s) => s.gagne && s.reclame === false);
+  const sections = ordre.map((f) => {
+    const tout = parFamille.get(f);
+    const vues = tout.filter(passeLeFiltre);
+    if (!vues.length) return '';
+    const faits = tout.filter((s) => s.gagne).length;
+    const du = tout.filter((s) => s.gagne && s.reclame === false).length;
+    const fermee = famillesFermees.has(f);
+    return '<section class="dc-suc-fam-carte' + (fermee ? ' dc-suc-fermee' : '') + '">'
+      + '<button class="dc-suc-fam-tete" data-famille="' + esc(f) + '"'
+        + ' aria-expanded="' + (fermee ? 'false' : 'true') + '">'
+        + '<span class="dc-suc-fam-nom">' + esc(t('suc.fam.' + f)) + '</span>'
+        + (du ? '<span class="dc-suc-fam-du">' + du + '</span>' : '')
+        + '<span class="dc-suc-fam-compte">' + faits + ' / ' + tout.length + '</span>'
+        + '<span class="dc-suc-chevron"></span>'
+      + '</button>'
+      + jaugeLarge(faits, tout.length)
+      + (fermee ? '' : '<ul class="dc-suc-liste">' + vues.map(ligneSucces).join('') + '</ul>')
+      + '</section>';
+  }).join('');
 
   body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
     /* ⚠️ « 1 HAUTS FAITS SUR 9 » SE LIT COMME UNE FAUTE, PARCE QUE C'EN EST UNE.
@@ -419,6 +489,7 @@ export function renderSucces(body) {
     + '<p class="dc-suc-tete">' + esc(t(gagnes === 1 ? 'suc.done1' : 'suc.done',
         { n: gagnes, total: liste.length }))
     + (total ? ' · ' + esc(t('suc.reste', { n: total })) : '') + '</p>'
+    + jaugeLarge(gagnes, liste.length)
     /* Le bouton n'existe que s'il y a quelque chose a prendre : un « tout
        recuperer » toujours affiche, et gris neuf fois sur dix, apprend surtout
        a ne plus le regarder. */
@@ -426,10 +497,41 @@ export function renderSucces(body) {
         ? '<button class="dc-suc-tout" data-prendre-tout>'
             + esc(t('suc.prendreTout', { n: aPrendre.length })) + '</button>'
         : '')
-    + ordre.map((f) => '<h4 class="dc-suc-fam">' + esc(t('suc.fam.' + f)) + '</h4>'
-        + '<ul class="dc-suc-liste">' + parFamille.get(f).map(ligneSucces).join('') + '</ul>').join('');
+    + '<div class="dc-suc-filtres">' + FILTRES.map((f) =>
+        '<button class="dc-suc-filtre' + (f === filtreSucces ? ' on' : '')
+          + (f === 'prendre' && compte.prendre ? ' dc-suc-filtre-du' : '') + '"'
+          + ' data-filtre="' + f + '">'
+          + '<span>' + esc(t('suc.f.' + f)) + '</span>'
+          + '<em>' + compte[f] + '</em></button>').join('') + '</div>'
+    + (sections || '<p class="dc-empty">' + esc(t('suc.vide')) + '</p>');
 
   brancherRecolte(body);
+  brancherTri(body);
+}
+
+/** Les filtres et les familles qui se replient. */
+function brancherTri(body) {
+  for (const b of body.querySelectorAll('[data-filtre]')) {
+    b.onclick = () => {
+      if (filtreSucces === b.dataset.filtre) return;
+      filtreSucces = b.dataset.filtre;
+      /* ⚠️ ON REMONTE EN HAUT EN CHANGEANT DE FILTRE. Sans cela, on reste a la
+         hauteur de defilement d'avant — souvent au-dela du nouveau contenu,
+         donc devant du vide, et le filtre a l'air de n'avoir rien donne. */
+      renderSucces(body);
+      body.scrollTop = 0;
+    };
+  }
+  for (const b of body.querySelectorAll('[data-famille]')) {
+    b.onclick = () => {
+      const f = b.dataset.famille;
+      if (famillesFermees.has(f)) famillesFermees.delete(f);
+      else famillesFermees.add(f);
+      const haut = body.scrollTop;
+      renderSucces(body);
+      body.scrollTop = haut;
+    };
+  }
 }
 
 /**

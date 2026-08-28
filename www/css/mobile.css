@@ -2378,12 +2378,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   flex: 1;
   display: flex;
   padding: 0 var(--pd-jour);
+  /* ⚠️ `min-height: 0` N'EST PAS UNE PRECAUTION, C'EST CE QUI AUTORISE LE
+     DEFILEMENT. Un enfant de boite flexible a `min-height: auto` par defaut :
+     il ne peut pas devenir plus petit que son contenu. La carte grandissait donc
+     avec ce qu'elle porte au lieu de defiler, sortait par le bas de l'ecran, et
+     la barre du bas — posee par-dessus, plus tard dans l'empilement — la
+     mangeait. Ce n'etait pas une histoire de taille : c'etait une carte qui ne
+     savait pas defiler la ou une page le savait. */
+  min-height: 0;
 }
 
+/* L'accueil est une page comme les autres, et il defile comme elles. */
 #dicewrap #dc-screen-menu .dc-menu-card {
   flex: 1;
   align-self: stretch;
   max-width: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* ⛔ ET LE CONTENU SE CALE EN HAUT DES QU'IL DEBORDE. `justify-content: center`
+     sur une boite qui defile coupe le HAUT du contenu et le rend inatteignable :
+     le debordement d'une boite centree part des deux cotes, mais on ne peut
+     remonter que d'un seul. `safe` rend le centrage au cas ou tout tient, et
+     s'efface des que ce n'est plus vrai. */
+  justify-content: safe center;
 }
 
 
@@ -2519,3 +2536,182 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 #dicewrap .pd-link-art:active { transform: translateY(3px); }
+
+
+/* ============================================================================
+   LA PAGE DES HAUTS FAITS : UN FILTRE, ET DES FAMILLES QUI SE REPLIENT.
+
+   Avant : cent lignes de meme poids, six titres collants, et aucune reponse a
+   la seule question qu'on se pose en arrivant — « qu'est-ce qui est a moi ? ».
+   Il fallait tout parcourir pour trouver les trois qui attendent.
+   ============================================================================ */
+
+/* La jauge large : celle du haut de page et celle de chaque famille. Une barre
+   est une DISTANCE ; « 45 sur 100 » n'est qu'un chiffre. */
+#dicewrap .dc-suc-jauge-large {
+  height: 9px;
+  margin: 6px 0 12px;
+}
+
+#dicewrap .dc-suc-jauge-large i {
+  background: linear-gradient(90deg, var(--gold-md, #FCA212), var(--gold-hi, #FFE479));
+}
+
+/* ── les filtres ──────────────────────────────────────────────────────────── */
+
+#dicewrap .dc-suc-filtres {
+  display: flex;
+  gap: 5px;
+  margin: 0 0 14px;
+  padding-bottom: 2px;
+}
+
+#dicewrap .dc-suc-filtres::-webkit-scrollbar { display: none; }
+
+/* ⛔ LES QUATRE SE PARTAGENT LA LARGEUR, ILS NE GLISSENT PAS. Mesure : a taille
+   fixe, les quatre demandaient 384 px et tenaient tout juste sur un ecran de
+   440 — mais 347 pour 334 sur un 390, et pour 304 sur un 360. Le dernier etait
+   coupe, et un filtre coupe ne se lit pas comme « faites glisser » : il se lit
+   comme un defaut. En parts egales, ils tiennent a toutes les largeurs ; c'est
+   le LIBELLE qui se tronque en dernier recours, jamais le compte — le compte est
+   la seule chose qu'on ne peut pas deviner. */
+#dicewrap .dc-suc-filtre {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 6px;
+  border: 2px solid rgba(201, 162, 39, .45);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .3);
+  color: var(--txt-dim, #C9BCEA);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 11px;
+  letter-spacing: .2px;
+  cursor: pointer;
+  transition: background .14s, color .14s, border-color .14s;
+}
+
+/* ⚠️ CHAQUE FILTRE PORTE SON COMPTE. Un filtre qui ne dit pas combien il cache
+   oblige a l'essayer pour le savoir — et a revenir quand il ne cachait rien. */
+#dicewrap .dc-suc-filtre > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#dicewrap .dc-suc-filtre em {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .4);
+  color: var(--gold-hi, #FFE479);
+  font-variant-numeric: tabular-nums;
+}
+
+#dicewrap .dc-suc-filtre.on {
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  border-color: var(--blanc, #FFFFFF);
+  color: var(--ink, #2A1A00);
+}
+
+#dicewrap .dc-suc-filtre.on em { background: rgba(0, 0, 0, .3); color: var(--gold-hi, #FFE479); }
+
+/* Celui qui a quelque chose a prendre le dit, meme quand il n'est pas choisi. */
+#dicewrap .dc-suc-filtre-du:not(.on) {
+  border-color: var(--rouge, #E5252F);
+  color: var(--blanc, #FFFFFF);
+}
+
+#dicewrap .dc-suc-filtre-du:not(.on) em { background: var(--rouge, #E5252F); color: #FFFFFF; }
+
+/* ── les familles ─────────────────────────────────────────────────────────── */
+
+/* ⛔ L'ANCIEN TITRE COLLANT N'A PLUS D'EMPLOI. Il restait accroche en haut du
+   defilement pendant qu'on traversait dix-sept lignes, et se faisait remplacer
+   par le suivant : on savait toujours ou l'on etait, jamais ce qu'il restait. */
+#dicewrap .dc-suc-fam { display: none; }
+
+#dicewrap .dc-suc-fam-carte {
+  margin: 0 0 12px;
+  padding: 8px 9px 9px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, .22);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .28);
+}
+
+#dicewrap .dc-suc-fam-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: start;
+}
+
+#dicewrap .dc-suc-fam-nom {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-hi, #FFE479);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Combien attendent une recolte DANS cette famille : c'est ce qui decide
+   laquelle on ouvre. */
+#dicewrap .dc-suc-fam-du {
+  flex: 0 0 auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 2px solid var(--blanc, #FFFFFF);
+  background: var(--rouge, #E5252F);
+  color: #FFFFFF;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 11px;
+  text-align: center;
+}
+
+#dicewrap .dc-suc-fam-compte {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--txt-dim, #C9BCEA);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le chevron est DESSINE, pas ecrit : un glyphe de la police du systeme aurait
+   ete different sur chaque telephone, au milieu d'un jeu ou tout est trace. */
+#dicewrap .dc-suc-chevron {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-inline-end: 3px;
+  border-right: 2.5px solid var(--gold-hi, #FFE479);
+  border-bottom: 2.5px solid var(--gold-hi, #FFE479);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform .16s ease;
+}
+
+#dicewrap .dc-suc-fermee .dc-suc-chevron {
+  transform: rotate(-45deg) translate(-2px, 2px);
+}
+
+/* Repliee, la famille se reduit a son en-tete et a sa jauge. */
+#dicewrap .dc-suc-fermee .dc-suc-jauge-large { margin-bottom: 2px; }
+
+#dicewrap .dc-suc-fam-carte .dc-suc-jauge-large { margin: 6px 2px 10px; }
