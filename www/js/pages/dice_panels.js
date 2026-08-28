@@ -324,7 +324,13 @@ function barre(valeur, cible) {
 function recompense(s) {
   const bouts = [];
   if (s.objet) {
-    bouts.push('<img class="dc-suc-objet" src="' + vignetteDe(s.objet)
+    /* ⚠️ L'OBJET PORTE SON COMPTE COMME LES DEUX BOURSES. Il etait le seul des
+       trois a n'etre qu'une vignette : « 25 [or] 10 [maudit] » et, devant, un
+       dessin muet. On lisait deux quantites et une image, la ou il y a trois
+       recompenses — et rien ne disait si le haut fait en donnait un ou dix. Le
+       nombre passe devant, dans le meme ordre que les pieces. */
+    bouts.push(String(s.objetN || 1)
+      + '<img class="dc-suc-objet" src="' + vignetteDe(s.objet)
       /* ⚠️ PASSER PAR LE REPLI, COMME TOUT LE RESTE DE LA BOUTIQUE. `t()` rend
          la CLE quand elle manque : l'infobulle affichait « shop.M005.name » —
          les quatre ornements n'ont de nom dans aucun des quatre catalogues,

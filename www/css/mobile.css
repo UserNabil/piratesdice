@@ -1132,10 +1132,23 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* Dans la boutique, le bouton d'un article maudit porte la meme couleur que la
    monnaie qu'il demande : on sait ce qu'on va payer avant de lire le chiffre. */
+/* ⛔ IL REPEIGNAIT LE BOUTON AU LIEU DE LE RECOLORER, ET IL Y PERDAIT SON
+   EPAISSEUR. `.dc-btn` tient son relief d'une ombre en BLOC — `0 6px 0` —, pas
+   d'un degrade : c'est elle qui donne le bord sur lequel le bouton s'enfonce a
+   l'appui. En redeclarant `box-shadow` avec deux ombres INTERNES, cette variante
+   effacait le bloc : le bouton d'achat des des et des parures devenait un
+   rectangle plat, quand celui des effets, lui, restait bombe. Deux affordances
+   pour le meme geste, dans la meme page.
+
+   ⚠️ ON NE REPEINT DONC RIEN : on pose les TROIS COULEURS que le bouton de base
+   attend deja — le haut du degrade, le bas, et le bloc du dessous. Tout le reste
+   suit : le lisere blanc, l'ombre portee, l'enfoncement a l'appui, et jusqu'aux
+   futurs reglages du bouton, qui vaudront pour lui sans qu'on y pense. */
 #dicewrap .dc-btn-maudit {
-  background: linear-gradient(180deg, #6A48B8, #3B2270);
+  --b1: #8A63D6;
+  --b2: #4A2A86;
+  --b3: #2A1650;
   color: #EDE3FF;
-  box-shadow: inset 0 1px 0 rgba(226, 210, 255, .55), inset 0 0 0 1px rgba(20, 8, 40, .7);
 }
 
 #dicewrap .dc-btn-maudit .dc-maudite { width: 15px; height: 15px; }
