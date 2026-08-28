@@ -113,8 +113,20 @@ function apply() {
   const boards = document.querySelector('#dicewrap .dc-boards');
   if (!arena || !boards) return;
 
-  const portrait = window.matchMedia('(orientation: portrait), (max-width: 820px)').matches;
-  if (!portrait) { wrap.style.removeProperty('--dc-cell'); return; }
+  /* ⛔ ON MESURE DANS LES DEUX SENS, DESORMAIS. Ce fichier ne travaillait qu'en
+     portrait : en paysage il RETIRAIT la mesure et laissait la feuille de style
+     deviner la case avec une constante — « la hauteur de l'ecran moins 190 ».
+     C'est exactement le defaut que ce fichier a ete ecrit pour corriger, et la
+     constante a fini par mentir : depuis que le bandeau du haut porte des
+     plaques (74 px) et qu'une barre de navigation occupe le bas (60 px),
+     l'habillage prend 257 px et non 190. Les cases se calculaient a 43 px pour
+     une place qui n'en permettait que 31, et le plateau du joueur passait sous
+     la barre du bas.
+
+     Et depuis que le jeu est verrouille en paysage sur telephone, cette branche
+     n'etait plus un cas particulier : c'etait le cas NORMAL. */
+  const etroit = window.matchMedia('(max-width: 1100px)').matches;
+  if (!etroit) { wrap.style.removeProperty('--dc-cell'); return; }
 
   /* La place donnee au bloc des plateaux = l'INTERIEUR de l'arene, moins les deux
      bandeaux et les ecarts.
@@ -138,8 +150,20 @@ function apply() {
      parait que deux secondes.
      Et la marge compte : `.dc-versus` en porte 8 px en haut et en bas sur
      telephone, que la boite englobante n'inclut pas. */
+  /* ⛔ ET ON NE RETRANCHE QUE CE QUI EST AU-DESSUS OU EN DESSOUS. La carte des
+     capitaines coute de la hauteur quand elle est EMPILEE entre les deux
+     plateaux ; couchee, elle se range dans la colonne du milieu, a cote d'eux —
+     la retrancher revenait alors a voler cent pixels aux cases pour un bloc qui
+     ne prend plus une seule ligne. La composition est mesuree plus bas ; on la
+     mesure donc d'abord. */
+  const paire = arena.querySelectorAll('.dc-boardwrap');
+  const cotACote = paire.length === 2
+    && Math.abs(paire[0].getBoundingClientRect().top
+              - paire[1].getBoundingClientRect().top) < 24;
+  const empiles = cotACote ? '.dc-foot' : '.dc-foot, .dc-versus';
+
   let used = 0;
-  for (const bloc of arena.querySelectorAll('.dc-foot, .dc-versus')) {
+  for (const bloc of arena.querySelectorAll(empiles)) {
     const bcs = getComputedStyle(bloc);
     used += bloc.getBoundingClientRect().height
           + parseFloat(bcs.marginTop || '0')
@@ -161,14 +185,43 @@ function apply() {
      rabat alors sur une reserve prudente plutot que sur zero, qui donnerait des
      cases trop grandes le temps d'une image. */
   const enveloppes = boards.querySelectorAll('.dc-boardwrap');
+
+  /* ⛔ LA COMPOSITION SE MESURE, ELLE NE SE SUPPOSE PAS. En portrait les deux
+     plateaux sont l'un SOUS l'autre — six rangees de cases a loger dans la
+     hauteur ; couches cote a cote, il n'y en a plus que trois, mais deux fois
+     plus de colonnes a loger dans la largeur. Lire la feuille de style depuis
+     le JavaScript, ou dupliquer ici la condition du media query, serait deux
+     verites a garder d'accord. On regarde ou sont REELLEMENT les plateaux : s'ils
+     partagent la meme ligne, ils sont cote a cote. */
+  const cote = cotACote;
+
   let fixed = 0;
   for (const w of enveloppes) fixed += surcout(w);
   if (!enveloppes.length) fixed = 160;
-  const byHeight = (height - fixed) / 6;
+  /* Cote a cote, un seul plateau occupe la hauteur : on ne retranche que SON
+     habillage, et on divise par trois rangees au lieu de six. */
+  const rangees = cote ? 3 : 6;
+  const hautFixe = cote && enveloppes.length ? surcout(enveloppes[0]) : fixed;
+  const byHeight = (height - hautFixe) / rangees;
 
   const width = boards.getBoundingClientRect().width || arena.clientWidth;
   const large = enveloppes.length ? surcoutLarge(enveloppes[0]) : 40;
-  const byWidth = (width - large) / 3;
+  /* ⛔ ET LE NOMBRE DE COLONNES SE COMPTE. Il etait ecrit « 3 » — la valeur du
+     temps ou le plateau faisait trois sur trois. Il en a quatre depuis, et ce
+     diviseur accordait donc au plateau un tiers de largeur en trop : la mesure
+     ne bridait plus rien, et seule la hauteur retenait encore la case. Une
+     constante ecrite a la main a la forme du jeu du jour se perime a la regle
+     suivante, en silence. */
+  /* ⚠️ ON COMPTE LES COLONNES D'UN SEUL PLATEAU. `:first-child` ne s'appliquait
+     pas au premier `.dc-boardwrap` mais a tout element qui se trouve etre
+     premier de son parent : le selecteur ramassait les colonnes des DEUX
+     plateaux, huit au lieu de quatre, et la case se calculait deux fois trop
+     petite. On part de l'element, pas d'une position. */
+  const parPlateau = enveloppes.length
+    ? Math.max(1, enveloppes[0].querySelectorAll('.dc-col').length) : 4;
+  const colonnes = parPlateau * (cote ? 2 : 1);
+  const cadres = large * (cote ? 2 : 1);
+  const byWidth = (width - cadres) / colonnes;
 
   /* ⚠️ ON NE PREND PAS TOUTE LA PLACE, ET C'EST UN CHOIX. La mesure donne la
      case la plus grande qui TIENNE ; a ce maximum les deux plateaux se touchent

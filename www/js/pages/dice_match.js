@@ -21,6 +21,10 @@ import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
 import { announce, renderForesee, startClock, MOODS, moodArt, sendMood } from './dice_fx.js';
 import { captainArt, traitArt, captainName, captainTrait } from './dice_lobby.js';
 
+/* BENCH TEMPORAIRE — retire par git checkout */
+import { startClock as __bStartClock } from './dice_fx.js';
+window.__pdBench = { S, startClock: __bStartClock, paint: (f) => paint(f) };
+
 export function onMatch(m) {
   /* Une des trois boucles de partie, jamais la meme deux fois de suite. */
   if (S.musique) S.musique.jouer('partie');
@@ -506,6 +510,9 @@ function openFan(portrait) {
 function wireMoodFan() {
   const ecran = $('#dc-screen-game');
   if (!ecran) return;
+  /* ⛔ UNE SEULE FOIS, ET LE GARDE EST POSE SUR L'ECRAN. */
+  if (ecran.dataset.fanCable) return;
+  ecran.dataset.fanCable = '1';
 
   ecran.addEventListener('pointerdown', (ev) => {
     const portrait = ev.target.closest('#dc-pc-me .dc-pc-portrait');

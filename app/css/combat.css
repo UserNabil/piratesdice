@@ -653,6 +653,48 @@
 #dicewrap .dc-versus {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
+
+/* ⛔ ET COUCHE, LES DEUX CAPITAINES SE FONT FACE DE HAUT EN BAS. Cette feuille
+   est chargee APRES mobile.css : la regle de paysage qui empile les cartes y
+   etait ecrite, s'appliquait pour les rangees... et se faisait reprendre les
+   colonnes ici meme, trois lignes plus haut. Les deux cartes restaient donc
+   cote a cote, larges de 219 px chacune dans une colonne de 250, et debordaient
+   sur les deux plateaux. La regle doit vivre la ou elle gagne. */
+@media (orientation: landscape) and (max-width: 1100px) {
+  #dicewrap .dc-versus {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    gap: 2px;
+  }
+
+  /* ⛔ ET LES CARTES SE RESSERRENT, PARCE QU'IL N'Y A PLUS DE HAUTEUR A PRENDRE.
+     Empilees, deux cartes de 128 px et un medaillon de 88 demandent 344 px dans
+     une colonne qui en a 196 : la carte du joueur passait sous le bandeau du
+     bas, c'est-a-dire la sienne. Couchee, la carte garde ce qu'on regarde
+     pendant un tour — le visage, le nom, le total — et abandonne ce qu'on ne
+     lit jamais en jouant : la bourse et le classement, qui sont dans le bandeau
+     du haut et sur le pont. */
+  #dicewrap .dc-pc {
+    --cbt-joueur-remb: 4px 7px;
+    gap: 6px;
+    max-height: 62px;
+  }
+
+  #dicewrap .dc-pc-portrait { width: 40px; height: 40px; }
+  #dicewrap .dc-pc-name { font-size: 12.5px; }
+  #dicewrap .dc-pc-elo,
+  #dicewrap .dc-pc-coins { display: none; }
+  #dicewrap .dc-pc-stock { gap: 2px; }
+  #dicewrap .dc-pc-chip { width: 12px; height: 12px; }
+  #dicewrap .dc-pc-total { font-size: 22px; }
+  /* ⚠️ ON POSE LA VARIABLE, PAS LA PROPRIETE. `.dc-vs-mark` tire sa largeur de
+     `--cbt-versus-marque` dans une regle ecrite PLUS BAS dans ce fichier :
+     ecrire `width` ici perdait a specificite egale, et le medaillon gardait ses
+     88 px — vingt de trop, que la carte du joueur payait en passant sous le
+     bandeau. Une feuille pilotee par des variables se regle par ses variables. */
+  #dicewrap { --cbt-versus-marque: 56px; }
+}
 #dicewrap .dc-vs-mark { width: var(--cbt-versus-marque); }
 
 #dicewrap .dc-turn { font-size: var(--cbt-etat-taille); color: var(--cbt-etat-couleur); }

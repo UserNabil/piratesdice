@@ -456,6 +456,83 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 
+
+/* ============================================================================
+   L'ARENE EN PAYSAGE : LES DEUX PLATEAUX COTE A COTE.
+
+   ⛔ LA COMPOSITION VERTICALE NE TIENT PAS COUCHEE. Elle empile plateau adverse,
+   cartes des capitaines, plateau du joueur : trois blocs qui demandent de la
+   HAUTEUR, et un telephone couche n'en a que 448 points — dont 134 pour les deux
+   bandeaux. Les cases tombaient a 32 px, et le plateau du joueur passait quand
+   meme sous les cartes : on jouait a l'aveugle sur sa propre grille.
+
+   Couche, l'ecran a de la LARGEUR : mille points. Les deux plateaux s'y
+   installent cote a cote, les capitaines se font face au milieu — ce qui est
+   d'ailleurs la disposition d'un vrai duel — et la case repasse a une
+   soixantaine de pixels. Le meme jeu devient lisible sans qu'on ait retire quoi
+   que ce soit.
+
+   ⚠️ AUCUNE BALISE NE BOUGE. C'est la meme grille, retournee : `.dc-boards`
+   passe de trois rangees a trois colonnes. Le jour ou l'on revient au portrait —
+   sur une tablette, par exemple — la regle ne s'applique plus et la composition
+   d'origine reprend, sans code a maintenir en double.
+   ============================================================================ */
+
+@media (orientation: landscape) and (max-width: 1100px) {
+  #dicewrap .dc-boards {
+    /* ⚠️ LA COLONNE DU MILIEU EST BORNEE. Laissee en `auto`, elle prenait la
+       moitie de l'ecran — 505 px pour deux cartes de capitaine — et les deux
+       plateaux se partageaient le reste : on rendait aux cases une place qu'on
+       leur reprenait aussitot. */
+    grid-template-columns: 1fr minmax(0, 250px) 1fr;
+    grid-template-rows: auto;
+    align-items: center;
+    justify-items: center;
+    gap: clamp(6px, 1.2vw, 16px);
+  }
+
+  /* ⛔ LA CARTE DES CAPITAINES EST UNE GRILLE, PAS UNE BOITE FLEXIBLE :
+     `flex-direction` n'y faisait rien du tout, et les deux cartes restaient
+     cote a cote — trois blocs larges a caser dans 250 px, donc des noms coupes
+     et un medaillon ecrase. On retourne la GRILLE : trois rangees au lieu de
+     trois colonnes, et les deux capitaines se font face de haut en bas, le
+     medaillon entre eux. */
+  #dicewrap .dc-versus {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    gap: 2px;
+  }
+
+  #dicewrap .dc-versus-wrap { align-self: center; }
+
+  /* ⚠️ LA CARTE NE PREND PLUS TOUTE LA LARGEUR. Etiree, elle poussait les deux
+     plateaux vers les bords et leur volait la place qu'on vient de leur
+     rendre. */
+  #dicewrap .dc-pc {
+    width: clamp(150px, 22vw, 230px);
+    padding: 5px 8px;
+  }
+
+  #dicewrap .dc-vs-mark { width: clamp(34px, 5vw, 52px); height: auto; }
+
+  /* ⛔ LES DEUX PLATEAUX PORTENT LEURS PLAQUES DU MEME COTE. Le plateau d'en
+     face est retourne pour que, EMPILES, les deux rangees de scores se
+     retrouvent au milieu, face a face. Cote a cote, ce retournement met les
+     siennes en haut et les miennes en bas : deux lignes de lecture a des
+     hauteurs differentes, pour la meme information. On annule le retournement
+     quand ils sont couches. */
+  /* L'ordre vient du DOM (plateau puis plaques pour celui d'en face) : on le
+     retourne ici, ce que `flex-direction: column-reverse` fait sans toucher au
+     JavaScript qui construit les plateaux. */
+  #dicewrap .dc-boardwrap-top { flex-direction: column-reverse; }
+
+  /* Le bandeau du bas de l'arene reste sur toute la largeur : c'est la main du
+     joueur, elle doit rester au centre et sous le pouce. */
+  #dicewrap .dc-arena { padding: 6px 10px 4px; gap: 6px; }
+  #dicewrap .dc-foot { padding-top: 2px; }
+}
+
 /* ============================================================================
    LE BANDEAU DU HAUT, SUR SES PLAQUES DESSINEES.
 
@@ -518,6 +595,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 #dicewrap .dc-plaque {
   height: var(--pd-bar-h);
+  /* ⛔ UNE LARGEUR FIXE, ET LA MEME QUOI QU'IL ARRIVE. Les plaques s'allongeaient
+     avec le nombre : la barre dansait a chaque fin de partie et les trois
+     n'etaient jamais alignees deux fois de suite. Une plaque est un objet
+     DESSINE, pas une boite de texte — c'est au nombre de tenir dedans, et il y
+     tient parce qu'il s'abrege (15,7k, 1,2M). La largeur est calee sur six
+     caracteres, le pire cas. */
+  width: 118px;
+  flex: 0 0 auto;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -564,6 +649,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
                 calc(var(--pd-bar-h) * 38 / 257) calc(var(--pd-bar-h) * 218 / 257);
 }
 
+/* Le classement porte deux lignes : il lui faut un peu plus de creux. */
+#dicewrap .dc-plaque-rang { width: 132px; }
+
 #dicewrap .dc-plaque-rang em {
   font-style: normal;
   font-size: 8px;
@@ -576,9 +664,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    chaque piece gagnee pousserait les autres, et la barre danserait a chaque fin
    de partie. Le creux du milieu a de la place pour cinq chiffres ; au-dela, le
    texte se resserre. */
-#dicewrap .dc-plaque.dc-coins-c4 { font-size: 16px; }
-#dicewrap .dc-plaque.dc-coins-c5 { font-size: 14px; }
-#dicewrap .dc-plaque.dc-coins-c6 { font-size: 12px; letter-spacing: -.3px; }
+/* Six caracteres — « 999,9k » — se pressent : un demi-point de moins, et le
+   dernier ne touche plus le bord. C'est le seul reglage qui reste. */
+#dicewrap .dc-plaque.dc-coins-c5 { font-size: 15px; }
 
 /* Les reglages : une plaque carree, donc pas d'etirement du tout. */
 #dicewrap .dc-plaque-reglages {

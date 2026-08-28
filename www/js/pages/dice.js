@@ -549,6 +549,12 @@ function syncFull() {
 /* ─────────────────────────────────────────────────────────── wallet / menu ── */
 
 /**
+ * ⛔ CETTE FONCTION NE SERT PLUS A RETRECIR, ET C'EST VOULU. Le texte maigrissait
+ * pour tenir ; le nombre s'abrege maintenant (voir `nombre`), donc il tient
+ * toujours. On garde la classe pour le seul cas ou six caracteres se pressent —
+ * « 999,9k » — ou un demi-point de moins evite que le dernier ne touche le bord.
+ *
+ * Ancienne raison d'etre, gardee pour memoire :
  * La classe de taille d'une bourse, selon le nombre de chiffres.
  *
  * ⛔ UNE BOURSE QUI GROSSIT NE DOIT PAS POUSSER LE RESTE DEHORS. « 280 » et
@@ -560,24 +566,39 @@ function syncFull() {
  * joueur doit pouvoir lire ce qu'il possede, au chiffre pres.
  */
 /**
- * « 15 780 » et non « 15780 ».
+ * Le montant tel qu'il tient sur sa plaque, quelle que soit la fortune.
  *
- * ⚠️ ON LAISSE LE TELEPHONE GROUPER LES CHIFFRES. Un espace insere a la main
- * serait juste en francais et faux ailleurs : l'anglais met une virgule,
- * l'arabe ses propres chiffres. `toLocaleString` connait la langue du joueur —
- * et si elle jette, on rend le nombre nu plutot que rien.
+ * ⛔ LES PLAQUES NE CHANGENT PLUS DE TAILLE. Elles s'allongeaient avec le
+ * nombre : la barre dansait a chaque fin de partie, et les trois plaques
+ * n'etaient jamais alignees deux fois de suite. Une plaque est un objet
+ * dessine, pas une boite de texte — c'est au NOMBRE de tenir dedans.
+ *
+ * ⚠️ D'OU L'ABREGE, ET SON SEUIL. En dessous de dix mille, on ecrit tout : ce
+ * sont les montants qu'on lit vraiment, et « 9 999 » se comprend mieux que
+ * « 10,0k ». Au-dela, on abrege — six caracteres au maximum, ce qui couvre
+ * jusqu'a « 999M ». Un joueur qui depasse le milliard aura merite qu'on y
+ * revienne.
+ *
+ * ⚠️ ET LE GROUPEMENT VIENT DU TELEPHONE. Un espace pose a la main serait juste
+ * en francais et faux ailleurs : l'anglais met une virgule, l'arabe ses propres
+ * chiffres.
  */
 function nombre(n) {
-  const v = Math.max(0, Number(n) || 0);
+  const v = Math.max(0, Math.round(Number(n) || 0));
+  const abrege = (x, suffixe) => {
+    const dixiemes = Math.floor(x * 10) / 10;
+    const texte = dixiemes >= 100 ? String(Math.floor(dixiemes))
+      : String(dixiemes).replace('.', ',');
+    return texte + suffixe;
+  };
+  if (v >= 1e9) return abrege(v / 1e9, 'G');
+  if (v >= 1e6) return abrege(v / 1e6, 'M');
+  if (v >= 1e4) return abrege(v / 1e3, 'k');
   try { return v.toLocaleString(); } catch (_) { return String(v); }
 }
 
 function tailleBourse(n) {
-  const chiffres = String(Math.max(0, Number(n) || 0)).length;
-  if (chiffres <= 3) return '';
-  if (chiffres === 4) return 'dc-coins-c4';
-  if (chiffres === 5) return 'dc-coins-c5';
-  return 'dc-coins-c6';
+  return nombre(n).length >= 6 ? 'dc-coins-c5' : '';
 }
 
 /**
