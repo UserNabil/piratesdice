@@ -54,12 +54,17 @@ import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines, repren
  * l'un de l'autre, et les prendre a l'envers ferait pencher les quatre du meme
  * cote — la barre perdrait sa symetrie, qui est tout ce qui la tient.
  */
+/* ⚠️ `art` NOMME UNE PAIRE, PAS UN FICHIER. Chaque onglet a son dessin au repos
+   (`<art>.png`) et son animation (`<art>_anim.png`), et les deux sont le MEME
+   dessin a leurs extremites : la derniere image de l'animation EST le fichier
+   fixe, au pixel pres, et la premiere lui est identique. C'est ce qui permet de
+   passer de l'un a l'autre a l'appui sans que le bouton saute. */
 const ONGLETS = [
-  { id: 'shop', cle: 'tab.shop', art: 'icon_shop', cote: 'g' },
-  { id: 'ranking', cle: 'tab.ranking', art: 'icon_ranking', cote: 'g' },
-  { id: 'accueil', cle: 'nav.accueil', art: 'home', cote: 'home' },
-  { id: 'succes', cle: 'tab.succes', art: 'icon_succes', cote: 'd' },
-  { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'icon_replay', cote: 'd' },
+  { id: 'shop', cle: 'tab.shop', art: 'bas_shop', cote: 'g' },
+  { id: 'ranking', cle: 'tab.ranking', art: 'bas_rank', cote: 'g' },
+  { id: 'accueil', cle: 'nav.accueil', art: 'slot_bas_home', cote: 'home' },
+  { id: 'succes', cle: 'tab.succes', art: 'bas_succes', cote: 'd' },
+  { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'bas_replay', cote: 'd' },
 ];
 
 function shellMarkup() {
@@ -139,13 +144,10 @@ function shellMarkup() {
          il salit le dessin et repete ce que le dessin dit deja. Le nom survit
          la ou il sert : dans l'infobulle et dans l'etiquette pour les lecteurs
          d'ecran. -->
-    <nav class="dc-bas pd-panel" id="dc-bas">${ONGLETS.map((o) => (o.cote === 'home' ? `
-      <button class="dc-onglet dc-onglet-home" data-panel="${o.id}"
+    <nav class="dc-bas pd-panel" id="dc-bas">${ONGLETS.map((o) => `
+      <button class="dc-onglet dc-onglet-${o.cote}" data-panel="${o.id}" data-art="${o.art}"
               title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
-      ><img src="${ASSETS}img/slot_bas_home.png" alt=""></button>` : `
-      <button class="dc-onglet dc-onglet-${o.cote}" data-panel="${o.id}"
-              title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
-      ><img src="${ASSETS}img/${o.art}.png" alt=""></button>`)).join('')}
+      ><img src="${ASSETS}img/${o.art}.png" alt=""></button>`).join('')}
     </nav>
   </div>`;
 }
@@ -259,7 +261,7 @@ function build() {
   wrap.querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
     b.onclick = () => {
       if (S.sfx) S.sfx.play('onglet', 0.22);
-      if (b.dataset.panel === 'accueil') animerAccueil(b);
+      animerOnglet(b);
       togglePanel(b.dataset.panel);
     };
   });
@@ -817,21 +819,35 @@ function togglePanel(name) {
  * plus et retiendrait dix images decodees en memoire. Le relais est invisible :
  * la derniere image de l'animation EST le fichier au repos, au pixel pres.
  */
-let relaisAccueil = 0;
-let minuteurAccueil = 0;
-function animerAccueil(bouton) {
+let relaisOnglet = 0;
+const minuteursOnglet = new Map();
+
+/**
+ * ⚠️ 950 MS, ET C'EST MESURE. Les cinq animations sont construites pareil : le
+ * mouvement dure de 700 a 880 ms, puis l'image de repos est TENUE une seconde
+ * entiere. Rendre la main apres le mouvement le plus long — 880 ms pour les
+ * hauts faits — et avant la fin de la plus courte tenue tombe donc dans une
+ * fenetre ou l'ecran affiche deja, immobile, le fichier fixe : le relais ne se
+ * voit pas. Garder l'APNG jusqu'au bout ne montrerait rien de plus et
+ * retiendrait dix images decodees par bouton.
+ */
+const RETOUR_MS = 950;
+
+function animerOnglet(bouton) {
   const img = bouton.querySelector('img');
-  if (!img) return;
+  const art = bouton.dataset.art;
+  if (!img || !art) return;
   /* Le minuteur vit ici et pas dans `dataset` : `dataset` ne garde que des
      chaines, et `clearTimeout('37')` n'annule rien du tout. Deux appuis
      rapproches auraient laisse le premier minuteur rendre la main au dessin
-     fixe au milieu de la seconde animation. */
-  clearTimeout(minuteurAccueil);
-  relaisAccueil = 1 - relaisAccueil;
-  img.src = `${ASSETS}img/slot_bas_home_anim.png?${relaisAccueil ? 'a' : 'b'}`;
-  minuteurAccueil = setTimeout(() => {
-    img.src = `${ASSETS}img/slot_bas_home.png`;
-  }, 820);
+     fixe au milieu de la seconde animation. Une entree par bouton : deux
+     onglets differents peuvent jouer en meme temps. */
+  clearTimeout(minuteursOnglet.get(art));
+  relaisOnglet = 1 - relaisOnglet;
+  img.src = `${ASSETS}img/${art}_anim.png?${relaisOnglet ? 'a' : 'b'}`;
+  minuteursOnglet.set(art, setTimeout(() => {
+    img.src = `${ASSETS}img/${art}.png`;
+  }, RETOUR_MS));
 }
 
 /**
