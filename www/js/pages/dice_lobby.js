@@ -316,7 +316,12 @@ function renderRoom(el) {
       <h3>${esc(t(attente ? 'room.waiting' : 'room.title'))}</h3>
       ${attente ? `
         <p>${esc(t('room.share'))}</p>
-        <div class="dc-room-code" id="dc-room-code">${esc(hostCode)}</div>
+        <div class="dc-room-ligne">
+          <div class="dc-room-code" id="dc-room-code">${esc(hostCode)}</div>
+          <button class="dc-btn dc-btn-art dc-room-publier" id="dc-room-publier"
+                  title="${esc(t('room.publier'))}" aria-label="${esc(t('room.publier'))}"
+          ><img src="${ASSETS}img/icon_link.png" alt="">${esc(t('room.publier'))}</button>
+        </div>
         <img class="dc-wheel" src="${ASSETS}img/icon_loader.png" alt="">
         <p class="dc-dim">${esc(t('room.expires'))}</p>
       ` : `
@@ -345,6 +350,7 @@ function renderRoom(el) {
   if (attente) {
     const code = $('#dc-room-code');
     code.onclick = () => copyCode(hostCode);
+    $('#dc-room-publier').onclick = () => publierSalon(hostCode);
     return;
   }
 
@@ -360,6 +366,92 @@ function renderRoom(el) {
   $('#dc-room-go').onclick = go;
   $('#dc-room-create').onclick = () => S.net.send({ t: 'room', action: 'create' });
   setTimeout(() => { try { input.focus(); } catch (_) { /* pas de clavier */ } }, 60);
+}
+
+/**
+ * PUBLIER LE SALON : un lien qu'on touche, et un code qu'on peut dicter.
+ *
+ * ⚠️ DEUX ADRESSES DANS LE MEME MESSAGE, ET CHACUNE POUR UNE RAISON.
+ *
+ *   Le lien `https://` est celui qu'on ENVOIE : les messageries ne rendent
+ *   cliquable qu'un lien web. Un `piratesdice://` colle dans une conversation
+ *   reste du texte mort chez la plupart d'entre elles — l'ami verrait une ligne
+ *   bizarre et devrait la recopier a la main, ce qui est exactement ce qu'on
+ *   voulait lui epargner.
+ *
+ *   La page derriere ce lien rebondit vers `piratesdice://rejoindre?code=…`,
+ *   qui ouvre le jeu directement. Si le jeu n'est pas installe, elle montre les
+ *   boutiques — un lien d'invitation est aussi une invitation a installer.
+ *
+ * ⛔ ET LE CODE RESTE ECRIT EN CLAIR DANS LE MESSAGE. Le lien peut echouer : jeu
+ * absent, navigateur qui bloque le rebond, lien tronque par une application.
+ * Le code, lui, se lit a voix haute et se tape. On ne remplace pas un chemin
+ * qui marche toujours par un chemin qui marche presque toujours ; on ajoute le
+ * second au premier.
+ */
+const SITE = 'https://usernabil.github.io/piratesdice-site';
+
+export function lienDeSalon(code) {
+  return SITE + '/rejoindre.html?code=' + encodeURIComponent(code);
+}
+
+async function publierSalon(code) {
+  if (!code) return;
+  const texte = t('room.invitation', { code });
+  const lien = lienDeSalon(code);
+  const partage = window.Capacitor && window.Capacitor.Plugins
+    && window.Capacitor.Plugins.Share;
+  if (partage) {
+    try {
+      await partage.share({ title: t('room.title'), text: texte, url: lien,
+                            dialogTitle: t('room.publier') });
+      return;
+    } catch (e) {
+      /* ⚠️ ANNULER N'EST PAS ECHOUER. Refermer la feuille de partage leve la
+         meme exception qu'une panne : recopier alors dans le presse-papier
+         afficherait « lien copie » a quelqu'un qui vient de dire non. */
+      const dit = String((e && e.message) || '').toLowerCase();
+      if (dit.includes('cancel') || dit.includes('annul') || dit.includes('abort')) return;
+    }
+  }
+  /* Hors application — ou greffon absent : le lien part au presse-papier. */
+  if (!navigator.clipboard) { toast(texte, 'ok'); return; }
+  navigator.clipboard.writeText(texte + ' ' + lien)
+    .then(() => toast(t('room.lienCopie'), 'ok'))
+    .catch(() => toast(texte, 'ok'));
+}
+
+/**
+ * Rejoindre depuis un lien : `piratesdice://rejoindre?code=XXXXX`.
+ *
+ * ⚠️ ON N'ENTRE PAS DANS UNE TABLE PENDANT QU'ON JOUE. Le lien peut arriver a
+ * n'importe quel moment — l'application est peut-etre au milieu d'une partie.
+ * Quitter une partie en cours parce qu'un ami a envoye un lien serait un
+ * forfait involontaire, avec sa perte de classement.
+ */
+let salonAttendu = '';
+
+export function rejoindreParLien(code) {
+  const propre = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+  if (propre.length !== 5) return false;
+  if (S.state) { toast(t('room.pasPendant'), 'warn'); return false; }
+  /* ⛔ AU LANCEMENT A FROID, LE LIEN ARRIVE AVANT LA SOCKET. Toucher le lien
+     alors que le jeu est ferme le DEMARRE : l'adresse est deja la quand le
+     premier ecouteur se pose, des secondes avant que le serveur ait dit
+     bonjour. Envoyer tout de suite ne ferait rien du tout — et l'ami resterait
+     devant un menu, sans savoir que son invitation a ete perdue en chemin. On
+     la met de cote, et `welcome` la reprend. */
+  if (!S.net || !S.net.ready) { salonAttendu = propre; return false; }
+  S.net.send({ t: 'room', action: 'join', code: propre });
+  return true;
+}
+
+/** Le serveur vient de dire bonjour : l'invitation mise de cote peut partir. */
+export function reprendreLienEnAttente() {
+  if (!salonAttendu) return;
+  const code = salonAttendu;
+  salonAttendu = '';
+  rejoindreParLien(code);
 }
 
 function copyCode(code) {

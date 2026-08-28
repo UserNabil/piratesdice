@@ -17,6 +17,8 @@ PODS:
   - CapacitorBrowser (7.0.5):
     - Capacitor
   - CapacitorCordova (7.6.8)
+  - CapacitorShare (7.0.4):
+    - Capacitor
   - CapacitorSplashScreen (7.0.5):
     - Capacitor
   - CapacitorStatusBar (7.0.6):
@@ -60,6 +62,7 @@ DEPENDENCIES:
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapgoCapacitorSocialLogin (from `../../node_modules/@capgo/capacitor-social-login`)"
@@ -88,6 +91,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/browser"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorShare:
+    :path: "../../node_modules/@capacitor/share"
   CapacitorSplashScreen:
     :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
@@ -103,6 +108,7 @@ SPEC CHECKSUMS:
   CapacitorApp: 6b89831465d6bc99bc89779b1b7f5327e33011ce
   CapacitorBrowser: 3bcddd9dd07cfff9105dcc88ad64853be9862e50
   CapacitorCordova: e61ee8c40101b8cd011d0224261606a290c082cf
+  CapacitorShare: 14b5d7f0a2c6de86dcad8995da80fb707ee32f62
   CapacitorSplashScreen: b3d12b4324d93ce605fe57f05a199ade7f26189e
   CapacitorStatusBar: a3acb591ff56301e28aa1a01791ba74a8e1faabb
   CapgoCapacitorSocialLogin: 841a813363350a0572aa44e81b1a35a14c43c92c
@@ -116,6 +122,6 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: 5719f8d21362d9ae4087ad54ab645feadaf743cd
+PODFILE CHECKSUM: 5c7c0c2a0d084aaa93107200b3b8c9cbb618e51d
 
 COCOAPODS: 1.16.2

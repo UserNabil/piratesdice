@@ -22,6 +22,17 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Le lien d'invitation : piratesdice://rejoindre?code=XXXXX
+                 BROWSABLE est ce qui autorise un navigateur, une messagerie ou
+                 un lecteur de QR a l'ouvrir ; sans lui, seul le jeu pourrait
+                 s'appeler lui-meme, ce qui ne sert a rien. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="piratesdice" android:host="rejoindre" />
+            </intent-filter>
         </activity>
 
         <provider

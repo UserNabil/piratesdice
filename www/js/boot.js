@@ -8,6 +8,7 @@
    ============================================================================ */
 
 import { initDice, openDice, ouvrirPanneau } from './pages/dice.js';
+import { rejoindreParLien } from './pages/dice_lobby.js';
 import { S, UI, ASSETS, myTurn } from './pages/dice_state.js';
 import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
 import { startFitting } from './fit.js';
@@ -90,6 +91,36 @@ function wireArrierePlan() {
     S.sfx.dehors = !isActive;
     if (!isActive) S.sfx.taire();
   });
+}
+
+/**
+ * LES LIENS D'INVITATION : piratesdice://rejoindre?code=XXXXX
+ *
+ * ⚠️ DEUX CHEMINS, ET IL FAUT LES DEUX. `appUrlOpen` couvre le cas ou le jeu
+ * tourne deja ; `getLaunchUrl` celui ou le lien VIENT DE LE DEMARRER — dans ce
+ * cas l'adresse est arrivee avant que le moindre ecouteur existe, et l'evenement
+ * ne se rejouera jamais. N'en brancher qu'un revient a perdre une invitation sur
+ * deux, selon que l'ami avait le jeu ouvert ou non.
+ */
+function brancherLiens() {
+  const cap = window.Capacitor;
+  const app = cap && cap.Plugins && cap.Plugins.App;
+  if (!app) return;
+  const code = (url) => {
+    try {
+      const u = new URL(String(url || ''));
+      return (u.searchParams.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    } catch (_) { return ''; }
+  };
+  app.addListener('appUrlOpen', (ev) => {
+    const c = code(ev && ev.url);
+    if (c) rejoindreParLien(c);
+  });
+  if (typeof app.getLaunchUrl === 'function') {
+    app.getLaunchUrl()
+      .then((r) => { const c = code(r && r.url); if (c) rejoindreParLien(c); })
+      .catch(() => { /* pas de lien de lancement : c'est le cas ordinaire */ });
+  }
 }
 
 function wireBackButton() {
@@ -557,6 +588,7 @@ async function start() {
   await openDice();
   addHeaderButtons();
   fermerLesPortes();
+  brancherLiens();
   startFitting();
   wireMotion();
   /* ⚠️ LE RIDEAU SE LEVE EN DERNIER, ET C'EST TOUT L'INTERET.

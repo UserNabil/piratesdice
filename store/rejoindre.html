@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rejoindre une table — The Pirate's Dice</title>
+
+<!--
+  ============================================================================
+  LA PAGE DE REBOND DES INVITATIONS.
+
+  A DEPOSER SUR LE SITE, a cote de privacy.html :
+      usernabil.github.io/piratesdice-site/rejoindre.html
+
+  Le jeu partage un lien de la forme
+      https://usernabil.github.io/piratesdice-site/rejoindre.html?code=7QPGA
+
+  ⛔ POURQUOI PASSER PAR UNE PAGE WEB PLUTOT QUE DE PARTAGER `piratesdice://`
+  DIRECTEMENT. Les messageries ne rendent cliquable qu'un lien web : un lien a
+  schema maison colle dans une conversation reste du texte mort chez la plupart
+  d'entre elles. L'ami verrait une ligne bizarre et devrait la recopier a la
+  main — exactement ce qu'on voulait lui epargner.
+
+  ⚠️ ET LE REBOND N'EST PAS AUTOMATIQUE AU CHARGEMENT. iOS et Android bloquent
+  l'ouverture d'une autre application tant que l'utilisateur n'a rien touche :
+  une redirection posee dans `onload` ne part pas, et laisse une page qui a
+  l'air cassee. On tente le rebond, et on montre TOUJOURS le bouton — c'est lui
+  qui porte le geste de l'utilisateur, et c'est le seul chemin fiable.
+
+  ⚠️ LE CODE EST ECRIT EN GROS, ET C'EST VOULU. Le lien peut echouer de dix
+  facons — jeu pas installe, navigateur qui refuse le rebond, lien tronque. Le
+  code, lui, se lit a voix haute et se tape dans « Jouer avec un ami ».
+  ============================================================================
+-->
+
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 28px 20px calc(28px + env(safe-area-inset-bottom, 0px));
+    background: radial-gradient(120% 90% at 50% 4%, #6A3BC4 0%, #3C2170 46%, #241C33 100%);
+    color: #fff;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-align: center;
+  }
+  h1 { margin: 0; font-size: 22px; letter-spacing: .3px; }
+  p { margin: 0; max-width: 30rem; color: #C9BCEA; }
+  .code {
+    font: 700 34px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .32em;
+    padding: 16px 20px 16px 26px;   /* le dernier interlettrage n'a pas de voisin */
+    border: 3px solid #FFE479;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, .3);
+    color: #FFE479;
+  }
+  .bouton {
+    display: inline-block;
+    min-width: 15rem;
+    padding: 15px 22px;
+    border-radius: 16px;
+    border: 3px solid #fff;
+    background: linear-gradient(180deg, #FFE479, #F8D040);
+    color: #2A1A00;
+    font-weight: 700;
+    font-size: 17px;
+    text-decoration: none;
+  }
+  .boutique {
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .rangee { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .discret { font-size: 13.5px; color: #9C8CC4; }
+</style>
+
+<h1>Une table vous attend</h1>
+<p>Ouvrez The Pirate's Dice pour rejoindre la partie.</p>
+
+<div class="code" id="code">—</div>
+
+<a class="bouton" id="ouvrir" href="#">Ouvrir le jeu</a>
+
+<p class="discret">Le jeu n'est pas installé&nbsp;?</p>
+<div class="rangee">
+  <a class="boutique" href="https://apps.apple.com/app/id0000000000">App&nbsp;Store</a>
+  <a class="boutique" href="https://play.google.com/store/apps/details?id=com.nabil.piratesdice">Google&nbsp;Play</a>
+</div>
+
+<p class="discret">Ou entrez le code dans «&nbsp;Jouer avec un ami&nbsp;».</p>
+
+<script>
+  var params = new URLSearchParams(location.search);
+  var code = (params.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+  var vers = 'piratesdice://rejoindre?code=' + encodeURIComponent(code);
+
+  if (code) {
+    document.getElementById('code').textContent = code;
+    document.getElementById('ouvrir').setAttribute('href', vers);
+  } else {
+    document.getElementById('code').textContent = '?????';
+    document.getElementById('ouvrir').style.display = 'none';
+  }
+
+  /* La tentative automatique : elle passe quand le navigateur l'accepte, et ne
+     casse rien quand il la refuse — le bouton reste, et c'est lui le vrai
+     chemin. On attend un souffle pour que la page soit peinte d'abord : une
+     redirection immediate laisse un ecran blanc si elle echoue. */
+  if (code) setTimeout(function () { location.href = vers; }, 350);
+</script>
+</html>

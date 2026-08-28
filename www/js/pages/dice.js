@@ -29,7 +29,7 @@ import { renderRules, renderShop, renderRanking, renderSucces } from './dice_pan
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
-import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines } from './dice_lobby.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines, reprendreLienEnAttente } from './dice_lobby.js';
 
 /* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
    l'on se situe, ce qu'on a accompli, ce qu'on a joue, et enfin les regles —
@@ -290,6 +290,8 @@ async function connect() {
       renderWallet();
       rafraichirRang();
       showMenu();
+      /* Une invitation touchee alors que le jeu etait ferme attend ici. */
+      reprendreLienEnAttente();
     },
     me: (m) => {
       S.me = m.me; S.inventory = m.inventory || [];

@@ -36,6 +36,17 @@
 	     capitaine se coupe et la barre du bas mange le reste. On perdait du
 	     contenu sans le dire. L'iPad, lui, garde toutes ses orientations : il a
 	     la place dans les deux sens. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.nabil.piratesdice</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>piratesdice</string>
+			</array>
+		</dict>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
