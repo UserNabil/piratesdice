@@ -185,8 +185,12 @@ export async function renderShop(body) {
           if (typeof out.coins === 'number') S.me.coins = out.coins;
           if (typeof out.premium === 'number') S.me.premium = out.premium;
         }
+        /* ⛔ PLUS D'ALERTE A CHAQUE ACHAT. Elle ne disait rien que l'ecran ne
+           montre deja : la piece qui tinte, la bourse qui baisse, et le « en
+           cale : n » qui monte sous l'objet meme. Cinq achats de suite
+           empilaient cinq bandeaux identiques par-dessus la boutique — on ne
+           voyait plus ce qu'on achetait. Le son et le compteur suffisent. */
         S.sfx.play('coin', 0.35);
-        toast(t('shop.bought'), 'ok');
         if (UI.renderWallet) UI.renderWallet(); renderBonusRack(); renderShop(body);
       } catch (e) {
         toast(e.message, 'warn');
@@ -354,13 +358,28 @@ function ligneSucces(s) {
   const nom = t('suc.' + s.identify + '.name');
   const txt = t('suc.' + s.identify + '.txt');
   const fait = s.gagne;
-  return '<li class="dc-suc' + (fait ? ' dc-suc-on' : '') + '">'
+  /* ⚠️ TROIS ETATS, PAS DEUX. Un haut fait est a faire, ou fait et non recupere,
+     ou fait et encaisse. Le deuxieme est le seul qui demande quelque chose au
+     joueur : c'est le seul qui porte un bouton. */
+  /* ⛔ `!s.reclame` ETAIT FAUX CONTRE UN SERVEUR QUI N'EN PARLE PAS. Un serveur
+     d'avant la recolte n'envoie pas ce champ : `undefined` rendait `!s.reclame`
+     vrai, donc TOUT paraissait a recuperer — bouton sur chaque ligne gagnee et
+     pastille a 45 sur la barre — alors que rien ne l'etait, et que le serveur
+     aurait refuse la demande. On exige donc un `false` explicite : « pas encore
+     recupere » et « le serveur ne sait pas ce que c'est » sont deux choses
+     differentes, et une seule appelle un bouton. */
+  const aPrendre = fait && s.reclame === false;
+  return '<li class="dc-suc' + (fait ? ' dc-suc-on' : '')
+      + (aPrendre ? ' dc-suc-du' : '') + '">'
     + '<span class="dc-suc-art" style="background-image:url(' + ASSETS + 'img/succes/'
       + esc(s.identify) + '.png)"></span>'
     + '<span class="dc-suc-txt"><b>' + esc(nom) + '</b><span>' + esc(txt) + '</span>'
     + (fait ? '' : barre(s.valeur, s.cible) + '<em>' + s.valeur + ' / ' + s.cible + '</em>')
     + '</span>'
-    + '<span class="dc-suc-prix">' + recompense(s) + '</span>'
+    + (aPrendre
+        ? '<button class="dc-suc-prendre" data-prendre="' + esc(s.identify) + '">'
+            + esc(t('suc.prendre')) + '</button>'
+        : '<span class="dc-suc-prix">' + recompense(s) + '</span>')
     + '</li>';
 }
 
@@ -391,6 +410,8 @@ export function renderSucces(body) {
   const ordre = FAMILLES.filter((f) => parFamille.has(f))
     .concat([...parFamille.keys()].filter((f) => !FAMILLES.includes(f)));
 
+  const aPrendre = liste.filter((s) => s.gagne && s.reclame === false);
+
   body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
     /* ⚠️ « 1 HAUTS FAITS SUR 9 » SE LIT COMME UNE FAUTE, PARCE QUE C'EN EST UNE.
        Une phrase qui compte doit accorder : deux cles plutot qu'un pluriel
@@ -398,8 +419,40 @@ export function renderSucces(body) {
     + '<p class="dc-suc-tete">' + esc(t(gagnes === 1 ? 'suc.done1' : 'suc.done',
         { n: gagnes, total: liste.length }))
     + (total ? ' · ' + esc(t('suc.reste', { n: total })) : '') + '</p>'
+    /* Le bouton n'existe que s'il y a quelque chose a prendre : un « tout
+       recuperer » toujours affiche, et gris neuf fois sur dix, apprend surtout
+       a ne plus le regarder. */
+    + (aPrendre.length
+        ? '<button class="dc-suc-tout" data-prendre-tout>'
+            + esc(t('suc.prendreTout', { n: aPrendre.length })) + '</button>'
+        : '')
     + ordre.map((f) => '<h4 class="dc-suc-fam">' + esc(t('suc.fam.' + f)) + '</h4>'
         + '<ul class="dc-suc-liste">' + parFamille.get(f).map(ligneSucces).join('') + '</ul>').join('');
+
+  brancherRecolte(body);
+}
+
+/**
+ * Brancher les boutons de recolte.
+ *
+ * ⚠️ LE BOUTON SE DESARME LUI-MEME AU PREMIER APPUI. La reponse du serveur met
+ * un aller-retour a revenir ; sans cela, trois appuis impatients enverraient
+ * trois demandes pour la meme recompense. La seconde et la troisieme ne
+ * paieraient rien — l'`UPDATE ... WHERE claimed_at IS NULL` s'en charge — mais
+ * elles feraient clignoter la page et afficheraient « rien a recuperer » juste
+ * apres une recolte reussie.
+ */
+function brancherRecolte(body) {
+  const envoyer = (bouton, quoi) => {
+    if (!S.net) { toast(t('connect.outOfReach'), 'warn'); return; }
+    bouton.disabled = true;
+    S.net.send({ t: 'reclamer', succes: quoi });
+  };
+  const tout = body.querySelector('[data-prendre-tout]');
+  if (tout) tout.onclick = () => envoyer(tout, null);
+  for (const b of body.querySelectorAll('[data-prendre]')) {
+    b.onclick = () => envoyer(b, [b.dataset.prendre]);
+  }
 }
 
 /* Les trois premieres places portent leur medaille. Au-dela, le rang chiffre :

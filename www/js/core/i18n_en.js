@@ -341,6 +341,10 @@ export const EN = {
   'over.horsLigne': 'Played offline — the reward lands once the server has checked it.',
   'tab.replay': 'Logbook',
   'tab.succes': 'Deeds',
+  'suc.prendre': 'Collect',
+  'suc.prendreTout': 'Collect all ({n})',
+  'suc.recolte': '+{or} coins and +{maudit} cursed.',
+  'suc.rien': 'Nothing to collect.',
   'tab.rules': 'Rules',
 
   'connect.boarding': 'Boarding the ship…',

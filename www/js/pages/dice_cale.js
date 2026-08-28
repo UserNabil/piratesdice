@@ -121,3 +121,27 @@ export function oublierParties(jetonsTraites) {
   ecrire(CLE_PARTIES, reste);
   return reste.length;
 }
+
+/* ── la position au classement ───────────────────────────────────────────── */
+
+/**
+ * ⚠️ ELLE EST GARDEE PARCE QU'ELLE VIENT D'AILLEURS. Les pieces et les points
+ * arrivent dans le message `me` de la socket ; la POSITION, elle, se calcule sur
+ * toute la table des joueurs et ne voyage que par la route du classement. Sans
+ * memoire, la plaque afficherait un tiret a chaque ouverture, le temps de la
+ * requete — et pour toujours en mode hors ligne.
+ */
+const CLE_RANG = 'pd.rang';
+
+export function rangerRang(r) {
+  const v = Math.max(0, Math.round(Number(r) || 0));
+  if (!v) return;
+  try { localStorage.setItem(CLE_RANG, String(v)); } catch (_) { /* stockage refuse */ }
+}
+
+export function rangConnu() {
+  try {
+    const v = Number(localStorage.getItem(CLE_RANG));
+    return v > 0 ? v : 0;
+  } catch (_) { return 0; }
+}

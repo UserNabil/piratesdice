@@ -70,6 +70,12 @@ export function onOver(m) {
      avale ensuite. */
   S.succes = null;
   S.historique = null;
+  /* ⚠️ ON OUBLIE, PUIS ON REDEMANDE TOUT DE SUITE. Depuis que les hauts faits se
+     RECUPERENT, la liste ne sert plus seulement a peindre une page qu'on ouvrira
+     peut-etre : elle nourrit la bulle de la barre du bas. L'oublier sans la
+     redemander eteindrait la bulle au moment precis ou elle a quelque chose a
+     dire — la fin d'une partie est l'instant ou les hauts faits tombent. */
+  if (S.net) S.net.send({ t: 'succes' });
   if (S.me && typeof m.bourseMaudite === 'number') S.me.premium = m.bourseMaudite;
   if (S.quitting) { S.quitting = false; return; }
   const el = $('#dc-over');

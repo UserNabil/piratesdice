@@ -760,13 +760,16 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   white-space: nowrap;
 }
 
-#dicewrap .dc-onglet.on {
-  color: var(--gold-hi, #FFE479);
-  background: rgba(0, 0, 0, .28);
-}
+/* ⛔ LES DEUX REGLES DE L'ANCIEN ONGLET ONT ETE RETIREES, ET ELLES CASSAIENT LE
+   NEUF EN SILENCE. `background: rgba(0,0,0,.28)` posait un rectangle gris
+   derriere le dessin de la page courante — visible a l'ecran sous le medaillon
+   d'accueil, alors que plus rien n'est cense avoir de fond. Et surtout
+   `filter: none` sur son image ANNULAIT le contour blanc permanent : l'icone
+   active etait la seule des cinq a ne pas etre cernee, c'est-a-dire l'inverse
+   exact de ce qu'on voulait montrer.
 
-#dicewrap .dc-onglet.on img { filter: none; transform: translateY(-1px) scale(1.06); }
-#dicewrap .dc-onglet:active img { transform: translateY(1px); }
+   Elles dataient de l'onglet a fond sombre et libelle dore. Une regle qui a
+   survecu a son dessin ne fait pas rien : elle defait le suivant. */
 
 /* Le bandeau du haut n'a plus que deux choses a dire. */
 #dicewrap .dc-rang {
@@ -2070,7 +2073,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 #dicewrap .dc-bas {
   --pd-bas-h: clamp(46px, calc((100vw - env(safe-area-inset-left, 0px)
-              - env(safe-area-inset-right, 0px) - 24px) / 5.3), 72px);
+              - env(safe-area-inset-right, 0px) - 28px) / 5.8), 72px);
   flex: none;
   height: var(--pd-bas-h);
   box-sizing: border-box;
@@ -2087,10 +2090,18 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   overflow: visible;
 }
 
+/* ⛔ LES PARCHEMINS ONT ETE RETIRES DE DERRIERE LES ICONES. Chaque bouton
+   portait un cadre dessine — parchemin cloute a gauche, son miroir a droite —
+   et l'icone flottait dedans a 78 % : deux dessins par bouton, dont un qui ne
+   dit rien. Cinq cadres cote a cote font une rangee de cadres, pas une
+   navigation. Il ne reste que les cinq dessins, tous a la meme taille, tous
+   cernes de blanc en permanence — et c'est la TAILLE qui dit ou l'on est. */
 #dicewrap .dc-onglet {
   flex: 0 0 auto;
-  width: calc(var(--pd-bas-h) * .84);
-  height: calc(var(--pd-bas-h) * .72);
+  /* La boite reste carree et large : c'est la cible du doigt, et elle ne
+     depend pas de la taille du dessin qu'elle porte. */
+  width: var(--pd-bas-h);
+  height: var(--pd-bas-h);
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -2099,12 +2110,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   padding: 0;
   border: 0;
   border-radius: 0;
-  /* `100% 100%` et non `contain` : le parchemin EST le bouton, il doit occuper
-     exactement sa boite. `contain` laisserait un liseré vide autour de lui et
-     les quatre ne seraient plus a la meme distance de leurs voisins. */
-  background: center / 100% 100% no-repeat;
+  background: none;
   font-size: 0;
-  transition: transform .14s, filter .14s;
+  transition: transform .14s;
 }
 
 /* ⚠️ LE DESSIN FAIT 42 PX DE LARGE SUR UN ECRAN DE 360, LE DOIGT EN DEMANDE 44.
@@ -2125,59 +2133,38 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   transform: translate(-50%, -50%);
 }
 
-#dicewrap .dc-onglet-g { background-image: url("../dice/img/slot_bas_g.png"); }
-#dicewrap .dc-onglet-d { background-image: url("../dice/img/slot_bas_d.png"); }
-
+/* ⚠️ LE CONTOUR EST PERMANENT, ET C'EST CE QUI PERMET DE JOUER SUR LA TAILLE.
+   Il servait a marquer la page courante ; les cinq dessins le portent
+   maintenant tout le temps, ce qui les detache du violet du fond et les rend
+   tous egaux au repos. La distinction se fait alors sur la seule chose qui
+   reste libre : le dessin de la page ou l'on est est plus GRAND. */
 #dicewrap .dc-onglet img {
-  /* 78 % et non 58 : « on les voit a peine ». Le parchemin est un cadre, pas un
-     sujet — c'est le dessin au milieu qu'on doit reconnaitre d'un coup d'oeil,
-     et a 58 % il flottait au centre d'une surface vide deux fois plus grande. */
-  width: 78%;
-  height: 78%;
+  width: 62%;
+  height: 62%;
   object-fit: contain;
-  /* Un onglet au repos RECULE, il ne disparait pas : on doit reconnaitre les
-     quatre dessins sans avoir a les toucher. */
-  filter: saturate(.75) brightness(.88);
-  transition: filter .14s, transform .14s;
+  filter:
+    drop-shadow(2px 0 0 #FFFFFF) drop-shadow(-2px 0 0 #FFFFFF)
+    drop-shadow(0 2px 0 #FFFFFF) drop-shadow(0 -2px 0 #FFFFFF);
+  transition: width .14s, height .14s;
 }
 
-/* Le medaillon n'a pas de parchemin sous lui : il EST son propre bouton. */
+/* Le medaillon d'accueil est un dessin comme les autres : meme boite, meme
+   taille, meme contour. Il n'a plus ni socle, ni debordement, ni halo — sa
+   place au milieu suffit a dire ce qu'il est. */
 #dicewrap .dc-onglet-home {
-  width: calc(var(--pd-bas-h) * 1.15);
-  height: auto;
+  width: var(--pd-bas-h);
+  height: var(--pd-bas-h);
   background: none;
-  transform: translateY(calc(var(--pd-bas-h) * -.1));
+  transform: none;
 }
-
-#dicewrap .dc-onglet-home img { width: 100%; height: auto; filter: none; }
 
 /* La page ou l'on est : le parchemin se souleve et s'allume. */
-/* ⛔ PLUS DE HALO. Une lueur doree derriere le bouton se lisait comme un effet
-   d'ambiance, pas comme un etat : elle disait « ce bouton brille », pas « vous
-   etes ici ». Un contour blanc, lui, est le meme signe que le lisere des
-   panneaux — il designe, il ne decore pas.
+/* LA PAGE OU L'ON EST : SON DESSIN GROSSIT. Rien d'autre ne change — ni fond,
+   ni contour, ni position. Un seul signe, et il porte sur la seule chose que
+   l'oeil compare sans effort entre cinq objets alignes. */
+#dicewrap .dc-onglet.on img { width: 84%; height: 84%; }
 
-   ⚠️ QUATRE OMBRES PORTEES, ET PAS UN `outline`. Un `outline` dessinerait le
-   RECTANGLE du bouton ; le parchemin, lui, a des bords ronges et le medaillon
-   est fait d'os en croix. Une ombre portee sans flou suit la silhouette reelle,
-   celle du dessin : quatre, decalees dans les quatre sens, en font un contour
-   complet qui epouse la forme. */
-#dicewrap .dc-onglet.on {
-  background-color: transparent;
-  transform: translateY(calc(var(--pd-bas-h) * -.06));
-  filter:
-    drop-shadow(2.5px 0 0 #FFFFFF) drop-shadow(-2.5px 0 0 #FFFFFF)
-    drop-shadow(0 2.5px 0 #FFFFFF) drop-shadow(0 -2.5px 0 #FFFFFF);
-}
-
-#dicewrap .dc-onglet.on img { filter: none; transform: scale(1.06); }
-
-#dicewrap .dc-onglet-home.on {
-  transform: translateY(calc(var(--pd-bas-h) * -.14));
-}
-
-#dicewrap .dc-onglet:active { transform: translateY(calc(var(--pd-bas-h) * .03)); }
-#dicewrap .dc-onglet-home:active { transform: translateY(calc(var(--pd-bas-h) * -.06)); }
+#dicewrap .dc-onglet:active { transform: translateY(calc(var(--pd-bas-h) * .04)); }
 
 
 /* ⛔ LA FEUILLE FERMEE DEPASSAIT SOUS LA BARRE DU BAS. Elle se cachait en se
@@ -2275,13 +2262,18 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    ============================================================================ */
 
 #dicewrap .dc-panel {
+  /* ⛔ ELLE N'AVAIT PLUS DE FOND, ET C'EST CE QUI LA FAISAIT LIRE COMME UN
+     BROUILLON. Pour supprimer un raccord de degrade, la page avait ete rendue
+     transparente et depouillee de son lisere : le texte flottait alors
+     directement sur le ciel, sans la boite qui, partout ailleurs dans ce jeu,
+     dit « ceci est un contenu ». La barre du haut, la carte de l'accueil et la
+     barre du bas sont trois panneaux ; la page en est un quatrieme. Le raccord,
+     lui, ne revient pas : c'est `pd-panel` qui peint, avec son propre degrade
+     de haut en bas, et non le decor du ciel qu'elle aurait redemarre. */
   inset: 0;
   width: auto;
   height: auto;
   max-height: none;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
   padding: calc(var(--pd-bar-h, 52px) * .3) 14px calc(var(--pd-bar-h, 52px) * .4);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -2298,12 +2290,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      glisse pas non plus : elle change de page, d'un coup. Le menu s'efface au
      meme instant (voir `dc-en-page`), donc il n'y a jamais deux choses a
      l'ecran. */
-  background: none;
   transform: none;
 }
 
-/* Ce qui est derriere une page ouverte n'a rien a y faire : la page est
-   transparente, et sans cela on lirait le menu a travers la boutique. */
+/* Ce qui est derriere une page ouverte n'a rien a y faire : autant ne pas le
+   peindre. */
 #dicewrap.dc-en-page .dc-screen { visibility: hidden; }
 
 /* Le filet dore courait en haut de la feuille pour marquer sa poignee. Une page
@@ -2319,3 +2310,212 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    rien a calculer, et `fit.js` remesure de lui-meme puisqu'il observe la taille
    du corps. */
 #dicewrap.dc-en-partie .dc-bas { display: none; }
+
+
+/* ============================================================================
+   TROIS PANNEAUX, UNE SEULE REGLE D'ESPACEMENT — ET LA BARRE DU BAS PAR-DESSUS.
+
+   Mesure avant : la barre du haut a 10 px des bords, celle du bas a 8, deux
+   pixels sous elle contre dix au-dessus de l'autre, et 43 px d'un cote de la
+   carte contre 47 de l'autre. Rien de faux pris isolement, et pourtant
+   l'ensemble ne tenait pas : quatre valeurs voisines mais differentes se lisent
+   comme un defaut d'alignement, pas comme un choix.
+
+   Une seule valeur, `--pd-jour`, donne desormais les quatre jours : autour des
+   barres, entre elles et le contenu, et sur les cotes des trois panneaux.
+
+   ⚠️ ET LA CARTE D'ACCUEIL OCCUPE TOUTE LA HAUTEUR, comme les pages. Elle etait
+   centree a sa taille naturelle : il restait 47 px de vide entre elle et la
+   barre du bas, et la barre flottait donc dans le noir au lieu de reposer sur
+   quelque chose. Les quatre lieux du jeu — accueil, boutique, classement, hauts
+   faits, journal — sont maintenant le meme objet : un panneau qui remplit
+   l'espace entre les deux barres.
+
+   ⛔ LA BARRE DU BAS MORD SUR LE CONTENU, ET C'EST LE POINT. Elle passe PAR-DESSUS
+   le panneau du milieu au lieu de se ranger dessous — c'est ce qui la fait lire
+   comme une barre posee sur la page, et non comme une troisieme bande empilee.
+   Le panneau se rembourre d'autant en bas pour que rien n'aille se cacher
+   dessous.
+   ============================================================================ */
+
+#dicewrap { --pd-jour: 10px; }
+
+#dicewrap .dc-top {
+  margin: 0 var(--pd-jour) var(--pd-jour);
+}
+
+/* ⛔ ELLE NE MORD PLUS SUR LE CONTENU. Elle remontait de 16 px sur le panneau du
+   milieu pour se poser dessus ; a l'usage, elle mange le bas de la page — la
+   derniere ligne d'une liste passe dessous et on ne sait plus si elle est
+   finie. Trois bandes franches, separees par le meme jour que partout
+   ailleurs : la barre du haut, le contenu, la barre du bas. */
+#dicewrap .dc-bas {
+  margin: var(--pd-jour) var(--pd-jour)
+          calc(env(safe-area-inset-bottom, 0px) + var(--pd-jour));
+  position: relative;
+  z-index: 6;
+}
+
+/* La page s'aligne sur les barres, et laisse la place du chevauchement.
+
+   ⚠️ ET ELLE REPREND LES COINS DU PANNEAU. Le bloc portrait de la feuille lui
+   avait donne `border-radius: 26px 22px 0 0` et un lisere de 5 px EN HAUT
+   SEULEMENT : c'etait juste pour un tiroir colle au bas de l'ecran, ou les deux
+   coins bas n'existent pas. Une page a quatre coins, et le meme lisere partout
+   que les trois autres panneaux. */
+#dicewrap .dc-panel {
+  margin: 0 var(--pd-jour);
+  padding-bottom: 18px;
+  border-radius: 26px 22px 28px 24px;
+  border: var(--liseré) solid var(--blanc);
+}
+
+/* L'accueil remplit sa hauteur, comme une page. */
+#dicewrap #dc-screen-menu.on { display: flex; }
+
+#dicewrap #dc-screen-menu .dc-menu {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  padding: 0 var(--pd-jour);
+}
+
+#dicewrap #dc-screen-menu .dc-menu-card {
+  flex: 1;
+  align-self: stretch;
+  max-width: none;
+}
+
+
+/* ⛔ LA CROIX DES REGLAGES N'EST PLUS UN BOUTON JAUNE. Le dessin est deja un
+   objet fini — croix blanche, disque rouge, cerne de blanc — et on le posait
+   sur la plaque doree bombee qui sert a « LANCER » et aux achats : deux boutons
+   l'un dans l'autre, dont le plus voyant annoncait l'action la moins
+   importante. Le contour blanc le detache du fond, et l'enfoncement lui donne
+   sa reponse au doigt. */
+#dicewrap .pd-btn-icone {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  min-height: 0;
+  filter:
+    drop-shadow(2px 0 0 #FFFFFF) drop-shadow(-2px 0 0 #FFFFFF)
+    drop-shadow(0 2px 0 #FFFFFF) drop-shadow(0 -2px 0 #FFFFFF);
+  transition: transform .08s ease;
+}
+
+#dicewrap .pd-btn-icone img { width: 46px; height: 46px; }
+
+#dicewrap .pd-btn-icone:active { transform: translateY(3px); }
+
+
+/* ============================================================================
+   LA RECOLTE DES HAUTS FAITS.
+
+   Un haut fait ouvert ne se paie plus tout seul : il attend qu'on aille le
+   chercher. Trois objets pour cela — le bouton d'une ligne, le bouton « tout
+   recuperer » en tete de page, et la bulle qui dit combien attendent.
+   ============================================================================ */
+
+#dicewrap .dc-suc-prendre,
+#dicewrap .dc-suc-tout {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  letter-spacing: .5px;
+  color: var(--ink, #2A1A00);
+  border: var(--liseré) solid var(--blanc);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  /* L'ombre est un BLOC decale, pas un flou : c'est elle qui donne l'epaisseur,
+     et c'est sur elle que le bouton s'enfonce. Meme grammaire que `dc-btn`. */
+  box-shadow: 0 5px 0 var(--gold-lo), 0 8px 14px rgba(0, 0, 0, .4);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, .45);
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+}
+
+#dicewrap .dc-suc-prendre {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+#dicewrap .dc-suc-tout {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  margin: 4px 0 14px;
+  font-size: 15px;
+}
+
+#dicewrap .dc-suc-prendre:active,
+#dicewrap .dc-suc-tout:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--gold-lo), 0 3px 7px rgba(0, 0, 0, .4);
+}
+
+/* ⚠️ DESARME, IL DOIT LE MONTRER. Le bouton se coupe des le premier appui, le
+   temps de l'aller-retour ; sans marque visible, le joueur croit que rien ne
+   s'est passe et cherche a rappuyer. */
+#dicewrap .dc-suc-prendre[disabled],
+#dicewrap .dc-suc-tout[disabled] {
+  filter: grayscale(.7) brightness(.85);
+  cursor: default;
+}
+
+/* La ligne qui doit quelque chose se signale : son cadre s'allume. */
+#dicewrap .dc-suc-du {
+  box-shadow: inset 0 0 0 2px rgba(255, 196, 64, .85);
+}
+
+/* ⛔ LA PASTILLE NE COMPTE PAS LES HAUTS FAITS FAITS, ELLE COMPTE CEUX QUI
+   ATTENDENT. Un palmares monte et ne redescend jamais : le badge deviendrait
+   permanent, donc invisible. Celui-ci disparait quand la recolte est finie,
+   et c'est ce qui lui donne son sens. */
+#dicewrap .dc-pastille {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid var(--blanc, #FFFFFF);
+  background: var(--rouge, #E5252F);
+  color: var(--blanc, #FFFFFF);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 11px;
+  line-height: 1;
+  /* Au-dessus du parchemin, et jamais coupee par lui. */
+  z-index: 2;
+  pointer-events: none;
+}
+
+
+/* ⚠️ LES ICONES DES REGLAGES PRENNENT LE MEME CONTOUR QUE LA CROIX, ET PLUS
+   EPAIS. Elles etaient dessinees pour se poser sur un fond clair : sur le
+   violet de la carte, leur propre cerne blanc — fin, d'un pixel ou deux dans le
+   dessin — disparaissait, et les autocollants se fondaient dans le panneau. Le
+   meme contour partout, a 3 px, les detache toutes de la meme facon.
+
+   Le haut-parleur, la note, le parchemin des regles, la boussole des conditions
+   et la croix : cinq dessins, une seule regle. */
+#dicewrap .pd-btn-icone,
+#dicewrap .pd-link-art,
+#dicewrap .pd-vol-btn {
+  filter:
+    drop-shadow(3px 0 0 #FFFFFF) drop-shadow(-3px 0 0 #FFFFFF)
+    drop-shadow(0 3px 0 #FFFFFF) drop-shadow(0 -3px 0 #FFFFFF);
+}
+
+#dicewrap .pd-link-art {
+  display: inline-block;
+  transition: transform .08s ease;
+}
+
+#dicewrap .pd-link-art:active { transform: translateY(3px); }

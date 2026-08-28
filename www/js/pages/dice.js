@@ -89,7 +89,7 @@ function shellMarkup() {
       <section class="dc-screen" id="dc-screen-connect"></section>
       <section class="dc-screen" id="dc-screen-menu"></section>
       <section class="dc-screen" id="dc-screen-game"></section>
-      <aside class="dc-panel" id="dc-panel"><div class="dc-panel-in"></div></aside>
+      <aside class="dc-panel pd-panel" id="dc-panel"><div class="dc-panel-in"></div></aside>
       <div class="dc-over" id="dc-over"></div>
     </div>
     <!-- ⚠️ LA BARRE DU BAS EST DANS LA ZONE DU POUCE, et elle reste HORS du
@@ -280,9 +280,15 @@ async function connect() {
          dans la foulee — c'est le seul moment ou l'on est sur d'avoir le
          reseau. */
       S.net.send({ t: 'jetons' });
+      /* La bulle des hauts faits doit etre juste AVANT qu'on ouvre la page. */
+      S.net.send({ t: 'succes' });
       envoyerLesParties();
       cale.rangerMoi(m.me);
+      /* La derniere position connue peint la plaque tout de suite ; la vraie
+         arrive une fraction de seconde plus tard et la remplace. */
+      if (!S.rang) S.rang = cale.rangConnu();
       renderWallet();
+      rafraichirRang();
       showMenu();
     },
     me: (m) => {
@@ -291,6 +297,10 @@ async function connect() {
          se repeint avec la bourse, sinon un refus du serveur ou une partie de
          plus laisserait un cadenas perime a l'ecran. */
       renderWallet(); repeindreCapitaines(); refreshPanel(); renderBonusRack();
+      /* La partie qui vient de finir a pu faire monter ou descendre : la
+         position se redemande a chaque fiche, c'est le seul moment ou elle
+         peut avoir change. */
+      rafraichirRang();
     },
     /* Le serveur peut renvoyer la liste en cours de session (seuils modifies,
        nouveau capitaine) : on la prend, l'ecran suivant la lira. */
@@ -328,6 +338,31 @@ async function connect() {
       S.succes = Array.isArray(m.liste) ? m.liste : [];
       if (S.me && typeof m.premium === 'number') { S.me.premium = m.premium; renderWallet(); }
       if (S.panel === 'succes') refreshPanel();
+      peindreBulles();
+    },
+    /**
+     * Ce qui vient d'etre recupere.
+     *
+     * ⚠️ C'EST LA LISTE DU SERVEUR QUI FAIT FOI, PAS CE QU'ON AVAIT DEMANDE. Si
+     * un autre appareil du meme compte a recolte une seconde plus tot, celle-ci
+     * revient vide : on le dit, et on repeint — plutot que d'annoncer une
+     * recompense qui n'est jamais arrivee.
+     */
+    reclame: (m) => {
+      const recus = Array.isArray(m.recus) ? m.recus : [];
+      if (!recus.length) {
+        toast(t('suc.rien'), 'warn');
+        if (S.panel === 'succes') refreshPanel();
+        return;
+      }
+      if (Array.isArray(S.succes)) {
+        const pris = new Set(recus);
+        for (const s of S.succes) if (pris.has(s.identify)) s.reclame = true;
+      }
+      toast(t('suc.recolte', { or: nombre(m.or || 0), maudit: nombre(m.gagne || 0) }), 'ok');
+      if (S.sfx) S.sfx.play('coin', 0.3);
+      if (S.panel === 'succes') refreshPanel();
+      peindreBulles();
     },
     queued: () => { S.queued = true; showMenu(); },
     idle: () => { S.queued = false; S.seat = -1; S.state = null; showMenu(); },
@@ -659,7 +694,7 @@ function renderWallet() {
     <div class="dc-plaque dc-plaque-maudite ${tailleBourse(S.me.premium || 0)}"
          title="${esc(t('hdr.cursed'))}"><span>${nombre(S.me.premium || 0)}</span></div>
     <div class="dc-plaque dc-plaque-rang" title="${esc(t('menu.rang'))}">
-      <span>${nombre(S.me.rating)}</span><em>${esc(t('menu.rangCourt'))}</em>
+      <span>${S.rang ? '#' + nombre(S.rang) : '—'}</span><em>${esc(t('menu.rangCourt'))}</em>
     </div>`;
 }
 
@@ -758,6 +793,66 @@ function animerAccueil(bouton) {
   minuteurAccueil = setTimeout(() => {
     img.src = `${ASSETS}img/slot_bas_home.png`;
   }, 820);
+}
+
+/**
+ * LA PLAQUE MONTRE LA POSITION, PLUS LES POINTS.
+ *
+ * ⚠️ ET LA POSITION NE VIENT PAS DU MEME ENDROIT QUE LE RESTE. Les pieces, les
+ * points et les parties arrivent dans le message `me` de la socket : ce sont des
+ * colonnes du joueur. Sa POSITION, elle, n'existe nulle part — elle se calcule
+ * en classant toute la table, et seule la route du classement la produit. On la
+ * demande donc apres chaque changement de fiche, et on la garde en cale : sans
+ * memoire, la plaque afficherait un tiret a chaque ouverture le temps de la
+ * requete, et pour toujours en mode hors ligne.
+ *
+ * ⚠️ UN ECHEC N'EFFACE RIEN. Un reseau qui tousse ne doit pas valoir « pas de
+ * classement » : la plaque garde le dernier chiffre connu.
+ */
+async function rafraichirRang() {
+  if (!S.net || typeof S.net.rest !== 'function') return;
+  try {
+    const recu = await S.net.rest('/api/leaderboard?limit=1');
+    const rang = Math.round(Number(recu && recu.me && recu.me.rang) || 0);
+    if (rang > 0 && rang !== S.rang) { S.rang = rang; cale.rangerRang(rang); renderWallet(); }
+  } catch (_) { /* la plaque garde son dernier chiffre */ }
+}
+
+/**
+ * LA BULLE DES HAUTS FAITS A RECUPERER.
+ *
+ * ⛔ ELLE NE PEUT PAS ATTENDRE QU'ON OUVRE LA PAGE. La liste etait demandee
+ * paresseusement, a la premiere ouverture : la bulle serait donc restee vide
+ * tant que le joueur n'aurait pas visite l'endroit qu'elle sert precisement a
+ * lui faire visiter. On demande la liste des l'entree, une fois, pour quelques
+ * centaines d'octets.
+ *
+ * ⚠️ ET ELLE COMPTE CE QUI EST DU, PAS CE QUI EST FAIT. « Quantite de succes
+ * debloques » se lirait comme un palmares — un nombre qui monte et ne redescend
+ * jamais, donc un badge permanent qu'on cesse de voir. Une bulle dit qu'il y a
+ * quelque chose A FAIRE : elle disparait quand la recolte est finie.
+ */
+function peindreBulles() {
+  const bouton = $('#dicewrap .dc-onglet[data-panel="succes"]');
+  if (!bouton) return;
+  /* `=== false` et non `!` : un serveur d'avant la recolte n'envoie pas ce
+     champ, et `undefined` ferait compter TOUS les hauts faits gagnes. */
+  const n = Array.isArray(S.succes)
+    ? S.succes.filter((s) => s.gagne && s.reclame === false).length : 0;
+  /* ⛔ ELLE NE S'APPELLE PAS `dc-bulle`, ET C'EST UNE LECON. Ce nom etait DEJA
+     pris par la bulle de dialogue des parties — « La maree tourne. » — avec son
+     fond, sa queue en `::after` et son animation d'entree. Le badge en heritait
+     donc de tout : il arrivait a 72 % de sa taille, et la queue de la bulle de
+     dialogue se dessinait au milieu, en losange dore sur fond rouge. Rien
+     n'echouait ; c'etait simplement un autre objet. */
+  let pastille = bouton.querySelector('.dc-pastille');
+  if (!n) { if (pastille) pastille.remove(); return; }
+  if (!pastille) {
+    pastille = document.createElement('span');
+    pastille.className = 'dc-pastille';
+    bouton.appendChild(pastille);
+  }
+  pastille.textContent = n > 99 ? '99+' : String(n);
 }
 
 function marquerOnglets() {

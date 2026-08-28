@@ -182,4 +182,10 @@ def main(racines):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:] or ["www/js"]))
+    # ⛔ `www/js` SEUL NE SUFFIT PAS, ET CA S'EST VU. `app/js/` est la SOURCE : le
+    # build recopie ses fichiers par-dessus `www/js/`. Lancer le controle avant le
+    # build, c'est donc le lancer sur l'ANCIENNE copie — celle qui est encore
+    # valide. Un accent grave pose dans un commentaire HTML de `app/js/boot.js`
+    # est passe ainsi, et c'est le build qui l'a arrete : exactement la faute que
+    # ce fichier existe pour attraper.
+    sys.exit(main(sys.argv[1:] or ["www/js", "app/js"]))

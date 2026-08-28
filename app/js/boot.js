@@ -264,8 +264,14 @@ function settingsMarkup() {
            Il est discret, en bas, et il repond a la question d'un coup d'oeil. -->
       <div class="pd-version">${versionLisible()}</div>
 
-      <!-- Fermer ne s'ecrit plus : la croix EST le mot. -->
-      <div class="pd-ask-row"><button class="dc-btn dc-btn-art pd-btn-icone" data-close
+      <!-- Fermer ne s'ecrit plus : la croix EST le mot.
+
+           ⛔ ET LA CROIX N'A PLUS DE PLAQUE SOUS ELLE. La classe dc-btn posait
+           le bouton jaune bombe du jeu — celui de « LANCER », celui des achats —
+           sous une icone qui est deja un objet fini, cernee de blanc et posee
+           sur son disque rouge. Deux boutons l'un dans l'autre : le jaune
+           annoncait une action importante, et l'action etait « fermer ». -->
+      <div class="pd-ask-row"><button class="pd-btn-icone" data-close
              title="${t('set.close')}" aria-label="${t('set.close')}">
         <img src="${ASSETS}img/icon_close.png" alt=""></button></div>
     </div>`;
