@@ -27,7 +27,7 @@ import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
-import { renderMenu, onRoom, onRoomFail, resetLobby, captainArt, repeindreCapitaines } from './dice_lobby.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines } from './dice_lobby.js';
 
 /* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
    l'on se situe, ce qu'on a accompli, ce qu'on a joue, et enfin les regles —
@@ -36,32 +36,26 @@ const ONGLETS = [
   { id: 'shop', cle: 'tab.shop', art: 'icon_shop' },
   { id: 'ranking', cle: 'tab.ranking', art: 'icon_ranking' },
   { id: 'succes', cle: 'tab.succes', art: 'icon_succes' },
-  { id: 'replay', cle: 'tab.replay', art: 'icon_replay' },
+  /* ⚠️ « JOURNAL DE BORD » NE TIENT PAS SUR UN SIXIEME D'ECRAN, et un libelle
+     coupe par des points de suspension est pire qu'un libelle court : il donne
+     l'impression que l'ecran est trop petit pour le jeu. La page, elle, garde
+     son nom entier — c'est la barre qui abrege, pas le lieu. */
+  { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'icon_replay' },
   { id: 'rules', cle: 'tab.rules', art: 'icon_rules' },
 ];
 
 function shellMarkup() {
   return `
   <div class="dc-shell">
+    <!-- ⚠️ EN HAUT, CE QU'ON REGARDE ; EN BAS, CE QU'ON TOUCHE. Le bandeau
+         portait tout : le titre, la bourse, les cinq pages, les reglages et la
+         sortie. Sur un telephone tenu d'une main, le haut de l'ecran est
+         precisement l'endroit que le pouce n'atteint pas — on y mettait donc la
+         navigation, et on gardait sous la main... rien. Le haut ne garde plus
+         que ce qui se LIT d'un coup d'oeil : le classement et les deux bourses.
+         Tout ce qui se touche descend. -->
     <header class="dc-top">
-      <div class="dc-brand"><img class="dc-brand-mark" src="${ASSETS}img/brand_mark.png" alt=""> ${esc(t('app.title'))}</div>
       <div class="dc-wallet" id="dc-wallet"></div>
-      <!-- ⚠️ L'ICONE SEULE, SANS SON MOT. A trois onglets le libelle tenait ; a
-           cinq, il ne tient plus — et le reduire aurait donne cinq mots
-           illisibles plutot qu'un mot de trop. Les cinq dessins sont distincts
-           et parlants (coffre, pavillon, parchemin, canon, gouvernail) : c'est
-           exactement le cas ou l'image se suffit. Le mot reste dans l'attribut
-           « title » et dans « aria-label » : il est encore la pour qui appuie
-           longuement et pour le lecteur d'ecran.
-           ⛔ ET PAS D'ACCENT GRAVE DANS CE COMMENTAIRE : on est DANS un gabarit,
-           et un accent grave le referme. Le fichier se parse alors comme du
-           charabia trente lignes plus bas, avec une erreur qui ne designe pas la
-           bonne ligne. -->
-      <nav class="dc-tabs">${ONGLETS.map((o) => `
-        <button class="dc-tab dc-tab-nu" data-panel="${o.id}"
-                title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
-        ><img src="${ASSETS}img/${o.art}.png" alt=""></button>`).join('')}
-      </nav>
       <div class="dc-acts">
         <!-- Un GRELOT ne dit pas « son coupe » : il dit « notification ». Le
              haut-parleur, lui, se lit sans legende, et sa version barree dit
@@ -80,6 +74,16 @@ function shellMarkup() {
       <aside class="dc-panel" id="dc-panel"><div class="dc-panel-in"></div></aside>
       <div class="dc-over" id="dc-over"></div>
     </div>
+    <!-- ⚠️ LA BARRE DU BAS EST DANS LA ZONE DU POUCE, et elle porte le mot avec
+         le dessin : la place ne manque plus en largeur, et un mot lu une fois
+         apprend ce que le dessin voudra dire ensuite. Elle reste HORS du corps
+         defilant pour ne pas partir avec lui — une navigation qui s'en va quand
+         on descend n'est plus une navigation. -->
+    <nav class="dc-bas" id="dc-bas">${ONGLETS.map((o) => `
+      <button class="dc-onglet" data-panel="${o.id}"
+              title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
+      ><img src="${ASSETS}img/${o.art}.png" alt=""><span>${esc(t(o.court || o.cle))}</span></button>`).join('')}
+    </nav>
   </div>`;
 }
 
@@ -189,7 +193,7 @@ function build() {
     if (S.musique) S.musique.volume = facteur('musique');
     peindreMute();
   });
-  wrap.querySelectorAll('.dc-tab').forEach((b) => {
+  wrap.querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
     b.onclick = () => { if (S.sfx) S.sfx.play('onglet', 0.22); togglePanel(b.dataset.panel); };
   });
 
@@ -510,13 +514,21 @@ function tailleBourse(n) {
   return 'dc-coins-c6';
 }
 
+/**
+ * Le bandeau du haut : le classement et les deux bourses, rien d'autre.
+ *
+ * ⛔ LE NOM ET L'AVATAR SONT PARTIS, ET ILS NE MANQUENT PAS. On sait comment on
+ * s'appelle ; on regarde ce bandeau pour savoir ou l'on en est. Il portait
+ * aussi le bilan « 12V 8D 3N » — trois nombres qu'on ne lit jamais en cours de
+ * partie et qui volaient la place aux deux seuls qui comptent. Le detail vit
+ * dans le pont et dans le classement, qui sont faits pour cela.
+ */
 function renderWallet() {
   if (!S.me) return;
   $('#dc-wallet').innerHTML = `
-    <img class="dc-avatar" src="${captainArt(S.me.captain)}" alt="">
-    <div class="dc-wallet-txt">
-      <b>${esc(S.me.name)}</b>
-      <span>${esc(t('hdr.record', { rating: S.me.rating, wins: S.me.wins, losses: S.me.losses, draws: S.me.draws }))}</span>
+    <div class="dc-rang" title="${esc(t('menu.rang'))}">
+      <img class="dc-insigne" src="${ASSETS}img/icon_elo.png" alt="${esc(t('menu.rang'))}">
+      <b>${S.me.rating}</b>
     </div>
     <div class="dc-bourses">
       <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a
@@ -562,7 +574,7 @@ function togglePanel(name) {
     S.sfx.play('open', 0.2);
     refreshPanel();
   }
-  $('#dicewrap').querySelectorAll('.dc-tab')
+  $('#dicewrap').querySelectorAll('.dc-tab, .dc-onglet')
     .forEach((b) => b.classList.toggle('on', b.dataset.panel === S.panel));
 }
 

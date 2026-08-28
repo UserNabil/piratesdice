@@ -330,6 +330,7 @@ export const EN = {
   'over.objet': '+{n} item',
   'over.succes': 'Deeds unlocked',
   'over.succesPlus': 'and {n} more',
+  'nav.replay': 'Logbook',
   'tab.replay': 'Logbook',
   'tab.succes': 'Deeds',
   'tab.rules': 'Rules',

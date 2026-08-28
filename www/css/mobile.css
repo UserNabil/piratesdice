@@ -441,6 +441,110 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-ladder th .dc-insigne { width: 20px; height: 20px; vertical-align: middle; }
 
 
+
+/* ============================================================================
+   LA BARRE DU BAS : LA NAVIGATION SOUS LE POUCE.
+
+   ⚠️ EN HAUT CE QU'ON REGARDE, EN BAS CE QU'ON TOUCHE. Le bandeau portait tout —
+   le titre, la bourse, les cinq pages, les reglages, la sortie — et sur un
+   telephone tenu d'une main, le haut de l'ecran est precisement l'endroit que
+   le pouce n'atteint pas. On y mettait donc la navigation, et on gardait sous
+   la main... rien.
+
+   ⚠️ ET LE MOT REVIENT AVEC LE DESSIN. En haut, cinq libelles ne tenaient pas
+   dans la largeur qui restait ; en bas, la barre a l'ecran entier. Un mot lu une
+   fois apprend ce que le dessin voudra dire les fois suivantes.
+
+   ⛔ ELLE VIT HORS DE `.dc-body`. Posee dedans, elle aurait defile avec le
+   contenu : une navigation qui s'en va quand on descend n'est plus une
+   navigation.
+   ============================================================================ */
+
+#dicewrap .dc-bas {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 2px;
+  padding: 4px 6px;
+  /* La barre systeme du telephone passe SOUS la barre : sans cette marge, le
+     dernier onglet se retrouve sous la poignee de navigation d'Android et sous
+     la barre d'accueil de l'iPhone. */
+  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+  background:
+    repeating-linear-gradient(1.2deg,
+      rgba(0, 0, 0, .14) 0 2px, rgba(255, 228, 180, .04) 2px 4px, rgba(0, 0, 0, 0) 4px 12px),
+    linear-gradient(0deg, var(--violet, #6B2FD6) 0%, var(--violet-md, #5A26B8) 60%, var(--violet-dk, #3E1880) 100%);
+  box-shadow: 0 -2px 0 rgba(201, 162, 39, .55), 0 -8px 18px rgba(0, 0, 0, .35);
+  z-index: 3;
+}
+
+#dicewrap .dc-onglet {
+  flex: 1 1 0;
+  min-width: 0;
+  /* 52 px de haut : la cible confortable, et de la place pour le mot sous le
+     dessin sans que la barre mange l'ecran. */
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px 2px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 9.5px;
+  letter-spacing: .3px;
+  line-height: 1;
+  color: var(--txt-dim, #C9BCEA);
+  transition: color .14s, background .14s;
+}
+
+#dicewrap .dc-onglet img {
+  width: 26px; height: 26px;
+  object-fit: contain;
+  /* Un onglet au repos RECULE, il ne disparait pas : on doit reconnaitre les six
+     dessins sans avoir a les toucher. */
+  filter: saturate(.6) brightness(.8);
+  transition: filter .14s, transform .14s;
+}
+
+#dicewrap .dc-onglet span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#dicewrap .dc-onglet.on {
+  color: var(--gold-hi, #FFE479);
+  background: rgba(0, 0, 0, .28);
+}
+
+#dicewrap .dc-onglet.on img { filter: none; transform: translateY(-1px) scale(1.06); }
+#dicewrap .dc-onglet:active img { transform: translateY(1px); }
+
+/* Le bandeau du haut n'a plus que deux choses a dire. */
+#dicewrap .dc-rang {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 16px;
+  color: var(--gold-hi, #FFE479);
+  background: rgba(0, 0, 0, .32);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .45);
+}
+
+#dicewrap .dc-rang .dc-insigne { width: 20px; height: 20px; vertical-align: 0; }
+
+#dicewrap .dc-top { justify-content: space-between; }
+
 /* ============================================================================
    LA BARRE D'ONGLETS, EN DESSINS SEULS — et le portefeuille a deux etages.
    ============================================================================ */

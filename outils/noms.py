@@ -110,6 +110,58 @@ def fautes(chemin):
     return out
 
 
+ACCENT = chr(96)
+
+
+def gabarits_casses(chemin):
+    """⛔ UN ACCENT GRAVE DANS UN COMMENTAIRE, DANS UN GABARIT, FERME LE GABARIT.
+
+    C'est la faute la plus vicieuse de ce depot : elle s'est produite TROIS FOIS
+    en une journee. On ecrit un commentaire HTML dans un `template literal`, on y
+    cite un nom de classe entre accents graves par habitude de la documentation,
+    et le gabarit se referme la. Le fichier se parse alors comme du charabia
+    trente lignes plus bas, et l'erreur ne designe JAMAIS la bonne ligne — la
+    derniere fois, elle disait « body is not defined ».
+
+    On ne peut pas s'en remettre a la relecture : le commentaire est justement ce
+    qu'on ne relit pas. On le mesure.
+
+    COMMENT. On suit l'etat du fichier caractere par caractere — dans une chaine,
+    dans un commentaire, dans un gabarit — et on signale tout accent grave qui
+    ouvre ou ferme un gabarit A L'INTERIEUR d'un commentaire HTML, lui-meme a
+    l'interieur d'un gabarit.
+    """
+    src = open(chemin, encoding="utf-8").read()
+    out = []
+    i = 0
+    pile = 0            # profondeur de gabarit
+    ligne = 1
+    while i < len(src):
+        c = src[i]
+        if c == "\n":
+            ligne += 1
+            i += 1
+            continue
+        if c == "\\":
+            i += 2
+            continue
+        if pile and src.startswith("<!--", i):
+            fin = src.find("-->", i)
+            if fin < 0:
+                fin = len(src)
+            bout = src[i:fin]
+            if ACCENT in bout:
+                out.append((ligne + src[:i].count("\n") - src[:i].count("\n"),
+                            "accent grave dans un commentaire HTML place dans un gabarit"))
+            ligne += bout.count("\n")
+            i = fin + 3
+            continue
+        if c == ACCENT:
+            pile = 0 if pile else 1
+        i += 1
+    return out
+
+
 def main(racines):
     total = 0
     for racine in racines:
@@ -120,6 +172,9 @@ def main(racines):
                 chemin = os.path.join(dossier, f)
                 for ligne, nom in fautes(chemin):
                     print("%s:%d  %s() n'est ni declare, ni importe" % (chemin, ligne, nom))
+                    total += 1
+                for ligne, quoi in gabarits_casses(chemin):
+                    print("%s:%d  %s" % (chemin, ligne, quoi))
                     total += 1
     if total:
         print("%d nom(s) appele(s) sans exister." % total)

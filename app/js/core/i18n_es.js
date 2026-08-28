@@ -316,6 +316,7 @@ export const ES = {
   'over.objet': '+{n} objeto',
   'over.succes': 'Hazañas desbloqueadas',
   'over.succesPlus': 'y {n} más',
+  'nav.replay': 'Bitácora',
   'tab.replay': 'Cuaderno de bitácora',
   'tab.succes': 'Hazañas',
   'tab.rules': 'Reglas',

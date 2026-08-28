@@ -383,17 +383,28 @@ function openSettings() {
 
 /* ── les deux boutons ajoutes a l'entete du jeu ──────────────────────────── */
 
+/**
+ * Le bouton des reglages, au bout de la barre du bas.
+ *
+ * ⚠️ IL SUIT LA NAVIGATION, PAS LA BOURSE. Il vivait dans le bandeau du haut,
+ * avec le son et le plein ecran ; depuis que les pages sont descendues sous le
+ * pouce, il serait reste seul en haut a droite — c'est-a-dire a l'endroit le
+ * plus difficile a atteindre d'un telephone tenu d'une main, pour un bouton
+ * qu'on cherche precisement quand on veut regler quelque chose.
+ */
 function addHeaderButtons() {
-  const acts = document.querySelector('#dicewrap .dc-acts');
-  if (!acts || document.getElementById('pd-settings-btn')) return;
+  const barre = document.querySelector('#dicewrap .dc-bas');
+  if (!barre || document.getElementById('pd-settings-btn')) return;
 
   const gear = document.createElement('button');
-  gear.className = 'dc-icon';
+  gear.className = 'dc-onglet';
   gear.id = 'pd-settings-btn';
   gear.title = t('set.title');
-  gear.innerHTML = '<img src="dice/img/icon_settings.png" alt="">';
+  gear.setAttribute('aria-label', t('set.title'));
+  gear.innerHTML = '<img src="dice/img/icon_settings.png" alt="">'
+    + '<span>' + t('set.title') + '</span>';
   gear.onclick = openSettings;
-  acts.appendChild(gear);
+  barre.appendChild(gear);
 }
 
 /* ── les feuilles : une barre de fermeture visible ────────────────────────

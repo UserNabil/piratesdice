@@ -317,6 +317,7 @@ export const FR = {
   'over.objet': '+{n} objet',
   'over.succes': 'Hauts faits débloqués',
   'over.succesPlus': 'et {n} de plus',
+  'nav.replay': 'Journal',
   'tab.replay': 'Journal de bord',
   'tab.succes': 'Hauts faits',
   'tab.rules': 'Règles',

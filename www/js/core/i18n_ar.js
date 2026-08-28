@@ -318,6 +318,7 @@ export const AR = {
   'over.objet': '+{n} غرض',
   'over.succes': 'إنجازات مفتوحة',
   'over.succesPlus': 'و{n} أخرى',
+  'nav.replay': 'الدفتر',
   'tab.replay': 'دفتر الرحلات',
   'tab.succes': 'الإنجازات',
   'tab.rules': 'القواعد',
