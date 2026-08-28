@@ -2938,3 +2938,31 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 [dir="rtl"] #dicewrap .dc-btn-deborde-d > img { right: auto; left: calc(var(--pd-menu-art) * -.12); }
 [dir="rtl"] #dicewrap .dc-btn-deborde-g { padding-left: 1.2em; padding-right: calc(var(--pd-menu-art) * .95); }
 [dir="rtl"] #dicewrap .dc-btn-deborde-d { padding-right: 1.2em; padding-left: calc(var(--pd-menu-art) * .95); }
+
+
+/* ⛔ LE DESSIN DEBORDE VERS LE BAS, ET LA CARTE QUI DEFILE LE COUPAIT. Mesure
+   sur un ecran de 360 x 640 — ou la carte d'accueil defile parce que son
+   contenu ne tient pas : le dessin du dernier bouton passait 35 px sous le bord
+   de la carte au repos, et 42 px UNE FOIS ENFONCE, l'appui le poussant de sept
+   pixels de plus dehors. Sur un grand ecran rien ne se voyait : la carte ne
+   defile pas, donc elle ne coupe pas.
+
+   La rangee de boutons reserve donc la hauteur du debordement, en haut comme en
+   bas. C'est une reservation, pas une marge de style : elle vaut ce que le
+   dessin depasse, et elle suit sa taille. */
+#dicewrap { --pd-menu-art: clamp(88px, 26vw, 132px); }
+
+#dicewrap .dc-menu-btns {
+  padding-top: calc(var(--pd-menu-art) * .34);
+  padding-bottom: calc(var(--pd-menu-art) * .34);
+}
+
+/* ⚠️ ET LE DESSIN PREND LE LISERE DU BOUTON. Il portait deja son propre cerne,
+   fin, dessine pour un fond clair ; pose sur le violet a cote d'un bouton
+   cercle de 4 px de blanc, il paraissait detoure a la va-vite. Le filtre epais
+   lui donne le MEME trait qu'au bouton — c'est ce qui les fait appartenir au
+   meme objet. L'ombre portee reste : elle donne le relief, le trait donne le
+   bord. */
+#dicewrap .dc-btn-art.dc-btn-deborde > img {
+  filter: url(#pd-cerne-gros) drop-shadow(0 4px 7px rgba(0, 0, 0, .55));
+}

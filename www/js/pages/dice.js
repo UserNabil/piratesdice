@@ -105,6 +105,25 @@ function shellMarkup() {
         <feMergeNode in="SourceGraphic"></feMergeNode>
       </feMerge>
     </filter>
+    <!-- Le meme trait, a l'epaisseur du lisere des boutons : les dessins du
+         pont sont deux fois plus grands que les icones des reglages, et un
+         contour calcule pour 46 px y paraitrait un cheveu. -->
+    <filter id="pd-cerne-gros" x="-25%" y="-25%" width="150%" height="150%"
+            color-interpolation-filters="sRGB">
+      <feComponentTransfer in="SourceAlpha" result="dur">
+        <feFuncA type="discrete" tableValues="0 1"></feFuncA>
+      </feComponentTransfer>
+      <feGaussianBlur in="dur" stdDeviation="2.7" result="flou"></feGaussianBlur>
+      <feComponentTransfer in="flou" result="gros">
+        <feFuncA type="linear" slope="14" intercept="-1.4"></feFuncA>
+      </feComponentTransfer>
+      <feFlood flood-color="#FFFFFF" result="blanc"></feFlood>
+      <feComposite in="blanc" in2="gros" operator="in" result="cerne"></feComposite>
+      <feMerge>
+        <feMergeNode in="cerne"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
   </svg>
   <div class="dc-shell">
     <!-- ⚠️ EN HAUT, CE QU'ON REGARDE ; EN BAS, CE QU'ON TOUCHE. Le bandeau

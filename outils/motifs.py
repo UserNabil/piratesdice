@@ -42,6 +42,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(ICI)
 PLANCHE = os.path.join(RACINE, 'assets', 'motifs_source.png')
 PLANCHE_2 = os.path.join(RACINE, 'assets', 'motifs_source_2.png')
+PLANCHE_3 = os.path.join(RACINE, 'assets', 'motifs_source_3.png')
 SKINS = os.path.join(RACINE, 'www', 'dice', 'img', 'skins')
 BASE = os.path.join(RACINE, 'www', 'dice', 'img')
 
@@ -59,7 +60,14 @@ MOTIFS = [('M001', 'dragon', (0, 0), 1),
           ('M005', 'lanternes', (0, 0), 2),
           ('M006', 'paon', (0, 1), 2),
           ('M007', 'vigne', (1, 0), 2),
-          ('M008', 'ailes', (1, 1), 2)]
+          ('M008', 'ailes', (1, 1), 2),
+          # Une troisieme planche, et les memes regles : quatre ornements de
+          # plus, quatre hauts faits de plus a rendre legendaires. Ils ne
+          # s'achetent pas davantage que les precedents.
+          ('M009', 'sakura', (0, 0), 3),
+          ('M010', 'azteque', (0, 1), 3),
+          ('M011', 'gothique', (1, 0), 3),
+          ('M012', 'rouages', (1, 1), 3)]
 
 # ⚠️ ON NE GRAVE QUE LES JEUX EN VENTE. Les quatre jeux retires (S003 a S005,
 # S007) ajouteraient huit megaoctets pour des combinaisons que personne ne peut
@@ -162,7 +170,8 @@ def graver(chemin_de, motif):
 
 def morceaux():
     planches = {1: Image.open(PLANCHE).convert('RGBA'),
-                2: Image.open(PLANCHE_2).convert('RGBA')}
+                2: Image.open(PLANCHE_2).convert('RGBA'),
+                3: Image.open(PLANCHE_3).convert('RGBA')}
     out = {}
     for ident, nom, (i, j), num in MOTIFS:
         planche = planches[num]
