@@ -217,7 +217,14 @@
      de l'admin — et non comme « c'est son tour ». C'est le FOND qui porte
      desormais l'information : allume quand on joue, eteint quand on attend.
      Une couleur qui change sur toute la surface se voit sans etre cherchee. */
-  --cbt-joueur-actif-jonc: none;
+  /* ⛔ LA CARTE ACTIVE NE RECEVAIT RIEN DU TOUT. `none` des deux cotes : sa
+     seule distinction etait l'ABSENCE du grisage de l'autre. Entre deux cartes
+     de couleurs differentes — la mienne violette, la sienne bleue — une
+     difference de luminosite de 34 % ne se lit pas : on ne compare pas deux
+     teintes en clarte. « Le rectangle d'information reste grise. »
+     Le meme anneau dore que le plateau qui a la main : un signe POSITIF, dans
+     la langue que le jeu parle deja pour dire « c'est a vous ». */
+  --cbt-joueur-actif-jonc: 0 0 0 3px rgba(255, 206, 90, .95), 0 0 18px rgba(255, 198, 110, .45);
 
   /* ⛔ IL N'Y A PAS DE DEGRADE DANS LA MAQUETTE, ET IL Y EN A EU DEUX ICI.
      D'abord un bleu qui virait au violet en diagonale — invente de bout en
@@ -903,3 +910,21 @@
 /* Le plateau qui a la main n'a aucun voile — et son anneau dore passe devant
    celui d'en face, quoi qu'il arrive. */
 #dicewrap .dc-boardwrap.dc-live { z-index: 3; }
+
+
+/* ⛔ LE HALO DU GOBELET NE BAT PLUS. Il pulsait de 0,2 a 1 d'opacite toutes les
+   1,6 s pour dire « vous pouvez lancer » — mais le bouton est deja dore et
+   actif quand c'est vrai, et eteint quand ce ne l'est pas : le battement
+   n'ajoutait pas d'information, il en repetait une. Depuis que la plaque porte
+   son lisere blanc de 4 px, il bat EN PLUS par-dessus ce bord, et ce qu'on
+   remarque n'est plus un appel mais un clignotement — « un effet bizarre qui
+   scintille dans le background de l'icone du de, sans aucune raison ».
+
+   La lueur reste, fixe : elle cerne le bouton pret sans rien faire bouger. Et
+   comme rien ne s'anime, plus rien ne peut scintiller pendant que le contenu du
+   gobelet est reecrit image par image. */
+#dicewrap .dc-cup-ready::after {
+  animation: none;
+  opacity: .55;
+  border-radius: var(--cbt-pied-courbure, 18px);
+}

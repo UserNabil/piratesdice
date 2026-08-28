@@ -843,7 +843,12 @@ function renderPlayerCard(sel, st, seat, isMe) {
   const p = st.players[seat] || {};
   const el = $(sel);
   if (!el) return;
-  const active = st.turn === seat && st.phase === 'playing';
+  /* ⛔ LA MEME CONDITION DE PHASE QUE POUR LES PLATEAUX, restee ici. Toute
+     phase qui n'est pas exactement `playing` grisait LES DEUX cartes — plus
+     personne d'actif, ni moi ni l'adversaire. C'est le rectangle d'information,
+     pas le plateau, que l'admin voyait rester gris. Ce qui compte est le TOUR ;
+     seule la fin de partie doit eteindre les deux. */
+  const active = st.turn === seat && st.phase !== 'over';
   const cap = st.captains ? st.captains[seat] : null;
   /* ⚠️ L'ANNEAU DECORATIF EST PARTI. C'etait un cordage dessine en CSS, cale a
      -17 % autour d'un portrait rond — mais le medaillon porte MAINTENANT son
