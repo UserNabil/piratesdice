@@ -335,6 +335,8 @@ export const ES = {
 
   'set.title': 'Ajustes',
   'set.sound': 'Sonido',
+  'set.fx': 'Efectos',
+  'set.music': 'Música',
   'set.soundOn': 'Activado',
   'set.soundOff': 'Silenciado',
   'set.account': 'Cuenta',

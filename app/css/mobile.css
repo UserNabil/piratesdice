@@ -425,6 +425,146 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   border-radius: 50%;
 }
 
+/* ============================================================================
+   LES DEUX CURSEURS DE VOLUME.
+
+   ⚠️ UN `<input type=range>` NU EST UN CORPS ETRANGER ICI. Le navigateur le
+   dessine avec les couleurs du systeme — barre grise, pastille bleue — au
+   milieu d'une carte violette a jonc dore : c'est le seul element de
+   l'application qui n'aurait pas ete dessine. On reprend donc la piste et la
+   pastille a la main, dans les memes ors que les boutons.
+
+   ⚠️ ET LA PASTILLE SE VISE AU DOIGT, PAS A LA SOURIS. 26 px de diametre avec
+   une piste de 8 : en dessous, on manque la prise et on deplace la carte au
+   lieu du curseur — le reglage devient un combat.
+   ============================================================================ */
+
+/* ⚠️ MOINS DE MARGE QUE LES AUTRES LIGNES, PARCE QU'ELLE EST PLUS HAUTE. Le
+   haut-parleur fait deja 40 px : avec les 13 px des lignes ordinaires, les deux
+   reglages ajoutaient a eux seuls 110 px a une carte qui, sur un iPhone SE,
+   defile deja. La ligne reste aeree — c'est le bouton qui donne la hauteur. */
+/* ⛔ ET ELLE S'ECRIT `.pd-row.pd-vol`, PAS `.pd-vol`. Une regle `.pd-row`
+   posee PLUS BAS dans la feuille redonne 13 px a toutes les lignes : a
+   specificite egale, c'est la derniere ecrite qui gagne, et la marge revenait
+   sans rien dire. Deux classes suffisent a trancher — mesure au banc, pas
+   suppose. */
+.pd-row.pd-vol { flex-wrap: nowrap; gap: 10px; padding-top: 8px; padding-bottom: 8px; }
+
+/* ⚠️ LES DEUX LIGNES DOIVENT S'ALIGNER, MEME AVEC DES MOTS DE LONGUEURS
+   DIFFERENTES. « Effets » est plus court que « Musique » : sans largeur de
+   colonne commune, les deux haut-parleurs et les deux pistes se decalent de
+   quinze pixels l'un par rapport a l'autre, et deux reglages jumeaux ont l'air
+   posés au hasard. La largeur est en `em` : elle suit la police du systeme et
+   les traductions plus longues (« Efectos », « Effects ») sans etre refaite. */
+.pd-vol .pd-row-lbl { flex: 0 0 auto; min-width: 6.2em; }
+
+/* Le haut-parleur de la ligne : c'est le bouton « couper ce canal ». */
+.pd-vol-btn {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .3));
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .85), inset 0 2px 5px rgba(0, 0, 0, .6);
+}
+
+.pd-vol-btn.on {
+  background: linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212));
+  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6);
+}
+
+.pd-vol-btn img { width: 26px; height: 26px; object-fit: contain; display: block; margin: auto; }
+
+/* Le pour-cent est un temoin, pas un titre : largeur fixe pour que la piste ne
+   se decale pas d'un pixel quand on passe de 9 % a 100 %. */
+.pd-vol-val {
+  flex: 0 0 auto;
+  width: 44px;
+  text-align: end;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-hi, #FFE479);
+}
+
+.pd-vol-off .pd-vol-val { color: var(--txt-dim, #C9BCEA); }
+
+.pd-vol-slider {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.pd-vol-slider:focus { outline: none; }
+
+/* ⚠️ WEBKIT NE REMPLIT PAS LA PORTION PARCOURUE, ET C'EST LA WEBVIEW DU JEU.
+   Firefox a `::-moz-range-progress` ; Safari et Chrome n'ont rien d'equivalent,
+   la piste y est unie du debut a la fin. Sans remplissage, un curseur pose au
+   milieu ne se lit qu'a la position de sa pastille — sur un telephone tenu a
+   bout de bras, c'est la barre d'or qu'on voit, pas un rond de 26 px. On peint
+   donc le remplissage a la main : deux fonds superposes sur la piste, le
+   premier limite en largeur par `--pd-vol-fill`, que le JS met a jour a chaque
+   mouvement. Les proprietes personnalisees descendent dans les
+   pseudo-elements ; c'est ce qui rend le tour possible sans un seul div. */
+.pd-vol-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212))
+      left center / var(--pd-vol-fill, 0%) 100% no-repeat,
+    linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .3));
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .45);
+}
+
+/* En arabe la WebView retourne le curseur : le remplissage doit partir de la
+   droite, sinon il se peint du mauvais cote de la pastille. */
+[dir="rtl"] .pd-vol-slider::-webkit-slider-runnable-track { background-position: right center, center; }
+
+.pd-vol-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .3));
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .45);
+}
+
+/* La portion parcourue s'allume : sur un telephone tenu a bout de bras, c'est
+   ce remplissage qu'on lit, pas la position de la pastille. */
+.pd-vol-slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212));
+}
+
+.pd-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px; height: 26px;
+  margin-top: -9px;                 /* (8 - 26) / 2 : la pastille se centre sur la piste */
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #FFF6D2, var(--gold-md, #FCA212) 70%);
+  box-shadow: 0 0 0 2px rgba(70, 42, 8, .55), 0 2px 4px rgba(0, 0, 0, .5);
+}
+
+.pd-vol-slider::-moz-range-thumb {
+  width: 26px; height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #FFF6D2, var(--gold-md, #FCA212) 70%);
+  box-shadow: 0 0 0 2px rgba(70, 42, 8, .55), 0 2px 4px rgba(0, 0, 0, .5);
+}
+
+/* Canal coupe : la piste s'eteint, la pastille reste visible pour qu'on sache
+   ou la reprendre. */
+.pd-vol-off .pd-vol-slider::-webkit-slider-thumb { background: radial-gradient(circle at 38% 32%, #D8D2E6, #8A80A8 70%); }
+.pd-vol-off .pd-vol-slider::-moz-range-thumb { background: radial-gradient(circle at 38% 32%, #D8D2E6, #8A80A8 70%); }
+
 .pd-select {
   min-height: 40px;
   padding: 0 12px;

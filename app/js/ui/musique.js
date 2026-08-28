@@ -41,6 +41,11 @@ export class Musique {
     this.scene = null;          // 'menu' | 'partie'
     this.audio = null;
     this.tour = 0;              // quelle piste de partie on a jouee en dernier
+    /* ⚠️ LE NIVEAU DU JOUEUR, EN FACTEUR SUR LE MELANGE REGLE PLUS BAS. Il peut
+       depasser 1 : la musique est volontairement basse pour laisser passer les
+       des, et celui qui la veut en avant doit pouvoir la monter au-dessus du
+       melange par defaut — sinon le curseur ne sert qu'a l'eteindre. */
+    this.niveau = 1;
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
@@ -66,10 +71,10 @@ export class Musique {
     try {
       const audio = new Audio(this.base + piste);
       audio.loop = true;
-      audio.volume = this.muette ? 0 : (VOLUME[scene] || 0.25);
+      audio.volume = this.niveauReel();
       audio.preload = 'auto';
       this.audio = audio;
-      if (!this.muette && !this.dehors) this.essayerDeJouer();
+      if (!this.muette && !this.dehors && this.niveau) this.essayerDeJouer();
     } catch (_) { this.audio = null; }
   }
 
@@ -98,10 +103,35 @@ export class Musique {
     }
   }
 
+  /** Le volume que doit porter le <audio>, borne : hors de [0,1] il jette. */
+  niveauReel() {
+    if (this.muette) return 0;
+    const cible = (VOLUME[this.scene] || 0.25) * this.niveau;
+    return Math.min(1, Math.max(0, cible));
+  }
+
+  /**
+   * Le curseur des reglages, en facteur. On l'applique A CHAUD sur la piste en
+   * cours : un reglage de volume qui ne s'entend qu'au morceau suivant ne se
+   * regle pas, il se devine. Et a 0 on met en pause plutot que de laisser un
+   * fichier de deux minutes tourner en silence — c'est de la batterie pour
+   * rien.
+   */
+  set volume(facteur) {
+    const f = Number(facteur);
+    this.niveau = Number.isFinite(f) && f > 0 ? f : 0;
+    if (!this.audio) return;
+    try { this.audio.volume = this.niveauReel(); } catch (_) { /* pas de son */ }
+    if (!this.niveau) this.suspendre();
+    else this.reprendre();
+  }
+
+  get volume() { return this.niveau; }
+
   suspendre() { if (this.audio) { try { this.audio.pause(); } catch (_) { /* deja */ } } }
 
   reprendre() {
-    if (this.muette || this.dehors || !this.audio) return;
+    if (this.muette || this.dehors || !this.niveau || !this.audio) return;
     this.essayerDeJouer();
   }
 
@@ -115,6 +145,7 @@ export class Musique {
   /** Le meme interrupteur que les effets : un seul reglage pour tout le son. */
   set muted(valeur) {
     this.muette = !!valeur;
+    if (this.audio) { try { this.audio.volume = this.niveauReel(); } catch (_) { /* pas de son */ } }
     if (this.muette) this.suspendre();
     else this.reprendre();
   }

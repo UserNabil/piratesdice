@@ -337,6 +337,8 @@ export const AR = {
 
   'set.title': 'الإعدادات',
   'set.sound': 'الصوت',
+  'set.fx': 'المؤثرات',
+  'set.music': 'الموسيقى',
   'set.soundOn': 'مفعّل',
   'set.soundOff': 'مكتوم',
   'set.account': 'الحساب',

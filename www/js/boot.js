@@ -16,6 +16,7 @@ import { startMotion } from './motion.js';
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
 import { brancherStudio } from './ui/studio.js';
+import { volumes, reglerVolume, surVolume, DEFAUT } from './ui/volumes.js';
 
 const TERMS_URL = 'https://usernabil.github.io/piratesdice-site/privacy.html';
 
@@ -131,6 +132,30 @@ function row(label, body) {
   return `<div class="pd-row"><span class="pd-row-lbl">${label}</span>${body}</div>`;
 }
 
+/**
+ * Une ligne de volume : un haut-parleur qui coupe, un curseur qui dose.
+ *
+ * ⚠️ LE DESSIN N'EST PAS UNE DECORATION A COTE DU CURSEUR, C'EST LE BOUTON
+ * « COUPER ». Amener un curseur a zero au doigt, sur un telephone, demande de
+ * viser ; et il faut ensuite retrouver la position d'avant pour revenir. Un
+ * appui sur le haut-parleur fait les deux, et il montre l'etat du canal sans
+ * qu'on ait a lire le pour-cent.
+ */
+function volRow(canal, label, valeur) {
+  const off = valeur === 0;
+  return `<div class="pd-row pd-vol" data-vol="${canal}">
+    <span class="pd-row-lbl">${label}</span>
+    <button class="pd-vol-btn${off ? '' : ' on'}" data-vol-mute aria-pressed="${!off}"
+            title="${t(off ? 'set.soundOff' : 'set.soundOn')}"
+            aria-label="${label} — ${t(off ? 'set.soundOff' : 'set.soundOn')}"><img
+            src="${ASSETS}img/icon_sound_${off ? 'off' : 'on'}.png" alt=""></button>
+    <input class="pd-vol-slider" type="range" min="0" max="100" step="5"
+           value="${valeur}" data-vol-range style="--pd-vol-fill:${valeur}%"
+           aria-label="${label}" aria-valuetext="${valeur} %">
+    <span class="pd-vol-val" data-vol-val>${valeur} %</span>
+  </div>`;
+}
+
 function settingsMarkup() {
   const acc = account();
   const who = acc.google ? t('set.signedInAs', { name: acc.name }) : t('set.guest');
@@ -162,22 +187,20 @@ function settingsMarkup() {
                aria-label="${dit(t(pomme ? 'set.signInApple' : 'set.signIn'))}">
          <img src="${ASSETS}img/icon_${pomme ? 'apple' : 'google'}.png" alt="">${
         t('set.signInShort')}</button>`;
-  const muted = !!(S.sfx && S.sfx.muted);
+  const vol = volumes();
 
   return `
     <div class="pd-ask-card pd-panel pd-set">
       <h3>${t('set.title')}</h3>
 
-      <!-- ⚠️ « ACTIVE » A COTE D'UN HAUT-PARLEUR NE DIT RIEN DE PLUS. Le dessin
-           CHANGE avec l'etat — haut-parleur barre quand c'est coupe — et le
-           bouton s'allume en or : le mot repetait une troisieme fois ce que
-           deux signaux disaient deja, et il volait la place qui manquait au
-           dessin. Il reste en aria-label, pour qui ne voit pas l'icone. -->
-      ${row(t('set.sound'), `<button class="pd-toggle pd-toggle-art pd-toggle-seul${muted ? '' : ' on'}"
-              data-sound aria-pressed="${!muted}"
-              aria-label="${t('set.sound')} — ${t(muted ? 'set.soundOff' : 'set.soundOn')}"
-              title="${t(muted ? 'set.soundOff' : 'set.soundOn')}"><img
-              src="${ASSETS}img/icon_sound_${muted ? 'off' : 'on'}.png" alt=""></button>`)}
+      <!-- ⛔ UN SEUL INTERRUPTEUR POUR TOUT LE SON, C'ETAIT TROP PEU. Le joueur
+           que la musique derange n'avait qu'un geste : tout eteindre, y compris
+           le claquement du de qui lui dit que son coup est parti. Les deux
+           canaux se reglent maintenant separement, et le haut-parleur de chaque
+           ligne coupe le sien — le bouton du bandeau de jeu, lui, coupe encore
+           les deux d'un coup. -->
+      ${volRow('effets', t('set.fx'), vol.effets)}
+      ${volRow('musique', t('set.music'), vol.musique)}
 
       <!-- Plus de reglage « jouer aux mouvements ». Secouer pour lancer est
            desormais toujours actif : un geste cache derriere un interrupteur
@@ -227,28 +250,90 @@ function openSettings() {
   wrap.innerHTML = settingsMarkup();
   host().appendChild(wrap);
 
-  const close = () => wrap.remove();
+  /* `oublier` n'existe pas encore quand `close` est ecrit — il est appele bien
+     apres, au clic. Le desabonnement n'est pas une politesse : sans lui, chaque
+     ouverture de reglages laisserait derriere elle un abonne qui peint des
+     lignes retirees du document. */
+  const close = () => { if (oublier) oublier(); wrap.remove(); };
   const back = (ev) => { ev.preventDefault(); close(); };
   document.addEventListener('pd-back', back, { once: true });
   wrap.onclick = (ev) => { if (ev.target === wrap) close(); };
   wrap.querySelector('[data-close]').onclick = close;
 
-  const sound = wrap.querySelector('[data-sound]');
-  sound.onclick = () => {
+  /* ⚠️ ON RETIENT LE NIVEAU D'AVANT LA COUPURE, SINON « COUPER » EST UN ALLER
+     SIMPLE : sans memoire, le retour se ferait au reglage d'usine et le joueur
+     qui avait pose sa musique a 20 % la retrouverait a 60. La memoire ne vit
+     que le temps de la modale — c'est exactement la duree du geste. */
+  const avant = {};
+  const peintres = [];
+  wrap.querySelectorAll('[data-vol]').forEach((ligne) => {
+    const canal = ligne.dataset.vol;
+    const btn = ligne.querySelector('[data-vol-mute]');
+    const curseur = ligne.querySelector('[data-vol-range]');
+    const chiffre = ligne.querySelector('[data-vol-val]');
+    const nom = ligne.querySelector('.pd-row-lbl').textContent;
+
+    const peindre = (v) => {
+      const off = v === 0;
+      curseur.value = String(v);
+      /* Le remplissage dore de la piste : WebKit ne le calcule pas tout seul. */
+      curseur.style.setProperty('--pd-vol-fill', v + '%');
+      curseur.setAttribute('aria-valuetext', v + ' %');
+      chiffre.textContent = v + ' %';
+      btn.classList.toggle('on', !off);
+      btn.setAttribute('aria-pressed', String(!off));
+      btn.setAttribute('title', t(off ? 'set.soundOff' : 'set.soundOn'));
+      btn.setAttribute('aria-label', nom + ' — ' + t(off ? 'set.soundOff' : 'set.soundOn'));
+      /* ⚠️ `textContent` EFFACERAIT LE DESSIN : le bouton n'a qu'une image. */
+      const img = btn.querySelector('img');
+      if (img) img.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
+      ligne.classList.toggle('pd-vol-off', off);
+    };
+
+    peintres.push(() => peindre(volumes()[canal]));
+
+    /* ⚠️ LE SON DOIT SUIVRE LE DOIGT, PAS LE LACHER. `input` se declenche
+       pendant le glissement : c'est ce qui permet de regler A L'OREILLE, seule
+       facon honnete de choisir un volume. `change` seul aurait demande de
+       lacher, ecouter, reprendre. */
+    curseur.oninput = () => {
+      const v = reglerVolume(canal, curseur.value);
+      demuter();
+      peindre(v);
+    };
+    /* Le repere sonore ne se donne qu'au relachement : un echantillon a chaque
+       pas de 5 % pendant le glissement serait un hachis. */
+    curseur.onchange = () => {
+      if (canal === 'effets' && S.sfx) S.sfx.play('pose', 0.42, 1.28);
+    };
+
+    btn.onclick = () => {
+      const v = volumes()[canal];
+      if (v > 0) { avant[canal] = v; peindre(reglerVolume(canal, 0)); return; }
+      demuter();
+      peindre(reglerVolume(canal, avant[canal] || DEFAUT[canal]));
+    };
+  });
+
+  /**
+   * ⚠️ MONTER UN CURSEUR SANS RIEN ENTENDRE FAIT PASSER LE REGLAGE POUR CASSE.
+   * Le bandeau de jeu garde son interrupteur general ; s'il est coupe, toucher
+   * un curseur est une demande d'entendre — on leve donc la coupure generale
+   * au passage, plutot que de laisser le joueur chercher pourquoi son geste
+   * n'a produit aucun son.
+   */
+  function demuter() {
+    if (!S.sfx || !S.sfx.muted) return;
     const mute = document.getElementById('dc-mute');
-    if (mute) mute.click();
-    const off = !!(S.sfx && S.sfx.muted);
-    /* ⚠️ `textContent` EFFACERAIT LE DESSIN. Le bouton porte maintenant une
-       image ET un libelle : ecrire le texte sur le bouton entier remplacerait
-       les deux par une chaine nue, et le haut-parleur disparaitrait au premier
-       clic. On ne touche donc qu'au dernier noeud, celui du texte. */
-    const img = sound.querySelector('img');
-    if (img) img.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
-    sound.setAttribute('title', t(off ? 'set.soundOff' : 'set.soundOn'));
-    sound.setAttribute('aria-label', t('set.sound') + ' — ' + t(off ? 'set.soundOff' : 'set.soundOn'));
-    sound.classList.toggle('on', !off);
-    sound.setAttribute('aria-pressed', String(!off));
-  };
+    if (mute) mute.click(); else S.sfx.muted = false;
+  }
+
+  /* ⛔ DEUX VUES DU MEME REGLAGE DOIVENT BOUGER ENSEMBLE. Le haut-parleur du
+     bandeau de jeu reste atteignable, la modale ouverte : couper le son par la
+     laissait les deux curseurs affiches a leur ancienne position, c'est-a-dire
+     un ecran qui ment sur ce qu'on vient de faire. On s'abonne donc au reglage
+     lui-meme — il n'y a qu'une verite, et les deux vues la lisent. */
+  const oublier = surVolume(() => peintres.forEach((fn) => fn()));
 
   /**
    * ⚠️ RECHARGER EN PLEINE PARTIE COUTE LA PARTIE. `location.reload()` coupe la

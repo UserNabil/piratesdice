@@ -346,6 +346,8 @@ export const FR = {
 
   'set.title': 'Réglages',
   'set.sound': 'Son',
+  'set.fx': 'Effets',
+  'set.music': 'Musique',
   'set.soundOn': 'Activé',
   'set.soundOff': 'Coupé',
   'set.account': 'Compte',

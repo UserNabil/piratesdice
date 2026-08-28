@@ -321,6 +321,13 @@ export class Sfx {
        refuse d'en ouvrir de nouvelles tant que l'ecran n'est pas revenu. */
     this.voix = new Set();
     this.dehors = false;
+    /* ⚠️ LE NIVEAU DU CANAL, EN FACTEUR. Chaque appel a `play()` porte deja son
+       volume, regle a la main son par son : le de sec a 0,42, l'onglet a 0,22.
+       Ce melange-la est le bon et on n'y touche pas — le reglage du joueur le
+       multiplie en bloc, ce qui le baisse sans le deformer. A 0, on ne joue
+       rien du tout : ouvrir une voix muette couterait un decodage pour du
+       silence. */
+    this.niveau = 1;
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         this.dehors = document.hidden;
@@ -349,12 +356,15 @@ export class Sfx {
    * plus vite et plus fort, il devient le claquement sec d'un de qui se pose.
    */
   play(name, volume, rate) {
-    if (this.muted || this.dehors) return;
+    if (this.muted || this.dehors || !this.niveau) return;
     const source = this.cache.get(name);
     if (!source) return;
     try {
       const voice = source.cloneNode();
-      voice.volume = volume === undefined ? 0.35 : volume;
+      /* `volume` d'un <audio> refuse tout ce qui sort de [0,1] — et le refus
+         est une exception, pas un ecretage. On borne donc nous-memes. */
+      const cible = (volume === undefined ? 0.35 : volume) * this.niveau;
+      voice.volume = Math.min(1, Math.max(0, cible));
       if (rate) voice.playbackRate = rate;
       this.voix.add(voice);
       voice.addEventListener('ended', () => this.voix.delete(voice), { once: true });

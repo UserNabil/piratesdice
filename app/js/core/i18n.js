@@ -20,6 +20,8 @@ import { AR } from './i18n_ar.js';
 const EN_APP = {
   'set.title': 'Settings',
   'set.sound': 'Sound',
+  'set.fx': 'Effects',
+  'set.music': 'Music',
   'set.soundOn': 'On',
   'set.soundOff': 'Muted',
   'set.account': 'Account',

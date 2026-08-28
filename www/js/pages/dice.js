@@ -19,6 +19,7 @@ import { uiConfirm } from '../ui/dialogs.js';
 import { DiceNet, diceStatus } from './dice_net.js';
 import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
+import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { S, UI, ASSETS, screen, bonusArt, preloadAssets } from './dice_state.js';
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
@@ -102,16 +103,61 @@ function build() {
 
   $('#dc-close').onclick = () => requestClose();
   $('#dc-full').onclick = () => toggleFull();
-  $('#dc-mute').onclick = () => {
-    S.sfx.muted = !S.sfx.muted;
-    /* Un seul interrupteur pour tout le son : couper les effets et laisser la
-       musique serait un reglage qui ment. */
-    if (S.musique) S.musique.muted = S.sfx.muted;
-    $('#dc-mute').classList.toggle('dc-icon-off', S.sfx.muted);
-    $('#dc-mute').title = t(S.sfx.muted ? 'hdr.unmute' : 'hdr.mute');
-    const hp = $('#dc-mute img');
-    if (hp) hp.src = ASSETS + 'img/icon_sound_' + (S.sfx.muted ? 'off' : 'on') + '.png';
+  /**
+   * ⚠️ CE BOUTON EST UN RACCOURCI, PAS UN REGLAGE CONCURRENT. Le detail se fait
+   * aux deux curseurs des reglages (effets / musique) ; lui coupe tout d'un
+   * geste, ce qu'on veut pouvoir faire sans ouvrir un menu — quelqu'un entre
+   * dans la piece, le telephone se tait.
+   *
+   * ⛔ ET IL DOIT MONTRER LE VRAI SILENCE, D'OU QU'IL VIENNE. Un joueur qui
+   * ramene ses deux curseurs a zero n'entend plus rien : laisser le
+   * haut-parleur du bandeau allume ferait mentir la seule indication visible.
+   * On peint donc l'etat REEL — coupure generale ou deux canaux a zero — et non
+   * l'etat de l'interrupteur.
+   */
+  const silence = () => {
+    if (S.sfx && S.sfx.muted) return true;
+    const v = volumes();
+    return !v.effets && !v.musique;
   };
+  const peindreMute = () => {
+    const off = silence();
+    $('#dc-mute').classList.toggle('dc-icon-off', off);
+    $('#dc-mute').title = t(off ? 'hdr.unmute' : 'hdr.mute');
+    const hp = $('#dc-mute img');
+    if (hp) hp.src = ASSETS + 'img/icon_sound_' + (off ? 'off' : 'on') + '.png';
+  };
+  $('#dc-mute').onclick = () => {
+    const off = silence();
+    S.sfx.muted = !off;
+    if (S.musique) S.musique.muted = S.sfx.muted;
+    /* Retablir le son alors que les deux curseurs sont a zero ne rendrait
+       rien : on les remonte a leur position d'usine, sinon le bouton semble
+       casse. */
+    if (off) {
+      const v = volumes();
+      if (!v.effets && !v.musique) {
+        reglerVolume('effets', DEFAUT.effets);
+        reglerVolume('musique', DEFAUT.musique);
+      }
+    }
+    peindreMute();
+  };
+
+  /* ⚠️ LE REGLAGE DU JOUEUR S'APPLIQUE ICI, ET UNE SEULE FOIS. `surVolume`
+     rappelle tout de suite la fonction : cet abonnement sert donc a la fois de
+     reprise du reglage enregistre au lancement et de reaction au curseur qu'on
+     bouge dans les reglages, sans deux chemins a garder d'accord. Les modales
+     de reglages n'ont, elles, rien a savoir de `S`.
+     ⛔ IL SE POSE APRES `peindreMute`, PAS AVANT : la fonction est declaree en
+     `const`, et l'appel immediat de `surVolume` tomberait dans sa zone morte —
+     l'erreur serait avalee par le try de l'abonnement, et le reglage
+     enregistre ne serait jamais applique au lancement. */
+  surVolume(() => {
+    if (S.sfx) S.sfx.niveau = facteur('effets');
+    if (S.musique) S.musique.volume = facteur('musique');
+    peindreMute();
+  });
   wrap.querySelectorAll('.dc-tab').forEach((b) => {
     b.onclick = () => { if (S.sfx) S.sfx.play('onglet', 0.22); togglePanel(b.dataset.panel); };
   });
