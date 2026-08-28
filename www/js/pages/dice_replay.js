@@ -79,7 +79,13 @@ export function renderReplays(body) {
   if (!S.historique) {
     body.innerHTML = '<h3>' + esc(t('tab.replay')) + '</h3>'
       + '<p class="dc-empty">' + esc(t('ladder.reading')) + '</p>';
+    /* ⛔ UNE DEMANDE AVALEE LAISSE LA PAGE EN ATTENTE POUR TOUJOURS. Quand la
+       socket est tombee, `S.net` est nul : on peignait « Lecture du registre… »
+       et on ne demandait rien — aucune erreur, aucune reprise, et le joueur
+       restait devant une ligne qui ne bougerait plus jamais. On le dit. */
     if (S.net) S.net.send({ t: 'historique' });
+    else body.innerHTML = body.innerHTML.replace(/<p class="dc-empty">[^<]*<\/p>/,
+      '<p class="dc-empty">' + esc(t('connect.outOfReach')) + '</p>');
     return;
   }
   if (!S.historique.length) {

@@ -49,7 +49,9 @@ function hautsFaits(m) {
       <b>${esc(t('suc.' + s.identify + '.name'))}</b>
     </div>`).join('')}
     ${reste > 0 ? `<div class="dc-over-suc-plus">${esc(t('over.succesPlus', { n: reste }))}</div>` : ''}
-    <div class="dc-over-suc-gain">${m.maudits ? '+' + m.maudits + PIECE_MAUDITE : ''}</div>
+    <div class="dc-over-suc-gain">${m.maudits ? '+' + m.maudits + PIECE_MAUDITE : ''}${
+      (m.objets && m.objets.length)
+        ? ` <span class="dc-over-objet">${esc(t('over.objet', { n: m.objets.length }))}</span>` : ''}</div>
   </div>`;
 }
 
@@ -58,14 +60,18 @@ export function onOver(m) {
      d'envoyer `leave` : l'annonce de fin qui suit lui est destinee autant qu'a
      l'autre, mais elle n'a plus rien a lui apprendre. On l'avale une fois — et
      une seule, pour que la partie suivante retrouve sa carte de fin. */
-  if (S.quitting) { S.quitting = false; return; }
   /* ⚠️ LA PAGE DES SUCCES EST PERIMEE DES QU'UNE PARTIE SE TERMINE. Les
      compteurs viennent de bouger cote serveur ; garder la liste en cache
-     montrerait « 47 / 50 » a quelqu'un qui vient de passer 50. On l'oublie, la
-     page la redemandera a la prochaine ouverture. */
+     montrerait « 47 / 50 » a quelqu'un qui vient de passer 50.
+     ⛔ ET CELA VAUT AUSSI QUAND ON QUITTE. Le retour anticipe ci-dessous sautait
+     ces trois lignes : le serveur avait pourtant compte la partie, bouge les
+     compteurs et parfois ouvert un haut fait, mais les deux pages restaient
+     figees sur leur ancien contenu pour TOUTE la session. On oublie d'abord, on
+     avale ensuite. */
   S.succes = null;
   S.historique = null;
   if (S.me && typeof m.bourseMaudite === 'number') S.me.premium = m.bourseMaudite;
+  if (S.quitting) { S.quitting = false; return; }
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
   const seal = m.outcome === 'win' ? 'seal_victory' : (m.outcome === 'loss' ? 'seal_defeat' : 'seal_draw');
@@ -100,7 +106,12 @@ export function onOver(m) {
         ${esc(t('over.against', { name: m.opponent }))}
       </div>
       ${rating}
-      <div class="dc-over-line">${esc(t('over.coins', { delta: (m.coinDelta >= 0 ? '+' : '') + m.coinDelta }))}
+      <!-- ⚠️ L'OR DES HAUTS FAITS S'AJOUTE A LA PRIME, ET IL DOIT SE VOIR. La
+           ligne n'annoncait que la prime de match : le joueur lisait « +20 »
+           pendant que sa bourse en recevait 520. On additionne, comme la bourse
+           le fait. -->
+      <div class="dc-over-line">${esc(t('over.coins', {
+          delta: (m.coinDelta + (m.orSucces || 0) >= 0 ? '+' : '') + (m.coinDelta + (m.orSucces || 0)) }))}
         <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
       ${reason}
       ${hautsFaits(m)}

@@ -551,6 +551,12 @@ function togglePanel(name) {
     fermerLecteur();
     S.sfx.play('shut', 0.2);
   } else {
+    /* ⛔ PASSER A UN AUTRE ONGLET FERME AUSSI LE LECTEUR. Il n'etait ferme que
+       dans la branche « on referme le meme onglet » : quitter le journal de bord
+       pour la boutique laissait son horloge tourner, peindre des plateaux
+       retires du document et jouer des explosions derriere un panneau qu'on ne
+       regarde plus. */
+    if (S.panel !== name) fermerLecteur();
     S.panel = name;
     panel.classList.add('on');
     S.sfx.play('open', 0.2);
@@ -574,6 +580,9 @@ function refreshPanel() {
 
 export function initDice() {
   UI.showMenu = showMenu;
+  /* Le panneau lateral se repeint depuis l'arene : elle sait quand la partie
+     commence, ce que la boutique ne peut pas deviner toute seule. */
+  UI.refreshPanel = refreshPanel;
   UI.leaveMatch = () => { S.state = null; S.seat = -1; showMenu(); };
   UI.renderWallet = renderWallet;
   UI.requestClose = requestClose;

@@ -321,11 +321,25 @@ function recompense(s) {
   const bouts = [];
   if (s.objet) {
     bouts.push('<img class="dc-suc-objet" src="' + vignetteDe(s.objet)
-      + '" alt="" title="' + esc(t('shop.' + s.objet + '.name')) + '">');
+      /* ⚠️ PASSER PAR LE REPLI, COMME TOUT LE RESTE DE LA BOUTIQUE. `t()` rend
+         la CLE quand elle manque : l'infobulle affichait « shop.M005.name » —
+         les quatre ornements n'ont de nom dans aucun des quatre catalogues,
+         puisque c'est le serveur qui le porte. */
+      + '" alt="" title="' + esc(nomObjet(s.objet)) + '">');
   }
   if (s.or) bouts.push(s.or + '<img class="dc-coin" src="' + ASSETS + 'img/icon_coin.png" alt="">');
   if (s.reward) bouts.push(s.reward + PIECE_MAUDITE);
   return bouts.join(' ');
+}
+
+/* Le nom d'un objet offert : celui du catalogue si le client l'a traduit, sinon
+   celui que le serveur envoie avec le produit. */
+function nomObjet(identify) {
+  const cle = 'shop.' + identify + '.name';
+  const traduit = t(cle);
+  if (traduit !== cle) return traduit;
+  const p = (S.shop || []).find((x) => x.identify === identify);
+  return (p && p.name) || identify;
 }
 
 /* La vignette d'un objet offert : une parure se montre par sa face de cinq, un
@@ -357,7 +371,13 @@ export function renderSucces(body) {
   if (!S.succes) {
     body.innerHTML = '<h3>' + esc(t('tab.succes')) + '</h3>'
       + '<p class="dc-empty">' + esc(t('ladder.reading')) + '</p>';
+    /* ⛔ UNE DEMANDE AVALEE LAISSE LA PAGE EN ATTENTE POUR TOUJOURS. Quand la
+       socket est tombee, `S.net` est nul : on peignait « Lecture du registre… »
+       et on ne demandait rien — aucune erreur, aucune reprise, et le joueur
+       restait devant une ligne qui ne bougerait plus jamais. On le dit. */
     if (S.net) S.net.send({ t: 'succes' });
+    else body.innerHTML = body.innerHTML.replace(/<p class="dc-empty">[^<]*<\/p>/,
+      '<p class="dc-empty">' + esc(t('connect.outOfReach')) + '</p>');
     return;
   }
   const liste = S.succes;

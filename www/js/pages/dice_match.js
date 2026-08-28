@@ -37,6 +37,12 @@ export function onMatch(m) {
   buildGame();
   screen('game');
   paint(true);
+  /* ⛔ LA BOUTIQUE FERME SES CAISSES QUAND LA TABLE S'OUVRE. `enPartie()` n'est
+     lu qu'au moment de dessiner le rayon : un panneau ouvert AVANT le debut de
+     la partie gardait donc ses boutons d'achat vivants, et chaque clic partait
+     se faire refuser par le serveur (409). Un bouton actif qui mene a un refus
+     est pire qu'un bouton grise : il promet. */
+  if (UI.refreshPanel) UI.refreshPanel();
   /* Une partie qui reapparait sans un mot ressemble a un bug. On nomme ce qui
      vient de se passer, sinon le joueur croit avoir relance au hasard. */
   if (m.resumed) toast(t('resume.done'), 'ok');
