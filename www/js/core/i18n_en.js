@@ -331,6 +331,7 @@ export const EN = {
   'over.succes': 'Deeds unlocked',
   'over.succesPlus': 'and {n} more',
   'nav.replay': 'Logbook',
+  'offline.entrer': 'Play offline ({n} games left)',
   'offline.bandeau': 'No connection — {n} offline games left in the hold.',
   'offline.plusDeJetons': 'No offline game left. Connect once to get more.',
   'offline.besoinReseau': 'This one needs a connection.',

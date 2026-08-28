@@ -75,6 +75,33 @@ export function prendreUnJeton() {
   return pris;
 }
 
+/* ── qui je suis, quand le serveur ne peut pas me le dire ────────────────── */
+
+const CLE_MOI = 'pd.moi';
+
+/**
+ * ⚠️ SANS CE SOUVENIR, LE MODE HORS LIGNE JOUE POUR UN INCONNU. Le capitaine,
+ * la parure et le nom viennent du message d'accueil : sans reseau, il n'arrive
+ * jamais. Le joueur se retrouverait avec Mary Read et des des nus, alors qu'il a
+ * peut-etre gagne Grace O'Malley et une gravure. On garde donc la derniere
+ * fiche connue — elle ne decide de rien, elle habille.
+ */
+export function rangerMoi(me) {
+  if (!me) return;
+  try {
+    localStorage.setItem(CLE_MOI, JSON.stringify({
+      name: me.name, captain: me.captain, skin: me.skin, motif: me.motif,
+      rating: me.rating, coins: me.coins, premium: me.premium, games: me.games,
+      wins: me.wins, losses: me.losses, draws: me.draws,
+    }));
+  } catch (_) { /* stockage refuse : on jouera sans parure */ }
+}
+
+export function moi() {
+  try { return JSON.parse(localStorage.getItem(CLE_MOI) || 'null'); }
+  catch (_) { return null; }
+}
+
 /* ── les parties en attente ──────────────────────────────────────────────── */
 
 export function enAttente() { return lire(CLE_PARTIES, []); }

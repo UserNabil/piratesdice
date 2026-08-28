@@ -317,6 +317,7 @@ export const ES = {
   'over.succes': 'Hazañas desbloqueadas',
   'over.succesPlus': 'y {n} más',
   'nav.replay': 'Bitácora',
+  'offline.entrer': 'Jugar sin conexión ({n} partidas)',
   'offline.bandeau': 'Sin conexión: quedan {n} partidas sin conexión en la bodega.',
   'offline.plusDeJetons': 'No quedan partidas sin conexión. Conéctate una vez para reponerlas.',
   'offline.besoinReseau': 'Este necesita conexión.',

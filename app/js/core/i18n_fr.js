@@ -318,6 +318,7 @@ export const FR = {
   'over.succes': 'Hauts faits débloqués',
   'over.succesPlus': 'et {n} de plus',
   'nav.replay': 'Journal',
+  'offline.entrer': 'Jouer sans réseau ({n} parties)',
   'offline.bandeau': 'Sans réseau — il reste {n} parties hors ligne en cale.',
   'offline.plusDeJetons': 'Plus de partie hors ligne. Reconnectez-vous une fois pour en reprendre.',
   'offline.besoinReseau': 'Celui-là demande une connexion.',

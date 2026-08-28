@@ -319,6 +319,7 @@ export const AR = {
   'over.succes': 'إنجازات مفتوحة',
   'over.succesPlus': 'و{n} أخرى',
   'nav.replay': 'الدفتر',
+  'offline.entrer': 'اللعب دون اتصال ({n} مباريات)',
   'offline.bandeau': 'بلا اتصال — تبقّى {n} مباراة دون اتصال في العنبر.',
   'offline.plusDeJetons': 'لم تعد هناك مباريات دون اتصال. اتصل مرة لتجديدها.',
   'offline.besoinReseau': 'هذا يحتاج اتصالًا.',

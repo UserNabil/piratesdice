@@ -250,6 +250,7 @@ async function connect() {
          reseau. */
       S.net.send({ t: 'jetons' });
       envoyerLesParties();
+      cale.rangerMoi(m.me);
       renderWallet();
       showMenu();
     },
@@ -333,6 +334,11 @@ async function connect() {
       if (byUs) return;
       S.net = null;
       if (!S.open) return;
+      /* ⚠️ LE PONT DOIT DIRE QU'IL EST SEUL. Le bandeau « sans reseau » et le
+         repli du bouton solo sont calcules AU RENDU : sans ce repeint, le joueur
+         reste devant un menu qui a l'air normal, appuie sur « defier un
+         joueur », et ne comprend pas pourquoi rien ne se passe. */
+      if (!S.state && S.open) showMenu();
       /* ⛔ ON NE MONTRE PLUS LA PAGE D'ECHEC AU PREMIER SOUFFLE. « Je ferme mon
          telephone, je le rouvre, et j'ai une page qui me dit serveur
          indisponible » : la socket ne survit pas a la mise en veille, c'est
@@ -378,9 +384,25 @@ async function connectFailed(message) {
       <p class="dc-connect-where">${t('connect.tried', { url: '<code>' + esc(where) + '</code>' })}${esc(how)}${probe && probe.error ? ' — ' + esc(probe.error) : ''}</p>
       <p class="dc-connect-fix">${fix}</p>
       <button class="dc-btn" id="dc-retry">${esc(t('connect.retry'))}</button>
+      <!-- ⛔ CET ECRAN ETAIT UN CUL-DE-SAC. Sans reseau, on ne pouvait QUE
+           reessayer : dans un metro, l'application etait morte pendant vingt
+           minutes alors que le jeu, lui, sait tres bien tourner tout seul. Si
+           des parties hors ligne attendent dans la cale, on ouvre la porte. -->
+      ${cale.jetons().length ? `<button class="dc-btn dc-btn-ghost" id="dc-sans-reseau"
+        >${esc(t('offline.entrer', { n: cale.jetons().length }))}</button>` : ''}
     </div>`;
   const retry = $('#dc-retry');
   if (retry) retry.onclick = () => { arreterRelance(); connect(); };
+  const sans = $('#dc-sans-reseau');
+  if (sans) {
+    sans.onclick = () => {
+      /* ⚠️ ON NE COUPE PAS LA RELANCE. Elle continue en arriere-plan : quand le
+         reseau revient, l'accueil arrive et l'ecran se remet a jour tout seul,
+         sans que le joueur ait rien a faire. */
+      if (!S.me) S.me = cale.moi();
+      showMenu();
+    };
+  }
 
   /* ⚠️ CE N'EST PAS AU JOUEUR DE REESSAYER. Un ascenseur, un tunnel, un
      changement de wifi : la connexion revient d'elle-meme quelques secondes plus
