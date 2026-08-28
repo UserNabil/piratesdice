@@ -428,6 +428,179 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 
 
+
+/* L'insigne de classement remplace le mot « elo » partout ou il s'affichait :
+   dans le pont, dans la colonne du classement et sur la carte de fin. Il se
+   cale sur la ligne de texte comme une lettre, pas comme une image. */
+#dicewrap .dc-insigne {
+  width: 18px; height: 18px;
+  vertical-align: -4px;
+  object-fit: contain;
+}
+
+#dicewrap .dc-ladder th .dc-insigne { width: 20px; height: 20px; vertical-align: middle; }
+
+
+/* ============================================================================
+   LA BARRE D'ONGLETS, EN DESSINS SEULS — et le portefeuille a deux etages.
+   ============================================================================ */
+
+/* ⛔ CINQ ONGLETS NE TIENNENT PAS AUX ANCIENNES MESURES. Mesure au banc sur un
+   ecran de 430 px : bourse 86 + cinq onglets a 58 + actions 48 + les ecarts =
+   490 px demandes pour 430 disponibles, et le bouton des reglages sortait de
+   l'ecran par la droite (releve a gauche = 433). Le mot parti, le bouton n'a
+   plus besoin de sa largeur de mot : il se resserre sur son dessin et devient
+   carre. 44 px reste la cible tactile minimale d'Apple — on ne descend pas en
+   dessous, on prend la place ailleurs. */
+#dicewrap .dc-tab-nu {
+  padding: 6px;
+  gap: 0;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+#dicewrap .dc-tab-nu img { width: 26px; height: 26px; }
+
+#dicewrap .dc-bourses {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+/* ⚠️ LE TEXTE RETRECIT A MESURE QUE LA SOMME GRANDIT. La pastille est coincee
+   entre le nom du joueur et les onglets : au quatrieme chiffre elle mangeait le
+   nom, au sixieme elle sortait de l'ecran. Tronquer un montant serait pire —
+   un joueur doit pouvoir lire ce qu'il possede, au chiffre pres.
+
+   ⛔ DEUX CLASSES, PAS UNE, ET C'EST TOUT LE SUJET. Une regle posee plus bas
+   dans la feuille — `.dc-coins { font-size: calc(16px * var(--pd-ui)) }`, dans
+   le bloc d'echelle — gagne a specificite egale, et mes trois tailles ne
+   faisaient rien du tout : mesure au banc, 16,7 px pour « 280 » comme pour
+   « 128 400 ». En doublant la classe on gagne sans dependre de l'ordre, ce qui
+   est la seule facon honnete de gagner dans une feuille de deux mille lignes.
+
+   ⚠️ ET LA PIECE SUIT EN `em`. Fixee en pixels, elle restait grosse pendant que
+   le nombre maigrissait — on gagnait sur le texte ce qu'on reperdait sur le
+   dessin. */
+#dicewrap .dc-coins.dc-coins-c4 { font-size: calc(13.5px * var(--pd-ui, 1)); }
+#dicewrap .dc-coins.dc-coins-c5 { font-size: calc(12px * var(--pd-ui, 1)); }
+#dicewrap .dc-coins.dc-coins-c6 { font-size: calc(10.5px * var(--pd-ui, 1)); letter-spacing: -.2px; }
+
+/* ============================================================================
+   LE JOURNAL DE BORD ET SON LECTEUR.
+   ============================================================================ */
+
+#dicewrap .dc-hist-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+#dicewrap .dc-hist {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, .26);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .22);
+}
+
+#dicewrap .dc-hist:active { transform: translateY(1px); }
+
+/* Le verdict porte la couleur, pas la ligne entiere : trois lignes vertes et
+   trois rouges cote a cote donneraient un tableau de bord, pas un journal. */
+#dicewrap .dc-hist-verdict {
+  flex: 0 0 auto;
+  width: 74px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+#dicewrap .dc-hist-win .dc-hist-verdict { color: #7BE38B; }
+#dicewrap .dc-hist-loss .dc-hist-verdict { color: #FF8A8A; }
+#dicewrap .dc-hist-draw .dc-hist-verdict { color: var(--txt-dim, #C9BCEA); }
+
+#dicewrap .dc-hist-txt { flex: 1 1 auto; min-width: 0; display: grid; gap: 1px; }
+#dicewrap .dc-hist-txt b { font-size: 14px; overflow-wrap: anywhere; }
+#dicewrap .dc-hist-txt span { font-size: 11.5px; color: var(--txt-dim, #C9BCEA); }
+
+#dicewrap .dc-hist-score {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  color: var(--gold-hi, #FFE479);
+}
+#dicewrap .dc-hist-score em { display: block; font-style: normal; font-size: 11px; color: var(--txt-dim, #C9BCEA); }
+#dicewrap .dc-hist-go { width: 26px; height: 26px; flex: 0 0 auto; }
+
+/* Une partie d'avant le format 2 ne se rejoue pas : elle reste lisible, mais
+   elle ne promet rien. */
+#dicewrap .dc-hist-vieux { cursor: default; opacity: .6; }
+#dicewrap .dc-hist-vieux-txt { font-size: 10.5px; color: var(--txt-dim, #C9BCEA); }
+
+#dicewrap .dc-rep { display: grid; gap: 10px; }
+#dicewrap .dc-rep-tete { display: flex; align-items: center; gap: 10px; }
+#dicewrap .dc-rep-tete b { font-size: 14px; overflow-wrap: anywhere; }
+
+/* Les deux plateaux, l'un au-dessus de l'autre, comme en partie. */
+#dicewrap .dc-rep-tables { display: grid; gap: 8px; }
+
+#dicewrap .dc-rep-legende {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .22);
+}
+#dicewrap .dc-rep-pts {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-hi, #FFE479);
+}
+#dicewrap .dc-rep-boum { color: #FF9E5A; }
+
+#dicewrap .dc-rep-piste { width: 100%; }
+
+#dicewrap .dc-rep-cmd { display: flex; align-items: center; gap: 8px; }
+
+#dicewrap .dc-rep-btn {
+  min-width: 52px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  color: #241503;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212));
+  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6);
+}
+
+#dicewrap .dc-rep-vitesses { display: flex; gap: 4px; margin-inline-start: auto; }
+
+#dicewrap .dc-rep-x {
+  min-width: 40px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--txt-dim, #C9BCEA);
+  cursor: pointer;
+  background: rgba(0, 0, 0, .4);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .3);
+}
+
+#dicewrap .dc-rep-x.on {
+  color: #241503;
+  background: linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212));
+}
+
 /* ============================================================================
    LA PAGE DES HAUTS FAITS.
 
@@ -554,9 +727,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 #dicewrap .dc-maudite {
-  width: 17px; height: 17px;
+  /* En `em`, comme la piece d'or : elle maigrit avec le nombre qu'elle
+     accompagne au lieu de rester seule a sa taille. */
+  height: 1.05em; width: auto;
   display: inline-block;
-  vertical-align: -3px;
+  vertical-align: -.15em;
   margin-inline-start: 3px;
 }
 
@@ -586,9 +761,21 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    medaillon. C'est la faute classique, et elle ne se voit qu'a l'ecran. */
 #dicewrap .dc-cap { position: relative; }
 
+/* ⚠️ GRIS, PAS NOIR. `brightness(.55)` par-dessus l'assombrissement que porte
+   deja tout medaillon non choisi (`saturate(.55) brightness(.66)`, dice.css)
+   donnait 0,36 au total : les quatre visages viraient au charbon, on n'y
+   reconnaissait plus personne, et une rangee de silhouettes noires ressemble a
+   un bogue de chargement. Un capitaine ferme doit rester RECONNAISSABLE — c'est
+   la seule chose qui donne envie de l'ouvrir. On remonte donc la lumiere et on
+   ajoute un peu de contraste : la couleur part, le visage reste. */
 #dicewrap .dc-cap-ferme .dc-cap-face {
-  filter: grayscale(1) brightness(.55);
+  filter: grayscale(1) brightness(1.35) contrast(.95);
 }
+
+/* Et le medaillon ferme ne se re-assombrit pas quand il n'est pas choisi : il
+   l'est deja par sa nature. */
+#dicewrap .dc-cap-ferme { filter: none; opacity: .92; }
+#dicewrap .dc-cap-ferme:hover { filter: none; }
 
 #dicewrap .dc-cap-verrou {
   position: absolute;
@@ -932,10 +1119,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     color: var(--gold-hi, #FFE479);
   }
 
-  #dicewrap .dc-tabs { margin-left: auto; gap: 6px; }
-  /* 48 px : la cible tactile que Google recommande, et qu'on mesure. */
-  #dicewrap .dc-tab { min-width: 48px; min-height: 48px; padding: 8px 10px; }
-  #dicewrap .dc-tab img { width: 22px; height: 22px; }
+  #dicewrap .dc-tabs { margin-left: auto; gap: 5px; }
+  /* ⚠️ 44 px ET NON 48 DEPUIS QU'ILS SONT CINQ. 48 est le plancher de Google,
+     44 celui d'Apple. Mesure au banc sur 430 px de large : a 48, la bourse, les
+     cinq onglets et les actions demandaient 490 px, et le bouton des reglages
+     sortait par la droite (releve a gauche = 433). Entre un onglet de 44 px et
+     un reglage hors de l'ecran, le choix est vite fait. */
+  #dicewrap .dc-tab { min-width: 44px; min-height: 44px; padding: 6px; }
+  #dicewrap .dc-tab img { width: 24px; height: 24px; }
   #dicewrap .dc-icon { width: 48px; height: 48px; }
   #dicewrap .dc-top { gap: 10px; padding: 6px 10px; }
 }
@@ -1045,21 +1236,23 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     background: linear-gradient(180deg, rgba(0, 0, 0, .1), rgba(0, 0, 0, .22));
   }
 
-  /* Les trois onglets portent leur nom : un coffre, un pavillon et un parchemin
-     ne se distinguent pas d'un coup d'oeil a 22 px. */
+  /* ⛔ CETTE REGLE EMPILAIT LE DESSIN ET SON NOM, et son commentaire disait
+     « les trois onglets portent leur nom ». Ils sont cinq, ils n'en portent
+     plus, et cette mise en colonne reservait 56 px de large pour un mot qui
+     n'existe plus — c'est elle qui poussait le bouton des reglages hors de
+     l'ecran, pas les regles ecrites plus haut. Une regle ecrite pour un ancien
+     etat de l'ecran ne se contente pas d'etre inutile : elle gagne, parce
+     qu'elle est plus bas dans la feuille. */
   #dicewrap .dc-tab {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 1px;
-    font-size: 8.5px;
-    letter-spacing: .2px;
-    line-height: 1;
-    padding: 6px 8px 5px;
-    min-width: 56px;
+    justify-content: center;
+    gap: 0;
+    padding: 6px;
+    min-width: 44px;
   }
 
-  #dicewrap .dc-tab img { width: 20px; height: 20px; margin: 0; }
+  #dicewrap .dc-tab img { width: 24px; height: 24px; margin: 0; }
 
   /* Le ratelier vide n'a pas besoin de deux lignes dans la zone du pouce. */
 
@@ -1077,8 +1270,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap { --pd-ui: 1; }
 
   #dicewrap .dc-coins { font-size: calc(16px * var(--pd-ui)); }
-  #dicewrap .dc-tab { font-size: calc(8.5px * var(--pd-ui)); min-width: calc(56px * var(--pd-ui)); }
-  #dicewrap .dc-tab img { width: calc(20px * var(--pd-ui)); height: calc(20px * var(--pd-ui)); }
+  /* Le dessin suit l'echelle de l'interface ; la largeur reservee au mot
+     disparu, non. */
+  #dicewrap .dc-tab { min-width: calc(44px * var(--pd-ui)); }
+  #dicewrap .dc-tab img { width: calc(24px * var(--pd-ui)); height: calc(24px * var(--pd-ui)); }
   #dicewrap .dc-pc-name { font-size: calc(13px * var(--pd-ui)); }
   #dicewrap .dc-pc-elo { font-size: calc(13px * var(--pd-ui)); }
   #dicewrap .dc-pc-total { font-size: calc(26px * var(--pd-ui)); }
@@ -1201,8 +1396,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 @media (max-width: 359px) {
   #dicewrap .dc-top { gap: 5px; padding: 5px 6px; }
   #dicewrap .dc-wallet { padding: 3px 9px; }
-  #dicewrap .dc-tab { min-width: 44px; padding: 5px 4px; font-size: 7.5px; }
-  #dicewrap .dc-tab img { width: 17px; height: 17px; }
+  #dicewrap .dc-tab { min-width: 40px; padding: 5px 4px; }
+  #dicewrap .dc-tab img { width: 20px; height: 20px; }
   #dicewrap .dc-icon { width: 40px; height: 40px; }
   #dicewrap .pd-glyph { font-size: 16px; }
   #dicewrap .dc-coins { font-size: 14px; }

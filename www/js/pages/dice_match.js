@@ -872,7 +872,8 @@ function renderPlayerCard(sel, st, seat, isMe) {
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
-      <div class="dc-pc-elo">${p.rating} ${esc(t('menu.elo'))}</div>
+      <div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+           alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>
       ${stockMarkup(st, seat)}
     </div>
     <div class="dc-pc-total" data-v="${st.totals[seat]}"

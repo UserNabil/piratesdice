@@ -268,7 +268,14 @@ export function renderMenu(el) {
       </div>
       <div class="dc-menu-stats">
         <span><b>${S.me ? S.me.games : 0}</b> ${esc(t('menu.matches'))}</span>
-        <span><b>${S.me ? S.me.rating : 0}</b> ${esc(t('menu.elo'))}</span>
+        <!-- ⛔ « ELO » EST UN MOT D'INITIE, ET IL NE DIT RIEN AU JOUEUR. C'est le
+             nom d'un algorithme de 1960, pas celui d'une recompense : personne
+             n'a besoin de savoir comment son classement est calcule pour vouloir
+             le faire monter. L'insigne le remplace — il se lit sans traduction,
+             dans les quatre langues, et il ressemble a ce qu'il represente. -->
+        <span><b>${S.me ? S.me.rating : 0}</b> <img class="dc-insigne"
+              src="${ASSETS}img/icon_elo.png" alt="${esc(t('menu.rang'))}"
+              title="${esc(t('menu.rang'))}"></span>
         <span><b>${S.me ? S.me.coins : 0}</b> ${esc(t('menu.coins'))}</span>
       </div>
     </div></div>`;

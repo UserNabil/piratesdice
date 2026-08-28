@@ -366,7 +366,8 @@ function peindreClassement(body, data) {
   const inTop = mine && rows.some((p) => p.pseudo === mine.pseudo);
   body.innerHTML = '<h3>' + esc(t('ladder.title')) + '</h3>' + (rows.length
     ? `<table class="dc-ladder">
-        <thead><tr><th>#</th><th>${esc(t('ladder.captain'))}</th><th>${esc(t('ladder.elo'))}</th>
+        <thead><tr><th>#</th><th>${esc(t('ladder.captain'))}</th><th><img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+              alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></th>
         <th>${esc(t('ladder.w'))}</th><th>${esc(t('ladder.l'))}</th><th>${esc(t('ladder.d'))}</th></tr></thead>
         <tbody>${rows.map((p, i) => `
           <tr class="${S.me && p.pseudo === S.me.pseudo ? 'dc-ladder-me' : ''}">

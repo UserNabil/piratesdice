@@ -35,6 +35,7 @@ export function onOver(m) {
      montrerait « 47 / 50 » a quelqu'un qui vient de passer 50. On l'oublie, la
      page la redemandera a la prochaine ouverture. */
   S.succes = null;
+  S.historique = null;
   if (S.me && typeof m.bourseMaudite === 'number') S.me.premium = m.bourseMaudite;
   const el = $('#dc-over');
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
@@ -50,7 +51,8 @@ export function onOver(m) {
     pair: 'over.notRatedPair', short: 'over.notRatedShort',
   };
   const rating = m.rated
-    ? `<div class="dc-over-line">${t('over.elo', {
+    ? `<div class="dc-over-line"><img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+         alt="" aria-hidden="true"> ${t('over.rang', {
         before: m.ratingBefore, after: '<b>' + m.ratingAfter + '</b>',
         delta: (delta >= 0 ? '+' : '') + delta })}</div>`
     : `<div class="dc-over-line dc-dim">${esc(t(POURQUOI[m.ratedWhy] || 'over.notRated'))}</div>`;

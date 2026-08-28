@@ -22,11 +22,23 @@ import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, MEDAILLE, screen, bonusArt, preloadAssets } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets } from './dice_state.js';
 import { onMatch, onState, renderBonusRack } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
+import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { renderMenu, onRoom, onRoomFail, resetLobby, captainArt, repeindreCapitaines } from './dice_lobby.js';
+
+/* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
+   l'on se situe, ce qu'on a accompli, ce qu'on a joue, et enfin les regles —
+   qu'on ne relit qu'une fois. */
+const ONGLETS = [
+  { id: 'shop', cle: 'tab.shop', art: 'icon_shop' },
+  { id: 'ranking', cle: 'tab.ranking', art: 'icon_ranking' },
+  { id: 'succes', cle: 'tab.succes', art: 'icon_succes' },
+  { id: 'replay', cle: 'tab.replay', art: 'icon_replay' },
+  { id: 'rules', cle: 'tab.rules', art: 'icon_rules' },
+];
 
 function shellMarkup() {
   return `
@@ -34,11 +46,21 @@ function shellMarkup() {
     <header class="dc-top">
       <div class="dc-brand"><img class="dc-brand-mark" src="${ASSETS}img/brand_mark.png" alt=""> ${esc(t('app.title'))}</div>
       <div class="dc-wallet" id="dc-wallet"></div>
-      <nav class="dc-tabs">
-        <button class="dc-tab" data-panel="shop"><img src="${ASSETS}img/icon_shop.png" alt=""> ${esc(t('tab.shop'))}</button>
-        <button class="dc-tab" data-panel="ranking"><img src="${ASSETS}img/icon_ranking.png" alt=""> ${esc(t('tab.ranking'))}</button>
-        <button class="dc-tab" data-panel="succes">${MEDAILLE} ${esc(t('tab.succes'))}</button>
-        <button class="dc-tab" data-panel="rules"><img src="${ASSETS}img/icon_rules.png" alt=""> ${esc(t('tab.rules'))}</button>
+      <!-- ⚠️ L'ICONE SEULE, SANS SON MOT. A trois onglets le libelle tenait ; a
+           cinq, il ne tient plus — et le reduire aurait donne cinq mots
+           illisibles plutot qu'un mot de trop. Les cinq dessins sont distincts
+           et parlants (coffre, pavillon, parchemin, canon, gouvernail) : c'est
+           exactement le cas ou l'image se suffit. Le mot reste dans l'attribut
+           « title » et dans « aria-label » : il est encore la pour qui appuie
+           longuement et pour le lecteur d'ecran.
+           ⛔ ET PAS D'ACCENT GRAVE DANS CE COMMENTAIRE : on est DANS un gabarit,
+           et un accent grave le referme. Le fichier se parse alors comme du
+           charabia trente lignes plus bas, avec une erreur qui ne designe pas la
+           bonne ligne. -->
+      <nav class="dc-tabs">${ONGLETS.map((o) => `
+        <button class="dc-tab dc-tab-nu" data-panel="${o.id}"
+                title="${esc(t(o.cle))}" aria-label="${esc(t(o.cle))}"
+        ><img src="${ASSETS}img/${o.art}.png" alt=""></button>`).join('')}
       </nav>
       <div class="dc-acts">
         <!-- Un GRELOT ne dit pas « son coupe » : il dit « notification ». Le
@@ -230,6 +252,11 @@ async function connect() {
     captains: (m) => { if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains; },
     /* La liste arrive apres l'avoir demandee : on la range et on repeint si la
        page est encore ouverte — le joueur a pu changer d'onglet entre-temps. */
+    historique: (m) => {
+      S.historique = Array.isArray(m.liste) ? m.liste : [];
+      if (S.panel === 'replay') refreshPanel();
+    },
+    rejouer: (m) => ouvrirRejeu(m.partie),
     succes: (m) => {
       S.succes = Array.isArray(m.liste) ? m.liste : [];
       if (S.me && typeof m.premium === 'number') { S.me.premium = m.premium; renderWallet(); }
@@ -464,6 +491,25 @@ function syncFull() {
 
 /* ─────────────────────────────────────────────────────────── wallet / menu ── */
 
+/**
+ * La classe de taille d'une bourse, selon le nombre de chiffres.
+ *
+ * ⛔ UNE BOURSE QUI GROSSIT NE DOIT PAS POUSSER LE RESTE DEHORS. « 280 » et
+ * « 128 400 » n'ont pas la meme largeur, et la pastille est coincee entre le
+ * nom du joueur et les onglets : au quatrieme chiffre elle mangeait le nom, au
+ * sixieme elle sortait de l'ecran. On retrecit donc le texte a mesure que le
+ * nombre grandit — c'est la seule facon de garder une largeur a peu pres
+ * constante sans jamais tronquer un montant, ce qui serait pire que tout : un
+ * joueur doit pouvoir lire ce qu'il possede, au chiffre pres.
+ */
+function tailleBourse(n) {
+  const chiffres = String(Math.max(0, Number(n) || 0)).length;
+  if (chiffres <= 3) return '';
+  if (chiffres === 4) return 'dc-coins-c4';
+  if (chiffres === 5) return 'dc-coins-c5';
+  return 'dc-coins-c6';
+}
+
 function renderWallet() {
   if (!S.me) return;
   $('#dc-wallet').innerHTML = `
@@ -473,15 +519,14 @@ function renderWallet() {
       <span>${esc(t('hdr.record', { rating: S.me.rating, wins: S.me.wins, losses: S.me.losses, draws: S.me.draws }))}</span>
     </div>
     <div class="dc-bourses">
-      <div class="dc-coins" title="${esc(t('hdr.coins'))}">${S.me.coins}
-        <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
       <!-- ⚠️ LA BOURSE MAUDITE NE S'AFFICHE QUE SI ELLE EXISTE. Un compteur a
-           zero, en permanence, pour une monnaie qu'on n'a pas encore rencontree,
-           n'apprend rien et prend la place du nom du joueur sur les petits
-           ecrans. Elle apparait au premier succes — et cette apparition est
-           elle-meme une recompense. -->
-      ${S.me.premium ? `<div class="dc-coins dc-coins-maudites" title="${esc(t('hdr.cursed'))}"
-        >${S.me.premium}${PIECE_MAUDITE}</div>` : ''}
+           zero, en permanence, pour une monnaie qu'on n'a pas encore
+           rencontree, n'apprend rien. Elle apparait au premier haut fait — et
+           cette apparition est elle-meme une recompense. -->
+      ${S.me.premium ? `<div class="dc-coins dc-coins-maudites ${tailleBourse(S.me.premium)}"
+        title="${esc(t('hdr.cursed'))}">${S.me.premium}${PIECE_MAUDITE}</div>` : ''}
+      <div class="dc-coins ${tailleBourse(S.me.coins)}" title="${esc(t('hdr.coins'))}">${S.me.coins}
+        <img class="dc-coin" src="${ASSETS}img/icon_coin.png" alt=""></div>
     </div>`;
 }
 
@@ -500,6 +545,10 @@ function togglePanel(name) {
   if (S.panel === name) {
     S.panel = null;
     panel.classList.remove('on');
+    /* ⚠️ LE LECTEUR NE SURVIT PAS A LA FERMETURE. Son horloge continuerait de
+       tourner derriere un panneau invisible, a peindre des plateaux retires du
+       document et a jouer des explosions que personne ne regarde. */
+    fermerLecteur();
     S.sfx.play('shut', 0.2);
   } else {
     S.panel = name;
@@ -518,6 +567,7 @@ function refreshPanel() {
   else if (S.panel === 'shop') renderShop(body);
   else if (S.panel === 'ranking') renderRanking(body);
   else if (S.panel === 'succes') renderSucces(body);
+  else if (S.panel === 'replay') renderReplays(body);
 }
 
 /* ───────────────────────────────────────────────────────────────── wiring ── */
