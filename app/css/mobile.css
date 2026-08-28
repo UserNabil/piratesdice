@@ -2526,10 +2526,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    silhouette est un disque : le contour lui en donne un, franc, sans rien
    fermer. C'est le seul dessin de la carte qui en manquait, et c'est le seul
    qui le recoit. */
-#dicewrap .pd-btn-icone {
-  filter:
-    drop-shadow(3px 0 0 #FFFFFF) drop-shadow(-3px 0 0 #FFFFFF)
-    drop-shadow(0 3px 0 #FFFFFF) drop-shadow(0 -3px 0 #FFFFFF);
+#dicewrap .pd-btn-icone,
+#dicewrap .pd-link-art,
+#dicewrap .pd-vol-btn {
+  filter: url(#pd-cerne);
 }
 
 #dicewrap .pd-link-art {

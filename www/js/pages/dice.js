@@ -64,6 +64,43 @@ const ONGLETS = [
 
 function shellMarkup() {
   return `
+  <!-- ⛔ POURQUOI UN FILTRE SVG ET PAS QUATRE OMBRES PORTEES. Un contour blanc
+       fait d'ombres portees suit l'alpha TEL QUEL — et ces dessins portent un
+       halo largement semi-transparent : 46 % des pixels du parchemin et 60 %
+       de ceux de la carte sont a une opacite intermediaire. Une ombre portee
+       sur du demi-transparent rend du demi-blanc : on obtenait une lueur floue
+       autour de l'objet au lieu d'un trait, et le liseré ne suivait plus la
+       forme.
+
+       Ce filtre DURCIT l'alpha avant de l'epaissir : feFuncA discrete ramene
+       chaque pixel a dedans ou dehors, feMorphology dilate cette silhouette
+       nette, et le blanc n'est verse que dedans. Le trait suit alors le ruban,
+       le sceau, la fleche et les dents du papier — comme sur la croix. -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false"
+       style="position:absolute;pointer-events:none">
+    <filter id="pd-cerne" x="-25%" y="-25%" width="150%" height="150%"
+            color-interpolation-filters="sRGB">
+      <feComponentTransfer in="SourceAlpha" result="dur">
+        <feFuncA type="discrete" tableValues="0 1"></feFuncA>
+      </feComponentTransfer>
+      <!-- ⚠️ UN FLOU PUIS UN SEUIL, PAS feMorphology. La dilatation de
+           feMorphology se fait avec un noyau CARRE : les angles du trait
+           ressortaient droits, et sur la carte des conditions le contour
+           s'equerrait au lieu de suivre le papier. Un flou gaussien s'etend en
+           rond ; le seuil qui suit le retaille en trait franc. Meme epaisseur,
+           coins arrondis. -->
+      <feGaussianBlur in="dur" stdDeviation="2" result="flou"></feGaussianBlur>
+      <feComponentTransfer in="flou" result="gros">
+        <feFuncA type="linear" slope="14" intercept="-1.4"></feFuncA>
+      </feComponentTransfer>
+      <feFlood flood-color="#FFFFFF" result="blanc"></feFlood>
+      <feComposite in="blanc" in2="gros" operator="in" result="cerne"></feComposite>
+      <feMerge>
+        <feMergeNode in="cerne"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </svg>
   <div class="dc-shell">
     <!-- ⚠️ EN HAUT, CE QU'ON REGARDE ; EN BAS, CE QU'ON TOUCHE. Le bandeau
          portait tout : le titre, la bourse, les cinq pages, les reglages et la
