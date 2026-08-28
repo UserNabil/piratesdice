@@ -337,6 +337,7 @@ export const EN = {
   'nav.replay': 'Logbook',
   'nav.accueil': 'Home',
   'offline.entrer': 'Play offline ({n} games left)',
+  'offline.entrerSeul': 'Enter without network',
   'offline.bandeau': 'No connection — {n} offline games left in the hold.',
   'offline.plusDeJetons': 'No offline game left. Connect once to get more.',
   'offline.besoinReseau': 'This one needs a connection.',

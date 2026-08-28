@@ -928,3 +928,86 @@
   opacity: .55;
   border-radius: var(--cbt-pied-courbure, 18px);
 }
+
+
+/* ⚠️ ET L'OMBRE DERRIERE LE DE S'ALLEGE. `drop-shadow(0 4px 7px rgba(0,0,0,.6))`
+   est un flou NOIR de sept pixels recalcule a chaque apparition de l'image : la
+   moindre reecriture le fait repartir, et c'est lui qu'on voyait scintiller. Le
+   dessin du de porte deja son relief ; il ne lui faut qu'un appui discret pour
+   se detacher du fond dore, pas un halo d'ombre.
+
+   ⛔ ET PLUS DE `brightness` NON PLUS. Un filtre de luminosite force le meme
+   recalcul, pour eclaircir de 15 % un dessin qu'on peut eclaircir dans le
+   fichier si besoin. */
+/* ⛔ PLUS D'OMBRE PORTEE DU TOUT SOUS LE DE. Meme legere, c'est un flou NOIR
+   recalcule a chaque apparition de l'image. Ce que le de demande pour se
+   detacher du bouton dore, ce n'est pas une ombre : c'est un CONTOUR — le meme
+   trait blanc que portent toutes les icones du jeu, et qui ne noircit rien. */
+#dicewrap .dc-cup-art { filter: url(#pd-cerne); }
+
+/* Arme, le de gardait deux ombres superposees dont une noire. Une seule
+   suffit, et elle est doree — c'est l'etat qu'elle doit dire. */
+#dicewrap .dc-cup-armed .dc-face { filter: drop-shadow(0 0 6px rgba(232, 200, 106, .8)); }
+
+
+/* ============================================================================
+   LA CARTE DU JOUEUR : COLOREE QUAND C'EST SON TOUR, VOILEE SINON.
+
+   ⛔ LE RETRAIT PASSAIT PAR UN `filter`, ET C'EST TOUT LE PROBLEME. « A partir
+   du premier tour elle reste inactive pour le joueur ET pour l'ennemi » : quand
+   les DEUX sont grises, ce n'est pas un tour mal calcule — les classes, elles,
+   alternent correctement, mesure faite au fil de huit tours et jusque dans les
+   pixels rendus. C'est le PEINTRE qui deraille. Un `filter` s'herite et se
+   compose : n'importe lequel pose plus haut dans l'arbre — un assombrissement,
+   une animation, un effet — remplace celui de la carte ou s'y ajoute, et les
+   deux cartes se retrouvent dans le meme etat sans qu'aucun code n'echoue.
+
+   ⚠️ ET L'ANNEAU DORE N'ETAIT PAS LA BONNE REPONSE : « il faut la mettre en mode
+   actif comme au premier tour, quand tout est colore ». La carte active ne doit
+   rien recevoir du tout — elle doit etre le DESSIN, entier, tel qu'il est. Ce
+   qui distingue, c'est ce que l'AUTRE perd.
+
+   Un voile est un element : il se peint par-dessus, il ne se compose avec rien,
+   et aucun reglage plus haut ne peut l'effacer ni le poser sur la mauvaise
+   carte.
+   ============================================================================ */
+
+#dicewrap .dc-pc { position: relative; }
+
+/* Active : rien. Ni filtre, ni jonc, ni lueur — le dessin, entier. */
+#dicewrap .dc-pc-active { filter: none; box-shadow: none; }
+
+/* En attente : le meme dessin, sous un voile. */
+#dicewrap .dc-pc-idle { filter: none; }
+
+#dicewrap .dc-pc-idle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: inherit;
+  background: rgba(10, 4, 26, .46);
+}
+
+
+/* ============================================================================
+   PLUS AUCUNE OMBRE PORTEE SUR UN DE.
+
+   ⛔ UN `filter` SE RECALCULE A CHAQUE FOIS QUE L'ELEMENT REAPPARAIT, et les des
+   reapparaissent sans cesse : `tumble()` reecrit le contenu du gobelet QUATORZE
+   fois en 1,3 s, et chaque pose, chaque destruction, chaque etat recu redessine
+   les cases. Une ombre portee — noire ou doree — repart donc de zero a chaque
+   image : c'est ce qu'on voyait scintiller derriere le de, puis derriere son
+   contour blanc quand j'ai remplace l'une par l'autre. Le defaut n'etait pas la
+   couleur de l'effet, c'etait le FAIT que ce soit un filtre.
+
+   ⚠️ ET CE N'EST PAS UNE PERTE. Les des sont dessines avec leur propre relief et
+   leur propre cerne ; ils sont poses dans une alveole creusee qui porte deja
+   l'ombre. L'ombre portee ajoutait un flou par-dessus un relief deja peint —
+   pour un cout paye a chaque image.
+   ============================================================================ */
+
+#dicewrap .dc-cell > .dc-face { filter: none; }
+#dicewrap .dc-cup-armed .dc-face { filter: none; }
+#dicewrap .dc-cup-art { filter: none; }

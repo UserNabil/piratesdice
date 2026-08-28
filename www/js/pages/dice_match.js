@@ -1138,7 +1138,23 @@ function renderCup(st) {
   const canRoll = st.phase === 'playing' && st.turn === S.seat && die === null;
   /* Le gobelet est LE MIEN : il montre donc mes des. */
   const ecrin = $('#dc-cup-slot') || cup;
-  if (!S.rolling) ecrin.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
+  /* ⛔ IL SE REECRIVAIT A CHAQUE ETAT RECU, MEME IDENTIQUE. `renderCup` passe a
+     chaque message du serveur — un lancer d'en face, une pose, un effet, une
+     humeur — et refaisait son `innerHTML` a chaque fois, y compris quand le
+     dessin ne changeait pas d'un pixel. Or ce dessin porte un filtre : chaque
+     reecriture detruit l'image, en recree une, et le navigateur recalcule
+     l'ombre portee. C'est ce qu'on voit clignoter DERRIERE le de — une ombre
+     noire qui repart de zero plusieurs fois par tour.
+
+     On ne reecrit donc que si le contenu change vraiment. Le drapeau vit sur
+     l'element : deux tours plus tard, on sait encore ce qu'il porte. */
+  if (!S.rolling) {
+    const quoi = die === null ? 'cup:' + (canRoll ? 1 : 0) : 'die:' + die + ':' + (skinOf(S.seat) || '');
+    if (ecrin.dataset.montre !== quoi) {
+      ecrin.innerHTML = die === null ? cupArt(canRoll) : dieFace(die, false, skinOf(S.seat));
+      ecrin.dataset.montre = quoi;
+    }
+  }
   cup.classList.toggle('dc-cup-ready', canRoll);
   cup.classList.toggle('dc-cup-armed', die !== null && st.turn === S.seat);
   /* ⚠️ QUAND CE N'EST PAS MON TOUR, LE BOUTON DOIT LE DIRE AVANT QU'ON APPUIE.

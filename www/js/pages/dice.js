@@ -514,8 +514,16 @@ async function connectFailed(message) {
            reessayer : dans un metro, l'application etait morte pendant vingt
            minutes alors que le jeu, lui, sait tres bien tourner tout seul. Si
            des parties hors ligne attendent dans la cale, on ouvre la porte. -->
-      ${cale.jetons().length ? `<button class="dc-btn dc-btn-ghost" id="dc-sans-reseau"
-        >${esc(t('offline.entrer', { n: cale.jetons().length }))}</button>` : ''}
+      <!-- ⛔ ET LA PORTE NE DEPEND PLUS DES JETONS. Elle ne s'ouvrait que si des
+           parties hors ligne attendaient en cale : sans jeton, l'ecran redevenait
+           le cul-de-sac qu'il etait avant — « si le serveur est down, il est ou
+           le mode offline ? ». Or l'application entiere fonctionne sans reseau :
+           la boutique montre ce qu'on possede, les hauts faits leur compte, le
+           journal les parties. Seuls DEUX boutons demandent quelqu'un en face, et
+           le pont les grise lui-meme. On entre toujours. -->
+      <button class="dc-btn dc-btn-ghost" id="dc-sans-reseau">${esc(cale.jetons().length
+        ? t('offline.entrer', { n: cale.jetons().length })
+        : t('offline.entrerSeul'))}</button>
     </div>`;
   const retry = $('#dc-retry');
   if (retry) retry.onclick = () => { arreterRelance(); connect(); };

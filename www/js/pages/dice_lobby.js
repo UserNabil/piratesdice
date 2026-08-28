@@ -213,6 +213,19 @@ export function oublierAttente() { arreterAttente(); }
 /* ──────────────────────────────────────────────────────── le menu du pont ── */
 
 export function renderMenu(el) {
+  /* ⚠️ DEUX BOUTONS DEMANDENT QUELQU'UN EN FACE, ET ILS DOIVENT LE DIRE AVANT
+     QU'ON APPUIE. Sans reseau, ils repondaient par un bandeau d'avertissement —
+     c'est-a-dire apres le geste. Desactives et gris, ils se lisent d'un coup
+     d'oeil, et affronter l'IA reste offert : c'est le mode qui tourne sur le
+     telephone.
+
+     ⛔ ET ELLE SE DECLARE ICI, PAS DANS UNE BRANCHE. Posee au milieu de la
+     fonction, elle n'existait que pour la file d'attente : la branche qui
+     dessine les trois boutons levait une ReferenceError, `renderMenu` sortait
+     avant d'ecrire quoi que ce soit, et le pont s'affichait VIDE. Une erreur de
+     rendu ne casse pas la page — elle la laisse blanche, ce qui est pire, parce
+     que rien ne dit ou regarder. */
+  const horsLigne = !S.net || !S.net.ready;
   screen('menu');
 
   if (S.queued) {
@@ -262,9 +275,11 @@ export function renderMenu(el) {
       <div class="dc-menu-btns">
         <button class="dc-btn dc-btn-big dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-solo">
           <img src="${ASSETS}img/menu_ai.png" alt="">${esc(t('menu.solo'))}</button>
-        <button class="dc-btn dc-btn-big dc-btn-alt dc-btn-art dc-btn-deborde dc-btn-deborde-d" id="dc-multi">
+        <button class="dc-btn dc-btn-big dc-btn-alt dc-btn-art dc-btn-deborde dc-btn-deborde-d" id="dc-multi"
+                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
           <img src="${ASSETS}img/menu_versus.png" alt="">${esc(t('menu.multi'))}</button>
-        <button class="dc-btn dc-btn-ghost dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-friend">
+        <button class="dc-btn dc-btn-ghost dc-btn-art dc-btn-deborde dc-btn-deborde-g" id="dc-friend"
+                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
           <img src="${ASSETS}img/menu_friend.png" alt="">${esc(t('menu.friend'))}</button>
       </div>
       ${(!S.net || !S.net.ready)
