@@ -450,6 +450,29 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    vide ou un message d'erreur : quatre pages sur cinq. Eteints, ils se lisent
    d'un coup d'oeil — et ils restent CLIQUABLES, parce qu'un bouton mort ne dit
    ni son nom ni son motif sur un ecran sans survol. */
+/* ⚠️ LES DEUX BOUTONS QUI OUVRENT UNE PARTIE PORTENT UNE GROSSE ICONE, CERNEE
+   DE BLANC COMME CELLES DE L'ACCUEIL. Elles etaient a la taille du texte, a
+   gauche, et se lisaient comme une puce de liste : « grossis l'icone et donne-lui
+   un contour blanc gros comme les boutons home ». Elle passe A DROITE du libelle,
+   la ou le regard finit sa phrase, et le bouton la laisse deborder un peu — c'est
+   ce debord qui lui donne son relief, exactement comme sur le pont. */
+#dicewrap .dc-btn-gros {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+#dicewrap .dc-btn-gros > img {
+  width: clamp(38px, 11vw, 52px);
+  height: clamp(38px, 11vw, 52px);
+  margin: -.34em 0;
+  order: 2;
+  filter:
+    drop-shadow(0 0 0 #fff) drop-shadow(0 0 0 #fff)
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
+}
+
 #dicewrap .dc-onglet-eteint > img { filter: grayscale(1) brightness(.62); }
 #dicewrap .dc-onglet-eteint { opacity: .62; }
 

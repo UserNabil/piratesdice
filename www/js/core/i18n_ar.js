@@ -779,4 +779,7 @@ export const AR = {
   'err.colGeleeIci': 'هذا العمود مُجمَّد.',
   'err.effetFerme': 'هذا الأثر ليس لك بعد.',
   'bonus.plusDeTour': 'استُهلكت آثارك الثلاثة — تستمرّ المباراة بدونها.',
+  'over.againFriend': 'العب مجدّدًا مع {name}',
+  'room.amiParti': 'غادر صديقك الطاولة.',
+  'room.salonFerme': 'لم تعد هذه الغرفة موجودة.',
 };

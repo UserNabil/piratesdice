@@ -249,6 +249,12 @@ export const S = {
      revenait — la table se figeait au milieu d'un tour. Ce drapeau dit « une
      partie se joue ici, ne touche pas ». Voir `connect()` dans dice.js. */
   poche: null,
+  /* ⚠️ LE SALON SURVIT A LA PARTIE, DONC L'ECRAN DOIT S'EN SOUVENIR. Il mourait
+     a l'instant ou l'invite entrait : rejouer avec le meme ami demandait de
+     rouvrir une table et de redicter le code. Le serveur le garde ouvert tant
+     que l'hote n'est pas revenu au pont ; ce champ est ce qui permet a la carte
+     de fin de proposer « rejouer avec lui » plutot qu'un « rejouer » anonyme. */
+  salon: null,
   open: false,
   built: false,
   seat: -1,

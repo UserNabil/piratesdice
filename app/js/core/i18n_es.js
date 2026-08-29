@@ -778,4 +778,7 @@ export const ES = {
   'err.colGeleeIci': 'Esa columna está congelada.',
   'err.effetFerme': 'Ese efecto todavía no es tuyo.',
   'bonus.plusDeTour': 'Tus tres efectos están gastados: la partida sigue sin ellos.',
+  'over.againFriend': 'Volver a jugar con {name}',
+  'room.amiParti': 'Tu amigo ha dejado la mesa.',
+  'room.salonFerme': 'Esa sala ya no existe.',
 };

@@ -813,4 +813,7 @@ export const FR = {
   'err.colGeleeIci': 'Cette colonne est gelée.',
   'err.effetFerme': 'Cet effet n’est pas encore à vous.',
   'bonus.plusDeTour': 'Vos trois effets sont joués — la partie continue sans.',
+  'over.againFriend': 'Rejouer avec {name}',
+  'room.amiParti': 'Votre ami a quitté la table.',
+  'room.salonFerme': 'Ce salon n’existe plus.',
 };

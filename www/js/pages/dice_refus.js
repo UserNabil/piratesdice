@@ -57,6 +57,8 @@ const REFUS = {
   'that is their last playable column': 'err.derniereColonne',
   'this column is frozen': 'err.colGeleeIci',
   'effect locked': 'err.effetFerme',
+  'your friend has left': 'room.amiParti',
+  'the room is gone': 'room.salonFerme',
   /* ⚠️ LES REFUS DE LA BOUTIQUE PASSENT PAR HTTP, PAS PAR LA SOCKET — et ils
      arrivaient donc en anglais brut au milieu d'un jeu en francais, en espagnol
      ou en arabe. Cette table sert les deux chemins : c'est le meme serveur qui

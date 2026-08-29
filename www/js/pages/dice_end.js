@@ -137,7 +137,9 @@ export function onOver(m) {
         ? 'over.horsLigneLibre' : 'over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
-        <button class="dc-btn" id="dc-again">${esc(t('over.again'))}</button>
+        <button class="dc-btn" id="dc-again">${esc(S.salon
+          ? t('over.againFriend', { name: m.opponent || t('game.opponent') })
+          : t('over.again'))}</button>
         <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(t('over.back'))}</button>
       </div>
     </div>`;
@@ -181,6 +183,14 @@ export function onOver(m) {
     });
   }
 
-  $('#dc-again').onclick = () => { leave(); S.net.send({ t: 'play', mode }); };
+  $('#dc-again').onclick = () => {
+    leave();
+    /* ⛔ « REJOUER » RENVOYAIT DANS LA FILE, MEME APRES UN DUEL ENTRE AMIS. Les
+       deux se retrouvaient alors soumis a l'evitement de la file — donc a
+       s'attendre pour rien — alors que leur salon est encore ouvert. On y
+       retourne directement : c'est le sens du bouton quand il porte un nom. */
+    if (S.salon) { S.net.send({ t: 'relancer' }); return; }
+    S.net.send({ t: 'play', mode });
+  };
   $('#dc-back').onclick = leave;
 }

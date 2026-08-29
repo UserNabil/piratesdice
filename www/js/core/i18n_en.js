@@ -754,4 +754,7 @@ export const EN = {
   'err.colGeleeIci': 'That column is frozen.',
   'err.effetFerme': 'That effect is not yours yet.',
   'bonus.plusDeTour': 'Your three effects are spent - the match goes on without them.',
+  'over.againFriend': 'Play {name} again',
+  'room.amiParti': 'Your friend has left the table.',
+  'room.salonFerme': 'That room is gone.',
 };

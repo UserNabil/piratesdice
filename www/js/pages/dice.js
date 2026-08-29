@@ -1130,7 +1130,18 @@ export function initDice() {
   /* Le panneau lateral se repeint depuis l'arene : elle sait quand la partie
      commence, ce que la boutique ne peut pas deviner toute seule. */
   UI.refreshPanel = refreshPanel;
-  UI.leaveMatch = () => { S.state = null; S.seat = -1; showMenu(); };
+  UI.leaveMatch = () => {
+    /* ⛔ REVENIR AU PONT DETRUIT LE SALON DE CELUI QUI L'A OUVERT. Il survit
+       desormais a la partie — c'est ce qui permet de rejouer avec le meme ami —
+       et il faut donc un geste clair pour le fermer. « Il faut que celui qui a
+       cree la session revienne dans le menu pour la detruire. »
+       Le message est envoye par les DEUX joueurs : cote serveur, `closeRoomOf`
+       ne ferme que les salons dont on est l'hote, donc c'est sans effet pour
+       l'invite — et sans condition a tenir a jour de ce cote-ci. */
+    if (S.salon && S.net && S.net.ready) S.net.send({ t: 'room', action: 'cancel' });
+    S.salon = null;
+    S.state = null; S.seat = -1; showMenu();
+  };
   UI.renderWallet = renderWallet;
   UI.requestClose = requestClose;
 }

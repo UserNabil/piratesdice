@@ -445,21 +445,24 @@ function renderRoom(el) {
           <input id="dc-room-input" class="dc-room-input" maxlength="5" autocomplete="off"
                  spellcheck="false" inputmode="text" placeholder="${esc(t('room.placeholder'))}"
                  aria-label="${esc(t('room.placeholder'))}">
-          <button class="dc-btn dc-btn-art" id="dc-room-go">
-            <img src="${ASSETS}img/icon_join.png" alt="">${esc(t('room.join'))}</button>
+          <button class="dc-btn dc-btn-art dc-btn-gros" id="dc-room-go">
+            ${esc(t('room.join'))}<img src="${ASSETS}img/icon_join.png" alt=""></button>
         </div>
         <p class="dc-room-or">${esc(t('room.or'))}</p>
-        <button class="dc-btn dc-btn-alt dc-btn-art" id="dc-room-create">
-          <img src="${ASSETS}img/icon_table.png" alt="">${esc(t('room.create'))}</button>
+        <button class="dc-btn dc-btn-alt dc-btn-art dc-btn-gros" id="dc-room-create">
+          ${esc(t('room.create'))}<img src="${ASSETS}img/icon_table.png" alt=""></button>
       `}
-      <button class="dc-btn dc-btn-ghost dc-btn-art" id="dc-room-back">
-        <img src="${ASSETS}img/icon_back.png" alt="">${esc(t('menu.cancel'))}</button>
+      <!-- ⚠️ « ANNULER » N'A PAS D'ICONE, ET C'EST VOULU. Les deux boutons qui
+           AGISSENT en portent une, grosse et cernee de blanc ; celui qui renonce
+           n'a rien a montrer. Une icone sur les trois les mettait sur le meme
+           plan, alors que deux ouvrent une partie et le troisieme referme. -->
+      <button class="dc-btn dc-btn-ghost" id="dc-room-back">${esc(t('menu.cancel'))}</button>
     </div></div>`;
 
   const back = $('#dc-room-back');
   back.onclick = () => {
     if (attente && S.net) S.net.send({ t: 'room', action: 'cancel' });
-    lobby = null; hostCode = '';
+    lobby = null; hostCode = ''; S.salon = null;
     renderMenu(el);
   };
   if (attente) {
@@ -580,6 +583,9 @@ function copyCode(code) {
 export function onRoom(msg, el) {
   lobby = 'host';
   hostCode = msg.code || '';
+  /* Le salon reste ouvert apres la partie : on retient son code pour que la
+     carte de fin puisse proposer de rejouer avec le meme ami. */
+  S.salon = hostCode ? { code: hostCode } : null;
   renderMenu(el);
 }
 
