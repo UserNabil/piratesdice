@@ -101,8 +101,27 @@ jobs:
       # place, une heure plus tard.
       - name: Verifier la signature
         run: |
+          set -euo pipefail
           APK=$(ls android/app/build/outputs/apk/release/*.apk | head -1)
-          "$ANDROID_HOME"/build-tools/*/apksigner verify --print-certs "$APK" | head -4
+          # ⛔ CETTE ETAPE PASSAIT AU VERT SANS RIEN VERIFIER, ET DEUX DEFAUTS
+          # DIFFERENTS S'Y CACHAIENT.
+          #
+          #   "$ANDROID_HOME"/build-tools/*/apksigner verify … | head -4
+          #
+          # 1. LE JOKER TROUVE AUTANT DE CHEMINS QUE DE VERSIONS INSTALLEES. Le
+          #    runner en a plusieurs : la ligne devenait « apksignerA apksignerB
+          #    verify … », donc le second chemin passait pour un argument, et
+          #    l'outil repondait « Unsupported command ». Vu dans le journal du
+          #    build 75 — sans que personne ne le lise, puisque :
+          # 2. LE TUBE REMPLACAIT LE CODE DE SORTIE PAR CELUI DE `head`. Quoi
+          #    qu'il arrive en amont, l'etape reussissait.
+          #
+          # Le commentaire de cette etape promet pourtant « on verifie ce qu'on
+          # envoie » : un APK non signe s'assemble sans broncher et ne s'installe
+          # nulle part. La promesse etait fausse depuis le premier jour.
+          SIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          echo "outil : $SIGNER"
+          "$SIGNER" verify --print-certs "$APK"
           ls -lh "$APK"
 
       - name: Garder l'APK en piece jointe
