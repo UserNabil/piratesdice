@@ -1777,128 +1777,55 @@
    CARRE — trois cases carrees, deux ecarts, deux cadres, dans les deux sens —
    donc `aspect-ratio: 1` avec les deux bords lateraux colles suffit a retomber
    exactement dessus, sans mesurer quoi que ce soit en JS. */
-/* ⚠️ « LA GRILLE », CE N'EST NI LE BLOC NI LE PLATEAU : CE SONT LES NEUF CASES.
-   Le givre a couvert le bloc entier (plateau + plaques de score), puis le
-   plateau (cadre de bois compris) — deux tailles fausses de suite, parce que
-   chaque fois le pourcentage se rapportait a autre chose que ce qu'on regarde.
-   Le dessin, lui, EST une grille de neuf cases gelees : ses quatre ancres se
-   posent dans les coins, ses quatre diamants sur les cotes. Pour qu'il tombe
-   juste, sa boite doit etre EXACTEMENT la zone des cases — le plateau moins son
-   lisere et moins son cadre de bois. Les deux sont des reglages du tableau de
-   bord ; on les retranche plutot que de deviner un pourcentage. */
-/* ⚠️ LE VOILE ET LE SCEAU N'ONT PAS LA MEME BOITE, ET LES CONFONDRE SE VOIT.
-   Le voile sombre etait cale sur la ZONE DES CASES : un carre a angles vifs
-   pose au milieu d'un plateau aux coins arrondis, dont on voyait les quatre
-   angles depasser du dessin. « Meme l'effet noir derriere les chaines est
-   rate. » Le voile appartient au PLATEAU — il en prend la boite et la courbure,
-   et le bois du cadre s'assombrit avec le reste, ce qui est le but : c'est tout
-   le plateau qui gele.
-   Le sceau, lui, appartient a la GRILLE, et il se mesure plus bas. */
-/* ⚠️ LA BOITE EST LA GRILLE, PAS LE PLATEAU, ET SURTOUT PAS LE BLOC.
-   Trois boites ont ete essayees et deux etaient fausses : le BLOC (plateau plus
-   la rangee de plaques de score, donc le givre debordait sur les totaux) puis
-   le PLATEAU entier (donc le givre mordait sur le cadre). Ce sont les NEUF
-   CASES qu'on gele, rien d'autre — « l'image doit etre uniquement sur la
-   grille, pas sur la zone des totaux de colonne ».
-   La grille commence apres le lisere du plateau : c'est la seule epaisseur a
-   retrancher, `--pd-frame` n'etant pas pose en rembourrage sur `.dc-board`
-   (verifie : il ne sert qu'a la rangee de plaques). Mesure au banc : plateau
-   108→393, cases 112→389. */
-/* ⛔ LE SCEAU N'EST PLUS ACCROCHE AU BLOC, IL EST DANS LE PLATEAU.
-   Tant qu'il pendait a `.dc-boardwrap`, sa boite devait etre RECONSTRUITE :
-   retrancher le lisere, choisir le bon bord — en haut chez l'adversaire, en bas
-   chez moi, les plaques de score n'etant pas du meme cote — puis rattraper le
-   reste a l'echelle et au decalage. Six cadrages rates, quatre reglages, et
-   toujours deux resultats differents pour une seule consigne.
+/* ⛔ SOIXANTE-DIX LIGNES DE CADRAGE ONT DISPARU AVEC LE SCEAU PLEIN CADRE.
+   Elles racontent une seule histoire, repetee six fois : faire coincider un
+   rectangle pose a la main avec la grille. Boite du bloc, puis du plateau, puis
+   des cases ; 62 %, puis 50 %, puis « deux cases et deux ecarts », puis 115 %,
+   puis 100 % ; un fichier recadre a l'alpha parce qu'il n'etait pas carre ; et
+   `width: 115%` qui faisait grandir la boite qu'il mesurait.
 
-   `.dc-gel` est maintenant enfant de `.dc-board`. Le plateau n'a pas de
-   rembourrage : la boite de reference d'un enfant absolu est donc exactement
-   son interieur, c'est-a-dire LA GRILLE. `inset: 0` et c'est fini — meme boite
-   des deux cotes, sans lisere a retrancher, sans bord a choisir, sans echelle a
-   regler. Ce qui doit coincider par construction ne se regle pas. */
-#dicewrap .dc-gel {
+   Le givre ne se cadre plus : IL EST DANS LA CASE. « On va geler directement
+   les cases car j'ai concu un skin pour les cases, et tu dois faire en sorte
+   que l'image suive la taille du slot du de. » `inset: 0` vaut la case, et
+   `--pd-round` est l'arrondi que la parure du siege pose deja sur ses logements
+   — de 16 % pour les des arabes a 35 % pour le jeu S010. Le dessin suit donc la
+   forme exacte du logement, quel que soit le jeu de des, sans une seule mesure.
+
+   ⚠️ LE FICHIER PORTE SON PROPRE ARRONDI, ET C'EST NOUS QUI GAGNONS. Mesure :
+   le cadre de glace est dessine avec un rayon de 14,4 % du cote, la ou les
+   logements vont de 16 % a 35 %. La decoupe CSS rogne donc les quatre coins du
+   cadre — de rien du tout sur les des arabes, d'environ 6 % de la diagonale sur
+   le jeu le plus arrondi. Le cadre y parait un peu plus fin, jamais coupe net :
+   `border-radius` suit une courbe, pas une corde. C'est le compromis voulu — le
+   givre epouse le logement, ce qui etait la consigne, plutot que de garder sa
+   forme et de laisser voir quatre coins de case a nu. */
+#dicewrap .dc-givre {
   position: absolute;
   inset: 0;
   z-index: 12;
-  display: grid;
-  place-items: center;
   pointer-events: none;
   border-radius: var(--pd-round, 12px);
-  background: radial-gradient(closest-side, rgba(70, 170, 255, .20), rgba(8, 16, 40, .58));
+  /* `100% 100%` et pas `cover` : le fichier EST carre et la case aussi. `cover`
+     recadrerait au moindre pixel d'ecart de proportion, et c'est le cadre de
+     glace — donc les quatre bords — qu'il rognerait en premier. */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* ⚠️ PAS TOUT A FAIT OPAQUE, ET C'EST UNE QUESTION DE JEU, PAS DE GOUT. Une
+     colonne gelee peut porter des des, et leur valeur decide du score : a pleine
+     opacite le dessin les efface, et le joueur perd pendant un tour la seule
+     information sur laquelle il calcule. Mesure au banc a trois opacites : a
+     0,88 la glace domine encore franchement et le corps du de se lit dessous.
+     Un reglage, une ligne : c'est ici qu'on le change. */
+  opacity: var(--cbt-gel-case-opacite, .88);
   animation: dc-gel-vient .22s ease-out;
 }
-/* ⚠️ EN POURCENTAGE DU PLATEAU, PAS EN `vw`. A `min(46vw, 220px)` le sceau
-   valait 202 px sur un iPhone pour un plateau de 300 : il en debordait des
-   deux cotes des que l'ecran etait etroit, et retrecissait pour rien sur une
-   tablette ou le plateau, lui, grandissait. Il se mesure sur ce qu'il couvre.
 
-/* LE SCEAU FAIT LA TAILLE DU CADRE DU PLATEAU. Bord a bord, un pour un.
-   C'est la demande de l'admin, repetee quatre fois, et j'ai mis quatre essais a
-   l'entendre : 62 %, puis 50 %, puis la zone des cases, puis « deux cases et
-   deux ecarts » — a chaque fois une interpretation de plus, jamais la consigne.
-   Le sceau vaut la boite de `.dc-gel`, qui est celle du plateau (voir plus
-   haut) : `100 %` des deux cotes, et rien a calculer.
+/* ⛔ ET PAS DE FILTRE SUR LE DE. Un `saturate(.45) brightness(.72)` avait ete
+   pose dessous pour « faire reculer » le de : compare au banc, il ne faisait que
+   retirer le peu qui restait lisible a travers les chaines. La glace assombrit
+   deja ce qu'elle couvre — c'est son travail, et il est fait une fois. */
 
-   ⚠️ CE QUI DEVAIT VRAIMENT ETRE CORRIGE, C'ETAIT LE FICHIER. Il laissait 8 %
-   de marge transparente et son contenu mesurait 471 x 452, PAS CARRE : dans une
-   boite carree, l'image se centrait avec du vide en haut et en bas et les
-   quatre coins ne tombaient pas au meme endroit — quelle que soit la taille
-   choisie. Recadre a l'alpha puis ramene a 512 x 512, il remplit sa boite
-   exactement. L'etirement de 4 % est invisible sur un flocon symetrique
-   (mesure : 1,3 % de pixels differents entre le dessin et son miroir
-   horizontal) ; la dissymetrie, elle, se voyait du premier coup d'oeil. */
-/* ⚠️ « BORD A BORD » NE MET PAS LES ANCRES SUR LES COINS. Mesure au banc : le
-   plateau va de 108 a 393, la grille de 112 a 389 — quatre pixels d'ecart, le
-   lisere. Le sceau a 100 % touchait donc bien les bords a quatre pixres pres.
-   Mais ses quatre ancres sont des objets RONDS : leur boite touche le coin,
-   leur centre reste en retrait, et l'oeil suit le centre. D'ou l'impression
-   tenace que le dessin ne rejoint pas la grille alors que sa boite, elle, y
-   est. Quinze pour cent de plus poussent les centres jusqu'aux coins ; le
-   debordement se repartit tout seul, le sceau etant centre dans sa boite. */
-/* ⛔ ET `width: 115%` A FAIT GRANDIR LA BOITE QU'IL MESURAIT. `.dc-gel` est une
-   grille dont la rangee est automatique : une image plus large que sa piste
-   fait grossir la piste, donc la boite, donc les 115 % — le serpent se mord la
-   queue et le voile debordait du plateau de vingt pixels. Mesure au banc :
-   boite 108→414 pour un plateau 108→393.
-   L'image est donc POSEE, pas rangee : hors flux, elle ne peut plus rien faire
-   grandir, et `inset: -7,5 %` la deborde symetriquement des quatre cotes. */
-/* ⚠️ `inset` SEUL NE DIMENSIONNE PAS UNE IMAGE. Pour un element REMPLACE, une
-   largeur `auto` vient de la taille intrinseque du fichier — pas des quatre
-   decalages : le sceau s'est affiche a 512 px, un coin dans le plateau et le
-   reste dehors. On donne donc les deux : d'ou il part, et ce qu'il mesure. */
-/* ⛔ ET PLUS DE DEBORDEMENT DE 15 %. Il compensait une boite trop petite d'un
-   cote et trop grande de l'autre ; la boite etant enfin la bonne, le sceau la
-   remplit exactement. Il tient donc dans la grille, sans mordre ni sur le cadre
-   ni sur les plaques de score. */
-#dicewrap .dc-gel img {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-  filter: drop-shadow(0 0 18px rgba(90, 200, 255, .85));
-}
-/* ⚠️ LE LIBELLE S'ECRIVAIT EN TRAVERS DE LA RANGEE DU BAS. Cale sous le sceau
-   au milieu d'un conteneur centre, il tombait pile sur trois cases. Il descend
-   contre le bord du plateau, sur son propre fond : une phrase qui explique ne
-   doit pas cacher ce qu'elle explique. */
-/* ⚠️ PLEINE LARGEUR, IL RECOUVRAIT LES DEUX ANCRES DU BAS — c'est-a-dire deux
-   des quatre coins qu'on vient de caler au pixel. Il se contente maintenant de
-   sa propre largeur, centre : il ne mord plus que sur la case du milieu. */
-#dicewrap .dc-gel span {
-  position: absolute;
-  left: 50%; bottom: 4px;
-  transform: translateX(-50%);
-  max-width: 92%;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-weight: 800; letter-spacing: .03em; text-transform: uppercase;
-  color: #dff2ff; text-shadow: 0 2px 0 #0a1636, 0 0 14px rgba(90, 200, 255, .9);
-  font-size: clamp(.62rem, 2.6vw, .88rem);
-  text-align: center; padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(6, 16, 44, .78);
-}
 @keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
 
 #dicewrap .dc-shop-shut {
@@ -2624,15 +2551,40 @@
    retour a la ligne, le cinquieme se retrouvait seul en dessous : on lisait
    quatre choix et un orphelin, alors qu'il faut lire un ETALAGE. Ils se serrent
    donc — la largeur est partagee, pas debordee. */
+/* ⛔ UNE SEULE RANGEE NE TIENT PLUS. Ils etaient cinq, poses cote a cote sans
+   retour a la ligne ; ils sont DIX. A `nowrap`, dix medaillons de 15,5 vw font
+   155 vw : la rangee debordait de l'ecran de deux tiers, et les cinq derniers
+   capitaines — c'est-a-dire tous les nouveaux — se retrouvaient hors du cadre,
+   invisibles et incliquables.
+
+   ⚠️ ET PAS UN DEFILEMENT HORIZONTAL NON PLUS. Ce bandeau sert a COMPARER des
+   visages avant de choisir ; une bande qui glisse en cache la moitie en
+   permanence, et l'on choisit alors parmi ce qu'on voit, pas parmi ce qui
+   existe. Deux rangees de cinq montrent les dix d'un coup — et la seconde
+   rangee est exactement le second palier, ce qui se lit tout seul.
+
+   Une GRILLE plutot qu'un `flex-wrap` : cinq colonnes egales garantissent que
+   la seconde rangee s'aligne sur la premiere. En flex, quatre elements sur la
+   derniere ligne se centreraient entre les colonnes de la premiere, et les
+   medaillons ne seraient plus en face les uns des autres. */
 #dicewrap .dc-caps-row {
-  display: flex;
-  justify-content: center;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  justify-items: center;
   gap: clamp(4px, 1.2vw, 12px);
+  /* ⚠️ MOINS D'AIR ENTRE LES DEUX RANGEES QU'ENTRE LES COLONNES. L'ecart
+     horizontal separe des voisins ; le vertical, lui, ne separe rien — les deux
+     rangees forment un seul bloc. A 12 px des deux cotes, la seconde rangee
+     coutait douze pixels de plus a une carte qui defile deja sur les petits
+     ecrans. */
+  row-gap: clamp(2px, .7vh, 6px);
+  /* 5 x 84 + 4 x 12 : au-dela, la grille cesse de grandir et se centre. */
+  max-width: 468px;
+  margin-inline: auto;
 }
 
 #dicewrap .dc-cap {
-  flex: 1 1 0;
+  width: 100%;
   min-width: 0;
   max-width: 84px;
   aspect-ratio: 1;

@@ -1923,9 +1923,17 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     padding-top: clamp(5px, 1.3vh, 12px);
   }
   #dicewrap .dc-caps-head { margin-bottom: clamp(4px, 1vh, 9px); }
+  /* ⚠️ UNE LARGEUR FIXE ICI CASSAIT LA GRILLE. `15,5 vw` valait pour cinq
+     medaillons sur une rangee ; avec dix repartis sur deux rangees de cinq,
+     c'est la COLONNE de la grille qui donne la largeur, et le medaillon n'a plus
+     qu'a ne pas la depasser. On plafonne, on n'impose plus. */
   #dicewrap .dc-cap {
-    width: min(15.5vw, clamp(40px, 7.2vh, 64px));
-    height: min(15.5vw, clamp(40px, 7.2vh, 64px));
+    width: 100%;
+    height: auto;
+    /* Dix medaillons sur deux rangees plutot que cinq sur une : le bandeau
+       double de hauteur. On rend un peu de ce qu'il prend, sans descendre sous
+       la taille ou un visage cesse de se reconnaitre — mesure a 38 px. */
+    max-width: min(15vw, clamp(38px, 6.6vh, 62px));
   }
   #dicewrap .dc-cap-card {
     min-height: clamp(40px, 6.4vh, 54px);

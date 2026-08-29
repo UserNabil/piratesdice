@@ -324,6 +324,51 @@ function unEffet(f) {
       return;
     }
 
+    /* ══ LES CINQ EFFETS DES NOUVEAUX CAPITAINES ══
+       ⚠️ CHACUN DOIT S'ANNONCER, MEME CELUI QU'ON VOIT. Le gel de colonne se
+       dessine sur trois cases et la malediction change un total : on pourrait
+       croire l'annonce inutile. Elle ne l'est pas — c'est elle qui dit QUI a
+       agi, et sans elle le joueur constate un changement sans coupable, ce qui
+       est exactement le defaut qu'on a mis trois versions a corriger sur le
+       gel. Les deux ecrans l'apprennent : ces effets sont publics. */
+    if (f.kind === 'gelcol') {
+      if (S.sfx) S.sfx.play('gel', 0.38);
+      /* La banniere se pose sur le plateau GELE, pas sur celui qui gele : c'est
+         la qu'on regarde pour comprendre ce qui vient de changer. */
+      banner(t('fx.gelcol'), f.seat === S.seat ? 'bad' : 'good', f.seat);
+      if (f.seat === S.seat) buzz([0, 50, 40, 50]);
+      return;
+    }
+
+    if (f.kind === 'maudit') {
+      banner(t('fx.curse'), f.seat === S.seat ? 'bad' : 'good', f.seat);
+      return;
+    }
+
+    if (f.kind === 'rase') {
+      /* La destruction elle-meme est deja annoncee par `destroy` (l'explosion
+         des cases) : ce mot-ci dit que c'est la COLONNE ENTIERE qui est partie,
+         ce qu'aucune explosion de case ne peut raconter toute seule. */
+      banner(t('fx.wipe'), f.seat === S.seat ? 'bad' : 'good', f.seat);
+      if (f.seat === S.seat) buzz([0, 60, 40, 60]);
+      return;
+    }
+
+    if (f.kind === 'troc') {
+      if (S.sfx) S.sfx.play('effet', 0.34);
+      banner(t('fx.swap'), f.seat === S.seat ? 'good' : 'bad', f.seat);
+      return;
+    }
+
+    if (f.kind === 'lent') {
+      /* ⛔ CELUI-LA NE SE VOIT QUE CHEZ SON PORTEUR, ET C'EST VOULU. Le temps
+         double appartient au tour de celui qui le joue ; l'adversaire, lui, voit
+         deja passer l'annonce de l'effet (`bonus`). Une seconde banniere sur son
+         ecran lui ferait croire que SA pendule vient de changer. */
+      if (f.seat === S.seat) banner(t('fx.slow'), 'good', f.seat);
+      return;
+    }
+
     if (f.kind === 'peek') {
       /* Seul celui qui regarde a besoin de le savoir : prevenir l'adversaire
          qu'on vient de lire son prochain de lui donnerait l'information en
@@ -391,11 +436,20 @@ function annonceBonus(f) {
     for (const g of S.state.grids) for (const v of g) if (v !== null) tour++;
   }
   const VARIANTES = 3;
-  const dite = cap ? t('say.' + cap + '.' + f.identify + '.' + (tour % VARIANTES)) : '';
+  const variante = tour % VARIANTES;
+  const propre = cap ? t('say.' + cap + '.' + f.identify + '.' + variante) : '';
+  /* ⚠️ TROIS ETAGES, ET LE DEUXIEME EST NEUF. Dix capitaines et onze effets font
+     330 repliques par langue, soit 1320 phrases a ecrire pour un jeu qui en
+     affiche trois par partie. On garde la voix du capitaine la ou elle compte —
+     son PROPRE trait, celui qu'il joue a chaque partie — et tout le reste tombe
+     sur une replique ecrite pour l'EFFET, pas pour la bouche qui la dit. Le
+     dernier etage reste le nom de l'effet : une etiquette vaut mieux qu'un vide,
+     mais elle ne raconte rien, et c'est justement ce qu'on voulait eviter. */
+  const commune = t('say.any.' + f.identify + '.' + variante);
   const nom = t('shop.' + f.identify + '.name');
-  const quoi = dite && !dite.startsWith('say.')
-    ? dite
-    : (nom.startsWith('shop.') ? f.identify : nom);
+  const dite = propre && !propre.startsWith('say.') ? propre
+    : (commune && !commune.startsWith('say.') ? commune : '');
+  const quoi = dite || (nom.startsWith('shop.') ? f.identify : nom);
   const qui = mien ? t('fx.bonusYou') : nomDuSiege(f.seat);
 
   const el = document.createElement('div');

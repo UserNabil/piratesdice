@@ -22,6 +22,16 @@ const DIE_FACES = 6;
 /* La colonne benie vaut 15 % de plus. Le nom a change avec l'effet : ce n'est
    plus une prime au triple, c'est une benediction que l'on pose. */
 const BOOST_MULTIPLIER = 1.15;
+/* La colonne MAUDITE vaut 15 % de moins : le miroir exact de la benediction.
+   Olivier Levasseur en offre une par partie, comme Grace O'Malley offre la
+   sienne — « au contraire de Grace O'Malley, il peut maudire une colonne ».
+
+   ⚠️ MEME AMPLITUDE DES DEUX COTES, ET C'EST VOULU. Une malediction plus forte
+   que la benediction aurait fait de Levasseur un meilleur O'Malley, et le
+   choix entre les deux capitaines n'aurait plus rien eu d'un choix : on prend
+   toujours celui qui frappe le plus fort. A 15 % contre 15 %, l'un construit
+   et l'autre demolit pour le meme prix — c'est le style qui departage. */
+const CURSE_MULTIPLIER = 0.85;
 
 /* Les quarts du pont : toujours ces valeurs-la, dans un ordre tire au debut de
    chaque partie. Un ecart de 1,3 a 0,8 se lit d'un coup d'oeil et pese sur le
@@ -122,6 +132,12 @@ function columnScore(grid, col, opts) {
   const quarts = opts && opts.quarters;
   if (quarts && typeof quarts[col] === 'number') score = Math.round(score * quarts[col]);
   if (opts && opts.boost === col) score = Math.round(score * BOOST_MULTIPLIER);
+  /* ⚠️ LA MALEDICTION PASSE APRES LA BENEDICTION, ET LES DEUX PEUVENT TOMBER
+     SUR LA MEME COLONNE. Rien ne l'interdit : l'un vise sa propre grille,
+     l'autre celle d'en face, et une colonne benie puis maudite finit a 97,75 %
+     de sa valeur — presque rien, ce qui est exactement juste. Deux effets qui
+     s'annulent doivent s'annuler, pas se disputer un drapeau unique. */
+  if (opts && opts.curse === col) score = Math.round(score * CURSE_MULTIPLIER);
   return score;
 }
 
@@ -182,6 +198,47 @@ function destroyMatching(myGrid, oppGrid) {
     }
   }
   return { grid: destroyed.length ? compact(next) : next, destroyed };
+}
+
+/**
+ * RASER UNE COLONNE ENTIERE — le canon de Ching Shih.
+ *
+ * ⚠️ ON TASSE COMME PARTOUT AILLEURS. Une colonne videe n'a rien a tasser
+ * puisqu'il ne reste rien dedans ; on passe quand meme par `compact` pour que
+ * ce chemin ne soit pas le seul du fichier a rendre une grille non tassee le
+ * jour ou la hauteur changera.
+ *
+ * Rend les cases REELLEMENT emportees : une colonne a moitie pleine n'en
+ * annonce pas trois, sinon l'ecran ferait exploser des cases vides.
+ */
+function clearColumn(grid, col) {
+  if (col < 0 || col >= COLUMNS) return { grid, cells: [] };
+  const cells = [];
+  const next = grid.slice();
+  for (const cell of cellsOfColumn(col)) {
+    if (next[cell] === null) continue;
+    next[cell] = null;
+    cells.push(cell);
+  }
+  return { grid: cells.length ? compact(next) : next, cells };
+}
+
+/**
+ * ECHANGER LE DE D'UNE CASE CONTRE CELUI D'EN FACE — le tour de Black Bart.
+ *
+ * ⚠️ MEME INDICE DES DEUX COTES, ET LA GRILLE NE BOUGE PAS AUTREMENT. C'est un
+ * troc, pas une destruction : rien ne disparait, donc rien a tasser. Les deux
+ * cases doivent porter un de — echanger contre du vide serait un deplacement
+ * deguise, et un deplacement gratuit vaut bien plus qu'un echange.
+ */
+function swapCell(gridA, gridB, cell) {
+  if (cell < 0 || cell >= CELLS) return { a: gridA, b: gridB, ok: false };
+  if (gridA[cell] === null || gridB[cell] === null) return { a: gridA, b: gridB, ok: false };
+  const a = gridA.slice();
+  const b = gridB.slice();
+  a[cell] = gridB[cell];
+  b[cell] = gridA[cell];
+  return { a, b, ok: true };
 }
 
 function clearCell(grid, cell) {
@@ -296,5 +353,7 @@ export {
   destroyMatching,
   destroyValueInColumn,
   clearCell,
+  clearColumn,
+  swapCell,
   rollDie,
 };

@@ -16,7 +16,14 @@ import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, screen } from './dice_state.js';
 import { jetons } from './dice_cale.js';
 
-const CAPTAIN_IDS = ['read', 'teach', 'ching', 'omalley', 'jack'];
+/* ⛔ CETTE LISTE FILTRE CELLE DU SERVEUR (voir `known`), ET C'EST LE PIEGE.
+   Elle n'est pas qu'un repli pour le premier rendu : `listeCapitaines()` ecarte
+   tout identifiant qui n'y figure pas. Un capitaine ajoute cote serveur et
+   oublie ici n'apparaitrait donc JAMAIS a l'ecran — pas de cadenas, pas de
+   medaillon, rien du tout, et aucun message pour le dire. L'ordre est celui du
+   deverrouillage, comme sur le serveur. */
+const CAPTAIN_IDS = ['read', 'jack', 'ching', 'teach', 'omalley',
+                     'bonny', 'bart', 'lionne', 'morgan', 'levasseur'];
 const DEFAULT_CAPTAIN = 'read';
 
 /* L'ecran du salon est un etat LOCAL : le serveur ne connait qu'un code et deux

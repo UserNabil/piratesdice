@@ -21,15 +21,28 @@ const BONUS_ART = {
   B001: 'bonus_reroll.png',
   B002: 'bonus_clear_own.png',
   B003: 'bonus_blast_enemy.png',
-  /* Ces deux-la empruntent le dessin du TRAIT qui les offre : la longue-vue de
-     Ching Shih et la benediction de Grace O'Malley. C'est exactement ce que
-     cette table permet — le nom en base et le fichier qui le dessine n'ont pas
-     a etre la meme chose, et un joueur qui a vu le trait reconnait l'effet. */
-  B004: 'trait_ching.png',
+  /* Les suivants empruntent le dessin du TRAIT qui les offre. C'est exactement
+     ce que cette table permet — le nom en base et le fichier qui le dessine n'ont
+     pas a etre la meme chose — et un joueur qui a vu le capitaine reconnait
+     l'effet en boutique.
+
+     ⚠️ LA LONGUE-VUE A CHANGE DE MAIN, DONC DE FICHIER. Elle etait le trait de
+     Ching Shih (`trait_ching.png`) ; elle est passee a la Lionne Sanglante, qui
+     la tient sur son portrait. Le dessin, lui, n'a pas bouge : il a ete recopie
+     sous le nom de son nouveau capitaine, et `trait_ching.png` porte desormais
+     le canon qui rase une colonne. Pointer encore ici sur `trait_ching` aurait
+     donne un canon pour illustrer un regard. */
+  B004: 'trait_lionne.png',
   B005: 'trait_omalley.png',
-  /* Le gel est aussi le trait de Barbe-Noire : meme dessin des deux cotes, pour
-     qu'un joueur qui a vu le capitaine reconnaisse l'effet en boutique. */
+  /* Le gel de COLONNE est le trait de Barbe-Noire. Le dessin d'origine — des
+     chaines et de la glace — vaut toujours : ce qui a change, c'est ce qu'il
+     gele, pas la maniere dont il le gele. */
   B006: 'bonus_freeze.png',
+  B007: 'trait_morgan.png',
+  B008: 'trait_bonny.png',
+  B009: 'trait_bart.png',
+  B010: 'trait_ching.png',
+  B011: 'trait_levasseur.png',
 };
 
 /**
@@ -176,7 +189,14 @@ const STILL_FILES = [
   'die_1_hot.png', 'die_2_hot.png', 'die_3_hot.png', 'die_4_hot.png',
   'die_5_hot.png', 'die_6_hot.png',
   'cap_read.png', 'cap_teach.png', 'cap_ching.png', 'cap_omalley.png', 'cap_jack.png',
+  'cap_bonny.png', 'cap_bart.png', 'cap_lionne.png', 'cap_morgan.png', 'cap_levasseur.png',
   'trait_read.png', 'trait_teach.png', 'trait_ching.png', 'trait_omalley.png', 'trait_jack.png',
+  'trait_bonny.png', 'trait_bart.png', 'trait_lionne.png', 'trait_morgan.png',
+  'trait_levasseur.png',
+  /* Le givre des cases. Il se pose au milieu d'un tour, sur un geste de
+     l'adversaire : arrive en retard, on verrait la case rester nue une demi-
+     seconde apres l'annonce — l'effet paraitrait rate. */
+  'fx_gel_case.png',
 ];
 
 const FX_BLOBS = new Map();

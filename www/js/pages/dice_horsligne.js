@@ -124,6 +124,16 @@ export class PartieHorsLigne {
       freeReroll: [0, 0],
       freeBonus: [null, null],
       gele: [false, false],
+      /* ⚠️ TROIS CHAMPS QUI VALENT TOUJOURS « RIEN », ET QUI DOIVENT QUAND MEME
+         ETRE LA. Le mode hors ligne n'a ni capitaines ni effets — `traits` et
+         `freeBonus` sont deja nuls plus haut pour la meme raison. Mais l'ecran
+         de jeu est le MEME code : `renderGel` et `renderMaudit` lisent ces
+         champs a chaque instantane. Les omettre marche par accident (les gardes
+         `st.geleCol ? … : -1` retombent sur rien), et un accident qui marche est
+         une panne qui attend. On declare la forme entiere. */
+      geleCol: [-1, -1],
+      maudCol: [-1, -1],
+      tourLong: [false, false],
       boostCol: this.boost.slice(),
       quarters: this.quarts.slice(),
       foresee: null,

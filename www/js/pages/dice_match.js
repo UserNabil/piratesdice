@@ -141,7 +141,9 @@ function buildGame() {
       if (S.state.pending && S.state.pending.seat === S.seat) return;
       const die = S.state.dice[S.seat];
       if (die === null) return;
-      const cell = freeCellOf(S.state.grids[S.seat], parseInt(col.dataset.col, 10));
+      const quelle = parseInt(col.dataset.col, 10);
+      if (S.state.geleCol && S.state.geleCol[S.seat] === quelle) return;
+      const cell = freeCellOf(S.state.grids[S.seat], quelle);
       if (cell >= 0) showLanding(mine, cell, die);
     };
     col.onmouseleave = () => clearLanding(mine);
@@ -149,6 +151,14 @@ function buildGame() {
       if (S.state && S.state.pending && S.state.pending.seat === S.seat) return;
       if (!myTurn()) return;
       if (S.state.dice[S.seat] === null) { toast(t('game.rollFirst'), 'warn'); return; }
+      /* ⚠️ LE REFUS SE DIT ICI AUSSI, MEME SI LE SERVEUR TRANCHE. Sans lui, le
+         geste partait, revenait en erreur silencieuse, et le joueur croyait a un
+         ecran qui ne repond pas — le meme malentendu que les effets muets. Le
+         serveur reste l'autorite ; l'ecran, lui, doit EXPLIQUER. */
+      if (S.state.geleCol && S.state.geleCol[S.seat] === parseInt(col.dataset.col, 10)) {
+        toast(t('game.colFrozen'), 'warn');
+        return;
+      }
       clearLanding(mine);
       S.net.send({ t: 'place', column: parseInt(col.dataset.col, 10) });
     };
@@ -159,14 +169,23 @@ function buildGame() {
       box.onclick = (ev) => {
         const pending = S.state && S.state.pending;
         if (!pending || pending.seat !== S.seat) return;
-        if (parseInt(board.dataset.seat, 10) !== pending.target) return;
+        const ceSiege = parseInt(board.dataset.seat, 10);
+        /* ⛔ `pending.target` PEUT DESORMAIS ETRE NUL, ET NUL VEUT DIRE « LES
+           DEUX ». Le canon de Ching Shih rase « la sienne ou celle de
+           l'ennemi » : le serveur ne decide plus du plateau a l'armement, il
+           attend qu'on le lui dise. Ecrit `!== pending.target`, ce garde
+           refusait alors les DEUX plateaux — l'effet s'armait et rien n'etait
+           cliquable nulle part. */
+        if (pending.target !== null && ceSiege !== pending.target) return;
         /* ⚠️ UNE CIBLE DE COLONNE ACCEPTE UNE CASE VIDE. Le garde ci-dessous
            refusait tout ce qui n'etait pas un de deja pose : parfait pour un
            canon, mais une benediction se pose sur une colonne — vide comprise,
            et c'est meme la que le pari a le plus de sel. */
         if (!pending.column && !box.classList.contains('dc-cell-filled')) return;
         ev.stopPropagation();
-        S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10) });
+        /* Le siege ne voyage que pour les effets qui visent les deux plateaux ;
+           partout ailleurs le serveur l'ignore. */
+        S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10), seat: ceSiege });
       };
     });
   });
@@ -621,93 +640,97 @@ function paint(full, frozen, settle) {
   renderArrondi(st);
   renderQuarters(st);
   renderBoost(st);
+  renderMaudit(st);
   renderGel(st);
 }
 
 /**
- * LE GIVRE RESTE SUR LE PLATEAU TANT QUE LE GEL DURE.
+ * LE GIVRE SE POSE SUR LES CASES, PLUS SUR LE PLATEAU.
  *
- * ⚠️ IL N'A D'ABORD ETE QU'UN ECLAIR. Le serveur n'annoncait le gel qu'au
- * moment ou il PREND effet — l'effet `frozen`, emis quand le tour est saute —
- * et le client en faisait un sceau plein cadre de 1,6 s. Entre le jeton joue et
- * le tour vole, rien : la victime ne savait pas ce qui l'attendait, et quand
- * elle l'apprenait c'etait deja passe. « Il faut que l'effet soit sur la grille,
- * a la bonne taille, et pendant TOUT le gel, pour comprendre. »
+ * ⛔ LE SCEAU PLEIN CADRE A ETE RETIRE, ET AVEC LUI SOIXANTE LIGNES DE CALAGE.
+ * Il fallait mesurer la boite des douze cases a chaque rendu (`calerGel`),
+ * soustraire le lisere du plateau, recommencer a la frame suivante parce que la
+ * police n'etait pas encore chargee, et recommencer encore quand l'ecran
+ * tournait. Tout cela pour faire coincider un rectangle avec un rectangle qui
+ * existait deja. « On va geler directement les cases car j'ai concu un skin
+ * pour les cases, et tu dois faire en sorte que l'image suive la taille du slot
+ * du de. »
  *
- * L'etat `gele` voyage maintenant dans l'instantane. Le givre se pose donc sur
- * LE PLATEAU de celui qui va perdre son tour — pas au milieu de l'ecran — et il
- * y reste jusqu'a ce que le tour soit effectivement saute. On lit alors la
- * situation en regardant l'endroit ou elle se joue.
+ * Le givre est desormais UN ENFANT DE LA CASE. Il n'y a plus rien a mesurer :
+ * `inset: 0` vaut la case, et `--pd-round` — l'arrondi que la parure du siege
+ * pose deja sur ses logements, de 16 % a 35 % selon les jeux de des — le
+ * decoupe exactement comme elle. Un dessin qui suit sa boite par construction
+ * ne se derregle pas quand la boite change.
+ *
+ * ⚠️ ET LE GEL A DEUX FORMES DEPUIS BARBE-NOIRE. Un tour SAUTE (B007, Henry
+ * Morgan) prend le plateau entier : douze cases prises dans la glace, et l'on
+ * comprend sans un mot qu'il n'y a rien a jouer. Une COLONNE gelee (B006,
+ * Barbe-Noire) n'en prend que trois, et c'est justement ce qui la rend lisible :
+ * on VOIT ou l'on n'a plus le droit de poser, et on voit aussi les trois autres
+ * colonnes qui restent. L'ancien sceau ne pouvait dire ni l'un ni l'autre.
  */
-/**
- * Poser le givre EXACTEMENT sur les cases, ni plus ni moins.
- *
- * ⛔ SEPT REGLAGES ONT ESSAYE DE FAIRE CE QUE FONT CES DIX LIGNES. Marge,
- * echelle, decalage en x, en y, et les trois memes pour mon cote : autant de
- * boutons pour faire coincider deux rectangles qui existaient deja. Chacun
- * etait un aveu — la boite du sceau n'etait pas la grille, alors on la
- * rattrapait a la main.
- *
- * ⚠️ ET L'INTERIEUR DU PLATEAU N'EST PAS LA GRILLE NON PLUS. Mesure au banc :
- * plateau 114→386, cases 123→377 — dix-huit pixels d'ecart. Ils viennent de la
- * rangee de plaques, dont le rembourrage (`--pd-frame`, 9 px) elargit le bloc,
- * donc le plateau qui s'y etire ; ses trois pistes deviennent plus larges que
- * les cases, qui s'y centrent. `inset: 0` posait donc le sceau a neuf pixels
- * des cases sur les quatre cotes.
- *
- * Ce qu'on veut est ce qu'on VOIT : la boite des neuf cases. On la mesure. Une
- * mesure ne se derregle pas et ne se demande pas deux fois — elle vaut pour les
- * deux plateaux, quel que soit le sens dans lequel ils sont empiles.
- */
-function calerGel(board, el) {
-  const cases = board.querySelectorAll('.dc-cell');
-  let g = Infinity, h = Infinity, d = -Infinity, b = -Infinity;
-  for (const c of cases) {
-    const q = c.getBoundingClientRect();
-    if (!q.width || !q.height) continue;
-    g = Math.min(g, q.left); h = Math.min(h, q.top);
-    d = Math.max(d, q.right); b = Math.max(b, q.bottom);
+function casesGelees(st, seat) {
+  const prises = new Set();
+  if (st.phase !== 'playing') return prises;
+  if (st.gele && st.gele[seat]) {
+    for (let cell = 0; cell < 12; cell++) prises.add(cell);
+    return prises;
   }
-  if (!isFinite(g)) return;
-  /* ⚠️ LE REPERE D'UN ENFANT ABSOLU EST LA BOITE DE REMBOURRAGE : le cadre du
-     plateau ne compte pas dans les coordonnees, il faut donc le retrancher. */
-  const p = board.getBoundingClientRect();
-  const st = getComputedStyle(board);
-  const cg = parseFloat(st.borderLeftWidth) || 0;
-  const ch = parseFloat(st.borderTopWidth) || 0;
-  el.style.left = (g - p.left - cg) + 'px';
-  el.style.top = (h - p.top - ch) + 'px';
-  el.style.right = 'auto';
-  el.style.bottom = 'auto';
-  el.style.width = (d - g) + 'px';
-  el.style.height = (b - h) + 'px';
+  const col = st.geleCol ? st.geleCol[seat] : -1;
+  if (col >= 0) for (let i = 0; i < 3; i++) prises.add(col * 3 + i);
+  return prises;
 }
 
 function renderGel(st) {
   for (let seat = 0; seat < 2; seat++) {
     const board = boardOf(seat);
     if (!board) continue;
-    const gele = !!(st.gele && st.gele[seat]) && st.phase === 'playing';
-    const pose = board.querySelector('.dc-gel');
-    if (!gele) { if (pose) pose.remove(); continue; }
-    /* Deja la : on ne le refait pas, mais on le recale — la grille change de
-       taille quand l'ecran tourne ou que `fit` repasse. */
-    if (pose) { calerGel(board, pose); continue; }
-    const el = document.createElement('div');
-    el.className = 'dc-gel';
-    el.innerHTML = '<img src="' + ASSETS + 'img/fx_freeze.png" alt="">'
-      + '<span>' + esc(t(seat === S.seat ? 'fx.frozenYou' : 'fx.frozenWait')) + '</span>';
-    /* ⚠️ DANS LE PLATEAU, PAS DANS LE BLOC. Le bloc contient aussi la rangee de
-       plaques de score — et elle est SOUS le plateau d'en face, AU-DESSUS du
-       mien : une boite calee dessus tombait a cote d'un cote sur deux. Posee
-       dans le plateau, qui n'a pas de rembourrage, elle vaut la grille des deux
-       cotes sans une seule soustraction. */
-    board.appendChild(el);
-    calerGel(board, el);
-    /* Une fois de plus au tour suivant : a l'instant de l'insertion, la police
-       du libelle peut encore manquer et le plateau bouger d'un pixel. */
-    requestAnimationFrame(() => { if (el.isConnected) calerGel(board, el); });
+    /* ⛔ L'ANCIEN SCEAU SURVIVAIT AUX MISES A JOUR. Une partie deja ouverte
+       quand le code change — une reprise apres coupure, un onglet reste
+       ouvert — gardait son `.dc-gel` pose sur le plateau, et le givre des cases
+       venait par-dessus. On le retire s'il traine encore. */
+    const vieux = board.querySelector('.dc-gel');
+    if (vieux) vieux.remove();
+
+    const prises = casesGelees(st, seat);
+    board.querySelectorAll('.dc-cell').forEach((box) => {
+      const gele = prises.has(parseInt(box.dataset.cell, 10));
+      box.classList.toggle('dc-cell-gel', gele);
+      const pose = box.querySelector('.dc-givre');
+      if (!gele) { if (pose) pose.remove(); return; }
+      /* Deja pose : on n'y retouche pas. Le rendu passe a chaque instantane —
+         recreer l'image relancerait son animation d'entree a chaque lancer de
+         de, ce qui donnerait un clignotement pour rien. */
+      if (pose) return;
+      const givre = document.createElement('i');
+      givre.className = 'dc-givre';
+      givre.style.backgroundImage = 'url(' + ASSETS + 'img/fx_gel_case.png)';
+      box.appendChild(givre);
+    });
   }
+}
+
+/**
+ * LA COLONNE MAUDITE — 15 % de moins, et il faut que ca se voie.
+ *
+ * ⚠️ SANS MARQUE, LA MALEDICTION EST UN VOL INVISIBLE. Le total d'une colonne
+ * baisserait sans raison apparente, et le joueur croirait a une erreur de
+ * calcul. La benediction a sa plaque doree depuis le premier jour ; la
+ * malediction prend la meme place, en vert-de-gris — c'est son miroir exact,
+ * y compris a l'ecran.
+ */
+function renderMaudit(st) {
+  [0, 1].forEach((seat) => {
+    const board = boardOf(seat);
+    if (!board || !board.parentNode) return;
+    const maudite = st.maudCol ? st.maudCol[seat] : -1;
+    board.parentNode.querySelectorAll('.dc-colscore').forEach((plaque) => {
+      const col = parseInt(plaque.dataset.col, 10);
+      const touchee = maudite >= 0 && col === maudite;
+      plaque.classList.toggle('dc-colscore-maudit', touchee);
+      if (touchee) plaque.title = t('fx.curse');
+    });
+  });
 }
 
 /* A chaque instant UN SEUL plateau compte : celui qui a la main est eclaire,
@@ -1261,11 +1284,27 @@ export function renderBonusRack() {
      disait rien : le jeton restait vif, on appuyait, et le refus revenait en
      message d'erreur. Trois appuis, trois erreurs, et l'impression que le jeu
      ne repond pas. Un bouton qui ne peut rien faire doit le montrer AVANT. */
-  const dejaGele = !!(S.state.gele && S.state.gele[1 - S.seat]);
+  /* ⚠️ CINQ EFFETS SE MARTELAIENT, PAS UN SEUL. La regle etait ecrite pour le
+     gel, en dur, et les quatre effets qui ont depuis la meme forme — un drapeau
+     unique par siege que le serveur refuse de poser deux fois — repassaient tous
+     par le chemin du message d'erreur. Cette table dit ce que `check()` dit
+     cote serveur ; elle ne le REMPLACE pas, elle l'annonce plus tot. Deux
+     verites, oui, mais la seconde ne fait que rendre la premiere lisible : c'est
+     le serveur qui refuse, l'ecran ne fait qu'eviter le geste inutile. */
+  const foe = 1 - S.seat;
+  const dit = S.state || {};
+  const IMPOSSIBLE = {
+    B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
+    B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
+    B008: dit.tourLong && dit.tourLong[S.seat] ? 'fx.alreadySlowed'
+      : (dit.turn !== S.seat ? 'fx.notYourTurnYet' : null),
+    B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
+  };
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
     const cadeau = b.classList.contains('dc-bonus-free');
     const epuise = left <= 0 && !cadeau;
-    const redondant = b.dataset.id === 'B006' && dejaGele;
+    const pourquoi = IMPOSSIBLE[b.dataset.id] || null;
+    const redondant = !!pourquoi;
     b.classList.toggle('dc-bonus-mute', !myTurn() || epuise || redondant);
     b.onclick = (ev) => {
       /* ⚠️ CE CLIC NE VA NULLE PART D'AUTRE. La cale se dessine PAR-DESSUS le
@@ -1277,7 +1316,7 @@ export function renderBonusRack() {
          doit pouvoir viser un autre jeton sans tout rouvrir. */
       if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
       if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
-      if (redondant) { toast(t('fx.alreadyFrozen'), 'warn'); return; }
+      if (redondant) { toast(t(pourquoi), 'warn'); return; }
       S.net.send({ t: 'bonus', identify: b.dataset.id });
       /* L'effet part : la cale n'a plus rien a montrer, et le plateau doit
          redevenir visible — c'est lui qu'on va viser si l'effet demande une
@@ -1369,7 +1408,12 @@ function renderTargeting(st) {
   [0, 1].forEach((seat) => {
     const board = boardOf(seat);
     if (!board) return;
-    const vise = !!pending && pending.target === seat;
+    /* ⛔ `target === seat` ETEIGNAIT LES DEUX PLATEAUX POUR LE CANON DE COLONNE.
+       Sa cible n'est decidee qu'au tir : le serveur publie `target: null`, qui
+       n'est egal a aucun siege. Les cases restaient donc cliquables — le geste
+       partait bien — mais rien ne s'allumait nulle part, et le joueur voyait un
+       effet arme sans savoir ou viser. `null` veut dire LES DEUX. */
+    const vise = !!pending && (pending.target === null || pending.target === seat);
     board.classList.toggle('dc-target', vise);
     /* ⛔ LA GRILLE QU'ON VISE EST CELLE D'EN FACE — DONC CELLE QUI EST EN
        RETRAIT. Le voile de l'attente la recouvrait pendant toute la visee :

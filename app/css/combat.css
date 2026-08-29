@@ -149,6 +149,14 @@
   --cbt-plaque-ombre: 0 4px 0 var(--gold-lo, #A8862E), 0 6px 10px rgba(0, 0, 0, .4);
 
   /* La colonne benie : une plaque qui ne ressemble a aucune autre. */
+  /* La plaque MAUDITE : le miroir exact de la benie, en violet malade. Le vert
+     dit « cette colonne rapporte plus » ; il fallait une couleur qui dise le
+     contraire sans se confondre avec le fond violet du jeu ni avec le rouge des
+     destructions — d'ou ce mauve sature, qui n'existe nulle part ailleurs a
+     l'ecran. */
+  --cbt-plaque-maudite-fond: linear-gradient(180deg, #C57BFF, #7B2FBF);
+  --cbt-plaque-maudite-ombre: 0 4px 0 #4B1580, 0 6px 10px rgba(0, 0, 0, .4),
+                              0 0 12px rgba(170, 90, 255, .7);
   --cbt-plaque-benie-fond: linear-gradient(180deg, #B6F36A, var(--vert, #7CC832));
   --cbt-plaque-benie-ombre: 0 4px 0 #4E8C15, 0 6px 10px rgba(0, 0, 0, .4),
                             0 0 12px rgba(124, 200, 50, .7);
@@ -292,23 +300,16 @@
 
   /* ── LE GIVRE DU GEL, SUR LA GRILLE ────────────────────────────────────── */
 
-  /* ⛔ LES SEPT REGLAGES DE CADRAGE ONT DISPARU, ET C'EST LA VRAIE CORRECTION.
-     Marge, echelle, decalage en x, en y, puis les trois memes pour mon cote :
-     sept boutons pour faire coincider deux rectangles qui, eux, existaient
-     deja. Chaque reglage etait un aveu — la boite du sceau n'etait pas la
-     grille, alors on la rattrapait a la main, et il fallait la rattraper deux
-     fois puisque les deux plateaux ne sont pas empiles dans le meme sens.
+  /* L'opacite du givre pose sur une case. Voir `.dc-givre` dans dice.css :
+     a 1 le dessin efface les des qu'il couvre, et leur valeur est ce sur quoi
+     le joueur compte. */
+  --cbt-gel-case-opacite: .88;
 
-     `.dc-gel` est desormais POSE DANS `.dc-board` (voir dice.css) : le plateau
-     n'ayant pas de rembourrage, l'interieur de son cadre EST la grille, et
-     `inset: 0` y colle le sceau des deux cotes sans rien a calculer. Un reglage
-     qu'on ne peut plus derregler vaut mieux qu'un reglage bien regle. */
-
-  /* Le voile sombre, lui, couvre TOUT LE PLATEAU — cadre compris : c'est le
-     plateau qui gele, pas seulement ses cases. Il prend donc la courbure du
-     plateau, sans quoi ses quatre coins depassent du dessin. */
-  --cbt-gel-voile: radial-gradient(closest-side,
-                                   rgba(70, 170, 255, .20), rgba(8, 16, 40, .58));
+  /* ⛔ `--cbt-gel-voile` A DISPARU AVEC LE SCEAU PLEIN CADRE. Il teintait le
+     plateau entier en bleu sombre pendant un gel ; le givre se pose desormais
+     sur les CASES, une par une, a la taille exacte du logement. Un voile de
+     plateau par-dessus aurait assombri les trois colonnes qui restent jouables
+     — exactement l'inverse de ce que le gel de colonne doit montrer. */
 
   /* ── LE RATELIER DE BONUS ──────────────────────────────────────────────── */
 
@@ -575,6 +576,16 @@
   box-shadow: var(--cbt-plaque-benie-ombre);
 }
 
+/* ⚠️ APRES LA BENEDICTION DANS LA FEUILLE, ET C'EST VOULU. Rien n'interdit
+   qu'une colonne soit benie ET maudite : l'une vient de son proprietaire,
+   l'autre d'en face. Les deux plaques ne peuvent pas se partager un rectangle ;
+   la derniere ecrite gagne, et c'est la malediction — la mauvaise nouvelle est
+   celle qu'il faut voir. Le total, lui, porte bien les deux facteurs. */
+#dicewrap .dc-colscore-maudit {
+  background: var(--cbt-plaque-maudite-fond);
+  box-shadow: var(--cbt-plaque-maudite-ombre);
+}
+
 /* ── l'arene : l'air entre les zones ──────────────────────────────────────── */
 
 #dicewrap .dc-arena {
@@ -647,12 +658,10 @@
    Ne restent que la taille du jeton et le RAYON de l'arc. */
 /* ── le givre du gel ──────────────────────────────────────────────────────── */
 
-/* Le voile : la grille, et rien qu'elle — il prend la courbure des cases, pas
-   celle du plateau, puisqu'il ne couvre plus le cadre. */
-#dicewrap .dc-gel {
-  background: var(--cbt-gel-voile);
-  border-radius: var(--pd-round, 12px);
-}
+/* ⛔ LA REGLE `.dc-gel` A ETE RETIREE AVEC L'ELEMENT. Le givre n'est plus un
+   rectangle pose sur le plateau mais un enfant de chaque case gelee ; tout ce
+   qui le dessine tient dans `.dc-givre` (voir dice.css) et se regle tout seul
+   sur `--pd-round`, l'arrondi du logement. */
 
 #dicewrap .dc-bonus { --pd-fan-r: var(--cbt-bonus-rayon); }
 

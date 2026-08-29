@@ -17,9 +17,7 @@ export const FR = {
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Une relance gratuite par partie.',
   'cap.teach.name': 'Barbe-Noire',
-  'cap.teach.trait': 'Une fois par partie, son adversaire saute son prochain tour.',
   'cap.ching.name': 'Ching Shih',
-  'cap.ching.trait': 'Un regard par partie sur le dé que son adversaire va lancer.',
   'cap.omalley.name': 'Grace O’Malley',
   'cap.omalley.trait': 'Une colonne bénie par partie : elle rapporte 15 % de plus.',
   'cap.jack.name': 'Calico Jack',
@@ -218,21 +216,21 @@ export const FR = {
   'suc.A064.name': 'Le pari de Mary',
   'suc.A064.txt': 'Gagnez avec Mary Read après avoir relancé un dé.',
   'suc.A065.name': 'Barbe de givre',
-  'suc.A065.txt': 'Gagnez avec Barbe-Noire après lui avoir volé au moins un tour.',
-  'suc.A066.name': 'L\'œil de Ching',
-  'suc.A066.txt': 'Gagnez avec Ching Shih après avoir espionné le dé adverse.',
+  'suc.A065.txt': 'Gagnez avec Barbe-Noire après avoir gelé au moins une colonne adverse.',
+  'suc.A066.name': 'L’œil de la Lionne',
+  'suc.A066.txt': 'Gagnez avec la Lionne Sanglante après avoir espionné le dé adverse.',
   'suc.A067.name': 'Bénie par Grace',
   'suc.A067.txt': 'Gagnez avec Grace O\'Malley après avoir béni une colonne.',
   'suc.A068.name': 'Jack prend l\'avance',
   'suc.A068.txt': 'Gagnez avec Calico Jack en creusant trente points d\'écart.',
   'suc.A069.name': 'Toute la flotte',
-  'suc.A069.txt': 'Décrochez au moins une victoire avec chacun des cinq capitaines.',
+  'suc.A069.txt': 'Décrochez au moins une victoire avec cinq capitaines différents.',
   'suc.A070.name': 'Servi froid',
-  'suc.A070.txt': 'Gelez votre adversaire avec un effet payé, puis gagnez la partie.',
+  'suc.A070.txt': 'Gelez une colonne adverse avec un effet payé, puis gagnez la partie.',
   'suc.A071.name': 'Le ciel a tranché',
   'suc.A071.txt': 'Bénissez une colonne et l\'emportez de cinq points ou moins.',
   'suc.A072.name': 'Face aux cinq',
-  'suc.A072.txt': 'Croisez le fer avec les cinq capitaines, au moins une fois chacun.',
+  'suc.A072.txt': 'Croisez le fer avec cinq capitaines différents, au moins une fois chacun.',
   'suc.A073.name': 'Ton propre reflet',
   'suc.A073.txt': 'Battez un adversaire qui avait choisi exactement votre capitaine.',
   'suc.A074.name': 'Gelé mais debout',
@@ -521,9 +519,6 @@ export const FR = {
   'say.teach.B005.0': 'Cette colonne porte mon nom. Approche pour voir.',
   'say.teach.B005.1': 'Je la bénis. Tu n\'y toucheras pas.',
   'say.teach.B005.2': 'Quinze pour cent de plus, et c\'est encore trop peu pour toi.',
-  'say.teach.B006.0': 'Ne bouge plus ou je te gèle jusqu\'aux os !',
-  'say.teach.B006.1': 'Ton tour m\'appartient. Regarde-moi le prendre.',
-  'say.teach.B006.2': 'Les glaces t\'ont pris. Respire, si tu peux encore.',
   'say.ching.B001.0': 'Un dé mal placé se relance. Note-le, ça te servira.',
   'say.ching.B001.1': 'Je corrige. Tu apprendras à faire pareil.',
   'say.ching.B001.2': 'Ce tirage était une perte. Je ne les garde pas.',
@@ -604,7 +599,7 @@ export const FR = {
     + 'relancer le dé, vider une de vos cases, ou détruire un dé adverse.',
   'rules.6': 'Une partie contre la machine rapporte {ia} pièces ; une partie qui vous fait MONTER au classement en rapporte {rang}. '
     + 'Seules les parties entre joueurs bougent votre Elo, et seulement face à un adversaire classé, de niveau proche.',
-  'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer — une relance offerte, une ouverture qui emporte la valeur au-dessus, un œil sur le prochain dé, des triples plus riches, ou un dé déjà posé. Choisissez le vôtre sur le pont.',
+  'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer : chacun offre un effet par partie — une relance, un dé déjà posé, une colonne bénie, gelée, maudite ou rasée, un tour volé, un tour deux fois plus long, un échange de dés, ou un œil sur le prochain dé d’en face. Ils sont <b>dix</b>, et ils s’ouvrent au fil des parties terminées.',
   'rules.shortcuts': 'Raccourcis : {space} lance, {one} {two} {three} posent dans une colonne, {esc} ferme.',
 
   /* ⚠️ CES DEUX PHRASES DECRIVAIENT L'ANCIENNE REGLE. L'IA jouait le tour de
@@ -670,8 +665,6 @@ export const FR = {
   'err.captainLocked': 'On ne change pas de capitaine en pleine partie',
   'shop.shutTitle': 'Les caisses sont fermées pendant une partie',
   'shop.shutHint': 'Votre mise est engagée : l’or reste bloqué jusqu’au verdict. Revenez à la fin de la partie.',
-  'shop.B006.name': 'Geler l’adversaire',
-  'shop.B006.desc': 'Votre adversaire saute son prochain tour. Vous jouez deux fois de suite.',
   'fx.freeze': 'Tour gelé !',
   /* Le givre reste sur le plateau tant que le gel dure : chaque camp a besoin
      de sa phrase, celle qui subit et celle qui l'a jetee. */
@@ -683,4 +676,130 @@ export const FR = {
   'foot.roll': 'Lancer',
   'foot.leave': 'Quitter',
   'foot.back': 'Le pont',
+
+  /* ══ LES CINQ NOUVEAUX CAPITAINES, ET LES DEUX TRAITS QUI ONT CHANGE DE MAIN ══
+     ⚠️ CHING SHIH ET BARBE-NOIRE NE FONT PLUS CE QU'ILS FAISAIENT. La longue-vue
+     est passee a la Lionne Sanglante — qui la tient sur son portrait, ce que
+     Ching Shih n'a jamais fait — et le vol de tour a Henry Morgan. Leurs deux
+     lignes `trait` sont donc reecrites ici, apres les anciennes : c'est la
+     derniere qui gagne dans un objet JavaScript, et c'est ce qu'on veut. */
+  'cap.ching.trait': 'Une fois par partie, elle rase une colonne entière — la sienne ou celle d’en face.',
+  'cap.teach.trait': 'Une fois par partie, il gèle une colonne adverse pendant son prochain tour.',
+
+  'cap.bonny.name': 'Anne Bonny',
+  'cap.bonny.trait': 'Une fois par partie, son tour dure deux fois plus longtemps.',
+  'cap.bart.name': 'Black Bart',
+  'cap.bart.trait': 'Une fois par partie, il échange un de ses dés contre celui d’en face, sur la même case.',
+  'cap.lionne.name': 'La Lionne Sanglante',
+  'cap.lionne.trait': 'Un regard par partie sur le dé que son adversaire va lancer.',
+  'cap.morgan.name': 'Henry Morgan',
+  'cap.morgan.trait': 'Une fois par partie, son adversaire saute son prochain tour.',
+  'cap.levasseur.name': 'Olivier Levasseur',
+  'cap.levasseur.trait': 'Une fois par partie, il maudit une colonne adverse : elle rapporte 15 % de moins.',
+
+  /* Les libellés courts, ceux du bandeau qui annonce un trait joué. */
+  'cap.trait.freezecol': 'Une colonne gelée',
+  'cap.trait.wipe': 'Une colonne rasée',
+  'cap.trait.boost': 'Une colonne bénie',
+  'cap.trait.foresee': 'Un regard sur le prochain dé',
+  'cap.trait.slow': 'Un tour deux fois plus long',
+  'cap.trait.swap': 'Deux dés échangés',
+  'cap.trait.skip': 'Un tour volé',
+  'cap.trait.curse': 'Une colonne maudite',
+
+  /* ══ LES SIX EFFETS EN BOUTIQUE ══
+     B006 change de sens : il gèle une COLONNE et ne vole plus un tour. Le vol de
+     tour existe toujours — c’est B007. */
+  'shop.B006.name': 'Colonne gelée',
+  'shop.B006.desc': 'Une colonne adverse est prise dans les glaces pendant son prochain tour.',
+  'shop.B007.name': 'Tour volé',
+  'shop.B007.desc': 'Votre adversaire saute son prochain tour. Vous jouez deux fois de suite.',
+  'shop.B008.name': 'Sablier fêlé',
+  'shop.B008.desc': 'Votre tour dure deux fois plus longtemps. Du temps pour réfléchir, rien de plus.',
+  'shop.B009.name': 'Troc de dés',
+  'shop.B009.desc': 'Votre dé et celui d’en face, sur la même case, échangent leurs places.',
+  'shop.B010.name': 'Bordée sur la colonne',
+  'shop.B010.desc': 'Rase une colonne entière — la vôtre ou celle de l’ennemi.',
+  'shop.B011.name': 'Colonne maudite',
+  'shop.B011.desc': 'Une colonne adverse rapporte 15 % de moins jusqu’à la fin.',
+
+  /* ══ CE QUI S’AFFICHE QUAND L’EFFET TOMBE ══ */
+  'fx.gelcol': 'Colonne gelée !',
+  'fx.curse': 'Colonne maudite : −15 % jusqu’à la fin',
+  'fx.slow': 'Tour ralenti : deux fois plus de temps',
+  'fx.swap': 'Dés échangés !',
+  'fx.wipe': 'Colonne rasée !',
+  'game.colFrozen': 'Cette colonne est gelée.',
+
+  /* ══ LES REPLIQUES COMMUNES ══
+     Elles parlent de l’EFFET, pas du capitaine, et servent de repli aux 330
+     combinaisons qu’on n’écrira pas. Elles s’adressent à l’adversaire, comme
+     toutes les autres : c’est ce qui fait un duel plutôt qu’un journal de bord. */
+  'say.any.B001.0': 'Ce dé ne me plaît pas. Je recommence.',
+  'say.any.B001.1': 'Rien de bon là-dedans. On efface.',
+  'say.any.B001.2': 'Un autre. Celui-là ne valait rien.',
+  'say.any.B002.0': 'Je fais de la place. Tu comprendras plus tard.',
+  'say.any.B002.1': 'Ce dé me gênait plus qu’il ne me servait.',
+  'say.any.B002.2': 'Ma colonne se refait. Compte de nouveau.',
+  'say.any.B003.0': 'Ce dé était dans ma ligne de tir.',
+  'say.any.B003.1': 'Je te l’enlève. Tu n’en faisais rien.',
+  'say.any.B003.2': 'Un de moins chez toi. On respire mieux.',
+  'say.any.B004.0': 'Je vois ce que tu vas tirer. Vas-y quand même.',
+  'say.any.B004.1': 'Ta prochaine main n’a plus de secret.',
+  'say.any.B004.2': 'Je regarde par-dessus ton épaule. Ne te retourne pas.',
+  'say.any.B005.0': 'Cette colonne est tenue. Essaie de la prendre.',
+  'say.any.B005.1': 'Je fortifie ici. Ça te coûtera cher de passer.',
+  'say.any.B005.2': 'Quinze pour cent de plus, et c’est de mon côté.',
+  'say.any.B006.0': 'Cette colonne est prise dans les glaces. Trouve-toi une autre route.',
+  'say.any.B006.1': 'Trois cases gelées. Il t’en reste neuf, débrouille-toi.',
+  'say.any.B006.2': 'Cette colonne ne t’appartient plus. Pas ce tour-ci.',
+  'say.any.B007.0': 'Ne bouge plus. C’est un ordre, pas une proposition.',
+  'say.any.B007.1': 'Ton tour est à moi. Regarde-moi jouer.',
+  'say.any.B007.2': 'Reste où tu es. Je n’ai pas fini.',
+  'say.any.B008.0': 'Rien ne presse. J’ai tout mon temps, maintenant.',
+  'say.any.B008.1': 'Le sable s’est arrêté. Prends un siège.',
+  'say.any.B008.2': 'Deux fois plus de temps pour te trouver un défaut.',
+  'say.any.B009.0': 'Le tien me plaît mieux. Prends le mien.',
+  'say.any.B009.1': 'Échange. Tu n’avais pas le choix, remarque.',
+  'say.any.B009.2': 'Je te laisse le mauvais. C’est de bonne guerre.',
+  'say.any.B010.0': 'Une bordée entière. Il ne reste rien de cette colonne.',
+  'say.any.B010.1': 'Toute la colonne à la mer. Ne la cherche pas.',
+  'say.any.B010.2': 'Trois cases d’un coup. C’était le prix.',
+  'say.any.B011.0': 'Cette colonne est maudite. Elle te rapportera moins.',
+  'say.any.B011.1': 'J’ai posé une malédiction là-dessus. Continue, surtout.',
+  'say.any.B011.2': 'Quinze pour cent de moins, et tu ne l’as pas vu venir.',
+
+  /* ══ LA VOIX DES CINQ NOUVEAUX, SUR LEUR PROPRE TRAIT ══
+     Un capitaine ne parle vraiment que d’une chose : ce qu’il fait mieux que les
+     autres. Le reste passe par les répliques communes ci-dessus. */
+  'say.bonny.B008.0': 'Le temps m’appartient. Attends ton tour, il viendra.',
+  'say.bonny.B008.1': 'Je ne cours après personne. Surtout pas après toi.',
+  'say.bonny.B008.2': 'Deux fois plus de sable. Assieds-toi, ce sera long.',
+  'say.bart.B009.0': 'Beau dé. Il ira mieux chez moi.',
+  'say.bart.B009.1': 'Un troc honnête : je prends, tu gardes le reste.',
+  'say.bart.B009.2': 'Ce qui est à toi est à moi. Ce qui est à moi le reste.',
+  'say.lionne.B004.0': 'Je vois ton prochain dé avant toi. Joue quand même.',
+  'say.lionne.B004.1': 'Ma longue-vue ne ment jamais. La tienne, si tu en as une ?',
+  'say.lionne.B004.2': 'Ce que tu vas tirer, je le sais déjà. Ça se lit sur ta figure.',
+  'say.morgan.B007.0': 'Ton tour ? Je viens de le prendre. Assieds-toi.',
+  'say.morgan.B007.1': 'Deux coups pour moi, aucun pour toi. Les comptes sont bons.',
+  'say.morgan.B007.2': 'Tu passes. Ce n’est pas une question.',
+  'say.levasseur.B011.0': 'J’ai laissé ma marque sur cette colonne. Bonne chance.',
+  'say.levasseur.B011.1': 'Une malédiction bien placée vaut trois canons.',
+  'say.levasseur.B011.2': 'Cherche mon trésor si tu veux. Cette colonne, elle, est perdue.',
+
+  /* Et Ching Shih, qui ne regarde plus : elle tire. */
+  'say.ching.B010.0': 'Une bordée sur toute la colonne. Il n’en reste rien.',
+  'say.ching.B010.1': 'Ma flotte ne vise pas un dé. Elle vise une ligne.',
+  'say.ching.B010.2': 'Toute la colonne, d’un seul ordre. J’en commande huit cents.',
+  /* Et Barbe-Noire, qui gèle une colonne au lieu d’un tour. */
+  'say.teach.B006.0': 'Trois cases dans la glace. Passe par ailleurs si tu peux.',
+  'say.teach.B006.1': 'Cette colonne est fermée. Le froid s’en occupe.',
+  'say.teach.B006.2': 'Gelée jusqu’au fond. Tu la retrouveras au prochain tour.',
+  /* Les refus que l'ecran doit dire AVANT le geste, un par effet qui ne peut
+     pas se jouer deux fois. Voir `renderRack` dans dice_match.js. */
+  'fx.colAlreadyFrozen': 'Une de ses colonnes est déjà gelée',
+  'fx.colAlreadyCursed': 'Une de ses colonnes est déjà maudite',
+  'fx.alreadySlowed': 'Votre tour est déjà ralenti',
+  'fx.notYourTurnYet': 'Cet effet se joue pendant votre tour',
 };
