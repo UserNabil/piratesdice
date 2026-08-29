@@ -1343,8 +1343,13 @@ export function renderBonusRack() {
     B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
   };
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
-    const cadeau = b.classList.contains('dc-bonus-free');
-    const epuise = left <= 0 && !cadeau;
+    /* ⛔ LE JETON OFFERT ECHAPPAIT AU PLAFOND, ET C'ETAIT LA MOITIE D'UNE TRICHE.
+       `!cadeau` l'exemptait : les trois effets depenses, le trait du capitaine
+       restait vif — et chaque clic dessus relancait la pendule du tour. Le
+       plafond compte desormais TOUT ce qui a ete joue, offert compris ; l'ecran
+       suit la meme regle que le serveur, sinon il promet un coup que le serveur
+       refusera. */
+    const epuise = left <= 0;
     const pourquoi = IMPOSSIBLE[b.dataset.id] || null;
     const redondant = !!pourquoi;
     b.classList.toggle('dc-bonus-mute', !myTurn() || epuise || redondant);
