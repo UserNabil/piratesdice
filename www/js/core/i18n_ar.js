@@ -765,6 +765,27 @@ export const AR = {
   'over.horsLigneLibre': 'لُعبت دون اتصال وبلا بطاقة: لا تعطي شيئًا. اتّصل مرّة واحدة لتأخذ بطاقات.',
   'offline.pasIci': 'هذا لا يُلعب دون اتصال.',
   'shop.effetFerme': 'بقيت {n} مباريات — يُفتح مع قائده.',
+  /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur
+     francophone lisait « no bonus left for this match » en travers de son
+     plateau. Ce sont les plus courants : on les rencontre plusieurs fois par
+     duel, et ce fichier existe precisement pour qu'ils n'arrivent jamais
+     dans la langue du serveur. */
+  'err.lanceDabord': 'ارمِ نردتك أولًا.',
+  'err.monPlateauVide': 'لوحك فارغ.',
+  'err.plateauAdverseVide': 'لوح الخصم فارغ.',
+  'err.effetDejaJoue': 'لعبتَ هذا التأثير بالفعل.',
+  'err.plusDeffets': 'لم يبقَ أي تأثير في هذه المباراة.',
+  'err.tourDejaPresse': 'دوره التالي مستعجل بالفعل.',
+  'err.dejaEnTrainDeRegarder': 'أنت تنظر بالفعل.',
+  'err.caseVide': 'هذه الخانة فارغة.',
+  'err.caseIntouchable': 'لا يمكن إفراغ هذه الخانة.',
+  'err.colonnePleine': 'هذا العمود ممتلئ.',
+  'err.finirLeffet': 'أنهِ التأثير الذي بدأته.',
+  'err.aucunEffetEnVisee': 'لا يوجد تأثير ينتظر هدفًا.',
+  'err.effetPasEnCale': 'لا تملك هذا التأثير.',
+  'err.effetInconnu': 'تأثير مجهول.',
+  'err.caseInconnue': 'خانة مجهولة.',
+  'err.colonneInconnue': 'عمود مجهول.',
   'err.colGelee': 'أحد أعمدته مُجمَّد بالفعل.',
   'err.tourVole': 'دوره التالي مسروق بالفعل.',
   'err.tourRallonge': 'دوره التالي مُقتضَب بالفعل.',

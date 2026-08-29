@@ -153,6 +153,10 @@ export class ServeurDePoche {
       case 'place': {
         const fx = this.partie.poser(moi, msg.column);
         if (!fx) return true;
+        /* ⚠️ LA VISEE NE SURVIT PAS AU TOUR. Le vrai serveur efface `pending`
+           dans `passerLaMain` ; ici elle restait armee pendant tout le tour de
+           la machine, et le plateau refusait le de au retour. */
+        this.enAttente = null;
         this.pousser(fx);
         if (this.partie.finie) this.plusTard(() => this.conclure(), 700);
         else this.faireJouerLaMachine();
@@ -179,6 +183,14 @@ export class ServeurDePoche {
            pris trois versions de retard sans que personne la croise. Le douzieme
            effet s'ajoute a `A_CIBLE`, et `contrat_horsligne.test.js` le dit tout
            de suite si on l'oublie. */
+        /* ⛔ ET UN JETON DEJA DEPENSE ARMAIT UNE VISEE FANTOME. Rien ici ne
+           demandait si l'effet etait encore jouable : le plateau passait en
+           cible, les colonnes cessaient d'accepter le de — `dice_match.js` sort
+           tant que `pending` est pose — et il fallait deviner le gobelet pour en
+           sortir. Le vrai serveur, lui, REFUSE avant d'armer et renvoie sa
+           raison, que l'ecran affiche. On refuse aux memes conditions que le
+           moteur, en silence comme lui : c'est le ratelier qui grise. */
+        if (!this.partie.peutJouer(moi, msg.identify)) { this.pousser([]); return true; }
         if (A_CIBLE.has(msg.identify)) { this.enAttente = msg.identify; this.pousser([]); return true; }
         const fx = this.partie.effet(moi, msg.identify, null);
         this.pousser(fx || []);

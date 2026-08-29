@@ -190,6 +190,16 @@ export function onOver(m) {
        s'attendre pour rien — alors que leur salon est encore ouvert. On y
        retourne directement : c'est le sens du bouton quand il porte un nom. */
     if (S.salon) { S.net.send({ t: 'relancer' }); return; }
+    /* ⛔ ET HORS LIGNE, CE BOUTON NE FAISAIT RIEN. `S.net` est alors la vraie
+       liaison — morte — et son `send()` rend `false` sans un mot : la carte se
+       fermait, aucune partie ne demarrait, aucun message. C'est pourtant la, ou
+       il n'y a rien d'autre a faire, qu'on enchaine les parties. Le pont a
+       toujours eu ce repli (« Affronter l'IA » y bascule tout seul) ; la carte
+       de fin, non. */
+    if (!S.net || !S.net.ready) {
+      if (UI.jouerHorsLigne) UI.jouerHorsLigne();
+      return;
+    }
     S.net.send({ t: 'play', mode });
   };
   $('#dc-back').onclick = leave;

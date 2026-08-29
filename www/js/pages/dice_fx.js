@@ -369,12 +369,18 @@ function unEffet(f) {
       return;
     }
 
-    if (f.kind === 'lent') {
-      /* ⛔ CELUI-LA NE SE VOIT QUE CHEZ SON PORTEUR, ET C'EST VOULU. Le temps
-         double appartient au tour de celui qui le joue ; l'adversaire, lui, voit
-         deja passer l'annonce de l'effet (`bonus`). Une seconde banniere sur son
-         ecran lui ferait croire que SA pendule vient de changer. */
-      if (f.seat === S.seat) banner(t('fx.slow'), 'good', f.seat);
+    /* ⛔ CETTE BRANCHE ETAIT MORTE, ET LA BANNIERE N'APPARAISSAIT JAMAIS. Le
+       sablier ne rallonge plus le tour de celui qui le joue : depuis Anne Bonny,
+       il PRESSE celui d'en face — « le bonus accelere le prochain tour de
+       l'adversaire ». Le serveur emet donc `presse`, avec le siege de la VICTIME,
+       et plus jamais `lent`. Personne n'avait suivi cote ecran : la banniere
+       « Tour presse » etait traduite dans les quatre langues et ne s'affichait
+       nulle part, si bien que la victime voyait sa pendule tomber de moitie sans
+       la moindre explication.
+       ⚠️ ET C'EST ELLE QU'ON PREVIENT, pas le porteur : c'est sa pendule qui
+       change. Le porteur, lui, voit deja passer l'annonce de l'effet. */
+    if (f.kind === 'presse') {
+      if (f.seat === S.seat) banner(t('fx.slow'), 'bad', f.seat);
       return;
     }
 

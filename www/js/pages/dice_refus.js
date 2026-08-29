@@ -44,6 +44,26 @@ const REFUS = {
      pleine — et aucune de ces phrases n'etait dans cette table. Un joueur
      francophone lisait « one of their columns is already frozen » au milieu de
      son jeu. C'est exactement le defaut que ce fichier existe pour empecher. */
+  /* ⛔ ET SEIZE AUTRES MANQUAIENT ENCORE — les plus courants, ceux du moteur
+     d'effets lui-meme : « lancez d'abord », « plus d'effet », « deja joue ».
+     Mesure : sur trente refus que le serveur sait emettre, seize traversaient
+     cette table sans traduction et s'affichaient en anglais. */
+  'roll your die first': 'err.lanceDabord',
+  'your board is empty': 'err.monPlateauVide',
+  'the enemy board is empty': 'err.plateauAdverseVide',
+  'already played this bonus': 'err.effetDejaJoue',
+  'no bonus left for this match': 'err.plusDeffets',
+  'their next turn is already rushed': 'err.tourDejaPresse',
+  'you are already looking': 'err.dejaEnTrainDeRegarder',
+  'this cell is empty': 'err.caseVide',
+  'this cell cannot be cleared': 'err.caseIntouchable',
+  'this column is full': 'err.colonnePleine',
+  'finish the bonus you already started': 'err.finirLeffet',
+  'no bonus is waiting for a target': 'err.aucunEffetEnVisee',
+  'you do not own this bonus': 'err.effetPasEnCale',
+  'unknown bonus': 'err.effetInconnu',
+  'unknown cell': 'err.caseInconnue',
+  'unknown column': 'err.colonneInconnue',
   'one of their columns is already frozen': 'err.colGelee',
   'their next turn is already skipped': 'err.tourVole',
   'your turn is already stretched': 'err.tourRallonge',

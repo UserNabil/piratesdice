@@ -367,10 +367,29 @@ async function connect() {
      « S'il joue en mode hors ligne il faut pas le deranger et le laisser
      finir. » On repasse plus tard : la table d'abord. */
   if (S.poche) { relancerPlusTard(); return; }
-  screen('connect');
-  $('#dc-screen-connect').innerHTML =
-    '<div class="dc-connect"><img class="dc-wheel" src="' + ASSETS + 'img/icon_loader.png" alt="">'
-    + '<p>' + esc(t('connect.boarding')) + '</p></div>';
+
+  /* ⛔ CETTE ROUE RECOUVRAIT TOUT, A CHAQUE TENTATIVE. `connectFailed` prend
+     bien soin de ne pas deranger le joueur — mais la RELANCE repasse par ici, et
+     `screen('connect')` repeignait la roue par-dessus ce qu'il regardait.
+     Deux mesures, deux pannes :
+       — sans serveur, le pont s'affichait 448 ms puis disparaissait pour
+         toujours derriere « On monte a bord… » : le mode hors ligne, celui-la
+         meme qui doit marcher sans serveur, etait inatteignable ;
+       — une coupure en pleine partie remplacait le plateau par la meme roue
+         pendant les trente secondes de la fenetre de reprise, sans un mot.
+     « Il faut pas que ca recharge a chaque detection du serveur : tout ce qui
+     est cote serveur doit etre en background, et l'affichage ne change que la ou
+     il doit changer. » La roue n'a donc qu'un seul moment legitime — le tout
+     premier lancement, quand il n'y a encore rien a montrer. Ensuite on se
+     reconnecte en silence, et c'est le bandeau du pont qui parle. */
+  const rienALEcran = !document.querySelector('#dicewrap .dc-screen.on')
+    || !!document.querySelector('#dc-screen-connect.on');
+  if (rienALEcran) {
+    screen('connect');
+    $('#dc-screen-connect').innerHTML =
+      '<div class="dc-connect"><img class="dc-wheel" src="' + ASSETS + 'img/icon_loader.png" alt="">'
+      + '<p>' + esc(t('connect.boarding')) + '</p></div>';
+  }
 
   S.net = new DiceNet({
     welcome: (m) => {
@@ -1103,7 +1122,11 @@ export function jouerHorsLigne() {
          « partie refusee » pour une partie qu'il a honnetement jouee. On ne
          promet rien qu'on ne puisse tenir : elle a ete jouee, elle ne compte
          pas, et la carte de fin le dit en toutes lettres. */
-      if (jeton) cale.garderPartie(jeton.id, poche.partie.auJournal());
+      /* ⚠️ ET UN JOURNAL INCOMPLET NON PLUS. `auJournal()` rend `null` quand le
+         moteur a du cesser de noter : l'envoyer ferait regler la partie sur un
+         prefixe, avec un score que le joueur n'a jamais vu. */
+      const journal = poche.partie.auJournal();
+      if (jeton && journal) cale.garderPartie(jeton.id, journal);
       S.poche = null;
       S.net = vrai;
       onOver(jeton ? m : Object.assign({}, m, { horsLigneLibre: true }));

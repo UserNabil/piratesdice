@@ -799,6 +799,27 @@ export const FR = {
   'shop.effetFerme': 'Encore {n} parties — il s’ouvre avec son capitaine.',
   /* Les refus que le serveur formule pour les six effets neufs. Sans eux, ils
      sortaient en anglais brut au milieu d'une interface francaise. */
+  /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur
+     francophone lisait « no bonus left for this match » en travers de son
+     plateau. Ce sont les plus courants : on les rencontre plusieurs fois par
+     duel, et ce fichier existe precisement pour qu'ils n'arrivent jamais
+     dans la langue du serveur. */
+  'err.lanceDabord': 'Lancez d\'abord votre dé.',
+  'err.monPlateauVide': 'Votre plateau est vide.',
+  'err.plateauAdverseVide': 'Le plateau adverse est vide.',
+  'err.effetDejaJoue': 'Cet effet a déjà été joué.',
+  'err.plusDeffets': 'Plus d’effet pour cette partie.',
+  'err.tourDejaPresse': 'Son prochain tour est déjà pressé.',
+  'err.dejaEnTrainDeRegarder': 'Vous regardez déjà son dé.',
+  'err.caseVide': 'Cette case est vide.',
+  'err.caseIntouchable': 'Cette case ne peut pas être effacée.',
+  'err.colonnePleine': 'Cette colonne est pleine.',
+  'err.finirLeffet': 'Terminez l’effet déjà commencé.',
+  'err.aucunEffetEnVisee': 'Aucun effet n’attend de cible.',
+  'err.effetPasEnCale': 'Vous n’avez pas cet effet en cale.',
+  'err.effetInconnu': 'Effet inconnu.',
+  'err.caseInconnue': 'Case inconnue.',
+  'err.colonneInconnue': 'Colonne inconnue.',
   'err.colGelee': 'Une de ses colonnes est déjà gelée.',
   'err.tourVole': 'Son prochain tour est déjà volé.',
   'err.tourRallonge': 'Son prochain tour est déjà pressé.',

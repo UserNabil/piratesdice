@@ -740,6 +740,27 @@ export const EN = {
   'over.horsLigneLibre': 'Played offline with no ticket: it earns nothing. Connect once to pick some up.',
   'offline.pasIci': 'That one cannot be played offline.',
   'shop.effetFerme': '{n} matches to go - it opens with its captain.',
+  /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur
+     francophone lisait « no bonus left for this match » en travers de son
+     plateau. Ce sont les plus courants : on les rencontre plusieurs fois par
+     duel, et ce fichier existe precisement pour qu'ils n'arrivent jamais
+     dans la langue du serveur. */
+  'err.lanceDabord': 'Roll your die first.',
+  'err.monPlateauVide': 'Your board is empty.',
+  'err.plateauAdverseVide': 'The enemy board is empty.',
+  'err.effetDejaJoue': 'You already played this effect.',
+  'err.plusDeffets': 'No effects left this match.',
+  'err.tourDejaPresse': 'Their next turn is already rushed.',
+  'err.dejaEnTrainDeRegarder': 'You are already looking.',
+  'err.caseVide': 'That cell is empty.',
+  'err.caseIntouchable': 'That cell cannot be cleared.',
+  'err.colonnePleine': 'That column is full.',
+  'err.finirLeffet': 'Finish the effect you started.',
+  'err.aucunEffetEnVisee': 'No effect is waiting for a target.',
+  'err.effetPasEnCale': 'You do not own this effect.',
+  'err.effetInconnu': 'Unknown effect.',
+  'err.caseInconnue': 'Unknown cell.',
+  'err.colonneInconnue': 'Unknown column.',
   'err.colGelee': 'One of their columns is already frozen.',
   'err.tourVole': 'Their next turn is already taken.',
   'err.tourRallonge': 'Their next turn is already rushed.',

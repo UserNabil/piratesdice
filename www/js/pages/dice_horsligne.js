@@ -119,12 +119,33 @@ export class PartieHorsLigne {
 
   /** Le journal, tel que le serveur l'attend. */
   auJournal() {
+    /* Un journal ampute ne vaut rien : mieux vaut ne rien envoyer que de faire
+       regler une partie sur un prefixe. `garderPartie` s'abstient alors. */
+    if (this.journalIncomplet) return null;
     return { v: 2, mode: 'solo', horsLigne: true, capitaines: this.capitaines.slice(),
              quarts: this.quarts.slice(), coups: this.journal };
   }
 
+  /* ⛔ CETTE LIGNE JETAIT LA FIN DES PARTIES LONGUES, EN SILENCE. Le plafond
+     valait 190, sans un mot pour dire pourquoi ; au-dela, chaque coup etait
+     simplement perdu. Le serveur recevait alors un PREFIXE de partie, l'acceptait
+     — rien ne lui demandait qu'un plateau fut plein — et reglait dessus :
+     mesure, le joueur voyait 41-33 et une victoire, le serveur enregistrait
+     31-57 et une defaite. Ni l'un ni l'autre n'en savait rien.
+
+     Deux gestes. Le plafond monte a 600, loin au-dela des 276 lignes de la plus
+     longue partie qu'un million de tirages ait su produire — une partie n'a pas
+     de duree bornee, chaque pose pouvant vider trois cases d'en face. Et s'il
+     est malgre tout atteint, on ne tronque plus : on MARQUE le journal comme
+     incomplet, et il ne partira pas. Une partie perdue, le joueur ne la voit
+     pas ; une partie dont on lui invente le score, il la voit passer.
+
+     ⚠️ LE PLAFOND DU SERVEUR SUIT LE MEME CHIFFRE (horsligne.js, MAX_COUPS).
+     Le laisser dessous ne ferait que changer un mensonge muet en un refus
+     injustifie. */
   noter(ligne) {
-    if (this.journal.length < 190) this.journal.push(ligne);
+    if (this.journal.length >= 600) { this.journalIncomplet = true; return; }
+    this.journal.push(ligne);
   }
 
   /** L'instantane, dans la forme exacte que l'ecran de jeu attend du serveur. */
@@ -286,6 +307,23 @@ export class PartieHorsLigne {
    * creerait deux inventaires a reconcilier — exactement le genre de dette qu'on
    * paie au premier conflit.
    */
+  /**
+   * L'effet peut-il seulement partir ?
+   *
+   * ⚠️ LES MEMES GARDES QUE `effet()`, CELLES QUI NE DEPENDENT PAS DE LA CIBLE.
+   * La couche qui parle a l'ecran a besoin de la reponse AVANT d'armer une
+   * visee : armer un effet qui sera refuse met le plateau en cible pour rien et
+   * lui fait refuser le de. Le vrai serveur repond a la meme question au meme
+   * moment (`check`, puis « already played this bonus »).
+   */
+  peutJouer(siege, identifiant) {
+    if (this.finie || this.tour !== siege) return false;
+    if (identifiant === 'B004' || identifiant === 'B008') return false;
+    if (this.effets[siege].includes(identifiant)) return false;
+    if (this.effets[siege].length >= this.maxEffets) return false;
+    return true;
+  }
+
   effet(siege, identifiant, cellule) {
     if (this.finie || this.tour !== siege) return null;
     /* ⛔ DEUX EFFETS NE SE JOUENT PAS HORS LIGNE, ET C'EST UN CHOIX ASSUME.

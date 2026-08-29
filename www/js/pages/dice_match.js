@@ -837,7 +837,15 @@ function stockMarkup(st, seat) {
      sous son nom et cherchait des bonus qu'il n'avait pas. Pour son propre
      siege, on compte ce qu'il possede vraiment ; pour l'IA d'en face, le chiffre
      du serveur est le bon, c'est elle qui detient la reserve. */
-  let n = (st.bonusStock && st.bonusStock[seat]) || 0;
+  /* ⛔ LES PASTILLES COMPTAIENT LES EFFETS PAYES, PAS CEUX QU'ON A LE DROIT DE
+     JOUER. `bonusStock` ignore le trait offert du capitaine, alors que le
+     ratelier lit `bonusLeft`, qui le compte. Les deux nombres se contredisaient
+     dans le meme ecran : tantot la pastille promettait un effet que le serveur
+     allait refuser, tantot elle annoncait zero alors que le trait etait encore
+     jouable. Un seul chiffre fait foi, et c'est celui du plafond. */
+  let n = (st.bonusLeft && st.bonusLeft[seat] !== undefined
+    ? st.bonusLeft[seat]
+    : (st.bonusStock && st.bonusStock[seat])) || 0;
   if (seat === S.seat) {
     const enCale = (S.inventory || []).filter(jouable)
       .reduce((t, i) => t + (i.quantity > 0 ? i.quantity : 0), 0)
@@ -1333,13 +1341,34 @@ export function renderBonusRack() {
      poche les refuse tous les deux — en silence, donc le jeton paraissait mort.
      On le dit avant le geste, comme pour tous les autres refus. */
   const enPoche = !!S.poche;
+  /* ⛔ CINQ JETONS AVAIENT L'AIR JOUABLES AU PREMIER TOUR DE CHAQUE PARTIE, et
+     le serveur les refusait tous les cinq. La table ci-dessous ne connaissait que
+     les refus rares — une colonne deja gelee, un tour deja vole — et ignorait les
+     plus frequents de tous : un de pas encore lance, un plateau encore vide.
+     Mesure : plateaux vides, de en main, cinq refus sur onze jetons vifs.
+     Un bouton qui ne peut rien faire doit le montrer AVANT le geste ; c'est la
+     regle que ce bloc s'est deja donnee pour le gel. */
+  const monPlateauVide = !(dit.grids && dit.grids[S.seat] || []).some((v) => v !== null);
+  const sonPlateauVide = !(dit.grids && dit.grids[foe] || []).some((v) => v !== null);
+  const deEnMain = !!(dit.dice && dit.dice[S.seat] !== null && dit.dice[S.seat] !== undefined);
   const IMPOSSIBLE = {
+    /* Relancer demande un de en main ; effacer une de ses cases demande d'en
+       avoir une ; le canon, le troc et la bordee demandent un plateau en face. */
+    B001: !deEnMain ? 'err.lanceDabord' : null,
+    B002: monPlateauVide ? 'err.monPlateauVide' : null,
+    B003: sonPlateauVide ? 'err.plateauAdverseVide' : null,
     B004: enPoche ? 'offline.pasIci' : null,
+    B009: (monPlateauVide || sonPlateauVide) ? 'err.pasDeVisAVis' : null,
+    B010: (monPlateauVide && sonPlateauVide) ? 'err.deuxPlateauxVides' : null,
     B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
     B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
     /* Il vise desormais EN FACE : plus besoin d'etre sur son propre tour au sens
        ou l'entendait l'ancienne version, mais on ne presse pas deux fois. */
-    B008: enPoche ? 'offline.pasIci'
+    /* ⚠️ ET CONTRE UNE IA NON PLUS : une machine n'a pas de pendule a presser.
+       Le serveur le refuse desormais ; l'ecran le dit avant le geste, pour qu'on
+       ne brule pas une des trois places d'effet pour rien. */
+    B008: (enPoche || (dit.players && dit.players[foe] && dit.players[foe].ai))
+      ? 'offline.pasIci'
       : (dit.tourCourt && dit.tourCourt[foe] ? 'fx.alreadySlowed' : null),
     B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
   };

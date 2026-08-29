@@ -764,6 +764,27 @@ export const ES = {
   'over.horsLigneLibre': 'Jugada sin conexión y sin ficha: no da nada. Conéctate una vez para recoger fichas.',
   'offline.pasIci': 'Ese no se puede jugar sin conexión.',
   'shop.effetFerme': 'Faltan {n} partidas: se abre con su capitán.',
+  /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur
+     francophone lisait « no bonus left for this match » en travers de son
+     plateau. Ce sont les plus courants : on les rencontre plusieurs fois par
+     duel, et ce fichier existe precisement pour qu'ils n'arrivent jamais
+     dans la langue du serveur. */
+  'err.lanceDabord': 'Tira primero tu dado.',
+  'err.monPlateauVide': 'Tu tablero está vacío.',
+  'err.plateauAdverseVide': 'El tablero enemigo está vacío.',
+  'err.effetDejaJoue': 'Ya jugaste este efecto.',
+  'err.plusDeffets': 'No quedan efectos en esta partida.',
+  'err.tourDejaPresse': 'Su próximo turno ya está acelerado.',
+  'err.dejaEnTrainDeRegarder': 'Ya estás mirando.',
+  'err.caseVide': 'Esa casilla está vacía.',
+  'err.caseIntouchable': 'Esa casilla no se puede vaciar.',
+  'err.colonnePleine': 'Esa columna está llena.',
+  'err.finirLeffet': 'Termina el efecto que empezaste.',
+  'err.aucunEffetEnVisee': 'Ningún efecto espera un objetivo.',
+  'err.effetPasEnCale': 'No tienes ese efecto.',
+  'err.effetInconnu': 'Efecto desconocido.',
+  'err.caseInconnue': 'Casilla desconocida.',
+  'err.colonneInconnue': 'Columna desconocida.',
   'err.colGelee': 'Una de sus columnas ya está congelada.',
   'err.tourVole': 'Su próximo turno ya está robado.',
   'err.tourRallonge': 'Su próximo turno ya está acortado.',
