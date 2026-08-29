@@ -940,9 +940,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    lui donnait de taille : elle s'affichait donc a sa taille NATIVE — un dessin
    de 256 px — et le bouton avec elle. L'en-tete occupait a lui seul un tiers de
    la page, les plateaux commencaient sous le pli et les commandes de lecture
-   tombaient a deux cents pixels sous l'ecran. Mesure au banc : plateaux a
-   y=413, commandes a y=1035, pour une fenetre de 844.
-   Il redevient ce qu'il est : un bouton de retour, a cote du titre. */
+   tombaient a deux cents pixels sous l'ecran. */
 #dicewrap .dc-rep-tete [data-rep-retour] {
   flex: 0 0 auto;
   display: inline-flex;
@@ -958,51 +956,89 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   display: block;
 }
 
-/* Les deux plateaux, l'un au-dessus de l'autre et A LA MEME ECHELLE QU'EN
-   PARTIE : c'est la seule facon de reconnaitre le coup qu'on revoit. */
-#dicewrap .dc-rep-tables {
+/* ══ LA REDIFFUSION A LA FORME D'UNE PARTIE ═════════════════════════════════
+   Plateau d'en face, barre du milieu, mon plateau : exactement l'arene. La
+   barre du milieu porte les commandes la ou vivent d'ordinaire les deux cartes
+   de capitaine — on reconnait l'ecran avant de le lire, et le regard retrouve
+   les plateaux a la place ou il les a laisses. */
+#dicewrap .dc-rep-arene {
   display: grid;
   gap: 6px;
   justify-items: center;
 }
+#dicewrap .dc-rep-table { width: 100%; display: grid; justify-items: center; }
+
+#dicewrap .dc-rep-barre {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(10, 4, 26, .42);
+  box-shadow: inset 0 0 0 1px rgba(201, 188, 234, .22);
+}
 
 #dicewrap .dc-rep-legende {
-  min-height: 34px;
+  min-height: 22px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 13px;
-  background: rgba(0, 0, 0, .3);
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .22);
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--txt-dim, #C9BCEA);
 }
+#dicewrap .dc-rep-piste { width: 100%; margin: 0; }
+
+/* Le score du moment, et ce que le coup a emporte : la legende les distingue
+   parce qu'on ne les lit pas pour la meme raison. */
 #dicewrap .dc-rep-pts {
-  margin-inline-start: auto;
-  font-variant-numeric: tabular-nums;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 14px;
   color: var(--gold-hi, #FFE479);
+  flex: 0 0 auto;
 }
 #dicewrap .dc-rep-boum { color: #FF9E5A; }
 
-#dicewrap .dc-rep-piste { width: 100%; }
-
-#dicewrap .dc-rep-cmd { display: flex; align-items: center; gap: 8px; }
-
-#dicewrap .dc-rep-btn {
-  min-width: 52px;
-  min-height: 40px;
-  border: 0;
-  border-radius: 10px;
-  font: inherit;
-  font-size: 15px;
-  color: #241503;
-  cursor: pointer;
-  background: linear-gradient(180deg, var(--gold-hi, #FFE479), var(--gold-md, #FCA212));
-  box-shadow: inset 0 1px 0 rgba(255, 248, 218, .8), inset 0 0 0 1px rgba(70, 42, 8, .6);
+#dicewrap .dc-rep-cmd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-#dicewrap .dc-rep-vitesses { display: flex; gap: 4px; margin-inline-start: auto; }
+/* ⛔ LES COMMANDES ETAIENT DES CARACTERES : « ◀◀ », « ▶ », « ❚❚ ». Les dessins
+   existaient pourtant dans le depot depuis le debut — icon_play, icon_pause,
+   icon_replay, icon_back, icon_forward — et un glyphe de police au milieu d'un
+   jeu peint a la main se voit tout de suite. Ils portent le meme contour blanc
+   que le reste de l'interface. */
+#dicewrap .dc-rep-btn {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#dicewrap .dc-rep-btn > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
+  transition: transform .12s;
+}
+#dicewrap .dc-rep-btn:active > img { transform: scale(.9); }
 
+/* Le bouton central est le geste principal : il est plus gros que ses voisins. */
+#dicewrap .dc-rep-jouer { width: 54px; height: 54px; }
+
+#dicewrap .dc-rep-vitesses { display: flex; gap: 4px; margin-inline-start: 6px; }
 #dicewrap .dc-rep-x {
   min-width: 40px;
   min-height: 34px;

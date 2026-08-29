@@ -816,4 +816,5 @@ export const FR = {
   'over.againFriend': 'Rejouer avec {name}',
   'room.amiParti': 'Votre ami a quitté la table.',
   'room.salonFerme': 'Ce salon n’existe plus.',
+  'rep.rejouer': 'Revoir depuis le début',
 };

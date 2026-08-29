@@ -782,4 +782,5 @@ export const AR = {
   'over.againFriend': 'العب مجدّدًا مع {name}',
   'room.amiParti': 'غادر صديقك الطاولة.',
   'room.salonFerme': 'لم تعد هذه الغرفة موجودة.',
+  'rep.rejouer': 'شاهد من البداية',
 };

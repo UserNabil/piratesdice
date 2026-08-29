@@ -757,4 +757,5 @@ export const EN = {
   'over.againFriend': 'Play {name} again',
   'room.amiParti': 'Your friend has left the table.',
   'room.salonFerme': 'That room is gone.',
+  'rep.rejouer': 'Watch again from the start',
 };

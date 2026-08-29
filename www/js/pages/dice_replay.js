@@ -118,36 +118,57 @@ export function ouvrirRejeu(partie) {
   const lui = 1 - moi;
   const nom = (s) => (partie.joueurs && partie.joueurs[s] && partie.joueurs[s].nom) || '?';
 
+  /* ⛔ LA REDIFFUSION NE RESSEMBLAIT PAS AU JEU. En-tete, deux plateaux, une
+     legende, une piste, puis une rangee de caracteres — « ◀◀ ▶ ▶▶ » — ecrits en
+     texte alors que les icones existent dans le depot depuis le debut :
+     `icon_play`, `icon_pause`, `icon_replay`, `icon_back`, `icon_forward`.
+     « Il faut exactement le meme affichage que durant la partie, sauf qu'a la
+     place des sections joueur on a les icones et boutons pour replay. »
+
+     La page reprend donc la disposition de l'arene — plateau d'en face, barre du
+     milieu, mon plateau — et la barre du milieu porte les commandes au lieu des
+     deux cartes de capitaine. On reconnait l'ecran avant de le lire. */
+  const bouton = (quoi, icone, cle) =>
+    '<button class="dc-rep-btn" data-rep="' + quoi + '" title="' + esc(t(cle)) + '"'
+    + ' aria-label="' + esc(t(cle)) + '">'
+    + '<img src="' + ASSETS + 'img/' + icone + '.png" alt=""></button>';
+
   hote.innerHTML = '<div class="dc-rep">'
     + '<div class="dc-rep-tete">'
       + '<button class="dc-btn dc-btn-sm dc-btn-ghost" data-rep-retour>'
       + '<img src="' + ASSETS + 'img/icon_back.png" alt="">' + esc(t('rep.retour')) + '</button>'
       + '<b>' + esc(nom(moi)) + ' – ' + esc(nom(lui)) + '</b>'
     + '</div>'
-    + '<div class="dc-rep-tables"></div>'
-    + '<div class="dc-rep-legende" data-rep-legende></div>'
-    + '<input class="dc-rep-piste" type="range" min="0" max="' + (partie.images.length - 1)
-      + '" value="0" data-rep-piste aria-label="' + esc(t('rep.coup')) + '">'
-    + '<div class="dc-rep-cmd">'
-      + '<button class="dc-rep-btn" data-rep="prev" title="' + esc(t('rep.prev')) + '"'
-        + ' aria-label="' + esc(t('rep.prev')) + '">◀◀</button>'
-      + '<button class="dc-rep-btn dc-rep-jouer" data-rep="play" title="' + esc(t('rep.play')) + '"'
-        + ' aria-label="' + esc(t('rep.play')) + '">▶</button>'
-      + '<button class="dc-rep-btn" data-rep="next" title="' + esc(t('rep.next')) + '"'
-        + ' aria-label="' + esc(t('rep.next')) + '">▶▶</button>'
-      + '<span class="dc-rep-vitesses">' + VITESSES.map((v) =>
-          '<button class="dc-rep-x' + (v === 1 ? ' on' : '') + '" data-vitesse="' + v + '">×'
-          + String(v).replace('.', ',') + '</button>').join('') + '</span>'
+    + '<div class="dc-rep-arene">'
+      + '<div class="dc-rep-table" data-rep-haut></div>'
+      /* La barre du milieu : elle occupe la place des deux cartes de capitaine,
+         et c'est ce qui fait qu'on reconnait l'ecran de partie. */
+      + '<div class="dc-rep-barre">'
+        + '<div class="dc-rep-legende" data-rep-legende></div>'
+        + '<input class="dc-rep-piste" type="range" min="0" max="'
+          + (partie.images.length - 1) + '" value="0" data-rep-piste'
+          + ' aria-label="' + esc(t('rep.coup')) + '">'
+        + '<div class="dc-rep-cmd">'
+          + bouton('prev', 'icon_back', 'rep.prev')
+          + '<button class="dc-rep-btn dc-rep-jouer" data-rep="play"'
+            + ' title="' + esc(t('rep.play')) + '" aria-label="' + esc(t('rep.play')) + '">'
+            + '<img src="' + ASSETS + 'img/icon_play.png" alt="" data-rep-icone></button>'
+          + bouton('next', 'icon_forward', 'rep.next')
+          + '<span class="dc-rep-vitesses">' + VITESSES.map((v) =>
+              '<button class="dc-rep-x' + (v === 1 ? ' on' : '') + '" data-vitesse="' + v + '">×'
+              + String(v).replace('.', ',') + '</button>').join('') + '</span>'
+        + '</div>'
+      + '</div>'
+      + '<div class="dc-rep-table" data-rep-bas></div>'
     + '</div></div>';
 
   /* ⚠️ LES MEMES PLATEAUX QUE PENDANT LA PARTIE, ET SURTOUT DANS LE MEME SENS :
      le mien en bas. Rejouer avec les cotes inverses obligerait a se reperer
      avant de comprendre, ce qui est exactement le contraire du but. */
-  const tables = hote.querySelector('.dc-rep-tables');
   lecteur.boards[lui] = buildBoard(lui, true);
   lecteur.boards[moi] = buildBoard(moi, false);
-  tables.appendChild(lecteur.boards[lui]);
-  tables.appendChild(lecteur.boards[moi]);
+  hote.querySelector('[data-rep-haut]').appendChild(lecteur.boards[lui]);
+  hote.querySelector('[data-rep-bas]').appendChild(lecteur.boards[moi]);
 
   hote.querySelector('[data-rep-retour]').onclick = () => {
     fermerLecteur();
@@ -273,7 +294,20 @@ function majBouton() {
   const b = document.querySelector('.dc-rep-jouer');
   if (!b) return;
   const joue = !!(lecteur && lecteur.horloge);
-  b.textContent = joue ? '❚❚' : '▶';
-  b.setAttribute('aria-label', t(joue ? 'rep.pause' : 'rep.play'));
-  b.setAttribute('title', t(joue ? 'rep.pause' : 'rep.play'));
+  /* ⛔ IL ECRIVAIT « ❚❚ » ET « ▶ » PAR-DESSUS SON PROPRE DESSIN. `textContent`
+     remplace TOUT le contenu du bouton, image comprise : le premier appui
+     effacait l'icone et la remplacait par deux barres de texte. Les dessins
+     existent — `icon_play`, `icon_pause` — et c'est l'IMAGE qu'on change.
+     ⚠️ Et l'icone de fin n'est pas la meme : arrive au dernier coup, le bouton
+     ne met pas en pause, il RECOMMENCE. Il le montre. */
+  const fini = !!(lecteur && lecteur.i >= lecteur.partie.images.length - 1);
+  const quoi = joue ? 'pause' : (fini ? 'replay' : 'play');
+  const img = b.querySelector('img');
+  if (img) {
+    const src = ASSETS + 'img/icon_' + quoi + '.png';
+    if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+  }
+  const cle = joue ? 'rep.pause' : (fini ? 'rep.rejouer' : 'rep.play');
+  b.setAttribute('aria-label', t(cle));
+  b.setAttribute('title', t(cle));
 }
