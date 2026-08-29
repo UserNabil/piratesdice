@@ -162,6 +162,12 @@ export class PartieHorsLigne {
       bonusJoues: [this.effets[0].slice(), this.effets[1].slice()],
       bonusLeft: [this.maxEffets - this.effets[0].length, this.maxEffets - this.effets[1].length],
       bonusStock: [this.maxEffets - this.effets[0].length, this.maxEffets - this.effets[1].length],
+      /* ⚠️ VISER N'EST PAS UN ETAT DU MOTEUR. Il prend la case en ARGUMENT de
+         `effet()` : il n'a jamais d'effet a moitie joue, et son instantane est
+         aussi ce que le verificateur du serveur rejoue. C'est la couche qui
+         parle a l'ecran — `dice_solo.js`, `avecVisee()` — qui remplit ce champ
+         pendant qu'on vise. Le laisser en dur a `null` LA-BAS aussi a rendu les
+         sept effets a cible injouables hors ligne. */
       pending: null,
       players: [0, 1].map((i) => ({
         name: this.noms[i] || (i === this.moi ? '' : 'IA'),
@@ -230,7 +236,26 @@ export class PartieHorsLigne {
         : (avantEcart < 0 && apresEcart > 0 ? 'lead' : null)));
     if (pique) fx.push(pique);
 
-    if (R.isFull(this.grilles[0]) && R.isFull(this.grilles[1])) this.finie = true;
+    /* ⛔ `&&` LA OU LE SERVEUR ECRIT `||`, ET LA PARTIE NE FINISSAIT JAMAIS.
+       Le serveur s'arrete des qu'UN plateau est plein (`match.js` : « isFull(0)
+       || isFull(1) ») ; ce moteur-ci attendait que les DEUX le soient. Or ils ne
+       se remplissent presque jamais ensemble : la destruction vide la grille
+       d'en face a chaque coup. Le joueur dont le plateau se remplissait le
+       premier n'avait alors plus aucun coup legal — `poser` refusait ses quatre
+       colonnes, `tourDeLaMachine` rendait null, et rien ne denouait : le mode
+       hors ligne n'a pas de pendule, et `dice_solo.js` avale un refus en
+       silence. Ecran fige, sans verdict et sans sortie autre que quitter — ce
+       qui perd le jeton.
+
+       Mesure au banc, 5 000 graines en configuration de production : 27,7 % des
+       parties sans effets et 33,4 % avec. Une partie sur trois. Dans 589 cas
+       figes sur 589 examines, exactement UN plateau etait plein.
+
+       ⚠️ Les deux moteurs doivent produire la MEME suite de coups — c'est
+       l'en-tete de ce fichier qui le dit, et c'est ce dont depend la
+       verification au retour du reseau. Une condition de fin qui differe est
+       une divergence comme une autre. */
+    if (R.isFull(this.grilles[0]) || R.isFull(this.grilles[1])) this.finie = true;
     else this.passerLaMain(siege, fx);
     return fx;
   }

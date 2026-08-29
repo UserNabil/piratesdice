@@ -21,6 +21,24 @@
 
 import { PartieHorsLigne } from './dice_horsligne.js';
 
+/* ⚠️ LA MEME TABLE QUE `needsCell` DANS src/game/bonus.js, COTE SERVEUR. Le
+   moteur de poche n'a pas acces au catalogue du serveur — il tourne sans
+   reseau, c'est tout son objet — mais il doit dire la meme chose. On la garde
+   donc courte, nommee, et a un seul endroit : la recopier en ligne dans une
+   condition est exactement ce qui l'a laissee prendre trois versions de retard.
+   Les effets qui visent : effacer une de ses cases, un canon, une benediction,
+   un gel de colonne, un troc, une bordee, une malediction. */
+const A_CIBLE = new Map([
+  /*        colonne entiere ?  plateau vise (0 = le sien, 1 = celui d'en face) */
+  ['B002', { colonne: false, adverse: false }],   // effacer une de ses cases
+  ['B003', { colonne: false, adverse: true }],    // le canon
+  ['B005', { colonne: true, adverse: false }],    // la benediction
+  ['B006', { colonne: true, adverse: true }],     // le gel de colonne
+  ['B009', { colonne: false, adverse: false }],   // le troc de des face a face
+  ['B010', { colonne: true, adverse: false }],    // la bordee, les deux colonnes
+  ['B011', { colonne: true, adverse: true }],     // la malediction
+]);
+
 const PAUSE_MACHINE = 900;
 
 export class ServeurDePoche {
@@ -49,7 +67,36 @@ export class ServeurDePoche {
   /** Diffuser l'etat, comme le ferait le serveur apres chaque coup. */
   pousser(fx) {
     if (this.mort || !this.on.state) return;
-    this.on.state({ t: 'state', state: this.partie.instantane(), fx: fx || [] });
+    this.on.state({ t: 'state', state: this.avecVisee(), fx: fx || [] });
+  }
+
+  /**
+   * L'instantane du moteur, plus l'effet en train de viser.
+   *
+   * ⛔ SANS CE CHAMP, AUCUN EFFET A CIBLE N'ETAIT JOUABLE HORS LIGNE. Le moteur
+   * publiait `pending: null` en dur : l'ecran de jeu ne sait pas qu'on vise, et
+   * c'est LUI qui decide si un clic sur une case compte. `dice_match.js` sort
+   * des la premiere ligne — « if (!pending || pending.seat !== S.seat) return »
+   * — donc le clic ne partait jamais, et le gobelet relançait les des au lieu de
+   * desarmer. L'effet restait arme jusqu'a la fin de la partie, sans rien faire
+   * et sans le dire. Sept effets sur onze, muets, hors ligne.
+   *
+   * ⚠️ CE CHAMP N'EST PAS DANS LE MOTEUR, ET IL NE DOIT PAS Y ETRE. Le moteur
+   * prend la case en ARGUMENT de `effet()` : il n'a pas d'effet a moitie joue, et
+   * son instantane est aussi ce que le verificateur du serveur rejoue. Viser est
+   * un etat d'ECRAN, il vit donc dans la couche qui parle a l'ecran — ici.
+   */
+  avecVisee() {
+    const st = this.partie.instantane();
+    const spec = this.enAttente ? A_CIBLE.get(this.enAttente) : null;
+    if (spec) {
+      st.pending = {
+        seat: this.partie.moi,
+        target: spec.adverse ? 1 - this.partie.moi : this.partie.moi,
+        column: spec.colonne,
+      };
+    }
+    return st;
   }
 
   /** Le message que le jeu attend a la fin d'une partie. */
@@ -112,10 +159,27 @@ export class ServeurDePoche {
         return true;
       }
       case 'bonus': {
-        /* Les effets a cible attendent la case : on annonce l'attente comme le
-           fait le serveur, en poussant simplement l'etat. */
-        const aCible = msg.identify === 'B002' || msg.identify === 'B003' || msg.identify === 'B005';
-        if (aCible) { this.enAttente = msg.identify; this.pousser([]); return true; }
+        /* ⛔ QUATRE EFFETS SUR SEPT PARTAIENT SANS LEUR CIBLE. Cette liste
+           nommait trois effets — B002, B003, B005 — et elle datait d'un temps ou
+           il n'y en avait que six. Les quatre ajoutes depuis (B006, B009, B010,
+           B011) visent eux aussi une case ou une colonne : ils partaient donc
+           avec `null`, le moteur appliquait `columnOf(null)` — c'est-a-dire la
+           colonne 0, pas celle qu'on avait visee — et le journal notait
+           `case: null`.
+           Au retour du reseau, le verificateur refusait alors la partie ENTIERE :
+           « gel sans colonne », « troc sans case », « bordee sans colonne »,
+           « malediction sans colonne ». Mesure au banc : 167 parties ou l'un de
+           ces effets avait pris, 167 refusees, zero acceptee. Le joueur perdait
+           tout ce qu'il avait gagne, sans savoir pourquoi.
+
+           ⚠️ LA LISTE EST REMONTEE EN HAUT DU FICHIER, SOUS UN NOM. Elle reste
+           une copie — ce moteur tourne sans reseau, il ne peut pas lire le
+           catalogue du serveur — mais une copie qu'on voit. Ecrite en ligne dans
+           une condition, au milieu d'une methode de deux cents lignes, elle a
+           pris trois versions de retard sans que personne la croise. Le douzieme
+           effet s'ajoute a `A_CIBLE`, et `contrat_horsligne.test.js` le dit tout
+           de suite si on l'oublie. */
+        if (A_CIBLE.has(msg.identify)) { this.enAttente = msg.identify; this.pousser([]); return true; }
         const fx = this.partie.effet(moi, msg.identify, null);
         this.pousser(fx || []);
         return true;
@@ -123,7 +187,12 @@ export class ServeurDePoche {
       case 'cell': {
         if (!this.enAttente) return true;
         const fx = this.partie.effet(moi, this.enAttente, msg.cell);
-        this.enAttente = null;
+        /* ⚠️ UNE CASE REFUSEE NE DESARME PAS L'EFFET. C'est ce que fait le vrai
+           serveur — « `pending` reste POSE : l'effet demeure arme, on vise
+           ailleurs ». Le desarmer ici obligeait a rouvrir la cale et a recliquer
+           le jeton apres chaque case invalide, alors qu'en ligne on vise
+           simplement a cote. Le bouton du gobelet reste la sortie. */
+        if (fx) this.enAttente = null;
         this.pousser(fx || []);
         return true;
       }
