@@ -918,12 +918,53 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-hist-vieux { cursor: default; opacity: .6; }
 #dicewrap .dc-hist-vieux-txt { font-size: 10.5px; color: var(--txt-dim, #C9BCEA); }
 
-#dicewrap .dc-rep { display: grid; gap: 10px; }
-#dicewrap .dc-rep-tete { display: flex; align-items: center; gap: 10px; }
-#dicewrap .dc-rep-tete b { font-size: 14px; overflow-wrap: anywhere; }
+#dicewrap .dc-rep { display: grid; gap: 8px; }
+#dicewrap .dc-rep-tete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+#dicewrap .dc-rep-tete b {
+  font-size: 14px;
+  /* Le titre prend ce qui reste et se coupe proprement : `overflow-wrap` le
+     laissait descendre sur trois lignes et pousser les plateaux hors de vue. */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-/* Les deux plateaux, l'un au-dessus de l'autre, comme en partie. */
-#dicewrap .dc-rep-tables { display: grid; gap: 8px; }
+/* ⛔ LE BOUTON RETOUR FAISAIT 300 x 296 PIXELS. Il porte une image, et rien ne
+   lui donnait de taille : elle s'affichait donc a sa taille NATIVE — un dessin
+   de 256 px — et le bouton avec elle. L'en-tete occupait a lui seul un tiers de
+   la page, les plateaux commencaient sous le pli et les commandes de lecture
+   tombaient a deux cents pixels sous l'ecran. Mesure au banc : plateaux a
+   y=413, commandes a y=1035, pour une fenetre de 844.
+   Il redevient ce qu'il est : un bouton de retour, a cote du titre. */
+#dicewrap .dc-rep-tete [data-rep-retour] {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  font-size: 13px;
+  line-height: 1.15;
+}
+#dicewrap .dc-rep-tete [data-rep-retour] img {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+/* Les deux plateaux, l'un au-dessus de l'autre et A LA MEME ECHELLE QU'EN
+   PARTIE : c'est la seule facon de reconnaitre le coup qu'on revoit. */
+#dicewrap .dc-rep-tables {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
 
 #dicewrap .dc-rep-legende {
   min-height: 34px;
