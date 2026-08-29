@@ -656,9 +656,15 @@ function direEchec(e, dansMs) {
     carteEchec.className = 'pd-first on';
     document.body.appendChild(carteEchec);
   }
+  /* ⛔ NI L'ADRESSE DU SERVICE, NI LE MESSAGE DU MOTEUR. Cette carte affichait
+     `e.message` brut : « Load failed », « cannot reach the game server at
+     http://192.168.1.19:8100 ». Un joueur ne peut rien faire de l'un ni de
+     l'autre, et l'adresse d'un reseau local n'a rien a faire dans une
+     application distribuee. « Depuis quand un joueur voit 192.168.1.19 ? »
+     La vraie cause part dans la console, ou elle sert a quelqu'un. */
+  if (e) console.warn('[demarrage] echec :', (e && e.message) || e);
   carteEchec.innerHTML = `<div class="pd-first-card pd-panel">
-    <h1>${t('connect.outOfReach')}</h1>
-    <p>${(e && e.message) || ''}</p>
+    <h1>${t('boot.failed')}</h1>
     <p class="pd-hint" id="pd-retry-in">${t('connect.retryingIn', { n: Math.ceil(dansMs / 1000) })}</p>
     <button class="dc-btn" id="pd-retry-now">${t('connect.retry')}</button></div>`;
   const bouton = document.getElementById('pd-retry-now');

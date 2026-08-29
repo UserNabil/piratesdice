@@ -206,7 +206,24 @@ export async function signIn(opts) {
     }
   }
 
-  return garderSession(await claimDevice(), 'guest');
+  /* ⛔ UN COMPTE INVITE DEMANDE LE SERVEUR, ET LE SERVEUR PEUT ETRE ABSENT.
+     Cette ligne etait la derniere de `start()` a pouvoir jeter : sans session
+     rangee et sans reseau, `claimDevice()` echouait, `start()` rejetait, et
+     l'application s'arretait sur la carte « le jeu n'a pas pu demarrer » — alors
+     qu'elle sait tourner sans reseau. « Ca devrait m'afficher directement la
+     page d'accueil pour jouer en mode hors ligne. »
+
+     ⚠️ ET SEULEMENT QUAND LA DEMANDE EST SILENCIEUSE. Un joueur qui appuie sur
+     « se connecter » depuis les reglages attend une reponse : lui rendre `null`
+     sans un mot serait un bouton qui ne fait rien. Interactif, l'erreur remonte
+     et l'ecran la dit. */
+  try {
+    return garderSession(await claimDevice(), 'guest');
+  } catch (e) {
+    if (interactive) throw e;
+    console.warn('[identite] compte invite indisponible :', (e && e.message) || e);
+    return null;
+  }
 }
 
 /**

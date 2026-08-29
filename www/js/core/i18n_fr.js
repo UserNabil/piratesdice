@@ -802,4 +802,8 @@ export const FR = {
   'fx.colAlreadyCursed': 'Une de ses colonnes est déjà maudite',
   'fx.alreadySlowed': 'Votre tour est déjà ralenti',
   'fx.notYourTurnYet': 'Cet effet se joue pendant votre tour',
+  /* Le seul echec que le joueur peut encore voir au demarrage — et il ne dit
+     ni adresse, ni commande, ni message de moteur. Voir `direEchec` dans boot.js. */
+  'boot.failed': 'Le jeu n’a pas pu démarrer',
+  'offline.bandeauSeul': 'Sans réseau — connectez-vous une fois pour reprendre des parties hors ligne.',
 };

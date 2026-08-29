@@ -771,4 +771,6 @@ export const ES = {
   'fx.colAlreadyCursed': 'Una de sus columnas ya está maldita',
   'fx.alreadySlowed': 'Tu turno ya está ralentizado',
   'fx.notYourTurnYet': 'Ese efecto se juega en tu propio turno',
+  'boot.failed': 'El juego no ha podido arrancar',
+  'offline.bandeauSeul': 'Sin red: conéctate una vez para recoger partidas sin conexión.',
 };

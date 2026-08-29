@@ -24,6 +24,16 @@ import { jetons } from './dice_cale.js';
    deverrouillage, comme sur le serveur. */
 const CAPTAIN_IDS = ['read', 'jack', 'ching', 'teach', 'omalley',
                      'bonny', 'bart', 'lionne', 'morgan', 'levasseur'];
+
+/* ⛔ LA LISTE DE SECOURS DONNAIT UN SEUIL DE ZERO A TOUT LE MONDE. Sans reseau,
+   `listeCapitaines()` retombe dessus — et dix medaillons s'affichaient alors
+   OUVERTS, sans cadenas ni compteur. Le joueur en choisissait un, et le serveur
+   le refusait au retour du reseau sans qu'il comprenne pourquoi. Les seuils sont
+   des constantes de jeu, pas un secret : les ecrire ici ne cree pas une seconde
+   verite, puisque celle du serveur ecrase celle-ci des l'accueil — et que c'est
+   `ouvert()` cote serveur qui tranche de toute facon. */
+const SEUILS_DE_SECOURS = { read: 0, jack: 25, ching: 100, teach: 150, omalley: 250,
+                            bonny: 350, bart: 400, lionne: 450, morgan: 500, levasseur: 550 };
 const DEFAULT_CAPTAIN = 'read';
 
 /* L'ecran du salon est un etat LOCAL : le serveur ne connait qu'un code et deux
@@ -46,7 +56,7 @@ function known(id) {
 function listeCapitaines() {
   const venue = S.captains;
   if (Array.isArray(venue) && venue.length) return venue.filter((c) => known(c.id));
-  return CAPTAIN_IDS.map((id) => ({ id, seuil: 0 }));
+  return CAPTAIN_IDS.map((id) => ({ id, seuil: SEUILS_DE_SECOURS[id] || 0 }));
 }
 
 /** Combien de parties terminees le joueur a-t-il ? */
@@ -270,6 +280,20 @@ export function renderMenu(el) {
     <div class="dc-menu"><div class="dc-menu-card pd-panel">
       <h2>${esc(t('menu.title'))}</h2>
       <p>${esc(t('menu.pitch'))}</p>
+      ${(!S.net || !S.net.ready)
+        /* ⛔ IL ETAIT SOUS LE PLI, DONC IL N'EXISTAIT PAS. Range apres les trois
+           boutons, le bandeau tombait a 762-816 px sur un ecran de 844 dont la
+           carte s'arrete a 762 : mesure au banc, INVISIBLE sans faire defiler. Un
+           avertissement qu'il faut chercher n'avertit personne — et celui-la est
+           la seule chose qui explique pourquoi deux boutons sont gris.
+
+           ⚠️ « IL RESTE 0 PARTIES » N'EST PAS UNE INFORMATION, C'EST UNE PANNE
+           MAL DITE. Sans jeton en cale, le bandeau annoncait un compte a zero ; il
+           faut lui dire le geste qui remet des parties dans sa poche. */
+        ? `<div class="dc-hors-ligne">${esc(jetons().length
+            ? t('offline.bandeau', { n: jetons().length })
+            : t('offline.bandeauSeul'))}</div>`
+        : ''}
       ${captainStrip()}
       <!-- LES DESSINS SORTENT DU CADRE, ET ILS ALTERNENT.
            Enfermes dans le bouton, ils valaient 1,9 fois la hauteur du texte —
@@ -289,9 +313,6 @@ export function renderMenu(el) {
                 ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
           <img src="${ASSETS}img/menu_friend.png" alt="">${esc(t('menu.friend'))}</button>
       </div>
-      ${(!S.net || !S.net.ready)
-        ? `<div class="dc-hors-ligne">${esc(t('offline.bandeau', { n: jetons().length }))}</div>`
-        : ''}
       <!-- ⛔ LA RANGEE « PARTIES / CLASSEMENT / PIECES » A ETE RETIREE.
            Trois nombres au bas de la carte d'accueil, et les trois se lisaient
            deja ailleurs : les pieces et la monnaie maudite sont sur les plaques

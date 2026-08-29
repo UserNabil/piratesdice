@@ -747,4 +747,6 @@ export const EN = {
   'fx.colAlreadyCursed': 'One of their columns is already cursed',
   'fx.alreadySlowed': 'Your turn is already slowed',
   'fx.notYourTurnYet': 'That effect is played on your own turn',
+  'boot.failed': 'The game could not start',
+  'offline.bandeauSeul': 'No network - connect once to pick up offline matches.',
 };

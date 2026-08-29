@@ -772,4 +772,6 @@ export const AR = {
   'fx.colAlreadyCursed': 'أحد أعمدته ملعون بالفعل',
   'fx.alreadySlowed': 'دورك مُبطّأ بالفعل',
   'fx.notYourTurnYet': 'هذا الأثر يُلعب في دورك أنت',
+  'boot.failed': 'تعذّر بدء اللعبة',
+  'offline.bandeauSeul': 'بلا شبكة — اتّصل مرّة واحدة لتأخذ مباريات دون اتصال.',
 };

@@ -17,7 +17,11 @@ import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
 import { messageServeur } from './dice_refus.js';
 import { uiConfirm } from '../ui/dialogs.js';
-import { DiceNet, diceStatus } from './dice_net.js';
+/* ⛔ `diceStatus` N'EST PLUS IMPORTE. Il sondait l'adresse du service pour
+   l'afficher dans l'ecran d'echec — « Essaye http://192.168.1.19:8100 » — et cet
+   ecran n'existe plus. La fonction reste dans dice_net.js : l'atelier de
+   developpement s'en sert, le jeu non. */
+import { DiceNet } from './dice_net.js';
 import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
@@ -320,6 +324,15 @@ export async function openDice() {
 }
 
 async function connect() {
+  /* ⛔ UNE PARTIE HORS LIGNE TIENT `S.net`, ET LA RELANCE LA REMPLACAIT.
+     `jouerHorsLigne()` pose un faux serveur de poche dans `S.net` et garde le
+     vrai de cote ; `connect()`, lui, ecrasait ce faux serveur par une socket
+     neuve des que le reseau revenait. Tout ce que le plateau envoyait ensuite
+     — un lancer, une pose, un effet — partait vers le serveur au lieu de la
+     partie en cours, qui se figeait au milieu d'un tour sans un mot.
+     « S'il joue en mode hors ligne il faut pas le deranger et le laisser
+     finir. » On repasse plus tard : la table d'abord. */
+  if (S.poche) { relancerPlusTard(); return; }
   screen('connect');
   $('#dc-screen-connect').innerHTML =
     '<div class="dc-connect"><img class="dc-wheel" src="' + ASSETS + 'img/icon_loader.png" alt="">'
@@ -347,7 +360,14 @@ async function connect() {
       if (!S.rang) S.rang = cale.rangConnu();
       renderWallet();
       rafraichirRang();
-      showMenu();
+      /* ⛔ ON NE RAMENE PAS AU PONT QUELQU'UN QUI JOUE. Le serveur revient
+         pendant une partie hors ligne — c'est meme le cas le plus courant,
+         puisque la relance tourne en fond pendant qu'il joue — et `showMenu()`
+         lui retirait sa table au milieu d'un tour. Le pont se repeint quand il y
+         revient de lui-meme, et `renderMenu` relit l'etat du reseau A CE
+         MOMENT-LA : ses boutons seront dores, ce qui est exactement ce qu'on
+         veut lui montrer. */
+      if (!(S.state && S.state.phase !== 'over')) showMenu();
       /* Une invitation touchee alors que le jeu etait ferme attend ici. */
       reprendreLienEnAttente();
     },
@@ -451,7 +471,10 @@ async function connect() {
          premier refus. */
       if (m.msg === 'captain locked' && S.net) S.net.send({ t: 'refresh' });
     },
-    denied: (m) => connectFailed(m.msg || 'the game server refused the token'),
+    /* Un jeton refuse est une panne comme une autre DU POINT DE VUE DU JOUEUR :
+       il n'y peut rien, et le diagnostic ne lui apprendrait rien. On entre sans
+       reseau, et la relance retentera avec un jeton frais. */
+    denied: () => connectFailed(),
     closed: (byUs) => {
       /* ⚠️ `S.net` DOIT TOMBER AVEC LA CONNEXION. La relance automatique et les
          panneaux verifient sa presence pour savoir s'ils peuvent parler : le
@@ -476,7 +499,7 @@ async function connect() {
   });
 
   try { await S.net.connect(); }
-  catch (e) { connectFailed(e.message); }
+  catch (_) { connectFailed(); }
 }
 
 
@@ -490,62 +513,46 @@ async function connect() {
    de reapprendre le defaut. */
 function rendreLaMain() {}
 
-async function connectFailed(message) {
-  screen('connect');
-  const probe = await diceStatus();
-  const where = (probe && probe.url) || 'the dev server';
-  /* Dire PAR OU on a essaye : sur le LAN c'est l'adresse du service, ailleurs
-     c'est le tunnel SSH du tool. Sans ca, « tried 127.0.0.1:62725 » n'aide personne. */
-  const route = probe && probe.route;
-  const how = route === 'ssh' ? t('connect.viaSsh')
-    : (route === 'unreachable' ? t('connect.noSsh') : '');
-  const fix = route === 'unreachable' ? esc(t('connect.fixSsh'))
-    : t('connect.fixTool', { cmd: '<code>python dice_server/deploy/deploy.py</code>',
-                             logs: '<code>--logs</code>' });
-  $('#dc-screen-connect').innerHTML = `
-    <div class="dc-connect dc-connect-bad">
-      <img class="dc-connect-icon" src="${ASSETS}img/icon_anchor.png" alt="">
-      <h3>${esc(t('connect.outOfReach'))}</h3>
-      <p class="dc-connect-why">${esc(message)}</p>
-      <p class="dc-connect-where">${t('connect.tried', { url: '<code>' + esc(where) + '</code>' })}${esc(how)}${probe && probe.error ? ' — ' + esc(probe.error) : ''}</p>
-      <p class="dc-connect-fix">${fix}</p>
-      <button class="dc-btn" id="dc-retry">${esc(t('connect.retry'))}</button>
-      <!-- ⛔ CET ECRAN ETAIT UN CUL-DE-SAC. Sans reseau, on ne pouvait QUE
-           reessayer : dans un metro, l'application etait morte pendant vingt
-           minutes alors que le jeu, lui, sait tres bien tourner tout seul. Si
-           des parties hors ligne attendent dans la cale, on ouvre la porte. -->
-      <!-- ⛔ ET LA PORTE NE DEPEND PLUS DES JETONS. Elle ne s'ouvrait que si des
-           parties hors ligne attendaient en cale : sans jeton, l'ecran redevenait
-           le cul-de-sac qu'il etait avant — « si le serveur est down, il est ou
-           le mode offline ? ». Or l'application entiere fonctionne sans reseau :
-           la boutique montre ce qu'on possede, les hauts faits leur compte, le
-           journal les parties. Seuls DEUX boutons demandent quelqu'un en face, et
-           le pont les grise lui-meme. On entre toujours. -->
-      <button class="dc-btn dc-btn-ghost" id="dc-sans-reseau">${esc(cale.jetons().length
-        ? t('offline.entrer', { n: cale.jetons().length })
-        : t('offline.entrerSeul'))}</button>
-    </div>`;
-  const retry = $('#dc-retry');
-  if (retry) retry.onclick = () => { arreterRelance(); connect(); };
-  const sans = $('#dc-sans-reseau');
-  if (sans) {
-    sans.onclick = () => {
-      /* ⚠️ ON NE COUPE PAS LA RELANCE. Elle continue en arriere-plan : quand le
-         reseau revient, l'accueil arrive et l'ecran se remet a jour tout seul,
-         sans que le joueur ait rien a faire. */
-      if (!S.me) S.me = cale.moi();
-      showMenu();
-    };
-  }
-
-  /* ⚠️ CE N'EST PAS AU JOUEUR DE REESSAYER. Un ascenseur, un tunnel, un
-     changement de wifi : la connexion revient d'elle-meme quelques secondes plus
-     tard, et l'ecran restait plante sur son message jusqu'a ce qu'on pense a
-     taper. Le serveur garde d'ailleurs la table dressee pendant ce temps — il
-     serait absurde de laisser expirer ce delai faute d'un geste.
-
-     L'attente double a chaque echec (1, 2, 4… jusqu'a 15 s) : marteler un serveur
-     qui redemarre le ralentit et vide la batterie pour rien. */
+/**
+ * LE SERVEUR NE REPOND PAS. LE JOUEUR N'A PAS A L'APPRENDRE AINSI.
+ *
+ * ⛔ CET ECRAN ETAIT UN ECRAN DE DEVELOPPEUR MONTRE A UN JOUEUR, et il livrait
+ * trois choses dont aucune ne le regarde :
+ *
+ *   « cannot reach the game server at http://192.168.1.19:8100 »
+ *   « Essaye http://192.168.1.19:8100 — Load failed »
+ *   « Relancez-le avec python dice_server/deploy/deploy.py (--logs lit son
+ *     journal). »
+ *
+ * Une adresse de reseau LOCAL, un message d'erreur de moteur, et une commande a
+ * taper dans un terminal qu'il n'a pas. « Depuis quand un joueur voit
+ * 192.168.1.19 ? » Il n'aurait jamais du : ces lignes ont ete ecrites pour un
+ * poste de developpement et n'ont jamais ete retirees du chemin du joueur.
+ *
+ * ⛔ ET C'ETAIT AUSSI UN CUL-DE-SAC DEGUISE EN CHOIX. Deux boutons — reessayer,
+ * ou entrer sans reseau — pour une decision qui n'en est pas une : le jeu tourne
+ * sans reseau, c'est tout le mode hors ligne, et personne ne prefere lire un
+ * diagnostic. On ENTRE, simplement. Le pont s'ouvre, les deux boutons qui
+ * demandent quelqu'un en face sont grises, un bandeau dit « sans reseau ». La
+ * relance continue en silence derriere ; quand le serveur revient, le pont se
+ * repeint et les boutons redeviennent dores.
+ *
+ * Cette fonction ne prend plus de message : il n'y a plus rien a afficher.
+ */
+function connectFailed() {
+  /* ⛔ ON NE DERANGE PAS UNE PARTIE EN COURS. « S'il joue en mode hors ligne il
+     faut pas le deranger et le laisser finir. » Repeindre le pont par-dessus une
+     table qui se joue, c'est lui retirer sa partie des mains au milieu d'un
+     tour — et hors ligne il n'a meme pas de serveur pour la lui rendre. */
+  if (!S.open || (S.state && S.state.phase !== 'over')) { relancerPlusTard(); return; }
+  /* Sans reseau, l'identite vient de la cale : c'est elle qui porte le nom, la
+     bourse et le capitaine de la derniere session. */
+  if (!S.me) S.me = cale.moi();
+  showMenu();
+  /* ⚠️ ET LA RELANCE CONTINUE. Un ascenseur, un tunnel, un changement de wifi :
+     la connexion revient d'elle-meme, et le joueur n'a rien a faire pour cela.
+     L'attente double a chaque echec (1, 2, 4… jusqu'a 15 s) : marteler un
+     serveur qui redemarre le ralentit et vide la batterie pour rien. */
   relancerPlusTard();
 }
 
@@ -554,28 +561,24 @@ const RELANCE_MAX = 15000;
 let relanceDelai = RELANCE_MIN;
 let relanceTimer = 0;
 
-/* Combien de tentatives silencieuses avant d'afficher l'echec. Trois suffisent :
-   un reveil de telephone se rattrape a la premiere, une vraie panne se voit a la
-   troisieme, et entre les deux le joueur ne lit rien d'inquietant. */
-const RELANCE_MUETTE = 3;
-let relanceEssais = 0;
+/* ⛔ `RELANCE_MUETTE` A DISPARU AVEC L'ECRAN D'ECHEC. Elle comptait les
+   tentatives silencieuses avant de MONTRER la panne : au quatrieme essai, le
+   joueur recevait le diagnostic en pleine figure. Il n'y a plus rien a montrer,
+   donc plus rien a compter — toutes les tentatives sont muettes, et la seule
+   chose qui change a l'ecran est le bandeau « sans reseau » du pont. */
 
 function arreterRelance() {
   if (relanceTimer) { clearTimeout(relanceTimer); relanceTimer = 0; }
   relanceDelai = RELANCE_MIN;
-  relanceEssais = 0;
 }
 
 function relancerPlusTard() {
   if (relanceTimer) return;                     // une seule tentative en vol
   const dans = relanceDelai;
   relanceDelai = Math.min(RELANCE_MAX, relanceDelai * 2);
-  relanceEssais += 1;
-  const bruyant = relanceEssais > RELANCE_MUETTE;
   relanceTimer = setTimeout(() => {
     relanceTimer = 0;
     if (!S.open) return;                        // le joueur est parti : on se tait
-    if (bruyant) { connectFailed(t('connect.dropped')); return; }
     connect();
   }, dans);
 }
@@ -1002,13 +1005,18 @@ export function jouerHorsLigne() {
       /* La partie est finie : on la range pour le retour du reseau, PUIS on
          rend la main au vrai serveur. */
       cale.garderPartie(jeton.id, poche.partie.auJournal());
+      S.poche = null;
       S.net = vrai;
       onOver(m);
       envoyerLesParties();
     },
-    idle: () => { S.net = vrai; S.state = null; S.seat = -1; showMenu(); },
+    idle: () => { S.poche = null; S.net = vrai; S.state = null; S.seat = -1; showMenu(); },
     error: (m) => toast(messageServeur(m.msg), 'warn'),
   });
+  /* ⚠️ LA POCHE EST PUBLIQUE, ET C'EST CE QUI PROTEGE LA PARTIE. `S.net` seul ne
+     suffit pas a savoir qu'on joue hors ligne — la relance ne voit qu'un objet
+     qui repond. Ce drapeau-la dit « ne touche pas », et `connect()` le lit. */
+  S.poche = poche;
   S.net = poche;
   return true;
 }

@@ -243,6 +243,12 @@ export const PIECE_MAUDITE =
 
 export const S = {
   net: null,
+  /* ⚠️ LE FAUX SERVEUR D'UNE PARTIE HORS LIGNE, QUAND IL Y EN A UN. `net` ne
+     suffit pas a le reconnaitre : la relance automatique n'y voit qu'un objet
+     qui repond, et elle l'ecrasait par une socket neuve des que le reseau
+     revenait — la table se figeait au milieu d'un tour. Ce drapeau dit « une
+     partie se joue ici, ne touche pas ». Voir `connect()` dans dice.js. */
+  poche: null,
   open: false,
   built: false,
   seat: -1,
