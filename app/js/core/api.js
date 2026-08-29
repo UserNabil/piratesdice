@@ -15,7 +15,14 @@ import { serverBase, sessionForDevice, probeServer } from '../identity.js';
 async function get(path) {
   if (path === '/api/dice/session') return sessionForDevice();
   if (path === '/api/dice/status') return probeServer();
-  const r = await fetch(serverBase() + path);
+  /* ⛔ ET CELUI-CI AUSSI ATTENDAIT INDEFINIMENT. Voir `post` dans identity.js :
+     une machine eteinte ne refuse pas, elle ne repond pas — et sans limite, le
+     jeu reste suspendu a un serveur qui ne reviendra pas. */
+  const stop = new AbortController();
+  const t = setTimeout(() => stop.abort(), 6000);
+  let r;
+  try { r = await fetch(serverBase() + path, { signal: stop.signal }); }
+  finally { clearTimeout(t); }
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }

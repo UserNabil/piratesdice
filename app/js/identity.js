@@ -70,12 +70,42 @@ function wsFrom(base) {
   return base + '/ws';
 }
 
+/**
+ * ⛔ UN `fetch` VERS UNE MACHINE ETEINTE N'ECHOUE PAS : IL ATTEND.
+ *
+ * Une adresse qui REFUSE la connexion repond tout de suite — c'est le cas d'un
+ * service arrete sur une machine allumee. Une machine qui ne repond plus DU
+ * TOUT, elle, laisse le SYN sans reponse, et le systeme reessaie pendant trente
+ * a soixante-quinze secondes avant d'abandonner. Aucun de nos appels ne posait
+ * de limite : `start()` attendait donc tout ce temps, et le joueur regardait le
+ * rideau d'ouverture — une tete de mort au milieu d'un ecran vide, sans un mot,
+ * sans un bouton. Mesure sur simulateur, serveur du reseau local eteint : plus
+ * de quarante secondes avant que quoi que ce soit ne bouge.
+ *
+ * Six secondes suffisent largement a un serveur vivant, meme sur un reseau
+ * mobile lent. Au-dela c'est une panne — et le jeu sait entrer sans reseau.
+ */
+const DELAI_RESEAU = 6000;
+
+function avecDelai(ms) {
+  const stop = new AbortController();
+  const t = setTimeout(() => stop.abort(), ms || DELAI_RESEAU);
+  return { signal: stop.signal, fini: () => clearTimeout(t) };
+}
+
 async function post(path, body) {
-  const r = await fetch(serverBase() + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body || {}),
-  });
+  const garde = avecDelai();
+  let r;
+  try {
+    r = await fetch(serverBase() + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      signal: garde.signal,
+    });
+  } finally {
+    garde.fini();
+  }
   const text = await r.text();
   let parsed = null;
   try { parsed = text ? JSON.parse(text) : null; } catch (_) { parsed = null; }
@@ -342,7 +372,9 @@ export function isSignedIn() { return !!(session && session.google); }
 export async function eraseAccount() {
   if (session && session.token) {
     try {
+      /* Meme garde : un compte qu'on renomme ne doit pas figer l'ecran. */
       await fetch(serverBase() + '/api/me', {
+        signal: avecDelai().signal,
         method: 'DELETE',
         headers: { Authorization: 'Bearer ' + session.token },
       });
@@ -371,7 +403,7 @@ export async function probeServer() {
   const base = serverBase();
   const started = Date.now();
   try {
-    const r = await fetch(base + '/health', { cache: 'no-store' });
+    const r = await fetch(base + '/health', { cache: 'no-store', signal: avecDelai(3000).signal });
     if (!r.ok) return { ok: false, url: base, error: 'HTTP ' + r.status };
     return { ok: true, url: base, latency_ms: Date.now() - started, health: await r.json() };
   } catch (e) {
