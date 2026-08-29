@@ -172,7 +172,25 @@ function wireCaptains(el) {
   el.querySelectorAll('[data-cap]').forEach((b) => {
     b.onclick = () => {
       const id = b.dataset.cap;
-      if (id === mine()) return;
+      /* ⛔ ON NE POUVAIT PAS REVENIR SUR SON PROPRE CAPITAINE. Le clic sortait
+         des que l'identifiant ne changeait pas — une economie qui avait du sens
+         quand un clic ne faisait QUE choisir. Mais depuis qu'un capitaine FERME
+         presente sa carte sans etre adopte, la carte peut montrer quelqu'un
+         d'autre que le capitaine porte : on regarde Barbe-Noire, on retouche
+         Mary Read pour relire son trait, et rien ne bouge. « Je ne peux pas
+         recliquer sur mon capitaine courant pour afficher son bonus. »
+         Toucher son propre capitaine REMONTRE donc sa carte ; ce qu'on epargne,
+         c'est l'aller-retour avec le serveur, pas l'affichage. */
+      if (id === mine()) {
+        const sienne = $('#dc-cap-card');
+        if (sienne) sienne.innerHTML = captainCard(id);
+        el.querySelectorAll('[data-cap]').forEach((o) => {
+          o.classList.toggle('on', o === b);
+          o.setAttribute('aria-pressed', String(o === b));
+        });
+        if (S.sfx) S.sfx.play('open', 0.16);
+        return;
+      }
       /* ⚠️ UN CAPITAINE FERME SE PRESENTE QUAND MEME. Le clic ne le choisit
          pas, mais il montre sa carte : voir le trait qu'on n'a pas encore est
          ce qui donne envie de le gagner. Un bouton totalement mort

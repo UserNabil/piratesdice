@@ -671,6 +671,23 @@
    mais il reste cliquable — c'est lui qui dit pourquoi. */
 #dicewrap .dc-bonus-btn.dc-bonus-mute { filter: saturate(.3) brightness(.62); }
 
+/* Le sac quand il ne reste plus rien a jouer : eteint, jamais desactive — c'est
+   en l'ouvrant qu'on lit pourquoi. */
+#dicewrap .dc-foot-btn.dc-foot-eteint > img { filter: grayscale(1) brightness(.6); }
+#dicewrap .dc-foot-btn.dc-foot-eteint { opacity: .7; }
+
+/* La phrase qui remplace les jetons quand le ratelier n'a rien a montrer. */
+#dicewrap .dc-bonus-vide {
+  padding: 10px 16px;
+  border-radius: 12px;
+  max-width: 26rem;
+  text-align: center;
+  font-size: 13px;
+  color: var(--txt-dim, #C9BCEA);
+  background: rgba(10, 4, 26, .82);
+  box-shadow: inset 0 0 0 1px rgba(201, 188, 234, .3);
+}
+
 /* Un effet DEJA JOUE : il ne reviendra pas de la partie. Plus eteint encore que
    celui qu'on ne peut pas jouer maintenant — l'un attend son heure, l'autre a
    eu la sienne. */

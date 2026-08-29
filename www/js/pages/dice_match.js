@@ -1016,7 +1016,9 @@ function ouvrirCale() {
   const rack = $('#dc-bonus');
   if (!rack || caleOuverte()) return;
   renderBonusRack();
-  if (!rack.children.length) { toast(t('bonus.empty'), 'warn'); return; }
+  /* ⛔ ON N'OUVRE PLUS « SI ». Le refus silencieux etait la vraie panne : le
+     ratelier sait desormais dire lui-meme qu'il est vide, et une cale qui
+     s'ouvre sur une phrase vaut mieux qu'un bouton qui ne repond pas. */
   rack.classList.add('dc-bonus-open');
   const sac = $('#dc-bag');
   if (sac) sac.classList.add('dc-foot-on');
@@ -1059,7 +1061,16 @@ function renderExit(st) {
   if (replay) replay.hidden = !over;
   /* La cale ne sert plus a rien quand tout est joue. */
   const sac = $('#dc-bag');
-  if (sac) sac.hidden = over;
+  if (sac) {
+    sac.hidden = over;
+    /* ⚠️ ETEINT, MAIS PAS DESACTIVE. Trois effets par partie : le plafond
+       atteint, le sac ne peut plus rien jouer — et il doit le montrer AVANT
+       qu'on appuie. Il reste cliquable, parce que c'est en l'ouvrant qu'on lit
+       la raison, et parce qu'on veut encore voir ce qu'on possede. */
+    const restant = st.bonusLeft ? st.bonusLeft[S.seat] : 0;
+    const offertRestant = !!(st.freeBonus && st.freeBonus[S.seat]);
+    sac.classList.toggle('dc-foot-eteint', !over && restant <= 0 && !offertRestant);
+  }
   if (over) fermerCale();
 
   /* « Rejouer » n'existe qu'a la fin : pendant la partie il n'a pas de sens, et
@@ -1229,10 +1240,18 @@ export function renderBonusRack() {
   const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
   const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i));
 
-  /* ⚠️ RIEN A MONTRER, DONC RIEN A L'ECRAN. Un bandeau « aucun bonus en cale »
-     occupait une place permanente pour dire qu'il n'y avait rien a dire. */
+  /* ⛔ LE SAC DEVENAIT UN BOUTON MORT, ET ON NE POUVAIT PAS SAVOIR POURQUOI.
+     Quand il n'y avait plus rien a montrer, le ratelier se vidait — et
+     `ouvrirCale()`, voyant un ratelier vide, refusait de s'ouvrir. Le joueur
+     appuyait sur « Inventaire », rien ne bougeait, et il en concluait a un
+     blocage : « quand le joueur a joue ses 3 bonus, le bouton d'inventaire
+     devient grise et bloque. »
+     C'est la meme lecon que pour les jetons eux-memes, apprise deux fois deja :
+     un bouton qui ne peut rien faire doit le DIRE, pas se taire. Le ratelier
+     porte donc une ligne qui explique, et le sac s'ouvre toujours. */
   if (!owned.length && !offert) {
-    rack.innerHTML = '';
+    rack.innerHTML = '<div class="dc-bonus-vide">'
+      + esc(left <= 0 ? t('bonus.plusDeTour') : t('bonus.empty')) + '</div>';
     return;
   }
   /* L'effet offert ne se compte pas deux fois : s'il en reste aussi en cale, il

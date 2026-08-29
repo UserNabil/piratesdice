@@ -276,9 +276,24 @@ function tarif(p) {
  * trait — ce qui vient d'arriver a deux d'entre eux. Le serveur refuse de toute
  * facon l'achat ; l'ecran ne fait que l'annoncer avant le geste.
  */
+/* ⛔ ET UN SERVEUR QUI N'ANNONCE PAS ENCORE SON OFFRE OUVRIRAIT TOUT. Le champ
+   `offre` vient d'arriver dans le message d'accueil : tant qu'il n'est pas
+   deploye, aucun capitaine n'en porte, la table est vide, et la boutique vend
+   les onze effets a un debutant — exactement le defaut qu'on corrige. Ce repli
+   ferme dans le bon sens : au pire il verrouille un effet que l'ancien serveur
+   aurait laisse passer, jamais l'inverse. Et il ne sert QUE si le serveur se
+   tait : des qu'un capitaine annonce son offre, c'est lui qui decide. */
+const OFFRE_DE_SECOURS = {
+  B001: 0, B004: 450, B005: 250, B006: 150, B007: 500,
+  B008: 350, B009: 400, B010: 100, B011: 550,
+};
+
 function seuilDEffet(identify) {
+  const liste = S.captains || [];
+  const dit = liste.some((c) => c && typeof c.offre !== 'undefined');
+  if (!dit) return OFFRE_DE_SECOURS[identify] || 0;
   let seuil = 0;
-  for (const c of (S.captains || [])) {
+  for (const c of liste) {
     if (!c || c.offre !== identify) continue;
     const n = Number(c.seuil) || 0;
     seuil = seuil ? Math.min(seuil, n) : n;

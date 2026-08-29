@@ -778,4 +778,5 @@ export const AR = {
   'err.derniereColonne': 'هذا آخر عمود يمكنه اللعب فيه.',
   'err.colGeleeIci': 'هذا العمود مُجمَّد.',
   'err.effetFerme': 'هذا الأثر ليس لك بعد.',
+  'bonus.plusDeTour': 'استُهلكت آثارك الثلاثة — تستمرّ المباراة بدونها.',
 };

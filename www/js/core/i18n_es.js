@@ -777,4 +777,5 @@ export const ES = {
   'err.derniereColonne': 'Es su última columna jugable.',
   'err.colGeleeIci': 'Esa columna está congelada.',
   'err.effetFerme': 'Ese efecto todavía no es tuyo.',
+  'bonus.plusDeTour': 'Tus tres efectos están gastados: la partida sigue sin ellos.',
 };

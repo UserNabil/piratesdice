@@ -812,4 +812,5 @@ export const FR = {
   'err.derniereColonne': 'C’est sa dernière colonne jouable.',
   'err.colGeleeIci': 'Cette colonne est gelée.',
   'err.effetFerme': 'Cet effet n’est pas encore à vous.',
+  'bonus.plusDeTour': 'Vos trois effets sont joués — la partie continue sans.',
 };
