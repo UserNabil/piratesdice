@@ -1,3 +1,10 @@
+
+dans la home page il faut toujours qu'un capitaine soit selectionné 
+
+si un compte est supprimé durant une desinstallation il faut supprimer le compte ou le retirer du classement 
+
+je veux une nouvelle disposition des boutons dans la home page comme je l'ai fait sur figma
+
 j'ai remarqué que l'icone dans la page d'accueil pour mary read pour la relance du dés n'est pas la meme que l'icone dans le marquet il remplacer celle du market par celle qui dans la page home.
 
 j'aimerais mettre en place une fiche si l'utilisateur click sur un capitaine pour dure lore du jeu avec un belle affichage et un peu d'histoire du personnage, qu'est ce qu'il offre comme bonus combien il reste pour le débloquer et si il est débloqué un bouton selectionner
@@ -12,7 +19,7 @@ Replay d'un jeton hors ligne si les jetons ne sont pas strictement single-use et
 Choix du meilleur jeton hors ligne si le client possède dix graines et peut décider laquelle utiliser.
 
 
-5 nouveaux effets de jeu :
+5 nouveaux effets de jeu, il va falloir mettre en place une pagination en dot pour afficher les 5 suivants car on va ajouter au fur et a mesure des capitaines et effets :
 ID proposé	Nom	Effet	Pirate
 B012	🎲 Dé pipé	Après ton lancer, transforme ton dé en valeur +1 ou −1. Pas de 1→6 ni 6→1. Captain Kidd
 B013	🌫️ Brouillard de poudre	Le prochain dé adverse peut être placé et scorer normalement, mais ne détruit aucun de tes dés.	Wang Zhi
