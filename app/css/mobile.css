@@ -918,7 +918,31 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-hist-vieux { cursor: default; opacity: .6; }
 #dicewrap .dc-hist-vieux-txt { font-size: 10.5px; color: var(--txt-dim, #C9BCEA); }
 
-#dicewrap .dc-rep { display: grid; gap: 8px; }
+/* ⛔ L'ARENE DE LA REDIFFUSION NE TENAIT PAS DANS LA PAGE. Mesure a l'ecran, sur
+   un 390 x 844 : en-tete 48 + plateau 270 + barre 120 + plateau 270 et les
+   ecarts, soit 728 px, dans un panneau qui en offre 674. La derniere rangee du
+   plateau du bas tombait derriere la barre des onglets, et il fallait FAIRE
+   DEFILER une arene — ce qu'on ne fait jamais pendant une partie.
+
+   Deux gestes, et la page tient : la barre du bas s'efface comme pendant une
+   partie (`dc-en-rejeu`, plus bas), et les cases se calculent sur la place qui
+   reste ICI plutot que sur celle d'un ecran de jeu.
+
+   ⚠️ LA MEME FORME QUE LA REGLE GENERALE, AVEC SA PROPRE RESERVE. La reserve du
+   jeu (420) compte le ratelier, la barre du lancer et les deux cartes de
+   capitaine ; celle-ci compte l'en-tete du panneau, la barre de lecture et les
+   deux rangees de multiplicateurs. Meme calcul, autres meubles : 467 px, et les
+   cases valent 62 la ou une partie leur en donne 66. Quatre pixels de moins sur
+   une case, personne ne les voit ; une rangee coupee, tout le monde. */
+#dicewrap .dc-rep {
+  display: grid;
+  gap: 8px;
+  --dc-cell: min(
+    calc((100vw - 2 * env(safe-area-inset-left, 0px) - 76px) / 3),
+    calc((100dvh - 470px) / 6),
+    66px
+  );
+}
 #dicewrap .dc-rep-tete {
   display: flex;
   align-items: center;
@@ -2494,6 +2518,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    rien a calculer, et `fit.js` remesure de lui-meme puisqu'il observe la taille
    du corps. */
 #dicewrap.dc-en-partie .dc-bas { display: none; }
+
+/* Et une rediffusion est une partie qu'on regarde : meme arene, donc meme
+   plein ecran. La barre revient avec le bouton « Retour ». */
+#dicewrap.dc-en-rejeu .dc-bas { display: none; }
 
 
 /* ============================================================================

@@ -42,6 +42,8 @@ function stopper() {
 export function fermerLecteur() {
   stopper();
   lecteur = null;
+  const enveloppe = document.querySelector('#dicewrap');
+  if (enveloppe) enveloppe.classList.remove('dc-en-rejeu');
 }
 
 /* ─────────────────────────────────────────────────────── l'historique ───── */
@@ -113,6 +115,17 @@ export function ouvrirRejeu(partie) {
   if (!hote || !partie || !Array.isArray(partie.images) || !partie.images.length) return;
   fermerLecteur();
   lecteur = { partie, i: 0, vitesse: 1, horloge: null, boards: [null, null] };
+
+  /* ⛔ LE PLATEAU DU BAS PASSAIT SOUS LA BARRE DES ONGLETS. Mesure a l'ecran :
+     l'arene demande 728 px, le panneau en offre 674, et la derniere rangee de
+     l'un des deux plateaux tombait derriere la barre du bas — il fallait faire
+     defiler une arene, ce qu'on ne fait jamais pendant une partie.
+     Une partie, elle, n'a pas de barre du bas : `dc-en-partie` la retire. La
+     rediffusion fait pareil, par la meme porte — c'est aussi ce qui la fait
+     ressembler a une partie plutot qu'a une page qui en montre une. La sortie
+     reste le bouton « Retour », qui ramene a la liste et rend la barre. */
+  const enveloppe = document.querySelector('#dicewrap');
+  if (enveloppe) enveloppe.classList.add('dc-en-rejeu');
 
   const moi = partie.moi === 1 ? 1 : 0;
   const lui = 1 - moi;
