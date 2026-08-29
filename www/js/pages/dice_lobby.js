@@ -292,18 +292,15 @@ export function renderMenu(el) {
       ${(!S.net || !S.net.ready)
         ? `<div class="dc-hors-ligne">${esc(t('offline.bandeau', { n: jetons().length }))}</div>`
         : ''}
-      <div class="dc-menu-stats">
-        <span><b>${S.me ? S.me.games : 0}</b> ${esc(t('menu.matches'))}</span>
-        <!-- ⛔ « ELO » EST UN MOT D'INITIE, ET IL NE DIT RIEN AU JOUEUR. C'est le
-             nom d'un algorithme de 1960, pas celui d'une recompense : personne
-             n'a besoin de savoir comment son classement est calcule pour vouloir
-             le faire monter. L'insigne le remplace — il se lit sans traduction,
-             dans les quatre langues, et il ressemble a ce qu'il represente. -->
-        <span><b>${S.me ? S.me.rating : 0}</b> <img class="dc-insigne"
-              src="${ASSETS}img/icon_elo.png" alt="${esc(t('menu.rang'))}"
-              title="${esc(t('menu.rang'))}"></span>
-        <span><b>${S.me ? S.me.coins : 0}</b> ${esc(t('menu.coins'))}</span>
-      </div>
+      <!-- ⛔ LA RANGEE « PARTIES / CLASSEMENT / PIECES » A ETE RETIREE.
+           Trois nombres au bas de la carte d'accueil, et les trois se lisaient
+           deja ailleurs : les pieces et la monnaie maudite sont sur les plaques
+           de la barre du haut, le classement sur la plaque « RANG » juste a
+           cote. Seul le compte de parties etait unique — et il ne sert qu'a
+           deverrouiller des capitaines, ce que les cadenas disent mieux, avec
+           le seuil ecrit dessus.
+           Repeter une information ne la rend pas plus visible : elle rend la
+           carte plus longue, et la carte defile deja sur les petits ecrans. -->
     </div></div>`;
 
   wireCaptains(el);

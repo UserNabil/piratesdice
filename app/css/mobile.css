@@ -1917,7 +1917,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     padding: clamp(9px, 1.6vh, 15px) 30px clamp(7px, 1.3vh, 12px);
     font-size: calc(clamp(14px, 2.1vh, 17px) * var(--pd-ui, 1));
   }
-  #dicewrap .dc-menu-stats { margin-top: clamp(4px, 1vh, 14px); }
   #dicewrap .dc-caps {
     margin: 0 0 clamp(4px, 1.2vh, 14px);
     padding-top: clamp(5px, 1.3vh, 12px);
@@ -3014,7 +3013,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-menu-card p { margin-bottom: clamp(2px, .8vh, 10px); }
 #dicewrap .dc-btn-art.dc-btn-deborde { margin-top: .28em; margin-bottom: .28em; }
 #dicewrap .dc-caps { padding-top: clamp(3px, .8vh, 9px); margin-bottom: clamp(3px, .8vh, 10px); }
-#dicewrap .dc-menu-stats { margin-top: clamp(2px, .6vh, 9px); }
 
 /* ⚠️ ET LE DESSIN PREND LE LISERE DU BOUTON. Il portait deja son propre cerne,
    fin, dessine pour un fond clair ; pose sur le violet a cote d'un bouton
@@ -3065,7 +3063,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 @media (max-width: 380px) {
   #dicewrap .dc-cap { width: clamp(40px, 12.5vw, 50px); height: clamp(40px, 12.5vw, 50px); }
   #dicewrap .dc-caps-head { margin-bottom: clamp(2px, .6vh, 6px); }
-  #dicewrap .dc-menu-stats { margin-top: clamp(1px, .4vh, 6px); }
   #dicewrap .dc-menu-card h2 { margin-bottom: clamp(3px, .8vh, 9px); }
 }
 

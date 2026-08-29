@@ -464,26 +464,10 @@
 
 #dicewrap .dc-menu-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
-#dicewrap .dc-menu-stats {
-  display: flex;
-  gap: clamp(16px, 3vw, 34px);
-  justify-content: center;
-  margin-top: 24px;
-  font-size: 12.5px;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--txt-dim);
-}
-
-#dicewrap .dc-menu-stats b {
-  color: var(--gold-hi);
-  font-family: "Luckiest Guy", "Baloo 2", cursive;
-  font-size: 21px;
-  display: block;
-  text-transform: none;
-  letter-spacing: 0;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, .8);
-}
+/* ⛔ `.dc-menu-stats` A DISPARU AVEC SA RANGEE. Trois nombres — parties,
+   classement, pieces — repetes au bas de la carte d'accueil alors que les
+   plaques de la barre du haut les portaient deja. Les trois reglages de marge
+   qui l'accompagnaient dans mobile.css sont partis avec. */
 
 /* ============================================================================
    L'ARENE
@@ -2467,7 +2451,6 @@
   #dicewrap .dc-pc-portrait { width: 44px; height: 44px; }
   #dicewrap .dc-pc-lbl { display: none; }
   #dicewrap .dc-menu-card p { margin-bottom: 16px; }
-  #dicewrap .dc-menu-stats { margin-top: 14px; }
 }
 
 /* ── LES MONTANTS PRETS DE LA MISE ───────────────────────────────────────────
