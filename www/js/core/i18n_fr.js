@@ -675,7 +675,7 @@ export const FR = {
   'cap.teach.trait': 'Une fois par partie, il gèle une colonne adverse pendant son prochain tour.',
 
   'cap.bonny.name': 'Anne Bonny',
-  'cap.bonny.trait': 'Une fois par partie, son tour dure 50 % plus longtemps.',
+  'cap.bonny.trait': 'Une fois par partie, le prochain tour de son adversaire est deux fois plus court.',
   'cap.bart.name': 'Black Bart',
   'cap.bart.trait': 'Une fois par partie, il échange un de ses dés contre celui d’en face, sur la même case.',
   'cap.lionne.name': 'La Lionne Sanglante',
@@ -690,7 +690,7 @@ export const FR = {
   'cap.trait.wipe': 'Une colonne rasée',
   'cap.trait.boost': 'Une colonne bénie',
   'cap.trait.foresee': 'Un regard sur le prochain dé',
-  'cap.trait.slow': 'Un tour rallongé',
+  'cap.trait.slow': 'Un tour pressé',
   'cap.trait.swap': 'Deux dés échangés',
   'cap.trait.skip': 'Un tour volé',
   'cap.trait.curse': 'Une colonne maudite',
@@ -703,7 +703,7 @@ export const FR = {
   'shop.B007.name': 'Tour volé',
   'shop.B007.desc': 'Votre adversaire saute son prochain tour. Vous jouez deux fois de suite.',
   'shop.B008.name': 'Sablier fêlé',
-  'shop.B008.desc': 'Votre tour dure 50 % plus longtemps. Du temps pour réfléchir, rien de plus.',
+  'shop.B008.desc': 'Le prochain tour de votre adversaire dure deux fois moins longtemps.',
   'shop.B009.name': 'Troc de dés',
   'shop.B009.desc': 'Votre dé et celui d’en face, sur la même case, échangent leurs places.',
   'shop.B010.name': 'Bordée sur la colonne',
@@ -714,7 +714,7 @@ export const FR = {
   /* ══ CE QUI S’AFFICHE QUAND L’EFFET TOMBE ══ */
   'fx.gelcol': 'Colonne gelée !',
   'fx.curse': 'Colonne maudite : −15 % jusqu’à la fin',
-  'fx.slow': 'Tour rallongé : la moitié de temps en plus',
+  'fx.slow': 'Tour pressé : moitié moins de temps',
   'fx.swap': 'Dés échangés !',
   'fx.wipe': 'Colonne rasée !',
   'game.colFrozen': 'Cette colonne est gelée.',
@@ -744,9 +744,9 @@ export const FR = {
   'say.any.B007.0': 'Ne bouge plus. C’est un ordre, pas une proposition.',
   'say.any.B007.1': 'Ton tour est à moi. Regarde-moi jouer.',
   'say.any.B007.2': 'Reste où tu es. Je n’ai pas fini.',
-  'say.any.B008.0': 'Rien ne presse. J’ai tout mon temps, maintenant.',
-  'say.any.B008.1': 'Le sable s’est arrêté. Prends un siège.',
-  'say.any.B008.2': 'Deux fois plus de temps pour te trouver un défaut.',
+  'say.any.B008.0': 'Le temps te file entre les doigts. Fais vite.',
+  'say.any.B008.1': 'Moitié moins de sable pour toi. Bonne chance.',
+  'say.any.B008.2': 'Ton prochain tour sera court. Très court.',
   'say.any.B009.0': 'Le tien me plaît mieux. Prends le mien.',
   'say.any.B009.1': 'Échange. Tu n’avais pas le choix, remarque.',
   'say.any.B009.2': 'Je te laisse le mauvais. C’est de bonne guerre.',
@@ -760,9 +760,9 @@ export const FR = {
   /* ══ LA VOIX DES CINQ NOUVEAUX, SUR LEUR PROPRE TRAIT ══
      Un capitaine ne parle vraiment que d’une chose : ce qu’il fait mieux que les
      autres. Le reste passe par les répliques communes ci-dessus. */
-  'say.bonny.B008.0': 'Le temps m’appartient. Attends ton tour, il viendra.',
-  'say.bonny.B008.1': 'Je ne cours après personne. Surtout pas après toi.',
-  'say.bonny.B008.2': 'Deux fois plus de sable. Assieds-toi, ce sera long.',
+  'say.bonny.B008.0': 'Dépêche-toi. Le sable ne t’attendra pas.',
+  'say.bonny.B008.1': 'Ton tour vient de raccourcir. Réfléchis vite.',
+  'say.bonny.B008.2': 'Je n’ai pas volé ton tour. Je l’ai juste pressé.',
   'say.bart.B009.0': 'Beau dé. Il ira mieux chez moi.',
   'say.bart.B009.1': 'Un troc honnête : je prends, tu gardes le reste.',
   'say.bart.B009.2': 'Ce qui est à toi est à moi. Ce qui est à moi le reste.',
@@ -788,7 +788,7 @@ export const FR = {
      pas se jouer deux fois. Voir `renderRack` dans dice_match.js. */
   'fx.colAlreadyFrozen': 'Une de ses colonnes est déjà gelée',
   'fx.colAlreadyCursed': 'Une de ses colonnes est déjà maudite',
-  'fx.alreadySlowed': 'Votre tour est déjà rallongé',
+  'fx.alreadySlowed': 'Son prochain tour est déjà pressé',
   'fx.notYourTurnYet': 'Cet effet se joue pendant votre tour',
   /* Le seul echec que le joueur peut encore voir au demarrage — et il ne dit
      ni adresse, ni commande, ni message de moteur. Voir `direEchec` dans boot.js. */
@@ -801,7 +801,7 @@ export const FR = {
      sortaient en anglais brut au milieu d'une interface francaise. */
   'err.colGelee': 'Une de ses colonnes est déjà gelée.',
   'err.tourVole': 'Son prochain tour est déjà volé.',
-  'err.tourRallonge': 'Votre tour est déjà rallongé.',
+  'err.tourRallonge': 'Son prochain tour est déjà pressé.',
   'err.pasDePendule': 'Il n’y a pas de chronomètre sur cette table.',
   'err.pasDeVisAVis': 'Aucun de vos dés n’a de vis-à-vis en face.',
   'err.caseSansVisAVis': 'Aucun dé adverse en face de celui-là.',

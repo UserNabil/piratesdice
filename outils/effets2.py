@@ -60,9 +60,17 @@ CAPITAINES = [
 # Les icones d'effet. Meme cle : `trait_<capitaine>.png` est le nom que le jeu
 # construit tout seul depuis l'identifiant (voir `artTrait` dans dice_lobby.js).
 TRAITS = [
-    ("bonny", "slow_time.png"),
+    # ⛔ CES DEUX-LA ETAIENT INVERSEES A L'ECRAN. Le dessin de la montre fissuree
+    # allait a Anne Bonny et le saut a Henry Morgan ; en jeu, c'etait le
+    # contraire qui se lisait. On croise les deux fichiers plutot que de
+    # renommer l'art : le nom d'un fichier livre ne se touche pas, et cette table
+    # existe exactement pour ce genre d'ecart.
+    # ⚠️ LE CROISEMENT A DEJA ETE APPLIQUE A LA MAIN sur les fichiers de
+    # www/dice/img/, les sources n'etant plus dans ~/Downloads. Cette table dit
+    # ce qu'il faudra refaire le jour ou l'art sera regenere depuis l'original.
+    ("bonny", "jump_turn.png"),
     ("bart", "swip_dice.png"),
-    ("morgan", "jump_turn.png"),
+    ("morgan", "slow_time.png"),
     ("levasseur", "column_cursed.png"),
     # ⚠️ CHING SHIH CHANGE DE TRAIT, DONC D'ICONE. La longue-vue passe a la
     # Lionne Sanglante — c'est elle qui la tient sur son portrait — et Ching Shih

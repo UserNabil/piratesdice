@@ -1337,9 +1337,10 @@ export function renderBonusRack() {
     B004: enPoche ? 'offline.pasIci' : null,
     B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
     B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
+    /* Il vise desormais EN FACE : plus besoin d'etre sur son propre tour au sens
+       ou l'entendait l'ancienne version, mais on ne presse pas deux fois. */
     B008: enPoche ? 'offline.pasIci'
-      : (dit.tourLong && dit.tourLong[S.seat] ? 'fx.alreadySlowed'
-        : (dit.turn !== S.seat ? 'fx.notYourTurnYet' : null)),
+      : (dit.tourCourt && dit.tourCourt[foe] ? 'fx.alreadySlowed' : null),
     B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
   };
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {

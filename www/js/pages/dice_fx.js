@@ -212,7 +212,16 @@ function bubble(seat, contenu, classe) {
   const enHaut = el.classList.contains('dc-bulle-foe');
   const nom = enHaut ? '--pd-bulle-h' : '--pd-bulle-me-h';
   if (barre) barre.style.setProperty(nom, el.getBoundingClientRect().height + 'px');
-  const chasser = poser(el, classe === 'dc-bulle-mood' ? '..' : contenu);
+  /* ⛔ LA DUREE D'AFFICHAGE SE CALCULE SUR LA LONGUEUR DU TEXTE, et `poser`
+     recevait ici le CONTENU tel quel. Tant que c'etait une chaine, tout allait
+     bien ; depuis que l'annonce d'effet passe par une bulle, le contenu est un
+     noeud du DOM — sa `.length` vaut `undefined`, la duree devient `NaN`, et
+     `setTimeout(fn, NaN)` part IMMEDIATEMENT. La bulle etait donc bien creee,
+     bien accrochee, et retiree dans la meme image : aucune exception, aucune
+     trace, et rien a l'ecran. On lui passe le texte, qui est ce qu'elle mesure. */
+  const aMesurer = classe === 'dc-bulle-mood' ? '..'
+    : (contenu instanceof Node ? (contenu.textContent || '') : contenu);
+  const chasser = poser(el, aMesurer);
   /* Quand la bulle s'en va, l'alerte redescend : une place reservee a un
      message disparu est une place perdue a chaque tour. */
   if (barre) {
@@ -406,11 +415,13 @@ function unEffet(f) {
 
 
 function annonceBonus(f) {
-  const arene = document.querySelector('#dc-screen-game .dc-arena');
-  if (!arene) return;
-  const ancienne = arene.querySelector('.dc-cast');
-  if (ancienne) ancienne.remove();
-
+  /* ⛔ CETTE FONCTION S'ARRETAIT SUR UN GARDE QUI NE LA CONCERNE PLUS. Elle
+     commencait par chercher l'arene pour y poser sa carte `dc-cast` et sortait
+     si elle ne la trouvait pas. La carte n'existe plus — l'annonce est une bulle
+     accrochee a la barre des capitaines — mais le garde, lui, etait reste : il
+     rendait la main en silence, sans exception et sans trace, et plus aucune
+     annonce d'effet ne s'affichait. Un garde survivant a ce qu'il gardait est un
+     bogue muet, le plus long a trouver. */
   const mien = f.seat === S.seat;
   const contreMoi = !mien && f.target === S.seat;
   /* ⚠️ ON LISAIT LE NOM DE L'OBJET EN BOUTIQUE, ET CA NE VOULAIT RIEN DIRE ICI.
@@ -452,24 +463,31 @@ function annonceBonus(f) {
   const quoi = dite || (nom.startsWith('shop.') ? f.identify : nom);
   const qui = mien ? t('fx.bonusYou') : nomDuSiege(f.seat);
 
-  const el = document.createElement('div');
-  el.className = 'dc-cast' + (mien ? ' dc-cast-me' : contreMoi ? ' dc-cast-vs' : '');
-  el.innerHTML = '<img class="dc-cast-art" src="' + bonusArt(f.identify) + '" alt="">'
-    + '<div class="dc-cast-txt"><b>' + esc(qui) + '</b><span>' + esc(quoi) + '</span></div>';
-  /* ⚠️ CE NOM N'EXISTAIT PAS. `barre` n'etait declare nulle part : chaque
-     annonce levait une ReferenceError, avalee par le try/catch du dispatch.
-     Le joueur ne voyait donc plus qui avait joue quel bonus — et, pire, l'
-     exception coupait la boucle des effets : la destruction annoncee juste
-     apres n'etait jamais dessinee. « L'IA a detruit mon de et joue juste
-     apres, je n'ai rien compris ». */
-  arene.appendChild(el);
+  /* ⛔ DEUX CANAUX DISAIENT LA MEME CHOSE, ET L'UN COUVRAIT L'AUTRE. L'annonce
+     d'effet etait une carte posee au milieu de l'arene (`dc-cast`) : elle
+     arrivait par-dessus le plateau, cachait le coup qu'elle annoncait, et
+     doublait la bulle de replique qui pend deja a la barre des capitaines.
+     « Retirer le message quand un joueur joue un bonus, et mettre plutot le
+     contenu du message dans la tooltip de dialogue durant une partie, avec
+     l'icone de l'effet en debut de phrase. »
+     Un seul canal, donc : celui qui existait deja et qui sait d'ou il sort —
+     du cote de celui qui parle. L'icone ouvre la phrase, comme un visage. */
+  const bulle = document.createElement('span');
+  bulle.className = 'dc-dit';
+  const icone = document.createElement('img');
+  icone.className = 'dc-dit-art';
+  icone.src = bonusArt(f.identify);
+  icone.alt = '';
+  bulle.appendChild(icone);
+  bulle.appendChild(document.createTextNode(quoi));
 
   /* Une secousse et une vibration seulement quand on ENCAISSE : signaler de la
      meme facon ce qu'on inflige et ce qu'on subit revient a ne rien signaler. */
   if (contreMoi) { shake(); buzz([0, 30, 50, 80]); }
 
-  poser(el, qui + ' ' + quoi);
+  bubble(f.seat, bulle, 'dc-bulle-effet');
 }
+
 
 /*
  * LA PENDULE DU TOUR.

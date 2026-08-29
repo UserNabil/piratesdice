@@ -109,6 +109,8 @@ export class PartieHorsLigne {
     this.effets = [[], []];
     this.gratuitUtilise = [false, false];
     this.tour = 0;
+    /* L'instant de la derniere pique : personne ne parle deux fois de suite. */
+    this.dernierePique = 0;
     this.finie = false;
     this.journal = [];
   }
@@ -145,7 +147,7 @@ export class PartieHorsLigne {
       geleCol: this.geleCol.slice(),
       maudCol: [this.maudit[0] === null ? -1 : this.maudit[0],
                 this.maudit[1] === null ? -1 : this.maudit[1]],
-      tourLong: [false, false],
+      tourCourt: [false, false],
       boostCol: this.boost.slice(),
       quarters: this.quarts.slice(),
       foresee: null,
@@ -197,6 +199,8 @@ export class PartieHorsLigne {
     this.des[siege] = null;
 
     const fx = [{ kind: 'place', seat: siege, cell: mis.cell, value: v }];
+    const avantEcart = R.totalScore(this.grilles[siege], opts(this, siege))
+                     - R.totalScore(this.grilles[1 - siege], opts(this, 1 - siege));
     const touche = R.destroyMatching(this.grilles[siege], this.grilles[1 - siege]);
     if (touche.destroyed.length) {
       this.grilles[1 - siege] = touche.grid;
@@ -205,6 +209,26 @@ export class PartieHorsLigne {
         fx.push({ kind: 'broadside', seat: siege, count: touche.destroyed.length });
       }
     }
+
+    /* ⛔ PERSONNE NE PARLAIT HORS LIGNE. Le moteur de poche posait les des et
+       rien d'autre : ni pique sur une bordee, ni mot quand l'adversaire repasse
+       devant. « Les dialogues de l'IA ou du joueur adverse ne se declenchent
+       plus » — ils ne s'etaient jamais declenches ici, et le serveur ayant ete
+       injoignable une bonne partie de la journee, c'est ce moteur-la qui jouait.
+
+       ⚠️ LE TIRAGE SE FAIT AVEC `Math.random`, PAS AVEC LA GRAINE. Le hasard de
+       la partie est un CONTRAT : le serveur rejoue le journal avec la meme
+       graine pour verifier. Consommer un tirage de plus pour choisir une
+       replique decalerait tous les des suivants, et chaque partie honnete serait
+       refusee au retour du reseau. Le bavardage n'est pas journalise : il peut
+       donc tirer ailleurs. */
+    const emportes = touche.destroyed.length;
+    const apresEcart = R.totalScore(this.grilles[siege], opts(this, siege))
+                     - R.totalScore(this.grilles[1 - siege], opts(this, 1 - siege));
+    const pique = this.parler(siege, emportes >= 2 ? 'broadside'
+      : (emportes === 1 ? 'sting'
+        : (avantEcart < 0 && apresEcart > 0 ? 'lead' : null)));
+    if (pique) fx.push(pique);
 
     if (R.isFull(this.grilles[0]) && R.isFull(this.grilles[1])) this.finie = true;
     else this.passerLaMain(siege, fx);
@@ -276,6 +300,10 @@ export class PartieHorsLigne {
       if (!res || !res.ok) return null;
       this.grilles[victime] = res.grid;
       fx.push({ kind: 'destroy', seat: victime, cells: [cellule], par: siege });
+      if (victime !== siege) {
+        const mot = this.parler(siege, 'blast');
+        if (mot) fx.push(mot);
+      }
     } else if (identifiant === 'B005') {
       if (col < 0 || col >= R.COLUMNS) return null;
       this.boost[siege] = col;
@@ -335,6 +363,21 @@ export class PartieHorsLigne {
        `passerLaMain` consomme au passage ce qui appartient au tour. */
     if (col < 0) { this.passerLaMain(siege, fx); return fx; }
     return fx.concat(this.poser(siege, col) || []);
+  }
+
+  /**
+   * Une pique, aux memes cadences que le serveur (game/banter.js) : une bordee
+   * parle a chaque fois, un de emporte une fois sur trois, et personne ne parle
+   * deux fois en moins de deux secondes et demie.
+   */
+  parler(siege, cle) {
+    if (!cle) return null;
+    const maintenant = Date.now();
+    if (maintenant - (this.dernierePique || 0) < 2600) return null;
+    const chance = { broadside: 1, sting: 0.34, blast: 0.8, lead: 0.6 }[cle] || 1;
+    if (Math.random() >= chance) return null;
+    this.dernierePique = maintenant;
+    return { kind: 'taunt', seat: siege, key: cle, line: Math.floor(Math.random() * 4) };
   }
 
   /** Le verdict, quand les deux plateaux sont pleins. */
