@@ -73,17 +73,21 @@ function enPartie() {
   return !!(S.state && S.state.phase && S.state.phase !== 'over');
 }
 
-/* Les rayons de la boutique, dans l'ordre ou l'on s'habille. */
+/* ⚠️ LES EFFETS D'ABORD. Les rayons suivaient l'ordre ou l'on s'habille — les
+   des, la gravure, puis ce qu'on emporte — et l'on tombait donc sur la vitrine
+   avant la cale. Or ce qu'on vient chercher entre deux parties, c'est de quoi
+   jouer la suivante : les parures se choisissent une fois, les effets a chaque
+   fois. */
 const RAYONS = [
+  { cle: 'bonus', titre: 'shop.rayon.bonus', tient: (p) => !porte(p) },
   { cle: 'des', titre: 'shop.rayon.des', tient: estParure },
   { cle: 'motifs', titre: 'shop.rayon.motifs', tient: estMotif },
-  { cle: 'bonus', titre: 'shop.rayon.bonus', tient: (p) => !porte(p) },
 ];
 
 /* ⚠️ LE RAYON OUVERT SURVIT AU RE-RENDU. La boutique se redessine apres chaque
    achat : sans cette memoire, on achetait une gravure et on se retrouvait
    devant les jeux de des, a chercher ou l'on etait. */
-let rayonOuvert = 'des';
+let rayonOuvert = 'bonus';
 
 export async function renderShop(body) {
   /* ⛔ ON N'ACHETE PAS SA MISE EN COURS DE ROUTE. Vecu : 1000 pieces misees,
@@ -139,7 +143,7 @@ export async function renderShop(body) {
   const pleins = RAYONS.map((r) => ({ r, lot: products.filter((p) => r.tient(p)) }))
     .filter((x) => x.lot.length);
   if (!pleins.some((x) => x.r.cle === rayonOuvert)) {
-    rayonOuvert = pleins.length ? pleins[0].r.cle : 'des';
+    rayonOuvert = pleins.length ? pleins[0].r.cle : 'bonus';
   }
   const ouvert = pleins.find((x) => x.r.cle === rayonOuvert);
 
@@ -256,8 +260,50 @@ function tarif(p) {
   return { devise: 'basic', prix: or };
 }
 
+/**
+ * COMBIEN DE PARTIES IL FAUT AVOIR TERMINEES POUR ACHETER CET EFFET.
+ *
+ * ⛔ LES ONZE EFFETS ETAIENT EN VENTE DES LA PREMIERE PARTIE. Un debutant
+ * pouvait acheter la bordee de Ching Shih sans savoir qu'elle existait — et le
+ * capitaine qu'il mettrait cent parties a gagner n'apportait alors plus rien de
+ * neuf, puisqu'il avait deja joue son trait. Un effet s'ouvre AVEC son
+ * capitaine. « Que les gens puissent acheter les bonus des qu'ils debloquent le
+ * capitaine adequat. »
+ *
+ * ⚠️ LA TABLE VIENT DU SERVEUR, ET C'EST TOUT L'INTERET. Chaque capitaine
+ * annonce l'effet qu'il offre (`offre`) a cote de son seuil : le client n'a rien
+ * a recopier, donc rien qui puisse diverger le jour ou un capitaine change de
+ * trait — ce qui vient d'arriver a deux d'entre eux. Le serveur refuse de toute
+ * facon l'achat ; l'ecran ne fait que l'annoncer avant le geste.
+ */
+function seuilDEffet(identify) {
+  let seuil = 0;
+  for (const c of (S.captains || [])) {
+    if (!c || c.offre !== identify) continue;
+    const n = Number(c.seuil) || 0;
+    seuil = seuil ? Math.min(seuil, n) : n;
+  }
+  return seuil;
+}
+
+/* Le meme cadenas que sur les medaillons de capitaine : deux traits de SVG,
+   nets a toutes les tailles, et pas un octet de plus. */
+const CADENAS_BOUTIQUE = '<svg viewBox="0 0 24 24" aria-hidden="true">'
+  + '<path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.4"'
+  + ' stroke-linecap="round"/><rect x="4" y="10" width="16" height="11" rx="2.6" fill="currentColor"/>'
+  + '</svg>';
+
 function bouton(p, have) {
   const possede = (have.get(p.identify) || 0) > 0;
+  /* Un effet pas encore merite : on montre CE QU'IL RESTE, pas un bouton mort.
+     Le compte transforme un refus en objectif — c'est deja ce que font les
+     cadenas des medaillons. */
+  const seuil = porte(p) ? 0 : seuilDEffet(p.identify);
+  if (seuil > 0 && ((S.me && Number(S.me.games)) || 0) < seuil) {
+    const reste = seuil - ((S.me && Number(S.me.games)) || 0);
+    return '<span class="dc-shop-ferme" title="' + esc(t('shop.effetFerme', { n: reste })) + '">'
+      + CADENAS_BOUTIQUE + '<b>' + esc(String(seuil)) + '</b></span>';
+  }
   if (porte(p) && possede) {
     const quoi = estMotif(p) ? 'motif' : 'skin';
     const actif = S.me && S.me[quoi] === p.identify;

@@ -169,23 +169,20 @@ function buildGame() {
       box.onclick = (ev) => {
         const pending = S.state && S.state.pending;
         if (!pending || pending.seat !== S.seat) return;
-        const ceSiege = parseInt(board.dataset.seat, 10);
-        /* ⛔ `pending.target` PEUT DESORMAIS ETRE NUL, ET NUL VEUT DIRE « LES
-           DEUX ». Le canon de Ching Shih rase « la sienne ou celle de
-           l'ennemi » : le serveur ne decide plus du plateau a l'armement, il
-           attend qu'on le lui dise. Ecrit `!== pending.target`, ce garde
-           refusait alors les DEUX plateaux — l'effet s'armait et rien n'etait
-           cliquable nulle part. */
-        if (pending.target !== null && ceSiege !== pending.target) return;
+        /* ⛔ LA CIBLE LIBRE A VECU LE TEMPS D'UNE LECTURE. La bordee de Ching
+           Shih devait choisir son plateau au tir ; elle emporte en fait les DEUX
+           colonnes face a face — « il faut qu'il detruise 2 colonnes, colonne
+           ennemie et amie face a face ». Il n'y a donc plus rien a choisir, et
+           `pending.target` redevient un siege comme pour tous les autres
+           effets. Un client deja distribue continue de savoir viser. */
+        if (parseInt(board.dataset.seat, 10) !== pending.target) return;
         /* ⚠️ UNE CIBLE DE COLONNE ACCEPTE UNE CASE VIDE. Le garde ci-dessous
            refusait tout ce qui n'etait pas un de deja pose : parfait pour un
            canon, mais une benediction se pose sur une colonne — vide comprise,
            et c'est meme la que le pari a le plus de sel. */
         if (!pending.column && !box.classList.contains('dc-cell-filled')) return;
         ev.stopPropagation();
-        /* Le siege ne voyage que pour les effets qui visent les deux plateaux ;
-           partout ailleurs le serveur l'ignore. */
-        S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10), seat: ceSiege });
+        S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10) });
       };
     });
   });
@@ -763,11 +760,19 @@ function stageBoards(st) {
 /* Une plaque qui change de chiffre doit se faire remarquer : sans ca, le joueur
    ne voit jamais ce que son coup vient de rapporter. */
 function popChangedScores(st) {
-  if (!S.lastScores) S.lastScores = [[0, 0, 0], [0, 0, 0]];
+  /* ⛔ TROIS COLONNES SUR QUATRE. Ce compteur et cette boucle datent de la table
+     a neuf cases ; le pont s'est elargi a douze des, et la QUATRIEME plaque
+     n'a plus jamais clignote — elle changeait de chiffre en silence, seule de
+     son espece. On lit la largeur reelle du plateau plutot qu'un nombre grave
+     dans le code : la prochaine fois qu'elle changera, rien ne restera derriere. */
+  const largeur = (st.columnScores && st.columnScores[0] && st.columnScores[0].length) || 4;
+  if (!S.lastScores || S.lastScores[0].length !== largeur) {
+    S.lastScores = [new Array(largeur).fill(0), new Array(largeur).fill(0)];
+  }
   for (let seat = 0; seat < 2; seat++) {
     const board = boardOf(seat);
     if (!board || !board.parentNode) continue;
-    for (let col = 0; col < 3; col++) {
+    for (let col = 0; col < largeur; col++) {
       const value = st.columnScores[seat][col];
       if (value === S.lastScores[seat][col]) continue;
       S.lastScores[seat][col] = value;
@@ -1252,8 +1257,18 @@ export function renderBonusRack() {
         </span>
       </button>`;
 
-  const tous = (offert ? [bouton(offert, t('shop.' + offert + '.name'), t('bonus.free'), true)] : [])
-    .concat(boutons.map((i) => bouton(i.identify, i.description, i.quantity, false)));
+  /* ⛔ LES JETONS ACHETES PORTAIENT LE TEXTE DE LA BASE, C'EST-A-DIRE L'ANGLAIS.
+     `i.description` vient du catalogue serveur, qui ne parle qu'une langue ; le
+     jeton OFFERT, lui, passait deja par `t()`. Deux jetons cote a cote dans le
+     meme ratelier, l'un en francais et l'autre en anglais. La traduction existe
+     pour les onze effets — il suffisait de la demander. */
+  const nomDeLEffet = (id, secours) => {
+    const dit = t('shop.' + id + '.name');
+    return dit && !dit.startsWith('shop.') ? dit : (secours || id);
+  };
+  const tous = (offert ? [bouton(offert, nomDeLEffet(offert), t('bonus.free'), true)] : [])
+    .concat(boutons.map((i) => bouton(i.identify, nomDeLEffet(i.identify, i.description),
+                                      i.quantity, false)));
 
   rack.innerHTML = tous.join('');
 
@@ -1293,11 +1308,19 @@ export function renderBonusRack() {
      le serveur qui refuse, l'ecran ne fait qu'eviter le geste inutile. */
   const foe = 1 - S.seat;
   const dit = S.state || {};
+  /* ⛔ ET DEUX EFFETS N'EXISTENT PAS DANS UNE PARTIE HORS LIGNE. La longue-vue
+     casserait l'ordre de consommation du hasard sur lequel repose la
+     verification ; le tour rallonge n'a pas de pendule a rallonger. Le moteur de
+     poche les refuse tous les deux — en silence, donc le jeton paraissait mort.
+     On le dit avant le geste, comme pour tous les autres refus. */
+  const enPoche = !!S.poche;
   const IMPOSSIBLE = {
+    B004: enPoche ? 'offline.pasIci' : null,
     B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
     B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
-    B008: dit.tourLong && dit.tourLong[S.seat] ? 'fx.alreadySlowed'
-      : (dit.turn !== S.seat ? 'fx.notYourTurnYet' : null),
+    B008: enPoche ? 'offline.pasIci'
+      : (dit.tourLong && dit.tourLong[S.seat] ? 'fx.alreadySlowed'
+        : (dit.turn !== S.seat ? 'fx.notYourTurnYet' : null)),
     B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
   };
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
@@ -1408,12 +1431,7 @@ function renderTargeting(st) {
   [0, 1].forEach((seat) => {
     const board = boardOf(seat);
     if (!board) return;
-    /* ⛔ `target === seat` ETEIGNAIT LES DEUX PLATEAUX POUR LE CANON DE COLONNE.
-       Sa cible n'est decidee qu'au tir : le serveur publie `target: null`, qui
-       n'est egal a aucun siege. Les cases restaient donc cliquables — le geste
-       partait bien — mais rien ne s'allumait nulle part, et le joueur voyait un
-       effet arme sans savoir ou viser. `null` veut dire LES DEUX. */
-    const vise = !!pending && (pending.target === null || pending.target === seat);
+    const vise = !!pending && pending.target === seat;
     board.classList.toggle('dc-target', vise);
     /* ⛔ LA GRILLE QU'ON VISE EST CELLE D'EN FACE — DONC CELLE QUI EST EN
        RETRAIT. Le voile de l'attente la recouvrait pendant toute la visee :

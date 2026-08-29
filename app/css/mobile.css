@@ -445,6 +445,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* Le bandeau hors ligne : il dit ou l'on en est, sans dramatiser. Sans reseau,
    le jeu marche encore — c'est justement ce qu'on veut faire comprendre. */
+/* ⛔ UN ONGLET QUI N'A RIEN A MONTRER DOIT LE DIRE AVANT LE GESTE. Sans reseau,
+   la boutique, le classement, les hauts faits et le journal ouvrent une page
+   vide ou un message d'erreur : quatre pages sur cinq. Eteints, ils se lisent
+   d'un coup d'oeil — et ils restent CLIQUABLES, parce qu'un bouton mort ne dit
+   ni son nom ni son motif sur un ecran sans survol. */
+#dicewrap .dc-onglet-eteint > img { filter: grayscale(1) brightness(.62); }
+#dicewrap .dc-onglet-eteint { opacity: .62; }
+
 #dicewrap .dc-hors-ligne {
   margin: 8px 0 0;
   padding: 7px 12px;
@@ -996,6 +1004,27 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 }
 #dicewrap .dc-legendaire img { width: 16px; height: 16px; }
 
+/* Un effet qui n'est pas encore merite porte le SEUIL a la place du prix. Meme
+   forme que la mention legendaire — c'est la meme idee : cet article-la ne
+   s'achete pas maintenant, et le nombre dit quand. */
+#dicewrap .dc-shop-ferme {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--txt-dim, #C9BCEA);
+  background: rgba(0, 0, 0, .38);
+  box-shadow: inset 0 0 0 1px rgba(201, 188, 234, .32);
+}
+#dicewrap .dc-shop-ferme svg { width: 14px; height: 14px; display: block; }
+#dicewrap .dc-shop-ferme b {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 13px;
+  color: var(--gold-hi, #FFE479);
+}
+
 /* ============================================================================
    LA PAGE DES HAUTS FAITS.
 
@@ -1207,7 +1236,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   text-shadow: 0 1px 2px rgba(0, 0, 0, .9);
 }
 
-#dicewrap .dc-verrou-svg { width: 13px; height: 13px; display: block; }
+/* ⛔ IL TOMBAIT A ZERO SUR PETIT ECRAN. Le bandeau est une rangee flex ; un SVG
+   y est retrecissable par defaut, et le texte « 0/550 » a cote suffit a le
+   comprimer entierement des que le medaillon descend sous une cinquantaine de
+   pixels. Le cadenas — la seule chose qui dise « ferme » d'un coup d'oeil —
+   disparaissait donc exactement la ou l'ecran est le plus petit. */
+#dicewrap .dc-verrou-svg { width: 13px; height: 13px; display: block; flex: 0 0 auto; }
 
 /* La carte du capitaine ferme : le dessin du trait s'eteint aussi, sinon elle
    promet un pouvoir qu'on ne peut pas encore prendre. */
@@ -3061,7 +3095,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    reduire sans rien retirer : on le reconnait a sa couleur et a sa silhouette
    bien avant de lire son visage. */
 @media (max-width: 380px) {
-  #dicewrap .dc-cap { width: clamp(40px, 12.5vw, 50px); height: clamp(40px, 12.5vw, 50px); }
+  /* ⛔ ET PAS `width` + `height` : LE MEDAILLON DEVENAIT OVALE. La rangee est une
+     grille depuis les dix capitaines, et une regle plus haut plafonne la largeur
+     (`max-width`) ; imposer ici une HAUTEUR fixe donnait 42 px de large pour
+     45 de haut, donc un portrait etire. `aspect-ratio: 1` tient la forme, il
+     suffit de dire jusqu'ou l'on peut grandir. */
+  #dicewrap .dc-cap { max-width: clamp(40px, 12.5vw, 50px); }
   #dicewrap .dc-caps-head { margin-bottom: clamp(2px, .6vh, 6px); }
   #dicewrap .dc-menu-card h2 { margin-bottom: clamp(3px, .8vh, 9px); }
 }

@@ -178,7 +178,7 @@ const STILL_FILES = [
   'slot_bas_home.png',
   'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
   'bonus_reroll.png', 'bonus_clear_own.png', 'bonus_blast_enemy.png',
-  'bonus_freeze.png', 'fx_freeze.png', 'icon_loader.png',
+  'bonus_freeze.png', 'icon_loader.png',
   'icon_bag.png', 'icon_versus.png', 'icon_leave.png',
   'menu_ai.png', 'menu_versus.png', 'menu_friend.png',
   'icon_back.png', 'icon_table.png', 'icon_join.png',

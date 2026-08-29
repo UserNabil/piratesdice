@@ -54,6 +54,12 @@ function coupDeLaMachine(etat, siege) {
 
   for (let col = 0; col < R.COLUMNS; col++) {
     if (R.isColumnFull(moi, col)) continue;
+    /* ⛔ ET JAMAIS LA COLONNE GELEE. `poser()` la refuse : la machine aurait
+       choisi une colonne interdite, la pose serait revenue nulle, et
+       `tourDeLaMachine` aurait rendu la main sans avoir joue — la meme table
+       figee que sur le serveur, en pire, puisqu'il n'y a ici aucune pendule
+       pour la denouer. */
+    if (etat.geleCol[siege] === col) continue;
     const apres = R.place(moi, col, valeur).grid;
     const gagne = R.totalScore(apres, opts(etat, siege)) - R.totalScore(moi, opts(etat, siege));
     /* Ce que la pose emporte chez l'autre compte double dans la decision : un
@@ -70,7 +76,7 @@ function coupDeLaMachine(etat, siege) {
 }
 
 function opts(etat, siege) {
-  return { quarters: etat.quarts, boost: etat.boost[siege] };
+  return { quarters: etat.quarts, boost: etat.boost[siege], curse: etat.maudit[siege] };
 }
 
 /* ─────────────────────────────────────────────────────────────── la partie ── */
@@ -95,6 +101,11 @@ export class PartieHorsLigne {
     this.grilles = [R.emptyGrid(), R.emptyGrid()];
     this.des = [null, null];
     this.boost = [null, null];
+    /* Les trois etats neufs, exactement comme sur le serveur : la colonne
+       maudite (qui dure), la colonne gelee (un seul tour) et le tour vole. */
+    this.maudit = [null, null];
+    this.geleCol = [-1, -1];
+    this.gele = [false, false];
     this.effets = [[], []];
     this.gratuitUtilise = [false, false];
     this.tour = 0;
@@ -116,14 +127,14 @@ export class PartieHorsLigne {
 
   /** L'instantane, dans la forme exacte que l'ecran de jeu attend du serveur. */
   instantane() {
-    const s = (i) => ({ quarters: this.quarts, boost: this.boost[i] });
+    const s = (i) => ({ quarters: this.quarts, boost: this.boost[i], curse: this.maudit[i] });
     return {
       matchId: 'hors-ligne',
       captains: this.capitaines.slice(),
       traits: [null, null],
       freeReroll: [0, 0],
       freeBonus: [null, null],
-      gele: [false, false],
+      gele: this.gele.slice(),
       /* ⚠️ TROIS CHAMPS QUI VALENT TOUJOURS « RIEN », ET QUI DOIVENT QUAND MEME
          ETRE LA. Le mode hors ligne n'a ni capitaines ni effets — `traits` et
          `freeBonus` sont deja nuls plus haut pour la meme raison. Mais l'ecran
@@ -131,8 +142,9 @@ export class PartieHorsLigne {
          champs a chaque instantane. Les omettre marche par accident (les gardes
          `st.geleCol ? … : -1` retombent sur rien), et un accident qui marche est
          une panne qui attend. On declare la forme entiere. */
-      geleCol: [-1, -1],
-      maudCol: [-1, -1],
+      geleCol: this.geleCol.slice(),
+      maudCol: [this.maudit[0] === null ? -1 : this.maudit[0],
+                this.maudit[1] === null ? -1 : this.maudit[1]],
       tourLong: [false, false],
       boostCol: this.boost.slice(),
       quarters: this.quarts.slice(),
@@ -174,6 +186,10 @@ export class PartieHorsLigne {
     if (v === null) return null;
     if (!Number.isInteger(colonne) || colonne < 0 || colonne >= R.COLUMNS) return null;
     if (R.isColumnFull(this.grilles[siege], colonne)) return null;
+    /* ⛔ MEME REGLE QU'EN LIGNE : une colonne gelee refuse le de. Sans elle, le
+       telephone accepterait une pose que le serveur rejettera au moment de
+       verifier, et la partie honnete serait refusee au retour du reseau. */
+    if (this.geleCol[siege] === colonne) return null;
 
     this.noter({ t: 'pose', s: siege, c: colonne, v });
     const mis = R.place(this.grilles[siege], colonne, v);
@@ -191,8 +207,28 @@ export class PartieHorsLigne {
     }
 
     if (R.isFull(this.grilles[0]) && R.isFull(this.grilles[1])) this.finie = true;
-    else this.tour = 1 - siege;
+    else this.passerLaMain(siege, fx);
     return fx;
+  }
+
+  /**
+   * RENDRE LA MAIN — le seul endroit ou le tour change.
+   *
+   * ⚠️ TOUT CE QUI APPARTIENT AU TOUR SE CONSOMME ICI, comme sur le serveur : le
+   * gel de colonne ne vaut que pour le tour qui vient de s'ecouler, et un tour
+   * vole rend la main a celui qui l'a pris. Les deux moteurs doivent produire la
+   * MEME suite de coups, sinon la verification rejette une partie honnete.
+   */
+  passerLaMain(siege, fx) {
+    this.geleCol[siege] = -1;
+    const victime = 1 - siege;
+    if (this.gele[victime]) {
+      this.gele[victime] = false;
+      this.noter({ t: 'saut', s: victime, par: 'gel' });
+      if (fx) fx.push({ kind: 'frozen', seat: victime, by: siege });
+      return;                                   // la main REVIENT a celui qui a gele
+    }
+    this.tour = victime;
   }
 
   /**
@@ -203,11 +239,20 @@ export class PartieHorsLigne {
    */
   effet(siege, identifiant, cellule) {
     if (this.finie || this.tour !== siege) return null;
-    if (identifiant === 'B004') return null;            // la longue-vue n'existe pas ici
+    /* ⛔ DEUX EFFETS NE SE JOUENT PAS HORS LIGNE, ET C'EST UN CHOIX ASSUME.
+       La longue-vue (B004) demande de tirer le de SUIVANT avant qu'il ne soit
+       joue : cela casserait l'ordre de consommation du hasard sur lequel repose
+       toute la verification, et une partie honnete serait rejetee. Le tour
+       rallonge (B008) n'a rien a rallonger — il n'y a pas de pendule sur un
+       telephone qui joue seul. Mieux vaut deux effets absents qu'un effet qui
+       ment ou qui brule un jeton pour rien ; le ratelier les grise. */
+    if (identifiant === 'B004' || identifiant === 'B008') return null;
     if (this.effets[siege].includes(identifiant)) return null;
     if (this.effets[siege].length >= this.maxEffets) return null;
 
     const fx = [];
+    const adverse = 1 - siege;
+
     if (identifiant === 'B001') {
       if (this.des[siege] === null) return null;
       this.des[siege] = null;
@@ -215,20 +260,66 @@ export class PartieHorsLigne {
       this.noter({ t: 'effet', s: siege, b: identifiant, offert: true });
       return fx.concat(this.lancer(siege) || []);
     }
+
+    if (identifiant === 'B007') {
+      if (this.gele[adverse]) return null;
+      this.gele[adverse] = true;
+      this.effets[siege].push(identifiant);
+      this.noter({ t: 'effet', s: siege, b: identifiant, offert: true });
+      return [{ kind: 'freeze', seat: siege, victim: adverse }];
+    }
+
+    const col = R.columnOf(cellule);
     if (identifiant === 'B002' || identifiant === 'B003') {
-      const victime = identifiant === 'B002' ? siege : 1 - siege;
+      const victime = identifiant === 'B002' ? siege : adverse;
       const res = R.clearCell(this.grilles[victime], cellule);
       if (!res || !res.ok) return null;
       this.grilles[victime] = res.grid;
-      fx.push({ kind: 'destroy', seat: victime, cells: [cellule] });
+      fx.push({ kind: 'destroy', seat: victime, cells: [cellule], par: siege });
     } else if (identifiant === 'B005') {
-      const col = R.columnOf(cellule);
       if (col < 0 || col >= R.COLUMNS) return null;
       this.boost[siege] = col;
       fx.push({ kind: 'boost', seat: siege, column: col });
+    } else if (identifiant === 'B011') {
+      if (col < 0 || col >= R.COLUMNS) return null;
+      this.maudit[adverse] = col;
+      fx.push({ kind: 'maudit', seat: adverse, column: col, by: siege });
+    } else if (identifiant === 'B006') {
+      if (col < 0 || col >= R.COLUMNS) return null;
+      if (this.geleCol[adverse] >= 0) return null;
+      if (R.isColumnFull(this.grilles[adverse], col)) return null;
+      /* Jamais la derniere colonne jouable : cela figerait la partie. */
+      let libres = 0;
+      for (let c = 0; c < R.COLUMNS; c++) {
+        if (c !== col && !R.isColumnFull(this.grilles[adverse], c)) libres++;
+      }
+      if (!libres) return null;
+      this.geleCol[adverse] = col;
+      fx.push({ kind: 'gelcol', seat: adverse, column: col, by: siege });
+    } else if (identifiant === 'B009') {
+      const troc = R.swapCell(this.grilles[siege], this.grilles[adverse], cellule);
+      if (!troc.ok) return null;
+      const mien = this.grilles[siege][cellule];
+      const sien = this.grilles[adverse][cellule];
+      this.grilles[siege] = troc.a;
+      this.grilles[adverse] = troc.b;
+      fx.push({ kind: 'troc', seat: siege, cell: cellule, mine: sien, theirs: mien });
+    } else if (identifiant === 'B010') {
+      if (col < 0 || col >= R.COLUMNS) return null;
+      let touche = false;
+      for (const camp of [0, 1]) {
+        const res = R.clearColumn(this.grilles[camp], col);
+        if (!res.cells.length) continue;
+        this.grilles[camp] = res.grid;
+        fx.push({ kind: 'destroy', seat: camp, cells: res.cells, par: siege });
+        touche = true;
+      }
+      if (!touche) return null;
+      fx.push({ kind: 'rase', column: col, by: siege });
     } else {
       return null;
     }
+
     this.effets[siege].push(identifiant);
     this.noter({ t: 'effet', s: siege, b: identifiant, case: cellule, offert: true });
     return fx;
@@ -240,13 +331,15 @@ export class PartieHorsLigne {
     if (this.finie || this.tour !== siege) return null;
     const fx = this.lancer(siege) || [];
     const col = coupDeLaMachine(this, siege);
-    if (col < 0) { this.tour = this.moi; return fx; }
+    /* Aucune colonne jouable : on rend la main plutot que de figer la table.
+       `passerLaMain` consomme au passage ce qui appartient au tour. */
+    if (col < 0) { this.passerLaMain(siege, fx); return fx; }
     return fx.concat(this.poser(siege, col) || []);
   }
 
   /** Le verdict, quand les deux plateaux sont pleins. */
   verdict() {
-    const s = (i) => ({ quarters: this.quarts, boost: this.boost[i] });
+    const s = (i) => ({ quarters: this.quarts, boost: this.boost[i], curse: this.maudit[i] });
     const totaux = [R.totalScore(this.grilles[0], s(0)), R.totalScore(this.grilles[1], s(1))];
     const a = totaux[this.moi];
     const b = totaux[1 - this.moi];

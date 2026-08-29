@@ -229,6 +229,63 @@ export function oublierAttente() { arreterAttente(); }
 
 /* ──────────────────────────────────────────────────────── le menu du pont ── */
 
+/**
+ * REPEINDRE CE QUI DEPEND DU RESEAU, ET RIEN D'AUTRE.
+ *
+ * ⛔ CHAQUE BATTEMENT DE LA RELANCE REFAISAIT LE PONT ENTIER. `showMenu()`
+ * reconstruit la carte : le titre, le texte, dix medaillons, la fiche du
+ * capitaine, trois boutons. La relance automatique bat toutes les une a quinze
+ * secondes, et la coupure ou le retour du reseau la declenchent aussi : a chaque
+ * fois, tout l'ecran repartait de zero. Un clignotement, la fiche du capitaine
+ * qui se referme, le medaillon qu'on etait en train de choisir qui perd sa
+ * lumiere — pour trois choses qui, elles, avaient vraiment change.
+ * « Il faut pas que ça recharge à chaque détection du serveur ; l'affichage ne
+ * change que là où il doit changer. »
+ *
+ * Trois choses dependent du reseau sur ce pont : le bandeau, et l'etat des deux
+ * boutons qui demandent quelqu'un en face. On ne touche qu'elles.
+ *
+ * Rend `false` si le pont n'est pas encore construit — l'appelant sait alors
+ * qu'il faut le dessiner pour de bon.
+ */
+export function peindreReseau() {
+  /* ⚠️ LA BARRE DU BAS SE REPEINT ICI, ET PAS A COTE. Elle vivait dans une
+     seconde fonction, dans le shell, qu'il fallait penser a appeler juste apres
+     celle-ci — trois appelants, trois occasions de l'oublier, et des onglets
+     restes gris apres le retour du reseau. Deux gestes qui doivent toujours
+     aller ensemble n'en font qu'un.
+     Elle passe par le registre `UI` parce que la barre appartient au shell, et
+     que l'importer d'ici ferait un cercle : dice.js importe deja ce module. */
+  if (UI.peindreOnglets) UI.peindreOnglets();
+
+  const carte = document.querySelector('#dicewrap .dc-menu-card');
+  if (!carte) return false;
+  const horsLigne = !S.net || !S.net.ready;
+
+  for (const id of ['dc-multi', 'dc-friend']) {
+    const b = document.getElementById(id);
+    if (!b) continue;
+    b.disabled = horsLigne;
+    if (horsLigne) b.setAttribute('title', t('offline.besoinReseau'));
+    else b.removeAttribute('title');
+  }
+
+  let bandeau = carte.querySelector('.dc-hors-ligne');
+  if (!horsLigne) { if (bandeau) bandeau.remove(); return true; }
+  if (!bandeau) {
+    bandeau = document.createElement('div');
+    bandeau.className = 'dc-hors-ligne';
+    /* A sa place exacte — juste avant les capitaines — sinon un bandeau pose a
+       la fin retomberait sous le pli, ce qu'on vient de corriger. */
+    carte.insertBefore(bandeau, carte.querySelector('.dc-caps'));
+  }
+  const texte = jetons().length
+    ? t('offline.bandeau', { n: jetons().length })
+    : t('offline.bandeauSeul');
+  if (bandeau.textContent !== texte) bandeau.textContent = texte;
+  return true;
+}
+
 export function renderMenu(el) {
   /* ⚠️ DEUX BOUTONS DEMANDENT QUELQU'UN EN FACE, ET ILS DOIVENT LE DIRE AVANT
      QU'ON APPUIE. Sans reseau, ils repondaient par un bandeau d'avertissement —

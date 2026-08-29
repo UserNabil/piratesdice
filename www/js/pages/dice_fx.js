@@ -748,7 +748,16 @@ export function startClock(st) {
     requestAnimationFrame(() => { flamme.style.transition = ''; });
   }
 
-  const total = (S.rules && S.rules.awayMs) || 0;
+  /* ⛔ LA MECHE DIVISAIT PAR LA DUREE DE BASE. `S.rules.awayMs` est la duree
+     ORDINAIRE d'un tour — dix-huit secondes. Anne Bonny la rallonge de moitie :
+     le reste annonce partait alors a vingt-sept sur dix-huit, soit une fraction
+     de 1,5. La meche restait donc figee pleine pendant tout le premier tiers du
+     tour, puis se mettait a bruler d'un coup — l'inverse exact de ce qu'une
+     jauge doit montrer.
+     Le serveur envoie desormais la duree REELLEMENT armee (`awayTotal`) a cote
+     du reste. On la prend quand elle est la, et l'on retombe sur la duree de
+     base pour un serveur qui ne l'enverrait pas encore. */
+  const total = Number(st.awayTotal) || (S.rules && S.rules.awayMs) || 0;
   const minutee = !!total && st.awayMs !== null && st.awayMs !== undefined;
   if (!minutee) {
     carte.style.setProperty('--pd-clock', '1');
@@ -798,7 +807,13 @@ export function renderForesee(st, dieFace) {
 
   const el = document.createElement('div');
   el.className = 'dc-foresee dc-foresee-on';
-  el.title = t('cap.ching.trait');
+  /* ⛔ ELLE NOMMAIT LE TRAIT DE CHING SHIH, QUI RASE DESORMAIS UNE COLONNE.
+     L'infobulle du de a venir empruntait la description d'un capitaine — celui
+     qui offrait la longue-vue a l'epoque. Depuis, la longue-vue est passee a la
+     Lionne Sanglante et Ching Shih a recu la bordee : survoler le de annonce
+     donnait donc « sa bordee emporte deux colonnes face a face ». L'effet a un
+     nom a lui, et il ne changera pas de main. */
+  el.title = t('shop.B004.desc');
   el.innerHTML = '<span class="dc-foresee-lbl">' + esc(t('fx.next')) + '</span>'
     + dieFace(st.foresee, false, skinOf(1 - S.seat));
   carte.appendChild(el);

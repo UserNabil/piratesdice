@@ -128,7 +128,13 @@ export function onOver(m) {
            Annoncer des pieces ici serait une promesse qu'on ne tient pas : la
            partie peut encore etre refusee, ou tomber au-dela du plafond du
            jour. On dit ce qui est vrai — elle est jouee, elle attend. -->
-      ${m.horsLigne ? `<div class="dc-over-line dc-dim">${esc(t('over.horsLigne'))}</div>` : ''}
+      ${m.horsLigne ? `<div class="dc-over-line dc-dim">${esc(t(m.horsLigneLibre
+        /* ⚠️ DEUX PHRASES, PARCE QUE CE NE SONT PAS DEUX FOIS LA MEME SITUATION.
+           Avec un jeton, la partie ATTEND une verification et sera payee : c'est
+           une promesse tenable. Sans jeton, elle ne sera jamais payee — le
+           serveur n'a aucun moyen de la verifier. Dire « la recompense arrive »
+           dans ce cas serait un mensonge qui se decouvrirait a la reconnexion. */
+        ? 'over.horsLigneLibre' : 'over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
         <button class="dc-btn" id="dc-again">${esc(t('over.again'))}</button>

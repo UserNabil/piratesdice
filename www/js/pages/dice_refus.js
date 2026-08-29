@@ -38,6 +38,25 @@ const REFUS = {
      patience : les confondre sous un seul mot ferait croire au joueur qu'il
      suffit d'attendre la fin du duel pour porter Grace O'Malley. */
   'captain locked': 'err.captainSeuil',
+  /* ⛔ DOUZE REFUS NEUFS SORTAIENT EN ANGLAIS BRUT. Les six effets ajoutes avec
+     les nouveaux capitaines refusent chacun pour des raisons qui leur sont
+     propres — une colonne deja gelee, une case sans vis-a-vis, une colonne
+     pleine — et aucune de ces phrases n'etait dans cette table. Un joueur
+     francophone lisait « one of their columns is already frozen » au milieu de
+     son jeu. C'est exactement le defaut que ce fichier existe pour empecher. */
+  'one of their columns is already frozen': 'err.colGelee',
+  'their next turn is already skipped': 'err.tourVole',
+  'your turn is already stretched': 'err.tourRallonge',
+  'there is no clock on this table': 'err.pasDePendule',
+  'no die of yours faces one of theirs': 'err.pasDeVisAVis',
+  'no enemy die faces that one': 'err.caseSansVisAVis',
+  'both boards are empty': 'err.deuxPlateauxVides',
+  'that column is empty on both boards': 'err.colonneVideDesDeux',
+  'one of their columns is already cursed': 'err.colMaudite',
+  'that column is already full': 'err.colPleine',
+  'that is their last playable column': 'err.derniereColonne',
+  'this column is frozen': 'err.colGeleeIci',
+  'effect locked': 'err.effetFerme',
   /* ⚠️ LES REFUS DE LA BOUTIQUE PASSENT PAR HTTP, PAS PAR LA SOCKET — et ils
      arrivaient donc en anglais brut au milieu d'un jeu en francais, en espagnol
      ou en arabe. Cette table sert les deux chemins : c'est le meme serveur qui

@@ -27,13 +27,14 @@ import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
 import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets } from './dice_state.js';
-import { onMatch, onState, renderBonusRack } from './dice_match.js';
+import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
-import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines, reprendreLienEnAttente } from './dice_lobby.js';
+import { renderMenu, onRoom, onRoomFail, resetLobby, repeindreCapitaines,
+         reprendreLienEnAttente, peindreReseau } from './dice_lobby.js';
 
 /* Les pages laterales, dans l'ordre ou on les rencontre : ce qu'on achete, ou
    l'on se situe, ce qu'on a accompli, ce qu'on a joue, et enfin les regles —
@@ -70,6 +71,31 @@ const ONGLETS = [
   { id: 'succes', cle: 'tab.succes', art: 'bas_succes', cote: 'd' },
   { id: 'replay', cle: 'tab.replay', court: 'nav.replay', art: 'bas_replay', cote: 'd' },
 ];
+
+/* ⛔ QUATRE PAGES SUR CINQ N'ONT RIEN A MONTRER SANS SERVEUR, ET ELLES LE
+   DISAIENT APRES COUP. La boutique attend le catalogue, le classement une route
+   HTTP, les hauts faits leur liste, le journal l'historique : sans reseau, on
+   ouvrait une page vide ou un message d'erreur. « Si le serveur ou internet est
+   down on grisatre aussi les liens dans la navbar pour eviter d'avoir des alert
+   d'erreur inutilement. »
+   L'accueil n'y figure pas : c'est le jeu lui-meme, il ne depend de personne. */
+const ONGLETS_RESEAU = ['shop', 'ranking', 'succes', 'replay'];
+
+/**
+ * Eteindre les onglets qui demandent quelqu'un au bout du fil.
+ *
+ * ⚠️ ILS RESTENT CLIQUABLES, ET C'EST DELIBERE. Sur telephone il n'y a pas de
+ * survol, donc pas d'infobulle : un bouton `disabled` ne dit ni son nom ni son
+ * motif. Celui-ci repond — et ce qu'il repond EST la raison. C'est la meme regle
+ * que pour les jetons d'effet du ratelier.
+ */
+function peindreOnglets() {
+  const horsLigne = !S.net || !S.net.ready;
+  document.querySelectorAll('#dicewrap .dc-onglet[data-panel]').forEach((b) => {
+    b.classList.toggle('dc-onglet-eteint',
+                       horsLigne && ONGLETS_RESEAU.includes(b.dataset.panel));
+  });
+}
 
 function shellMarkup() {
   return `
@@ -284,6 +310,13 @@ function build() {
   wrap.querySelectorAll('.dc-tab, .dc-onglet').forEach((b) => {
     b.onclick = () => {
       if (S.sfx) S.sfx.play('onglet', 0.22);
+      /* Eteint : on anime quand meme — le geste a ete percu — mais on dit
+         pourquoi au lieu d'ouvrir une page qui n'aurait rien a montrer. */
+      if (b.classList.contains('dc-onglet-eteint')) {
+        animerOnglet(b);
+        toast(t('offline.besoinReseau'), 'warn');
+        return;
+      }
       animerOnglet(b);
       togglePanel(b.dataset.panel);
     };
@@ -291,6 +324,7 @@ function build() {
   /* Au premier affichage aucune page n'est ouverte : c'est l'accueil qui est
      allume, et il doit le montrer avant qu'on ait touche quoi que ce soit. */
   marquerOnglets();
+  peindreOnglets();
 
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('fullscreenchange', syncFull);
@@ -367,7 +401,17 @@ async function connect() {
          revient de lui-meme, et `renderMenu` relit l'etat du reseau A CE
          MOMENT-LA : ses boutons seront dores, ce qui est exactement ce qu'on
          veut lui montrer. */
-      if (!(S.state && S.state.phase !== 'over')) showMenu();
+      /* ⛔ ET ON NE REFAIT PAS LE PONT POUR TROIS BOUTONS. `showMenu()` le
+         reconstruit entierement : a chaque reconnexion — donc potentiellement
+         toutes les quinze secondes — l'ecran clignotait et la fiche du capitaine
+         se refermait. `peindreReseau()` ne touche que ce qui a change ; il rend
+         `false` quand le pont n'existe pas encore, et c'est le seul cas ou l'on
+         dessine pour de bon. Le bandeau des capitaines, lui, peut avoir change :
+         la liste vient d'arriver, avec ses seuils. */
+      if (S.state && S.state.phase !== 'over') { /* il joue : on ne derange pas */ }
+      else if (peindreReseau()) { repeindreCapitaines(); }
+      else showMenu();
+      peindreOnglets();
       /* Une invitation touchee alors que le jeu etait ferme attend ici. */
       reprendreLienEnAttente();
     },
@@ -463,6 +507,24 @@ async function connect() {
        medaillon restait allume jusqu'au message suivant. On redemande donc
        l'etat, qui repeindra la verite. */
     error: (m) => {
+      /* ⛔ « VOUS N'ETES DANS AUCUNE PARTIE », ECRIT PAR-DESSUS UNE PARTIE.
+         Vu a l'ecran : l'arene affichee, deux plateaux vides, un score de 8 sur
+         une grille sans un seul de, et ce refus en travers. C'est un etat
+         FANTOME — le client garde le dernier instantane qu'il a recu, le serveur
+         a perdu la table. Un redemarrage du service suffit : les parties vivent
+         en memoire, elles ne survivent pas au processus. Le joueur restait alors
+         devant un plateau mort, chaque geste rendant le meme refus.
+         Le serveur vient de dire qu'il n'y a plus de table : on le CROIT, on
+         range l'arene et on revient au pont. */
+      if (m.msg === 'you are not in a match' && S.state) {
+        S.state = null;
+        S.seat = -1;
+        S.queued = false;
+        oublierEtat();
+        toast(messageServeur(m.msg), 'warn');
+        showMenu();
+        return;
+      }
       toast(messageServeur(m.msg), 'warn');
       rendreLaMain();
       /* `refresh` est le message qui existe : il renvoie un `me` frais, et
@@ -487,7 +549,8 @@ async function connect() {
          repli du bouton solo sont calcules AU RENDU : sans ce repeint, le joueur
          reste devant un menu qui a l'air normal, appuie sur « defier un
          joueur », et ne comprend pas pourquoi rien ne se passe. */
-      if (!S.state && S.open) showMenu();
+      if (!S.state && S.open && !peindreReseau()) showMenu();
+      peindreOnglets();
       /* ⛔ ON NE MONTRE PLUS LA PAGE D'ECHEC AU PREMIER SOUFFLE. « Je ferme mon
          telephone, je le rouvre, et j'ai une page qui me dit serveur
          indisponible » : la socket ne survit pas a la mise en veille, c'est
@@ -548,7 +611,10 @@ function connectFailed() {
   /* Sans reseau, l'identite vient de la cale : c'est elle qui porte le nom, la
      bourse et le capitaine de la derniere session. */
   if (!S.me) S.me = cale.moi();
-  showMenu();
+  /* Meme regle qu'au retour du reseau : on repeint ce qui a change, et on ne
+     dessine le pont en entier que s'il n'existe pas encore. */
+  if (!peindreReseau()) showMenu();
+  peindreOnglets();
   /* ⚠️ ET LA RELANCE CONTINUE. Un ascenseur, un tunnel, un changement de wifi :
      la connexion revient d'elle-meme, et le joueur n'a rien a faire pour cela.
      L'attente double a chaque echec (1, 2, 4… jusqu'a 15 s) : marteler un
@@ -985,14 +1051,41 @@ export function envoyerLesParties() {
  * a la fin de la partie, la connexion peut etre revenue, et il serait absurde de
  * la refaire.
  */
+/**
+ * Une graine tiree sur le telephone, pour les parties qui n'ont pas de jeton.
+ *
+ * ⚠️ ELLE NE PROUVE RIEN, ET C'EST TOUT LE POINT. La graine d'un jeton vient du
+ * serveur : c'est elle qui lui permet de rejouer la partie coup par coup et de
+ * verifier qu'on n'a pas menti sur les des. Une graine tiree ici ne se verifie
+ * contre rien. La partie se joue, se gagne et se perd exactement pareil — elle
+ * ne peut simplement pas etre CREDITEE.
+ */
+function graineLocale() {
+  /* ⚠️ `Math.random` SUFFIT ICI, ET LE TIRAGE CRYPTOGRAPHIQUE SERAIT UN LEURRE.
+     Une graine solide protege contre quelqu'un qui voudrait la DEVINER ; celle-ci
+     n'a rien a proteger, puisqu'elle ne sert a prouver quoi que ce soit a
+     personne. Elle doit seulement donner deux parties differentes deux fois de
+     suite. (Et `Uint32Array` n'est pas dans les noms connus du controle de
+     construction : une dependance de plus pour zero garantie de plus.) */
+  return Math.floor(Math.random() * 4294967296);
+}
+
 export function jouerHorsLigne() {
   const jeton = cale.prendreUnJeton();
-  if (!jeton) { toast(t('offline.plusDeJetons'), 'warn'); return false; }
-
+  /* ⛔ ON NE REFUSE PLUS DE JOUER. FAUTE DE JETON, LE JEU DISAIT SIMPLEMENT NON.
+     Un joueur sans reseau qui avait epuise ses jetons — ou qui n'en avait jamais
+     recu, parce qu'il n'a jamais rencontre le serveur — se retrouvait devant une
+     application complete et parfaitement inerte : « le mode hors ligne doit
+     marcher meme sans le serveur, l'IA doit etre totalement locale ».
+     Elle l'est : le moteur, l'adversaire et les regles tournent sur le
+     telephone. Le jeton ne sert PAS a jouer, il sert a PROUVER — c'est la
+     graine du serveur qui lui permet de rejouer la partie et de la creer.
+     Sans jeton, on joue donc quand meme, avec une graine locale ; simplement,
+     cette partie-la ne sera pas creditee, et la carte de fin le dit. */
   const vrai = S.net;
   const poche = ouvrirPartieHorsLigne({
-    jeton: jeton.id,
-    graine: jeton.graine,
+    jeton: jeton ? jeton.id : null,
+    graine: jeton ? jeton.graine : graineLocale(),
     moi: 0,
     capitaines: [(S.me && S.me.captain) || 'read', 'teach'],
     parures: [{ skin: S.me && S.me.skin, motif: S.me && S.me.motif }, null],
@@ -1003,12 +1096,18 @@ export function jouerHorsLigne() {
     state: onState,
     over: (m) => {
       /* La partie est finie : on la range pour le retour du reseau, PUIS on
-         rend la main au vrai serveur. */
-      cale.garderPartie(jeton.id, poche.partie.auJournal());
+         rend la main au vrai serveur.
+
+         ⚠️ ET UNE PARTIE SANS JETON NE VA PAS DANS LA FILE. Le serveur la
+         refuserait — « jeton inconnu ou deja servi » — et le joueur recevrait un
+         « partie refusee » pour une partie qu'il a honnetement jouee. On ne
+         promet rien qu'on ne puisse tenir : elle a ete jouee, elle ne compte
+         pas, et la carte de fin le dit en toutes lettres. */
+      if (jeton) cale.garderPartie(jeton.id, poche.partie.auJournal());
       S.poche = null;
       S.net = vrai;
-      onOver(m);
-      envoyerLesParties();
+      onOver(jeton ? m : Object.assign({}, m, { horsLigneLibre: true }));
+      if (jeton) envoyerLesParties();
     },
     idle: () => { S.poche = null; S.net = vrai; S.state = null; S.seat = -1; showMenu(); },
     error: (m) => toast(messageServeur(m.msg), 'warn'),
