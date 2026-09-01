@@ -2806,3 +2806,30 @@
    contre QUOI on a joue, pas seulement contre qui. */
 #dicewrap .dc-over-foe { display: flex; align-items: center; justify-content: center; gap: 9px; }
 #dicewrap .dc-over-cap { width: 34px; height: 34px; flex: none; }
+
+/* ⛔ DIRECTIVE 4.8 : LE FORMULAIRE COURRIEL, A COTE D'APPLE ET DE GOOGLE. Apple a
+   refuse une version ou une seule connexion tierce apparaissait. Le bloc courriel
+   se pose sous les boutons de fournisseurs, aux memes marges, et n'invente aucun
+   style — il reprend le fond sombre et le cerne des cartes du jeu. */
+.pd-set .pd-email {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.pd-set .pd-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 188, 234, .35);
+  background: rgba(10, 4, 26, .45);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+}
+.pd-set .pd-input::placeholder { color: rgba(201, 188, 234, .7); }
+.pd-set .pd-input:focus {
+  outline: none;
+  border-color: var(--gold-hi, #FFE479);
+}
+.pd-set .pd-email .pd-row-btns { margin-top: 2px; }

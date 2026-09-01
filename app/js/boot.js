@@ -10,7 +10,7 @@
 import { initDice, openDice, ouvrirPanneau } from './pages/dice.js';
 import { rejoindreParLien } from './pages/dice_lobby.js';
 import { S, UI, ASSETS, myTurn } from './pages/dice_state.js';
-import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
+import { signIn, signInEmail, signOut, account, eraseAccount, fournisseur, providersDispo } from './identity.js';
 import { startFitting } from './fit.js';
 import { t, LANGS, lang, setLang } from './core/i18n.js';
 import { startMotion } from './motion.js';
@@ -224,15 +224,36 @@ function settingsMarkup() {
      pour le lecteur d'ecran et pour qui hesite. */
   const barre = enPartie ? ' disabled' : '';
   const dit = (phrase) => (enPartie ? t('set.notInMatch') : phrase);
+  /* ⛔ DIRECTIVE 4.8 : LES CONNEXIONS TIERCES S'AFFICHENT COTE A COTE. Apple a
+     refuse une version ou seul Google apparaissait sur iOS. Chaque facon de se
+     connecter que la plateforme propose a desormais son propre bouton, au meme
+     niveau — Apple, Google, et le courriel — et Apple est en tete sur iOS car
+     c'est lui qui permet de cacher son adresse. */
+  const nomFournisseur = { apple: 'set.signInApple', google: 'set.signIn', email: 'set.signInEmail' };
+  const boutonsTiers = providersDispo()
+    .filter((f) => f !== 'email')
+    .map((f) => `<button class="dc-btn dc-btn-sm dc-btn-art" data-provider="${f}"${barre}
+               title="${dit(t(nomFournisseur[f]))}" aria-label="${dit(t(nomFournisseur[f]))}">
+         <img src="${ASSETS}img/icon_${f}.png" alt="">${t(nomFournisseur[f])}</button>`).join('');
+  const formulaireEmail = providersDispo().includes('email')
+    ? `<form class="pd-email" data-email-form>
+         <input class="pd-input" type="email" inputmode="email" autocomplete="username"
+                data-email placeholder="${t('set.emailField')}" ${barre}>
+         <input class="pd-input" type="password" autocomplete="current-password"
+                data-pass placeholder="${t('set.passField')}" ${barre}>
+         <div class="pd-row-btns">
+           <button class="dc-btn dc-btn-sm dc-btn-art" type="submit" data-email-login${barre}
+                   >${t('set.emailLogin')}</button>
+           <button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" type="button" data-email-register${barre}
+                   >${t('set.emailRegister')}</button>
+         </div>
+       </form>`
+    : '';
   const button = acc.google
     ? `<button class="dc-btn dc-btn-sm dc-btn-ghost dc-btn-art" data-signout${barre}
                title="${dit(t('set.signOut'))}" aria-label="${dit(t('set.signOut'))}">
          <img src="${ASSETS}img/icon_link.png" alt="">${t('set.signOutShort')}</button>`
-    : `<button class="dc-btn dc-btn-sm dc-btn-art" data-signin${barre}
-               title="${dit(t(pomme ? 'set.signInApple' : 'set.signIn'))}"
-               aria-label="${dit(t(pomme ? 'set.signInApple' : 'set.signIn'))}">
-         <img src="${ASSETS}img/icon_${pomme ? 'apple' : 'google'}.png" alt="">${
-        t('set.signInShort')}</button>`;
+    : boutonsTiers;
   const vol = volumes();
 
   return `
@@ -260,6 +281,7 @@ function settingsMarkup() {
           <img src="${ASSETS}img/icon_erase.png" alt=""
                >${t('set.eraseShort')}</button>
       </div>
+      ${acc.google ? '' : formulaireEmail}
 
       ${row(t('set.language'), `<select class="pd-select" data-lang>${
         LANGS.map((l) => `<option value="${l.code}"${l.code === lang() ? ' selected' : ''}>${l.label}</option>`).join('')
@@ -425,13 +447,33 @@ function openSettings() {
      dialogue — le joueur toucherait le voile en croyant toucher les regles. */
   wrap.querySelector('[data-regles]').onclick = () => { close(); ouvrirPanneau('rules'); };
 
-  const inBtn = wrap.querySelector('[data-signin]');
-  if (inBtn) {
-    inBtn.onclick = async () => {
-      inBtn.disabled = true;
-      try { await signIn({ interactive: true }); location.reload(); }
-      catch (e) { toast(e.message, 'warn'); inBtn.disabled = false; }
+  /* Chaque bouton tiers appelle son fournisseur ; le formulaire, le courriel. */
+  wrap.querySelectorAll('[data-provider]').forEach((btn) => {
+    btn.onclick = async () => {
+      const tous = wrap.querySelectorAll('[data-provider]');
+      tous.forEach((b) => { b.disabled = true; });
+      try { await signIn({ interactive: true, provider: btn.dataset.provider }); location.reload(); }
+      catch (e) { toast(e.message, 'warn'); tous.forEach((b) => { b.disabled = false; }); }
     };
+  });
+
+  const form = wrap.querySelector('[data-email-form]');
+  if (form) {
+    const champMail = form.querySelector('[data-email]');
+    const champPass = form.querySelector('[data-pass]');
+    const login = form.querySelector('[data-email-login]');
+    const register = form.querySelector('[data-email-register]');
+    const lancer = async (inscription) => {
+      const mail = (champMail.value || '').trim();
+      const pass = champPass.value || '';
+      if (!mail || !pass) { toast(t('set.emailNeeded'), 'warn'); return; }
+      [login, register].forEach((b) => { b.disabled = true; });
+      try { await signInEmail(mail, pass, { register: inscription }); location.reload(); }
+      catch (e) { toast(e.message, 'warn'); [login, register].forEach((b) => { b.disabled = false; }); }
+    };
+    /* Le bouton principal (submit) = se connecter ; le second = creer un compte. */
+    form.onsubmit = (ev) => { ev.preventDefault(); lancer(false); };
+    if (register) register.onclick = () => lancer(true);
   }
   const outBtn = wrap.querySelector('[data-signout]');
   if (outBtn) outBtn.onclick = async () => { await signOut(); location.reload(); };

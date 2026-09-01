@@ -145,6 +145,15 @@ function guestName() {
    signature de l'application et a son nom de paquet. */
 const CLIENT_WEB = '975326394375-5rrfp97jmjtmqggser8jvc3ec8mvplii.apps.googleusercontent.com';
 
+/* ⚠️ GOOGLE SUR iOS DEMANDE SON PROPRE IDENTIFIANT DE CLIENT, distinct de celui
+   du web. Sans lui, la fenetre Google ne peut pas revenir dans l'application :
+   c'est une valeur a creer dans la console Google (identifiant OAuth de type
+   iOS, bundle com.nabil.piratesdice), avec le schema d'URL inverse dans
+   Info.plist. Tant qu'elle est vide, on ne PROPOSE pas Google sur iOS — un
+   bouton qui echoue est pire que pas de bouton. Apple et le courriel suffisent a
+   la directive 4.8 en attendant. */
+const CLIENT_IOS = '';
+
 let prepare = null;
 
 /**
@@ -183,17 +192,41 @@ function pret() {
          « apple.android.redirectUrl is null or empty »
        Une option inutile sur une plateforme n'y est pas neutre : elle casse ce
        qui marchait a cote. */
-    prepare = p.initialize(fournisseur() === 'apple'
-      /* Apple ne demande aucun identifiant cote application : le systeme sait
-         quelle application le demande, et c'est le serveur qui verifie que le
-         jeton lui etait bien destine. */
-      ? { apple: {} }
-      : { google: { webClientId: CLIENT_WEB, mode: 'offline' } });
+    /* ⚠️ ON DECLARE LES FOURNISSEURS DE CETTE PLATEFORME, ET SEULEMENT EUX.
+       Declarer `apple` sur Android casse l'initialisation entiere (il y exige une
+       `redirectUrl` web). Sur iOS on declare Apple, et Google EN PLUS quand son
+       identifiant iOS est fourni — les deux cohabitent sans se gener. */
+    const conf = {};
+    if (fournisseur() === 'apple') {
+      conf.apple = {};
+      if (CLIENT_IOS) conf.google = { iOSClientId: CLIENT_IOS, webClientId: CLIENT_WEB, mode: 'offline' };
+    } else {
+      conf.google = { webClientId: CLIENT_WEB, mode: 'offline' };
+    }
+    prepare = p.initialize(conf);
   }
   return prepare;
 }
 
 export function googleAvailable() { return !!plugin(); }
+
+/* Les facons de se connecter A PROPOSER sur CETTE plateforme, dans l'ordre.
+   Apple d'abord sur iOS (l'option qui cache le courriel, exigee par la 4.8),
+   Google ensuite quand il est configure, puis toujours le courriel. Sur Android,
+   Google puis le courriel. */
+export function providersDispo() {
+  const liste = [];
+  if (plugin()) {
+    if (fournisseur() === 'apple') {
+      liste.push('apple');
+      if (CLIENT_IOS) liste.push('google');
+    } else {
+      liste.push('google');
+    }
+  }
+  liste.push('email');
+  return liste;
+}
 
 /**
  * Ouvre une session. `interactive: false` au demarrage (silencieux : si le
@@ -203,6 +236,10 @@ export function googleAvailable() { return !!plugin(); }
 export async function signIn(opts) {
   const interactive = !!(opts && opts.interactive);
   const games = plugin();
+  /* ⚠️ LE BOUTON PEUT IMPOSER SON FOURNISSEUR. Sur iOS, Apple ET Google sont
+     proposes cote a cote : chacun appelle `signIn({ provider })`. Sans choix
+     explicite, on garde celui de la plateforme, comme avant. */
+  const prov = (opts && opts.provider) || fournisseur();
 
   /* ⚠️ LA REPRISE PASSE AVANT TOUT LE RESTE, et vaut pour les deux plateformes.
      C'est elle qui rend Apple utilisable : il n'a pas de reconnexion
@@ -215,7 +252,7 @@ export async function signIn(opts) {
   if (games) {
     try {
       await pret();
-      if (fournisseur() === 'apple') {
+      if (prov === 'apple') {
         /* ⚠️ APPLE N'A PAS DE REPRISE SILENCIEUSE. Il n'existe aucun moyen de
            savoir, sans ouvrir la fenetre, si l'utilisateur avait deja accorde
            son compte. Au demarrage on ne tente donc RIEN : le joueur entre en
@@ -226,7 +263,7 @@ export async function signIn(opts) {
           return garderSession(await claimApple(jeton), 'google');
         }
       }
-      const out = fournisseur() === 'apple' ? null : await codeGoogle(games, interactive);
+      const out = prov === 'apple' ? null : await codeGoogle(games, interactive);
       if (out && out.serverAuthCode) {
         return garderSession(await claimGoogle(out.serverAuthCode), 'google');
       }
@@ -338,6 +375,26 @@ async function claimDevice() {
     url: serverBase(), ws: wsFrom(serverBase()),
     token: body.token, expires: body.expires, player: body.player, google: false,
   };
+}
+
+/**
+ * Connexion (ou creation de compte) par courriel et mot de passe.
+ *
+ * ⚠️ TOUJOURS INTERACTIVE, et elle rattache le pirate deja joue sur ce telephone :
+ * on envoie le `deviceId` avec, comme Apple et Google. `register: true` cree le
+ * compte ; sinon on se connecte a un compte existant. L'erreur du serveur remonte
+ * telle quelle pour que l'ecran la dise.
+ */
+export async function signInEmail(courriel, motDePasse, opts) {
+  const inscription = !!(opts && opts.register);
+  const body = await post('/api/email', {
+    email: courriel, password: motDePasse, register: inscription,
+    deviceId: deviceId(), name: inscription ? guestName() : undefined,
+  });
+  return garderSession({
+    url: serverBase(), ws: wsFrom(serverBase()),
+    token: body.token, expires: body.expires, player: body.player, google: true,
+  }, 'google');
 }
 
 export async function signOut() {
