@@ -524,6 +524,56 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'menu.campagne': 'Campagne',
+
+  'camp.titre': 'La Campagne',
+
+  'camp.palier': 'Palier {n}',
+
+  'camp.niveau': 'Niveau {n}',
+
+  'camp.boss': 'Boss — {nom}',
+
+  'camp.jouer': 'Jouer',
+
+  'camp.obj1': 'Gagner la partie',
+
+  'camp.resultat': '{n} étoile(s) gagnée(s) — +{or} pièces !',
+
+  'camp.capitaine': 'Palier complet : capitaine débloqué !',
+
+  'camp.obj.sum.detruits': 'Gagner en détruisant {n} dé(s) adverse(s)',
+
+  'camp.obj.sum.triples': 'Gagner avec un triple',
+
+  'camp.obj.sum.rangement': 'Gagner avec une colonne triée du plus grand au plus petit',
+
+  'camp.obj.sum.victoires.charpentier': 'Gagner en perdant au plus deux dés',
+
+  'camp.obj.sum.escalier': 'Gagner avec un escalier 1-2-3',
+
+  'camp.obj.sum.victoires.sanssix': 'Gagner sans poser un seul six',
+
+  'camp.obj.sum.victoires.double': 'Gagner avec la colonne ×1,3 comme meilleure colonne',
+
+  'camp.obj.sum.tour.pont': 'Gagner en posant dans les quatre colonnes en un tour de pont',
+
+  'camp.obj.sum.victoires.mainsnues': 'Gagner sans jouer un seul effet',
+
+  'camp.obj.max.score': 'Gagner avec un score de {n} ou plus',
+
+  'camp.obj.sum.victoires.sansdetruire': 'Gagner sans détruire un seul dé',
+
+  'camp.obj.max.six.plateau': 'Gagner en portant {n} six sur votre plateau en même temps',
+
+  'camp.obj.sum.pont.refait': 'Gagner en remplissant tout votre plateau',
+
+  'camp.obj.sum.victoires.intact': 'Gagner sans perdre un seul dé',
+
+  'camp.obj.sum.victoires.boucher': 'Gagner en détruisant huit dés ou plus',
+
+  'camp.obj.max.triples.partie': 'Gagner avec {n} triples dans la partie',
+
   'set.pseudo': 'Pseudo',
 
   'set.pseudoAide': '2 à 10 caractères, unique',

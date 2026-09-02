@@ -515,6 +515,56 @@ export const AR = {
 
   'set.title': 'الإعدادات',
 
+  'menu.campagne': 'الحملة',
+
+  'camp.titre': 'الحملة',
+
+  'camp.palier': 'المرحلة {n}',
+
+  'camp.niveau': 'المستوى {n}',
+
+  'camp.boss': 'الزعيم — {nom}',
+
+  'camp.jouer': 'العب',
+
+  'camp.obj1': 'اربح المباراة',
+
+  'camp.resultat': 'ربحت {n} نجمة — +{or} قطعة ذهبية!',
+
+  'camp.capitaine': 'اكتملت المرحلة: تم فتح القبطان!',
+
+  'camp.obj.sum.detruits': 'اربح مع تدمير {n} من نرد الخصم',
+
+  'camp.obj.sum.triples': 'اربح بثلاثية',
+
+  'camp.obj.sum.rangement': 'اربح بعمود مرتب من الأكبر إلى الأصغر',
+
+  'camp.obj.sum.victoires.charpentier': 'اربح مع خسارة نردين على الأكثر',
+
+  'camp.obj.sum.escalier': 'اربح بسلم 1-2-3',
+
+  'camp.obj.sum.victoires.sanssix': 'اربح دون وضع أي ستة',
+
+  'camp.obj.sum.victoires.double': 'اربح وعمود ×1٫3 هو الأفضل لديك',
+
+  'camp.obj.sum.tour.pont': 'اربح بعد ملء الأعمدة الأربعة في جولة واحدة',
+
+  'camp.obj.sum.victoires.mainsnues': 'اربح دون استخدام أي تأثير',
+
+  'camp.obj.max.score': 'اربح بنتيجة {n} أو أكثر',
+
+  'camp.obj.sum.victoires.sansdetruire': 'اربح دون تدمير أي نرد',
+
+  'camp.obj.max.six.plateau': 'اربح وأنت تحمل {n} ستات على لوحك معًا',
+
+  'camp.obj.sum.pont.refait': 'اربح ولوحك ممتلئ بالكامل',
+
+  'camp.obj.sum.victoires.intact': 'اربح دون خسارة أي نرد',
+
+  'camp.obj.sum.victoires.boucher': 'اربح مع تدمير ثمانية نردات أو أكثر',
+
+  'camp.obj.max.triples.partie': 'اربح بـ {n} ثلاثيات في المباراة',
+
   'set.pseudo': 'الاسم المستعار',
 
   'set.pseudoAide': 'من 2 إلى 10 أحرف، فريد',

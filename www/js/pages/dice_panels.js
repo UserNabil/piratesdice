@@ -97,6 +97,100 @@ export function ouvrirRegles() {
   voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
 }
 
+/* ── LA CAMPAGNE : quinze paliers, cinq niveaux, trois etoiles ─────────────
+   La page liste les paliers du haut vers le bas ; chaque niveau est un bouton
+   qui ouvre sa fiche (les trois objectifs), et la fiche envoie `campagne.jouer`.
+   Les etoiles arrivent au solde (`campagne.resultat`), jamais d'ici. La carte
+   au tresor dessinee remplacera cette liste quand ses assets existeront — la
+   MECANIQUE, elle, ne changera pas. */
+function etoilesDuMasque(masque) {
+  return (masque & 1 ? 1 : 0) + (masque & 2 ? 1 : 0) + (masque & 4 ? 1 : 0);
+}
+
+function objectifDe(code, seuil) {
+  const cle = 'camp.obj.' + code;
+  const dit = t(cle, { n: seuil });
+  return dit && !dit.startsWith('camp.obj.') ? dit : code + ' \u2265 ' + seuil;
+}
+
+function ficheNiveau(n) {
+  const voile = document.createElement('div');
+  voile.className = 'pd-ask on';
+  const nomBoss = n.boss && n.capitaine ? t('cap.' + n.capitaine + '.name') : null;
+  voile.innerHTML = `
+    <div class="pd-ask-card pd-panel dc-camp-fiche">
+      <h3>${esc(n.boss ? t('camp.boss', { nom: nomBoss || '' }) : t('camp.niveau', { n: n.ordre }))}</h3>
+      <ul class="dc-camp-objectifs">
+        <li>${(n.etoiles & 1) ? '\u2b50' : '\u2606'} ${esc(t('camp.obj1'))}</li>
+        <li>${(n.etoiles & 2) ? '\u2b50' : '\u2606'} ${esc(objectifDe(n.contrainte2, n.seuil2))}</li>
+        <li>${(n.etoiles & 4) ? '\u2b50' : '\u2606'} ${esc(objectifDe(n.contrainte3, n.seuil3))}</li>
+      </ul>
+      <div class="pd-ask-row">
+        <button class="dc-btn dc-btn-sm" data-jouer>${esc(t('camp.jouer'))}</button>
+        <button class="pd-btn-icone" data-fermer aria-label="${esc(t('set.close'))}">
+          <img src="${ASSETS}img/icon_close.png" alt=""></button>
+      </div>
+    </div>`;
+  ($('#dicewrap') || document.body).appendChild(voile);
+  const fermer = () => voile.remove();
+  voile.querySelector('[data-fermer]').onclick = fermer;
+  voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
+  voile.querySelector('[data-jouer]').onclick = () => {
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    S.net.send({ t: 'campagne.jouer', identify: n.identify });
+    fermer();
+  };
+}
+
+export function renderCampagne(body) {
+  if (!S.campagne) {
+    body.innerHTML = '<h3>' + esc(t('camp.titre')) + '</h3>'
+      + '<p class="dc-empty">' + esc(t('ladder.reading')) + '</p>';
+    if (S.net) S.net.send({ t: 'campagne' });
+    else body.innerHTML = body.innerHTML.replace(/<p class="dc-empty">[^<]*<\/p>/,
+      '<p class="dc-empty">' + esc(t('connect.outOfReach')) + '</p>');
+    return;
+  }
+  const niveaux = S.campagne.niveaux || [];
+  const paliers = new Map();
+  for (const n of niveaux) {
+    if (!paliers.has(n.palier)) paliers.set(n.palier, []);
+    paliers.get(n.palier).push(n);
+  }
+  let html = '<h3>' + esc(t('camp.titre')) + '</h3>';
+  for (const [p, liste] of paliers) {
+    liste.sort((a, b) => a.ordre - b.ordre);
+    const boss = liste.find((n) => n.boss);
+    const cap = boss && boss.capitaine ? boss.capitaine : null;
+    const prises = liste.reduce((tot, n) => tot + etoilesDuMasque(n.etoiles), 0);
+    const ferme = !liste.some((n) => n.ouvert);
+    const gagne = (S.campCaps || []).includes(cap);
+    html += `<section class="dc-camp-palier${ferme ? ' dc-camp-ferme' : ''}">
+      <header class="dc-camp-tete">
+        ${cap ? `<img src="${ASSETS}img/cap_${esc(cap)}.png" alt="" class="${gagne ? '' : 'dc-camp-gris'}">` : ''}
+        <div><b>${esc(t('camp.palier', { n: p }))}</b>
+          <span>${cap ? esc(t('cap.' + cap + '.name')) : ''}</span></div>
+        <em>\u2b50 ${prises}/15</em>
+      </header>
+      <div class="dc-camp-niveaux">
+        ${liste.map((n) => `
+          <button class="dc-camp-niv${n.ouvert ? '' : ' dc-camp-verrou'}${n.boss ? ' dc-camp-bossniv' : ''}"
+                  data-niveau="${esc(n.identify)}" ${n.ouvert ? '' : 'disabled'}>
+            <b>${n.boss ? '\u2620' : n.ordre}</b>
+            <span>${'\u2b50'.repeat(etoilesDuMasque(n.etoiles))}${'\u2606'.repeat(3 - etoilesDuMasque(n.etoiles))}</span>
+          </button>`).join('')}
+      </div>
+    </section>`;
+  }
+  body.innerHTML = html;
+  body.querySelectorAll('[data-niveau]').forEach((b) => {
+    b.onclick = () => {
+      const n = niveaux.find((x) => x.identify === b.dataset.niveau);
+      if (n) ficheNiveau(n);
+    };
+  });
+}
+
 /* Le nom et la description des bonus viennent de la BASE, en anglais : le
    serveur ne parle pas la langue du joueur et n'a pas a la connaitre. On les
    traduit donc ici, par identifiant, et on retombe sur le texte du serveur si

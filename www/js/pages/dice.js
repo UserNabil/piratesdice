@@ -30,7 +30,7 @@ import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
          envoyerCoup } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
-import { ouvrirRegles, renderShop, renderRanking, renderSucces } from './dice_panels.js';
+import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
@@ -423,6 +423,7 @@ async function connect() {
       S.me = m.me; S.inventory = m.inventory || []; S.shop = m.shop || [];
       S.rules = m.rules || S.rules;
       if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains;
+      S.campCaps = Array.isArray(m.campCaps) ? m.campCaps : (S.campCaps || []);
       /* ⚠️ ON REMPLIT LA CALE MAINTENANT, PAS QUAND ON EN AURA BESOIN. Un joueur
          qui entre dans le metro n'a plus personne a qui demander : les jetons
          doivent deja etre dans sa poche. Et les parties qui attendent partent
@@ -476,6 +477,26 @@ async function connect() {
     jetons: (m) => {
       cale.rangerJetons(m.jetons, m.regles);
       if (UI.showMenu && S.open && !S.state) showMenu();
+    },
+    /* La carte de la campagne : demandee a l'ouverture de la page, repeinte
+       des qu'elle arrive. */
+    campagne: (m) => {
+      S.campagne = m;
+      if (Array.isArray(m.capitaines)) S.campCaps = m.capitaines;
+      if (S.panel === 'campagne') refreshPanel();
+    },
+    /* Le verdict d'un niveau : les etoiles nouvelles paient, le pont peut
+       avoir un capitaine de plus a deverrouiller. */
+    'campagne.resultat': (m) => {
+      if (Array.isArray(m.capitaines) && m.capitaines.length) {
+        const avant = (S.campCaps || []).length;
+        S.campCaps = m.capitaines;
+        if (m.capitaines.length > avant) toast(t('camp.capitaine'), 'ok');
+      }
+      S.campagne = null;             /* la carte se relira avec les etoiles a jour */
+      const n = (m.neuves & 1 ? 1 : 0) + (m.neuves & 2 ? 1 : 0) + (m.neuves & 4 ? 1 : 0);
+      if (n > 0) toast(t('camp.resultat', { n, or: m.or }), 'ok');
+      repeindreCapitaines();
     },
     /* ⛔ ON OUBLIE CE QUE LE SERVEUR A TRAITE, ACCEPTE OU REFUSE. Garder une
        partie refusee la ferait renvoyer a chaque connexion, indefiniment : un
@@ -1019,6 +1040,7 @@ function togglePanel(name) {
     if (name === 'shop') S.shop = [];
     else if (name === 'succes') S.succes = null;
     else if (name === 'replay') S.historique = null;
+    else if (name === 'campagne') S.campagne = null;
     /* La bourse et le rang du bandeau suivent le meme principe. */
     if (S.net) S.net.send({ t: 'refresh' });
     panel.classList.add('on');
@@ -1163,6 +1185,7 @@ function refreshPanel() {
   else if (S.panel === 'ranking') renderRanking(body);
   else if (S.panel === 'succes') renderSucces(body);
   else if (S.panel === 'replay') renderReplays(body);
+  else if (S.panel === 'campagne') renderCampagne(body);
 }
 
 /**
@@ -1264,6 +1287,7 @@ export function jouerHorsLigne() {
 
 export function initDice() {
   UI.showMenu = showMenu;
+  UI.openPage = ouvrirPanneau;
   /* Le pont declenche la partie hors ligne : c'est lui qui porte le bouton, et
      il n'a pas a connaitre le faux serveur. */
   UI.jouerHorsLigne = jouerHorsLigne;

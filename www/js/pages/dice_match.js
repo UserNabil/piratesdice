@@ -1013,8 +1013,11 @@ function renderPlayerCard(sel, st, seat, isMe) {
   horloge.remove();
   el.innerHTML = `
     <div class="dc-pc-portrait">
-      <img class="dc-pc-face" src="${captainArt(cap)}" alt="${esc(captainName(cap))}">
-      <img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">
+      <img class="dc-pc-face"
+           src="${p.avatar ? ASSETS + 'img/sbires/' + esc(p.avatar) + '.png' : captainArt(cap)}"
+           onerror="this.onerror=null;this.src='${captainArt(cap)}'"
+           alt="${esc(p.avatar ? p.name || '' : captainName(cap))}">
+      ${p.avatar ? '' : `<img class="dc-pc-trait" src="${traitArt(cap)}" alt="" title="${esc(captainTrait(cap))}">`}
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">

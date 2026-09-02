@@ -3650,7 +3650,9 @@
    reste dans la boite. */
 #dicewrap .dc-menu-trio {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Quatre cartes de mode depuis la campagne : deux par deux, sinon chacune
+     devenait une allumette. */
+  grid-template-columns: repeat(2, 1fr);
   gap: clamp(8px, 2.5vw, 14px);
   align-items: stretch;
   flex-wrap: nowrap;
@@ -3880,3 +3882,35 @@
    et n'a plus besoin d'etre ampute. */
 #dicewrap .dc-pc-mine .dc-pc-baniere { left: auto; right: -3px; transform: none; }
 #dicewrap .dc-pc-theirs .dc-pc-baniere { left: -3px; right: auto; transform: none; }
+
+/* ── LA PAGE CAMPAGNE ─────────────────────────────────────────────────────── */
+#dicewrap .dc-camp-palier {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, .28);
+  box-shadow: inset 0 0 0 1px rgba(232, 200, 106, .25);
+}
+#dicewrap .dc-camp-ferme { opacity: .55; }
+#dicewrap .dc-camp-tete {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+#dicewrap .dc-camp-tete img { width: 44px; height: 44px; }
+#dicewrap .dc-camp-gris { filter: grayscale(1) brightness(.8); }
+#dicewrap .dc-camp-tete b { display: block; color: var(--gold-hi); font-family: "Luckiest Guy", "Baloo 2", cursive; }
+#dicewrap .dc-camp-tete span { font-size: 12px; color: var(--txt-dim); }
+#dicewrap .dc-camp-tete em { margin-inline-start: auto; font-style: normal; font-size: 13px; color: var(--gold-hi); }
+#dicewrap .dc-camp-niveaux { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+#dicewrap .dc-camp-niv {
+  border: 0; border-radius: 10px; padding: 7px 0 5px; cursor: pointer;
+  background: rgba(74, 42, 142, .8);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  color: #fff;
+}
+#dicewrap .dc-camp-niv b { display: block; font-size: 16px; font-family: "Luckiest Guy", "Baloo 2", cursive; }
+#dicewrap .dc-camp-niv span { font-size: 9px; letter-spacing: 1px; }
+#dicewrap .dc-camp-bossniv { background: rgba(122, 28, 42, .85); }
+#dicewrap .dc-camp-verrou { opacity: .45; cursor: not-allowed; }
+#dicewrap .dc-camp-objectifs { list-style: none; margin: 0 0 14px; padding: 0; }
+#dicewrap .dc-camp-objectifs li { margin: 7px 0; font-size: 14px; color: var(--txt); }
+#dicewrap .dc-camp-fiche .pd-ask-row { display: flex; gap: 10px; align-items: center; justify-content: center; }

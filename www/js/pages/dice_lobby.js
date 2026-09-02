@@ -78,6 +78,10 @@ function seuilDe(id) {
 
 /** Ce capitaine est-il gagne ? Le serveur retranchera de toute facon. */
 export function capitaineOuvert(id) {
+  /* Deux chemins, comme au serveur : les parties jouees OU le palier de
+     campagne complet. `S.campCaps` arrive avec le welcome et se rafraichit a
+     chaque resultat de campagne. */
+  if (Array.isArray(S.campCaps) && S.campCaps.includes(id)) return true;
   return parties() >= seuilDe(id);
 }
 
@@ -726,6 +730,16 @@ export function renderMenu(el) {
                 ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
           <img src="${ASSETS}img/menu_friend.png" alt="">
           <span>${esc(t('menu.friend'))}</span></button>
+        <!-- ⛔ LA CAMPAGNE EST LA QUATRIEME CARTE, pas un onglet : c'est une
+             facon de JOUER, elle vit avec les trois autres. Elle demande le
+             reseau pour l'instant (les etoiles se calculent au solde, cote
+             serveur) ; la version de poche viendra par le meme chemin que
+             l'IA hors ligne. -->
+        <button class="dc-btn dc-carte-mode dc-carte-campagne" id="dc-campagne"
+                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
+          <img src="${ASSETS}img/mode_campagne.png" alt=""
+               onerror="this.onerror=null;this.src='${ASSETS}img/menu_ai.png'">
+          <span>${esc(t('menu.campagne'))}</span></button>
       </div>
       <!-- ⛔ LA RANGEE « PARTIES / CLASSEMENT / PIECES » A ETE RETIREE.
            Trois nombres au bas de la carte d'accueil, et les trois se lisaient
@@ -748,6 +762,11 @@ export function renderMenu(el) {
     S.sfx.play('start', 0.25);
     if (S.net && S.net.ready) { S.net.send({ t: 'play', mode: 'solo' }); return; }
     if (UI.jouerHorsLigne) UI.jouerHorsLigne();
+  };
+  $('#dc-campagne').onclick = () => {
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    S.sfx.play('open', 0.16);
+    if (UI.openPage) UI.openPage('campagne');
   };
   $('#dc-multi').onclick = () => {
     /* ⛔ ET LES DEUX AUTRES MODES DEMANDENT QUELQU'UN EN FACE. Sans reseau, on le

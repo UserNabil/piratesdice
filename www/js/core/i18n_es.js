@@ -513,6 +513,56 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'menu.campagne': 'Campaña',
+
+  'camp.titre': 'La Campaña',
+
+  'camp.palier': 'Nivel {n}',
+
+  'camp.niveau': 'Etapa {n}',
+
+  'camp.boss': 'Jefe — {nom}',
+
+  'camp.jouer': 'Jugar',
+
+  'camp.obj1': 'Ganar la partida',
+
+  'camp.resultat': '¡{n} estrella(s) ganada(s) — +{or} monedas!',
+
+  'camp.capitaine': '¡Nivel completo: capitán desbloqueado!',
+
+  'camp.obj.sum.detruits': 'Ganar destruyendo {n} dado(s) enemigo(s)',
+
+  'camp.obj.sum.triples': 'Ganar con un triple',
+
+  'camp.obj.sum.rangement': 'Ganar con una columna ordenada de mayor a menor',
+
+  'camp.obj.sum.victoires.charpentier': 'Ganar perdiendo como mucho dos dados',
+
+  'camp.obj.sum.escalier': 'Ganar con una escalera 1-2-3',
+
+  'camp.obj.sum.victoires.sanssix': 'Ganar sin colocar ningún seis',
+
+  'camp.obj.sum.victoires.double': 'Ganar con la columna ×1,3 como la mejor',
+
+  'camp.obj.sum.tour.pont': 'Ganar tras llenar las cuatro columnas en una vuelta',
+
+  'camp.obj.sum.victoires.mainsnues': 'Ganar sin jugar ningún efecto',
+
+  'camp.obj.max.score': 'Ganar con {n} puntos o más',
+
+  'camp.obj.sum.victoires.sansdetruire': 'Ganar sin destruir ningún dado',
+
+  'camp.obj.max.six.plateau': 'Ganar con {n} seises en tu tablero a la vez',
+
+  'camp.obj.sum.pont.refait': 'Ganar con todo tu tablero lleno',
+
+  'camp.obj.sum.victoires.intact': 'Ganar sin perder ningún dado',
+
+  'camp.obj.sum.victoires.boucher': 'Ganar destruyendo ocho dados o más',
+
+  'camp.obj.max.triples.partie': 'Ganar con {n} triples en la partida',
+
   'set.pseudo': 'Apodo',
 
   'set.pseudoAide': 'De 2 a 10 caracteres, único',
