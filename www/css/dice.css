@@ -2726,7 +2726,35 @@
   transition: filter .18s, transform .18s;
 }
 
+#dicewrap .dc-cap { position: relative; }
 #dicewrap .dc-cap:hover { filter: saturate(.8) brightness(.85); }
+
+/* ⛔ LE LOADER DU MAINTIEN. « On reste clique longtemps et un loader charge
+   jusqu'a l'ouverture de la fiche. » Un anneau dore se remplit autour du
+   medaillon pendant qu'on tient (meme duree que CAP_HOLD_MS, 0,48 s) ; un clic
+   court le fait a peine apparaitre et choisit le capitaine. Le medaillon
+   s'allume aussi, pour dire qu'il se passe quelque chose. */
+@property --pd-hold { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+#dicewrap .dc-cap-hold { filter: saturate(1) brightness(1.02); transform: scale(1); }
+#dicewrap .dc-cap-hold::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg,
+    var(--gold-hi, #FFE479) var(--pd-hold),
+    rgba(255, 228, 121, .18) 0);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 4px), #000 calc(100% - 4px));
+          mask: radial-gradient(farthest-side, #0000 calc(100% - 4px), #000 calc(100% - 4px));
+  animation: dc-cap-fill .48s linear forwards;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(0 0 4px rgba(255, 200, 60, .6));
+}
+@keyframes dc-cap-fill { to { --pd-hold: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-cap-hold::after { animation-duration: .01s; }
+}
 #dicewrap .dc-cap.on {
   filter: none;
   transform: scale(1);
