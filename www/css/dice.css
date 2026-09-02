@@ -1742,54 +1742,68 @@
 /* ⛔ LE BARILLET — une bande horizontale qu'on fait defiler. Tous les jetons en
    file, accrochage au centre, et le rembourrage lateral laisse le premier et le
    dernier venir jusqu'au milieu. Pas de barre de defilement : le geste suffit. */
-/* ⛔ LE BARILLET : UN DRUM VIOLET, 3 JETONS VISIBLES, DERRIERE LES BOUTONS.
-   « En forme de barillet, seulement 3 visibles, un fond violet pour pouvoir
-   scroller sans que ca se ferme. » Le fond violet arrondi CAPTURE le geste de
-   defilement (sinon un doigt entre deux jetons tombe sur le plateau et referme
-   la cale). Trois jetons tiennent dans la fenetre : le central grandit, les deux
-   cotes s'enfoncent et retrecissent pour donner la courbe du barillet. On fait
-   defiler pour amener les autres au centre. */
+/* ⛔ UN VRAI BARILLET DE REVOLVER, A MOITIE DERRIERE LES BOUTONS. Les jetons
+   sont les CHAMBRES posees autour d un cylindre metallique ; seule la moitie
+   HAUTE depasse le pied. On tourne le cylindre en glissant a gauche/droite (le
+   JS pose chaque chambre sur l arc). Le cercle metallique capture le geste, donc
+   scroller ne referme pas la cale. */
 #dicewrap .dc-barillet {
-  --pd-jeton: var(--cbt-bonus-taille, 52px);
-  box-sizing: border-box;
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: clamp(10px, 3vw, 18px);
-  /* Trois jetons dans la fenetre, et de quoi entrevoir les suivants. */
-  width: min(100%, calc(var(--pd-jeton) * 3 + 3 * clamp(10px, 3vw, 18px) + 44px));
+  --pd-rayon: clamp(112px, 33vw, 150px);
+  --pd-jeton: var(--cbt-bonus-taille, 56px);
+  position: relative;
+  width: calc(2 * var(--pd-rayon) + var(--pd-jeton));
+  height: calc(var(--pd-rayon) + var(--pd-jeton) * 0.75);
   margin: 0 auto;
-  overflow-x: auto;
-  overflow-y: visible;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 16px calc(50% - var(--pd-jeton) / 2) 20px;
-  background:
-    radial-gradient(120% 150% at 50% 0%, rgba(128, 78, 224, .98) 0%, rgba(88, 48, 168, .98) 55%, rgba(64, 34, 128, .98) 100%);
-  /* ⛔ ARRONDI COMME UN BARILLET. Le haut est un ARC bombe (grand rayon), les
-     coins bas restent doux : la bande a la courbe d'un tonneau vu de face, pas
-     celle d'une simple barre. */
-  border-radius: 60% 60% 22px 22px / 90px 90px 22px 22px;
-  border: 2px solid rgba(232, 200, 106, .35);
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .18), 0 -4px 18px rgba(0, 0, 0, .45);
+  overflow: hidden;                 /* on coupe la moitie basse du cylindre */
+  pointer-events: none;
 }
-#dicewrap .dc-barillet::-webkit-scrollbar { display: none; }
 #dicewrap .dc-bonus-open .dc-barillet { pointer-events: auto; }
-#dicewrap .dc-barillet .dc-bonus-btn {
-  flex: 0 0 auto;
-  scroll-snap-align: center;
-  transform: scale(.62) translateY(16px);
-  opacity: .6;
-  transition: transform .2s ease, opacity .2s ease;
+
+/* Le cylindre : un tambour metallique. Son CENTRE est au bas de la fenetre, si
+   bien que seule la couronne haute — les chambres qui remontent — se voit. */
+#dicewrap .dc-barillet-cercle {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--pd-jeton) * 0.75);
+  width: calc(2 * var(--pd-rayon));
+  height: calc(2 * var(--pd-rayon));
+  transform: translateX(-50%);
+  border-radius: 50%;
+  touch-action: pan-x;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(150, 96, 220, .0) 52%, rgba(90, 52, 165, .96) 58%, rgba(58, 30, 112, .98) 100%),
+    conic-gradient(from 0deg, #caa24e, #f3d886, #b98a34, #f3d886, #caa24e);
+  border: 3px solid rgba(255, 224, 140, .7);
+  box-shadow: inset 0 0 0 10px rgba(70, 40, 130, .9),
+              inset 0 6px 18px rgba(0, 0, 0, .5),
+              0 -4px 20px rgba(0, 0, 0, .5);
 }
-/* Le jeton au centre ressort et remonte : c'est le sommet du barillet, celui
-   qu'on va jouer. */
-#dicewrap .dc-barillet .dc-bonus-centre {
-  transform: scale(1.18) translateY(-6px);
-  opacity: 1;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .55));
+/* Le moyeu central, comme l axe d un barillet. */
+#dicewrap .dc-barillet-cercle::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 26%; height: 26%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f3d886, #b98a34 70%, #7a5a1f);
+  box-shadow: inset 0 0 0 2px rgba(60, 34, 12, .5), 0 2px 6px rgba(0, 0, 0, .5);
 }
+
+/* Chaque chambre part du CENTRE du cylindre ; le JS la projette sur l arc. */
+#dicewrap .dc-barillet-cercle .dc-bonus-btn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transition: opacity .15s ease;
+  will-change: transform;
+}
+/* La chambre en haut ressort : anneau d or, comme la maquette. */
+#dicewrap .dc-barillet-cercle .dc-bonus-centre {
+  box-shadow: 0 0 0 3px rgba(255, 214, 90, .95), 0 0 16px rgba(255, 200, 60, .7);
+}
+
 #dicewrap .dc-bonus-open {
   opacity: 1;
   visibility: visible;

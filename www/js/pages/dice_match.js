@@ -1346,10 +1346,68 @@ function quartsTousEgaux(quarters) {
    donc les lots, ce qui se lit tout seul. */
 const PAR_PAGE = 5;
 let pageRatelier = 0;
+/* La rotation courante du barillet (en degres) et le pas entre deux chambres.
+   Elle se garde entre deux rendus — le ratelier se refait a chaque coup — pour
+   que le cylindre ne saute pas a chaque etat recu. */
+let barilletRot = 0;
+let barilletDrague = false;
+const BARILLET_PAS = 32;   // degres entre deux chambres
 
 /** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
     trois parties plus tot, on reprend la ou est le jeton offert. */
 export function ratelierAuDebut() { pageRatelier = 0; }
+
+/* Poser les chambres autour du cylindre du barillet, et le rendre tournant.
+   Les jetons sont poses en absolu depuis le CENTRE du cercle (bas du bloc) et
+   projetes sur l arc du haut ; glisser a gauche/droite tourne le cylindre. */
+function disposerBarillet(cercle) {
+  const btns = Array.prototype.slice.call(cercle.querySelectorAll('.dc-bonus-btn'));
+  const n = btns.length;
+  const maxRot = Math.max(0, (n - 1) * BARILLET_PAS);
+  if (barilletRot > maxRot) barilletRot = maxRot;
+  if (barilletRot < 0) barilletRot = 0;
+  const RAYON = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
+
+  const placer = () => {
+    btns.forEach((b, i) => {
+      const rel = i * BARILLET_PAS - barilletRot;      // 0 = tout en haut
+      const k = Math.max(0, 1 - Math.abs(rel) / (BARILLET_PAS * 2.6));
+      const scale = 0.6 + 0.55 * k;
+      b.style.transform = 'translate(-50%, -50%) rotate(' + rel + 'deg) translateY(-'
+        + RAYON + 'px) rotate(' + (-rel) + 'deg) scale(' + scale.toFixed(3) + ')';
+      b.style.opacity = (0.26 + 0.74 * k).toFixed(2);
+      b.style.zIndex = String(100 - Math.round(Math.abs(rel)));
+      b.classList.toggle('dc-bonus-centre', Math.abs(rel) < BARILLET_PAS / 2);
+    });
+  };
+  placer();
+
+  let actif = false, x0 = 0, rot0 = 0, bouge = 0;
+  const down = (ev) => {
+    actif = true; bouge = 0; x0 = ev.clientX; rot0 = barilletRot;
+    if (cercle.setPointerCapture) { try { cercle.setPointerCapture(ev.pointerId); } catch (_) { /* rien */ } }
+  };
+  const move = (ev) => {
+    if (!actif) return;
+    const dx = ev.clientX - x0;
+    if (Math.abs(dx) > bouge) bouge = Math.abs(dx);
+    barilletRot = Math.max(0, Math.min(maxRot, rot0 - dx * 0.42));
+    placer();
+  };
+  const up = () => {
+    if (!actif) return;
+    actif = false;
+    if (bouge > 6) barilletDrague = true;                 // glissement, pas un clic
+    barilletRot = Math.max(0, Math.min(maxRot,
+      Math.round(barilletRot / BARILLET_PAS) * BARILLET_PAS));
+    placer();
+    setTimeout(() => { barilletDrague = false; }, 60);
+  };
+  cercle.addEventListener('pointerdown', down);
+  cercle.addEventListener('pointermove', move);
+  cercle.addEventListener('pointerup', up);
+  cercle.addEventListener('pointercancel', up);
+}
 
 export function renderBonusRack() {
   const rack = $('#dc-bonus');
@@ -1429,34 +1487,15 @@ export function renderBonusRack() {
      naviguer. » La pagination a points cede la place a une bande horizontale a
      accrochage : tous les jetons sont en file, le pouce glisse, et celui du
      centre est mis en avant. Le jeton offert reste en tete. */
-  rack.innerHTML = '<div class="dc-barillet">' + tous.join('') + '</div>';
-  const barillet = rack.querySelector('.dc-barillet');
-  if (barillet) {
-    /* Le jeton le plus proche du centre porte `.dc-bonus-centre` : c'est ce qui
-       donne le relief du barillet. On le recalcule au defilement, sans reflow. */
-    const marquerCentre = () => {
-      const r = barillet.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      let best = null, dmin = Infinity;
-      barillet.querySelectorAll('.dc-bonus-btn').forEach((b) => {
-        const br = b.getBoundingClientRect();
-        const d = Math.abs(br.left + br.width / 2 - cx);
-        if (d < dmin) { dmin = d; best = b; }
-      });
-      barillet.querySelectorAll('.dc-bonus-centre').forEach((b) => {
-        if (b !== best) b.classList.remove('dc-bonus-centre');
-      });
-      if (best) best.classList.add('dc-bonus-centre');
-    };
-    let raf = 0;
-    barillet.addEventListener('scroll', () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; marquerCentre(); });
-    }, { passive: true });
-    /* Premier rendu : le jeton offert (en tete) est deja au centre grace au
-       rembourrage lateral ; on marque juste le bon. */
-    requestAnimationFrame(marquerCentre);
-  }
+  /* ⛔ UN VRAI BARILLET DE REVOLVER. « Un cylindre de pistolet qui apparait a
+     moitie au-dessus des boutons. » Les jetons sont les CHAMBRES, posees autour
+     d'un cercle dont seule la moitie haute depasse le pied. On fait TOURNER le
+     cylindre en glissant a gauche/droite ; celui qui arrive en haut est mis en
+     avant, et un clic le joue. */
+  rack.innerHTML = '<div class="dc-barillet"><div class="dc-barillet-cercle">'
+    + tous.join('') + '</div></div>';
+  const cercle = rack.querySelector('.dc-barillet-cercle');
+  if (cercle) disposerBarillet(cercle);
 
   /* ⛔ L'EVENTAIL A VECU. Il tenait pour trois jetons ; a cinq ou six, l'arc se
      resserrait jusqu'a ce qu'ils se recouvrent — « ça affiche mal quand tu as
@@ -1476,7 +1515,9 @@ export function renderBonusRack() {
        du pied (au lieu de flotter au-dessus) : le panneau violet plonge donc
        derriere les boutons, et seuls les trois jetons du haut depassent. Le pied
        (z-index 34) le recouvre par en bas. */
-    rack.style.bottom = Math.max(0, scene.bottom - r.top - 6) + 'px';
+    /* La fenetre du cylindre plonge dans le pied : sa moitie basse passe donc
+       DERRIERE les boutons, et seule la couronne haute des chambres depasse. */
+    rack.style.bottom = Math.max(0, scene.bottom - r.top - 30) + 'px';
   }
 
   /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
@@ -1562,6 +1603,10 @@ export function renderBonusRack() {
          plateau : tout ce qui remonte ou retombe finit sur une colonne. */
       ev.preventDefault();
       ev.stopPropagation();
+      /* ⛔ TOURNER LE BARILLET N'EST PAS LE JOUER. Un glissement pour faire
+         defiler les chambres finissait par un clic qui declenchait l'effet du
+         jeton relache. On avale ce clic-la. */
+      if (barilletDrague) return;
       const nom = b.dataset.nom || '';
       /* Un refus laisse la cale OUVERTE : le joueur vient de lire pourquoi, il
          doit pouvoir viser un autre jeton sans tout rouvrir. */
