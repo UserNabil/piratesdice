@@ -1773,10 +1773,22 @@
   /* ⛔ LE CADRE EST L ASSET DE L ADMIN. L anneau dore ouvrage (barillet.png,
      centre transparent) se pose PAR-DESSUS une face sombre qui bouche le centre —
      sinon le plateau se verrait a travers le trou du barillet. */
-  background:
-    url(../dice/img/barillet.png) center / 100% 100% no-repeat,
-    radial-gradient(circle at 50% 46%, #4a2a8e 0%, #38206e 62%, #2a1656 100%);
+  /* La face sombre du cylindre (bouche le centre) ; le CADRE ouvrage tourne
+     par-dessus, sur sa propre couche. */
+  background: radial-gradient(circle at 50% 46%, #4a2a8e 0%, #38206e 62%, #2a1656 100%);
 }
+/* La couche qui PIVOTE : l asset du barillet, tourne du meme angle que les
+   chambres — le cylindre pivote vraiment, les bonus restent dans leurs slots. */
+#dicewrap .dc-barillet-cadre {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: url(../dice/img/barillet.png) center / 100% 100% no-repeat;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+#dicewrap .dc-barillet-cercle .dc-bonus-btn { z-index: 2; }
 
 /* Le nom du bonus courant, juste au-dessus du barillet. Il change quand on
    tourne le cylindre (la chambre du sommet). */

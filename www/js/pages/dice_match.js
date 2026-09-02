@@ -1379,6 +1379,8 @@ function disposerBarillet(cercle) {
         + RAYON + 'px) rotate(' + (-rel) + 'deg) scale(' + scale.toFixed(3) + ')';
       b.style.opacity = (0.26 + 0.74 * k).toFixed(2);
       b.style.zIndex = String(100 - Math.round(Math.abs(rel)));
+      /* Le cadre tourne du meme angle : le barillet pivote pour de vrai, les
+         bonus restent poses dans leurs chambres. */
       const auCentre = Math.abs(rel) < BARILLET_PAS / 2;
       b.classList.toggle('dc-bonus-centre', auCentre);
       if (auCentre) {
@@ -1386,6 +1388,8 @@ function disposerBarillet(cercle) {
         if (nomEl) nomEl.textContent = b.dataset.nom || '';
       }
     });
+    const cadre = cercle.querySelector('.dc-barillet-cadre');
+    if (cadre) cadre.style.transform = 'rotate(' + (-barilletRot) + 'deg)';
   };
   placer();
 
@@ -1501,7 +1505,8 @@ export function renderBonusRack() {
      avant, et un clic le joue. */
   rack.innerHTML = '<div class="dc-barillet">'
     + '<div class="dc-barillet-nom" data-nom></div>'
-    + '<div class="dc-barillet-cercle">' + tous.join('') + '</div>'
+    + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
+    + tous.join('') + '</div>'
     + '<div class="dc-barillet-info" data-info hidden></div>'
     + '</div>';
   const cercle = rack.querySelector('.dc-barillet-cercle');
