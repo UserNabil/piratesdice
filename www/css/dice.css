@@ -1835,7 +1835,10 @@
    JS pose chaque chambre sur l arc). Le cercle metallique capture le geste, donc
    scroller ne referme pas la cale. */
 #dicewrap .dc-barillet {
-  --pd-rayon: clamp(112px, 33vw, 150px);
+  /* ⛔ 50 % PLUS GRAND, ET CALE SUR L'ECRAN. « Augmente la taille du barillet
+     de 50 % avec les icones. » Le plafond suit la largeur du telephone
+     (2 x rayon <= ecran) pour que le tambour ne soit pas rogne aux flancs. */
+  --pd-rayon: clamp(168px, 49.5vw, 213px);
   --pd-jeton: var(--cbt-bonus-taille, 56px);
   position: relative;
   width: calc(2 * var(--pd-rayon) + var(--pd-jeton));

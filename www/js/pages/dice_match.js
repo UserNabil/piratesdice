@@ -1397,7 +1397,14 @@ function disposerBarillet(cercle, donnees, ctx) {
   const NC = slots.length;                 // huit chambres
   const N = donnees.length;
   if (!N) return;
-  const R0 = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
+  /* ⛔ LE RAYON SE MESURE, IL NE SE RELIT PAS. `getComputedStyle` rend la
+     variable NON RESOLUE — la chaine « clamp(112px, 33vw, 150px) » — dont
+     parseFloat ne tire rien : on retombait sur 130 en dur. Sur un ecran de
+     390 px le vrai rayon vaut par hasard ~129 et tout SEMBLE aligne ; sur un
+     iPhone de 430 pt il vaut ~142, et chaque jeton se posait 12 px trop bas
+     dans son trou. Le rectangle rendu, lui, ne ment jamais. */
+  const R0 = (cercle.getBoundingClientRect().width / 2)
+    || parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
   const cadre = cercle.querySelector('.dc-barillet-cadre');
   /* Moins de neuf bonus : le tambour bute aux extremites. Au-dela, il tourne
      sans fin et les chambres cachees se rechargent en chemin. */
