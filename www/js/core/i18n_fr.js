@@ -486,81 +486,6 @@ export const FR = {
      face — c'est ce qui fait un duel plutot qu'un tableur.
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
-  'say.read.B001.0': 'Ce tirage ne me convient pas. Regarde bien le suivant.',
-  'say.read.B001.1': 'Je reprends. Tu ne gagneras pas sur une erreur de dé.',
-  'say.read.B001.2': 'Annulé. Le prochain sera pour toi.',
-  'say.read.B002.0': 'Je dégage cette case. Tu croyais avoir compris mon plan ?',
-  'say.read.B002.1': 'Je réorganise ma ligne. Suis, si tu peux.',
-  'say.read.B002.2': 'Une case de moins chez moi, et tout ton calcul est faux.',
-  'say.read.B003.0': 'Ton dé gênait ma ligne de mire. Plus maintenant.',
-  'say.read.B003.1': 'Retire ça. Tu n\'en avais pas l\'usage.',
-  'say.read.B003.2': 'Un dé de moins dans tes rangs. Continue.',
-  'say.read.B004.0': 'Je vois ton prochain dé avant toi. Joue quand même.',
-  'say.read.B004.1': 'Ta main est ouverte devant moi, capitaine.',
-  'say.read.B004.2': 'Ce que tu vas tirer, je le sais déjà.',
-  'say.read.B005.0': 'Cette colonne est tenue. Essaie de la prendre.',
-  'say.read.B005.1': 'Je fortifie ici. Tu perdras du monde à passer.',
-  'say.read.B005.2': 'Cette colonne rapporte plus, maintenant. À toi de suivre.',
-  'say.teach.B001.0': 'Le sort m\'a insulté. Tu vas voir sa réponse.',
-  'say.teach.B001.1': 'Je relance, et cette fois c\'est toi qui paieras.',
-  'say.teach.B001.2': 'Ce dé ne me plaisait pas. À moi de choisir.',
-  'say.teach.B002.0': 'Je brûle ma propre case. Tu n\'oserais pas.',
-  'say.teach.B002.1': 'Je fais le vide chez moi. Devine pour qui.',
-  'say.teach.B002.2': 'Une case rasée. La tienne suivra.',
-  'say.teach.B003.0': 'Ton dé a vu ma barbe. Il n\'a pas survécu.',
-  'say.teach.B003.1': 'J\'ai pris ce dé. Viens le réclamer.',
-  'say.teach.B003.2': 'Voilà ce qu\'il reste de ton coup, moussaillon.',
-  'say.teach.B004.0': 'Je lis dans ta main comme dans une bouteille vide.',
-  'say.teach.B004.1': 'Ton prochain dé n\'a plus de secret. Ni toi.',
-  'say.teach.B004.2': 'Je sais ce qui t\'attend. Tu vas détester.',
-  'say.teach.B005.0': 'Cette colonne porte mon nom. Approche pour voir.',
-  'say.teach.B005.1': 'Je la bénis. Tu n\'y toucheras pas.',
-  'say.teach.B005.2': 'Quinze pour cent de plus, et c\'est encore trop peu pour toi.',
-  'say.ching.B001.0': 'Un dé mal placé se relance. Note-le, ça te servira.',
-  'say.ching.B001.1': 'Je corrige. Tu apprendras à faire pareil.',
-  'say.ching.B001.2': 'Ce tirage était une perte. Je ne les garde pas.',
-  'say.ching.B002.0': 'Je retire cette pièce. Ton calcul vient de changer.',
-  'say.ching.B002.1': 'Une case libérée vaut mieux qu\'une case perdue. Retiens.',
-  'say.ching.B002.2': 'Je réécris ma colonne. Refais tes comptes.',
-  'say.ching.B003.0': 'Ton dé coûtait trop cher. Je l\'ai réglé.',
-  'say.ching.B003.1': 'Cette pièce est saisie. La flotte remercie.',
-  'say.ching.B003.2': 'J\'ai supprimé la ligne la plus chère de ton livre.',
-  'say.ching.B004.0': 'Ta flotte n\'a plus de secrets pour la mienne.',
-  'say.ching.B004.1': 'Je connais ton prochain dé. Le prix de l\'information.',
-  'say.ching.B004.2': 'J\'ai ouvert ton registre. Il est mince.',
-  'say.ching.B005.0': 'Cette colonne paiera un tribut de quinze pour cent.',
-  'say.ching.B005.1': 'J\'investis ici. Tu verras le rendement.',
-  'say.ching.B005.2': 'Colonne bénie. Compare, si tu as le temps.',
-  'say.omalley.B001.0': 'La mer m\'en doit un meilleur. Elle va me le rendre.',
-  'say.omalley.B001.1': 'Je relance. Le vent tourne, et pas pour toi.',
-  'say.omalley.B001.2': 'Ce dé retourne à l\'eau. Regarde ce qui remonte.',
-  'say.omalley.B002.0': 'Je fais de la place. La marée s\'en occupe.',
-  'say.omalley.B002.1': 'Je vide cette case. Mon pont sera plus propre que le tien.',
-  'say.omalley.B002.2': 'Une case rendue à la mer. Elle me la rendra mieux.',
-  'say.omalley.B003.0': 'Ton dé est passé par-dessus bord. Salue-le.',
-  'say.omalley.B003.1': 'La mer a pris ce qui trainait chez toi.',
-  'say.omalley.B003.2': 'Un homme à la mer, capitaine. C\'était ton dé.',
-  'say.omalley.B004.0': 'Du haut de mon mât, je vois ton jeu.',
-  'say.omalley.B004.1': 'Ton prochain dé, je l\'ai déjà repéré à l\'horizon.',
-  'say.omalley.B004.2': 'Ma vigie t\'a vu venir. Avance quand même.',
-  'say.omalley.B005.0': 'Que cette colonne soit bénie, et qu\'elle te coûte.',
-  'say.omalley.B005.1': 'J\'appelle la marée sur cette colonne. Tiens bon.',
-  'say.omalley.B005.2': 'Bénie. Elle portera plus loin que la tienne.',
-  'say.jack.B001.0': 'Ce dé ne me plaisait pas. Tu permets ? Merci.',
-  'say.jack.B001.1': 'Je relance ! Non, tu ne peux pas faire pareil.',
-  'say.jack.B001.2': 'Hop, un autre. C\'est fou ce que ça soulage.',
-  'say.jack.B002.0': 'J\'efface. Personne n\'a rien vu, hein ?',
-  'say.jack.B002.1': 'Je range ma case. Chez toi c\'est le bazar, remarque.',
-  'say.jack.B002.2': 'Petite retouche. Ne t\'inquiète pas pour moi.',
-  'say.jack.B003.0': 'Tu n\'avais pas besoin de celui-là, hahaha !',
-  'say.jack.B003.1': 'Oups. Il a glissé. Enfin, je l\'ai poussé.',
-  'say.jack.B003.2': 'Ce dé te faisait de l\'ombre. Je t\'ai rendu service.',
-  'say.jack.B004.0': 'J\'ai jeté un oeil. Tu vas détester, crois-moi.',
-  'say.jack.B004.1': 'Je sais ce que tu vas tirer. Non, je ne dirai rien.',
-  'say.jack.B004.2': 'Ton prochain dé ? Disons que j\'ai de la peine pour toi.',
-  'say.jack.B005.0': 'Cette colonne-là ? Elle est chanceuse. Comme moi.',
-  'say.jack.B005.1': 'Je bénis celle-ci. Tu peux essayer, ça marche pas pour tout le monde.',
-  'say.jack.B005.2': 'Colonne porte-bonheur. Le mien, pas le tien.',
 
   'shop.B001.desc': 'Relancez votre dé — la valeur dont vous ne vouliez pas disparaît.',
   'shop.B002.name': 'Vider une de mes cases',
@@ -720,10 +645,227 @@ export const FR = {
   'fx.wipe': 'Colonne rasée !',
   'game.colFrozen': 'Cette colonne est gelée.',
 
+  /* ══ LE SECOND LOT DE CAPITAINES — B012 à B016 ══
+     Cinq capitaines, cinq effets que rien d’autre ne fait dans le jeu. Chacun a
+     un nom, un surnom et un lore court : la fiche capitaine montre les trois, et
+     une fiche qui ne fait que répéter l’effet n’apprend rien. */
+  'cap.kidd.name': 'Captain Kidd',
+  'cap.kidd.title': 'Le corsaire pendu',
+  'cap.kidd.lore': 'Envoyé chasser les pirates, il est revenu en pirate. Kidd a '
+    + 'juré jusqu’au dernier souffle que ses registres étaient honnêtes — et '
+    + 'enterré le reste là où aucun registre ne le trouverait.',
+  'cap.kidd.trait': 'Une fois par partie, le dé qu’il vient de lancer monte ou descend d’un cran.',
+  'cap.wangzhi.name': 'Wang Zhi',
+  'cap.wangzhi.title': 'Le marchand de fumée',
+  'cap.wangzhi.lore': 'Il a tenu les routes maritimes sans jamais livrer bataille. '
+    + 'Quand les canons ont fini par parler, Wang Zhi était déjà sorti de la '
+    + 'fumée — et de l’empire qui le traquait.',
+  'cap.wangzhi.trait': 'Une fois par partie, le prochain dé adverse ne détruit aucun de vos dés.',
+  'cap.levent.name': 'Anne Levent',
+  'cap.levent.title': 'La danseuse de pont',
+  'cap.levent.lore': 'Elle n’a jamais perdu un dé par-dessus bord. Là où les '
+    + 'autres halaient en jurant, Levent faisait un pas, et le pont entier se '
+    + 'réorganisait derrière elle.',
+  'cap.levent.trait': 'Une fois par partie, elle déplace le dé supérieur d’une colonne vers une autre.',
+  'cap.caesar.name': 'Black Caesar',
+  'cap.caesar.title': 'La coque inbrisable',
+  'cap.caesar.lore': 'Chef avant d’être captif, capitaine avant d’être libre. '
+    + 'Caesar a coulé le navire qui le transportait et gardé les chaînes — elles '
+    + 'tiennent sa coque depuis.',
+  'cap.caesar.trait': 'Une fois par partie, un de vos dés survit au prochain tour adverse.',
+  'cap.sayyida.name': 'Sayyida al-Hurra',
+  'cap.sayyida.title': 'La dame des marées',
+  'cap.sayyida.lore': 'Reine à terre, amirale en mer, et la seule qui pouvait '
+    + 'changer le quart de toute la Méditerranée occidentale en le disant.',
+  'cap.sayyida.trait': 'Une fois par partie, elle échange deux multiplicateurs de colonne pour les deux joueurs.',
+
+  'cap.trait.loaded': 'Un dé pipé',
+  'cap.trait.fog': 'Un rideau de poudre',
+  'cap.trait.gangway': 'Un dé déplacé',
+  'cap.trait.hull': 'Un dé sous coque',
+  'cap.trait.watch': 'Deux quarts échangés',
+
+  'shop.B012.name': 'Dé pipé',
+  'shop.B012.desc': 'Après votre lancer, décalez le dé d’un cran, en plus ou en moins. Jamais de 1 à 6.',
+  'shop.B013.name': 'Brouillard de poudre',
+  'shop.B013.desc': 'Le prochain dé adverse marque normalement, mais ne détruit aucun de vos dés.',
+  'shop.B014.name': 'Manœuvre de pont',
+  'shop.B014.desc': 'Déplacez le dé supérieur d’une de vos colonnes vers une autre non pleine.',
+  'shop.B015.name': 'Coque renforcée',
+  'shop.B015.desc': 'Protège un de vos dés jusqu’à la fin du prochain tour adverse.',
+  'shop.B016.name': 'Changement de quart',
+  'shop.B016.desc': 'Échange deux multiplicateurs de colonne, pour les deux joueurs, jusqu’à la fin.',
+
+  'fx.brumeYou': 'Brouillard de poudre — votre plateau est couvert',
+  'fx.brumeThem': '{name} disparaît dans le brouillard de poudre',
+  'fx.brumeSaved': 'Le brouillard tient — {n} de vos dés survivent',
+  'fx.brumeBlocked': 'Le brouillard avale votre tir — rien de détruit',
+  'fx.coqueYou': 'Coque renforcée — un dé est protégé',
+  'fx.coqueThem': '{name} blinde un de ses dés',
+  'fx.coqueSaved': 'La coque tient ! Votre dé survit',
+  'fx.coqueBlocked': 'Sa coque tient — ce dé survit',
+  'fx.manoeuvreYou': 'Manœuvre de pont — votre dé change de colonne',
+  'fx.manoeuvreThem': '{name} déplace un dé sur le pont',
+  'fx.quart': 'Changement de quart — deux multiplicateurs échangés',
+
+  /* Ce que l’écran demande pendant une visée en deux temps, et pour le dé pipé.
+     ⚠️ UNE CONSIGNE QUI NE DIT PAS QUEL TEMPS N’APPREND RIEN. Deux effets
+     demandent deux colonnes ; sans ces deux lignes, le joueur touche une
+     colonne, voit le plateau rester allumé, et croit son geste perdu. */
+  'game.pickFrom': 'Choisissez la colonne d’où part le dé',
+  'game.pickTo': 'Maintenant, où il va',
+  'game.pickSwapA': 'Choisissez la première colonne à échanger',
+  'game.pickSwapB': 'Maintenant la seconde',
+  'game.pickFace': 'Pipez le dé',
+  /* La fiche capitaine. Cinq libellés, et aucun ne nomme un capitaine : la fiche
+     se construit à partir de la liste du serveur et des clés dérivées de chaque
+     identifiant. */
+  'fiche.bonus': 'Bonus offert',
+  'fiche.progression': 'Progression',
+  'fiche.condition': 'Débloquez ce capitaine en terminant des parties en mer.',
+  'fiche.acquis': 'Ce capitaine navigue avec vous.',
+  'fiche.choisir': 'Sélectionner',
+  'fiche.porte': 'Déjà sélectionné',
+  /* ══ LES DIX PREMIERS CAPITAINES : SURNOM ET LORE ══
+     ⛔ LA FICHE LES MONTRAIT SANS RIEN. Je n'avais ecrit `title` et `lore` que
+     pour les cinq nouveaux : les dix autres ouvraient une fiche au surnom vide,
+     et le lore retombait sur la phrase de leur trait — deja affichee trois
+     lignes plus bas dans le panneau du bonus. La maquette montre exactement le
+     contraire : un surnom, puis un recit qui ne parle PAS de l'effet.
+     Le texte de Mary Read est celui de la maquette, mot pour mot. */
+  'cap.read.title': 'La corsaire insaisissable',
+  'cap.read.lore': 'Élevée comme un garçon pour naviguer librement, Mary Read a '
+    + 'défié toutes les règles pour devenir l’une des pirates les plus redoutés '
+    + 'des Caraïbes. Personne ne savait si elle était un homme… jusqu’à ce qu’il '
+    + 'soit trop tard.',
+  'cap.jack.title': 'Le pavillon qu’on reconnaît',
+  'cap.jack.lore': 'On retient son drapeau — deux sabres croisés sous une tête de '
+    + 'mort — mieux que ses prises. Calico Jack avait compris avant les autres '
+    + 'qu’un pirate se bat d’abord avec sa réputation.',
+  'cap.ching.title': 'L’amirale aux six cents jonques',
+  'cap.ching.lore': 'Aucun pirate n’a jamais commandé autant d’hommes qu’elle. '
+    + 'Ching Shih tenait la mer de Chine avec un code écrit, un impôt et une '
+    + 'flotte — et elle a négocié sa retraite les armes encore chargées.',
+  'cap.teach.title': 'La barbe qui fume',
+  'cap.teach.lore': 'Il tressait des mèches allumées dans sa barbe avant '
+    + 'l’abordage : ses ennemis se rendaient avant le premier coup de feu. '
+    + 'Barbe-Noire a pris plus de navires par la peur que par le canon.',
+  'cap.omalley.title': 'La reine des mers d’Irlande',
+  'cap.omalley.lore': 'Elle a accouché en mer et repris le combat le lendemain. '
+    + 'Grace O’Malley a tenu la côte ouest de l’Irlande contre une reine '
+    + 'd’Angleterre — et lui a parlé debout, sans traducteur.',
+  'cap.bonny.title': 'Celle qu’on n’a jamais pendue',
+  'cap.bonny.lore': 'Jugée, condamnée, et pourtant jamais exécutée : Anne Bonny '
+    + 'disparaît des registres le jour de sa sentence. Personne n’a jamais su où '
+    + 'elle était passée.',
+  'cap.bart.title': 'Le plus grand tableau de chasse',
+  'cap.bart.lore': 'Quatre cents navires en trois ans, plus que tout autre. '
+    + 'Bartholomew Roberts buvait du thé, s’habillait de soie, et interdisait les '
+    + 'dés à son équipage.',
+  'cap.lionne.title': 'L’œil qui voit venir',
+  'cap.lionne.lore': 'Elle repérait une voile avant la vigie, et savait à la '
+    + 'façon dont elle prenait le vent ce que le navire transportait. La Lionne '
+    + 'Sanglante ne chassait jamais au hasard.',
+  'cap.morgan.title': 'Le pirate qu’on a anobli',
+  'cap.morgan.lore': 'Il a pillé Panama et fini gouverneur de la Jamaïque. Henry '
+    + 'Morgan est le seul à avoir changé une carrière de pirate en titre de '
+    + 'noblesse — et à mourir dans son lit.',
+  'cap.levasseur.title': 'La Buse, et son énigme',
+  'cap.levasseur.lore': 'Sur l’échafaud, il jeta un cryptogramme dans la foule : '
+    + '« Mon trésor à qui saura le prendre. » Trois siècles plus tard, personne '
+    + 'ne l’a pris.',
+  /* Pourquoi un jeton ne peut pas partir, dit AVANT le geste. Même règle que
+     celle du serveur — l’écran ne fait que la rendre lisible un geste plus tôt. */
+  'fx.brumeAlready': 'Votre plateau est déjà dans le brouillard.',
+  'fx.coqueAlready': 'Un de vos dés est déjà sous coque.',
+  'err.pasDeManoeuvre': 'Aucun de vos dés ne peut bouger : il faut une colonne d’où partir et une autre non pleine.',
+  'err.quartsEgaux': 'Toutes les colonnes valent pareil : il n’y a rien à échanger.',
+  'bonus.page': 'Page {n} sur {total}',
+
   /* ══ LES REPLIQUES COMMUNES ══
      Elles parlent de l’EFFET, pas du capitaine, et servent de repli aux 330
      combinaisons qu’on n’écrira pas. Elles s’adressent à l’adversaire, comme
      toutes les autres : c’est ce qui fait un duel plutôt qu’un journal de bord. */
+  'say.read.B001.0': 'Ce dé ne me convient pas. Je recommence.',
+  'say.read.B001.1': 'Mauvais tirage. On efface, on relance.',
+  'say.read.B001.2': 'Je reprends ma main, matelot.',
+  'say.read.B001.3': 'Pas celui-là. Le suivant sera meilleur.',
+  'say.read.B001.4': 'Un soldat corrige sa visée. Je relance.',
+  'say.read.B002.0': 'J\'efface ma case. Redessine tes plans.',
+  'say.read.B002.1': 'Une case en moins, et tes calculs sont faux.',
+  'say.read.B002.2': 'Je range mon rang. Suis-moi si tu peux.',
+  'say.read.B002.3': 'Ma ligne bouge quand JE le décide.',
+  'say.read.B002.4': 'Un vide ici, un piège là. Devine.',
+  'say.read.B003.0': 'Feu ! Ton dé n\'existe plus.',
+  'say.read.B003.1': 'Mon canon parle, le tien se tait.',
+  'say.read.B003.2': 'Un de moins dans tes rangs. Continue.',
+  'say.read.B003.3': 'Je vise, je tire, tu perds.',
+  'say.read.B003.4': 'Ce dé te gênait ? Plus maintenant.',
+  'say.read.B004.0': 'Je vois ton prochain dé, mon gars.',
+  'say.read.B004.1': 'Ta main est ouverte pour moi.',
+  'say.read.B004.2': 'Rien ne m\'échappe, pas même ton jeu.',
+  'say.read.B004.3': 'Je lis dans ton dé avant toi.',
+  'say.read.B004.4': 'Un œil de soldat voit tout venir.',
+  'say.read.B005.0': 'Cette colonne est à moi, et elle rapporte.',
+  'say.read.B005.1': 'Je fortifie ici. Essaie de passer.',
+  'say.read.B005.2': 'Mes hommes tiennent ce flanc. Toi non.',
+  'say.read.B005.3': 'Cette colonne rend plus. Ton tour.',
+  'say.read.B005.4': 'Je double ma solde sur cette ligne.',
+  'say.read.B006.0': 'Gelée. Cette colonne ne bouge plus.',
+  'say.read.B006.1': 'Le froid tient ta ligne. Attends ton tour.',
+  'say.read.B006.2': 'Je verrouille, tu patientes.',
+  'say.read.B006.3': 'Ta colonne prend la glace. Tant pis.',
+  'say.read.B006.4': 'Un tour au frais te calmera.',
+  'say.read.B007.0': 'Ton tour saute. Je joue deux fois.',
+  'say.read.B007.1': 'Reste assis, je m\'occupe de tout.',
+  'say.read.B007.2': 'Pas de tour pour toi. À moi, encore.',
+  'say.read.B007.3': 'Je te prends la main. Regarde et pleure.',
+  'say.read.B007.4': 'Deux coups d\'affilée. Tu suis ?',
+  'say.read.B008.0': 'Dépêche. Ton tour sera court.',
+  'say.read.B008.1': 'Le sablier fond pour toi, pas pour moi.',
+  'say.read.B008.2': 'Moins de temps, plus de fautes. Joue.',
+  'say.read.B008.3': 'Je te presse. Craque donc.',
+  'say.read.B008.4': 'Ta pendule est fêlée. Cours.',
+  'say.read.B009.0': 'On échange. Le mien contre le tien.',
+  'say.read.B009.1': 'Je troque, tu grimaces.',
+  'say.read.B009.2': 'Ton dé me plaît. Je le prends.',
+  'say.read.B009.3': 'Deux dés changent de camp. Le mauvais est chez toi.',
+  'say.read.B009.4': 'Un troc de soldat : à mon avantage.',
+  'say.read.B010.0': 'Bordée ! Deux colonnes à la mer.',
+  'say.read.B010.1': 'Je rase, des deux côtés. Ordre du bord.',
+  'say.read.B010.2': 'Le canon balaie tout. Ramasse.',
+  'say.read.B010.3': 'Une salve, deux colonnes vidées.',
+  'say.read.B010.4': 'Feu de bâbord et de tribord. Adieu.',
+  'say.read.B011.0': 'Maudite, cette colonne. Elle rend moins.',
+  'say.read.B011.1': 'Je jette un sort sur ta ligne.',
+  'say.read.B011.2': 'Ta colonne saigne des points. Tant mieux.',
+  'say.read.B011.3': 'Une malédiction de tranchée pour toi.',
+  'say.read.B011.4': 'Moins quinze pour cent. Compte bien.',
+  'say.read.B012.0': 'Je pipe le dé. Ma valeur, mes règles.',
+  'say.read.B012.1': 'Un dé arrangé vaut mieux qu\'un dé perdu.',
+  'say.read.B012.2': 'Je force la chance, comme au combat.',
+  'say.read.B012.3': 'Ce dé fera ce que j\'ordonne.',
+  'say.read.B012.4': 'Truqué ? Non. Discipliné.',
+  'say.read.B013.0': 'Brouillard. Tu ne verras plus mon plateau.',
+  'say.read.B013.1': 'Fumée de poudre : joue à l\'aveugle.',
+  'say.read.B013.2': 'Je disparais dans la brume. Cherche.',
+  'say.read.B013.3': 'Tu ne sais plus ce que je prépare. Bien.',
+  'say.read.B013.4': 'Un rideau de fumée, et tu tâtonnes.',
+  'say.read.B014.0': 'Je déplace mon dé. Manœuvre de soldat.',
+  'say.read.B014.1': 'Ce dé change de colonne. Suis le mouvement.',
+  'say.read.B014.2': 'Je réordonne mes rangs sous ton nez.',
+  'say.read.B014.3': 'Un pas de côté, et tout change.',
+  'say.read.B014.4': 'Mon dé marche au pas. Là, mieux.',
+  'say.read.B015.0': 'Ce dé porte cuirasse. Tape dessus pour voir.',
+  'say.read.B015.1': 'Coque renforcée. Ton canon rebondit.',
+  'say.read.B015.2': 'Je blinde ce dé. Bonne chance.',
+  'say.read.B015.3': 'Protégé. Vise ailleurs.',
+  'say.read.B015.4': 'Ce dé ne tombera pas. Parole de soldat.',
+  'say.read.B016.0': 'Je change les quarts. Nouvelle donne.',
+  'say.read.B016.1': 'J\'échange deux multiplicateurs. Recompte.',
+  'say.read.B016.2': 'Le pont tourne, les valeurs aussi.',
+  'say.read.B016.3': 'Changement de quart. Ça vaut pour nous deux.',
+  'say.read.B016.4': 'Je rebats les cartes du plateau.',
   'say.any.B001.0': 'Ce dé ne me plaît pas. Je recommence.',
   'say.any.B001.1': 'Rien de bon là-dedans. On efface.',
   'say.any.B001.2': 'Un autre. Celui-là ne valait rien.',
@@ -761,30 +903,9 @@ export const FR = {
   /* ══ LA VOIX DES CINQ NOUVEAUX, SUR LEUR PROPRE TRAIT ══
      Un capitaine ne parle vraiment que d’une chose : ce qu’il fait mieux que les
      autres. Le reste passe par les répliques communes ci-dessus. */
-  'say.bonny.B008.0': 'Dépêche-toi. Le sable ne t’attendra pas.',
-  'say.bonny.B008.1': 'Ton tour vient de raccourcir. Réfléchis vite.',
-  'say.bonny.B008.2': 'Je n’ai pas volé ton tour. Je l’ai juste pressé.',
-  'say.bart.B009.0': 'Beau dé. Il ira mieux chez moi.',
-  'say.bart.B009.1': 'Un troc honnête : je prends, tu gardes le reste.',
-  'say.bart.B009.2': 'Ce qui est à toi est à moi. Ce qui est à moi le reste.',
-  'say.lionne.B004.0': 'Je vois ton prochain dé avant toi. Joue quand même.',
-  'say.lionne.B004.1': 'Ma longue-vue ne ment jamais. La tienne, si tu en as une ?',
-  'say.lionne.B004.2': 'Ce que tu vas tirer, je le sais déjà. Ça se lit sur ta figure.',
-  'say.morgan.B007.0': 'Ton tour ? Je viens de le prendre. Assieds-toi.',
-  'say.morgan.B007.1': 'Deux coups pour moi, aucun pour toi. Les comptes sont bons.',
-  'say.morgan.B007.2': 'Tu passes. Ce n’est pas une question.',
-  'say.levasseur.B011.0': 'J’ai laissé ma marque sur cette colonne. Bonne chance.',
-  'say.levasseur.B011.1': 'Une malédiction bien placée vaut trois canons.',
-  'say.levasseur.B011.2': 'Cherche mon trésor si tu veux. Cette colonne, elle, est perdue.',
 
   /* Et Ching Shih, qui ne regarde plus : elle tire. */
-  'say.ching.B010.0': 'Une bordée sur les deux colonnes. Je ne trie pas ce que j’emporte.',
-  'say.ching.B010.1': 'Ma flotte ne vise pas un dé. Elle vise une ligne — des deux côtés.',
-  'say.ching.B010.2': 'Toute la colonne, d’un seul ordre. J’en commande huit cents.',
   /* Et Barbe-Noire, qui gèle une colonne au lieu d’un tour. */
-  'say.teach.B006.0': 'Trois cases dans la glace. Passe par ailleurs si tu peux.',
-  'say.teach.B006.1': 'Cette colonne est fermée. Le froid s’en occupe.',
-  'say.teach.B006.2': 'Gelée jusqu’au fond. Tu la retrouveras au prochain tour.',
   /* Les refus que l'ecran doit dire AVANT le geste, un par effet qui ne peut
      pas se jouer deux fois. Voir `renderRack` dans dice_match.js. */
   'fx.colAlreadyFrozen': 'Une de ses colonnes est déjà gelée',

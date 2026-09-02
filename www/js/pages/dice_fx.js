@@ -512,7 +512,7 @@ function annonceBonus(f) {
   if (S.state && S.state.grids) {
     for (const g of S.state.grids) for (const v of g) if (v !== null) tour++;
   }
-  const VARIANTES = 3;
+  const VARIANTES = 5;
   const variante = tour % VARIANTES;
   const propre = cap ? t('say.' + cap + '.' + f.identify + '.' + variante) : '';
   /* ⚠️ TROIS ETAGES, ET LE DEUXIEME EST NEUF. Dix capitaines et onze effets font
