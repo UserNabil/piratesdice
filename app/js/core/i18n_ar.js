@@ -596,6 +596,7 @@ export const AR = {
   'set.soundOff': 'مكتوم',
   'set.account': 'الحساب',
   'set.signedInAs': 'متصل باسم {name}',
+  'set.signInApple': 'الدخول عبر Apple',
   'set.signInShort': 'دخول',
   'set.signOutShort': 'خروج',
   'set.eraseShort': 'حذف',

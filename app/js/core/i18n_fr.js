@@ -610,6 +610,7 @@ export const FR = {
      repliaient sur trois lignes dans deux boutons cote a cote — retour de
      l'admin. Le logo dit deja de qui il s'agit, et la corbeille ce qu'elle
      fait : le mot n'a plus qu'a confirmer. */
+  'set.signInApple': 'Se connecter avec Apple',
   'set.signInShort': 'Connexion',
   'set.signOutShort': 'Déconnexion',
   'set.eraseShort': 'Supprimer',

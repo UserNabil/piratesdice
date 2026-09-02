@@ -594,6 +594,7 @@ export const ES = {
   'set.soundOff': 'Silenciado',
   'set.account': 'Cuenta',
   'set.signedInAs': 'Conectado como {name}',
+  'set.signInApple': 'Iniciar sesión con Apple',
   'set.signInShort': 'Entrar',
   'set.signOutShort': 'Salir',
   'set.eraseShort': 'Borrar',
