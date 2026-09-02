@@ -305,6 +305,17 @@
      le joueur compte. */
   --cbt-gel-case-opacite: .88;
 
+  /* ⚠️ LA BRUME COUVRE UN PLATEAU ENTIER, PAS UNE COLONNE — d'ou une opacite
+     bien plus basse que celle du givre. Elle dure aussi plus longtemps : tant
+     que l'adversaire n'a pas tente de detruire. A 0,88 le joueur perdrait de vue
+     ses douze des pendant plusieurs tours, c'est-a-dire tout ce sur quoi il
+     calcule. Elle doit dire « ce plateau est protege », pas « efface ». */
+  --cbt-brume-case-opacite: .85;
+
+  /* La coque reste PLEINE : le dessin livre est un cadre creux, le de se lit par
+     le trou. L'affaiblir ne ferait que rendre les chaines grises. */
+  --cbt-coque-case-opacite: 1;
+
   /* ⛔ `--cbt-gel-voile` A DISPARU AVEC LE SCEAU PLEIN CADRE. Il teintait le
      plateau entier en bleu sombre pendant un gel ; le givre se pose desormais
      sur les CASES, une par une, a la taille exacte du logement. Un voile de

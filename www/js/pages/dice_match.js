@@ -185,6 +185,13 @@ function buildGame() {
            `pending.target` redevient un siege comme pour tous les autres
            effets. Un client deja distribue continue de savoir viser. */
         if (parseInt(board.dataset.seat, 10) !== pending.target) return;
+        /* ⛔ PENDANT LE CHOIX DE FACE (DE PIPE B012), LA GRILLE EST INERTE. Le
+           de pipe ne vise pas une case : il choisit une VALEUR, sur les deux
+           boutons flottants. Or la grille restait cliquable, et toucher une case
+           pleine envoyait `cell` — « je clique sur un choix et ca depose un de
+           sans tenir compte de mon choix ». Tant que des faces sont proposees,
+           seuls ces boutons comptent. */
+        if (pending.faces) return;
         /* ⚠️ UNE CIBLE DE COLONNE ACCEPTE UNE CASE VIDE. Le garde ci-dessous
            refusait tout ce qui n'etait pas un de deja pose : parfait pour un
            canon, mais une benediction se pose sur une colonne — vide comprise,
@@ -1660,8 +1667,38 @@ function renderTargeting(st) {
     board.querySelectorAll('.dc-cell').forEach((box) => {
       const col = Math.floor(parseInt(box.dataset.cell, 10) / 3);
       box.classList.toggle('dc-cell-choisie', dejaPrise >= 0 && col === dejaPrise);
+      box.classList.remove('dc-cell-bouge-ok', 'dc-cell-bouge-non');
     });
   });
+
+  /* ⛔ B014 MANOEUVRE : VERT = POSSIBLE, ROUGE = IMPOSSIBLE. « Colorie les
+     possibilites : vert pour possible, rouge pour pas possible. » Et l'effet ne
+     deplace QU'UN de — celui du SOMMET de la colonne choisie, jamais la colonne
+     entiere (`moveTop` cote moteur). L'ecran le montre : au premier temps, seul
+     le de du sommet de chaque colonne est en vert (c'est LUI qui bougera) ; au
+     second, les colonnes ou il peut atterrir sont vertes, les pleines rouges. */
+  if (pending && pending.identify === 'B014') {
+    const board = boardOf(S.seat);
+    const grid = (st.grids && st.grids[S.seat]) || [];
+    const occupee = (c) => [0, 1, 2].some((i) => grid[c * 3 + i] !== null);
+    const pleine = (c) => [0, 1, 2].every((i) => grid[c * 3 + i] !== null);
+    const sommet = (c) => { for (let i = 2; i >= 0; i--) if (grid[c * 3 + i] !== null) return c * 3 + i; return -1; };
+    const libre = (c) => { for (let i = 0; i < 3; i++) if (grid[c * 3 + i] === null) return c * 3 + i; return -1; };
+    const source = (pending.premiere !== null && pending.premiere !== undefined)
+      ? Math.floor(pending.premiere / 3) : -1;
+    if (board) board.querySelectorAll('.dc-cell').forEach((box) => {
+      const cell = parseInt(box.dataset.cell, 10);
+      const col = Math.floor(cell / 3);
+      if (source < 0) {
+        /* Premier temps : le de deplacable de chaque colonne (son sommet). */
+        if (occupee(col) && cell === sommet(col)) box.classList.add('dc-cell-bouge-ok');
+      } else if (col !== source) {
+        /* Second temps : ou peut-il atterrir ? */
+        if (pleine(col)) { if (cell === sommet(col)) box.classList.add('dc-cell-bouge-non'); }
+        else if (cell === libre(col)) box.classList.add('dc-cell-bouge-ok');
+      }
+    });
+  }
   /* ⚠️ UN EFFET ARME NE POUVAIT PLUS ETRE DESARME. Le serveur sait pourtant le
      faire depuis le debut — le message `unbonus` et `cancelBonus()` existent —
      mais rien a l'ecran ne l'appelait : un joueur qui armait un canon par erreur

@@ -1854,6 +1854,11 @@
    sans qu'on ait a rendre le metal transparent. L'affaiblir ne ferait que rendre
    les chaines grises. */
 #dicewrap .dc-coque {
+  /* ⛔ L'ASSET NE COUVRAIT PAS TOUT LE DE. « Etire-le en vertical vers le bas
+     pour couvrir tout le slot. » On deborde donc le cadre de chaines legerement
+     en bas (et un rien sur les cotes), et on l'etire pour remplir la case. */
+  inset: -5% -4% -13% -4%;
+  background-size: 100% 100%;
   opacity: var(--cbt-coque-case-opacite, 1);
   /* Un halo d'or, la couleur de ce qui protege dans ce jeu. Il tient au dessin
      et ne deborde pas sur les cases voisines. */
@@ -1862,7 +1867,7 @@
 
 /* Le de sous une coque n'est pas assombri : rien ne le couvre, il est ENCADRE.
    Celui sous la brume, si — c'est ce que la brume raconte. */
-#dicewrap .dc-cell-brume > .dc-face { filter: brightness(.82) saturate(.9); }
+#dicewrap .dc-cell-brume > .dc-face { filter: brightness(.5) saturate(.7); }
 
 /* ── LA PREMIERE COLONNE D'UNE VISEE EN DEUX TEMPS ──────────────────────────
    ⛔ SANS ELLE, LE PREMIER CLIC PARAIT PERDU. Deux effets demandent deux
@@ -1871,6 +1876,15 @@
    la meme, et recoit un refus qu'il ne comprend pas.
    La marque est un liseré, pas un voile : la case doit rester lisible, c'est
    toujours sur son contenu qu'on choisit la seconde. */
+/* ⛔ B014 : LES CASES POSSIBLES EN VERT, LES IMPOSSIBLES EN ROUGE. Un liseré,
+   pas un voile — la case reste lisible, on choisit sur son contenu. */
+#dicewrap .dc-cell-bouge-ok {
+  box-shadow: inset 0 0 0 2px #57d977, 0 0 12px rgba(87, 217, 119, .5);
+}
+#dicewrap .dc-cell-bouge-non {
+  box-shadow: inset 0 0 0 2px #e2564f, 0 0 10px rgba(226, 86, 79, .45);
+}
+
 #dicewrap .dc-cell-choisie {
   box-shadow: inset 0 0 0 2px var(--gold-hi, #e8c86a),
               0 0 12px rgba(232, 200, 106, .45);
@@ -1880,12 +1894,26 @@
    Deux des a toucher, poses au-dessus du bandeau. Ils empruntent la facture des
    jetons d'effet — meme taille, meme socle — parce que c'est le meme geste au
    meme endroit : on choisit, et le tour continue. */
+/* ⛔ LES DEUX FACES FLOTTENT AU-DESSUS DE LA GRILLE, ELLES NE POUSSENT PLUS
+   RIEN. « Il faut que les choix des des soient au-dessus de la grille et que ca
+   ne bouge pas la structure de la partie. » Inline, ce bloc decalait tout
+   l'ecran a chaque apparition. Il est desormais en surimpression, centre au-
+   dessus du plateau du joueur, sur un fond sombre qui dit qu'on attend un choix. */
 #dicewrap .dc-faces {
+  position: absolute;
+  left: 50%;
+  bottom: 34%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
-  gap: 14px;
-  padding: 6px 0 2px;
+  gap: 16px;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: rgba(12, 6, 28, .82);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(232, 200, 106, .3);
+  z-index: 40;
 }
+#dicewrap .dc-faces[hidden] { display: none; }
 #dicewrap .dc-face-btn {
   width: var(--cbt-bonus-taille, 52px);
   height: var(--cbt-bonus-taille, 52px);
