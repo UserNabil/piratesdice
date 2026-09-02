@@ -649,6 +649,21 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 #dicewrap .dc-plaque span { display: block; }
 
+/* ⛔ UN LISERE BLANC EXTERIEUR, COMME LA MAQUETTE. « Augmente le contour des
+   plaques... a la meme largeur que le rectangle qui les contient. » Les plaques
+   sont des PNG ouvrages a bords transparents : un box-shadow ferait un halo
+   rectangulaire, pas un trait qui suit le dessin. Des drop-shadow blancs
+   empiles tracent le contour sur la silhouette meme du dessin — or, maudite,
+   rang ET l'engrenage des reglages, tous cernes du meme trait. */
+#dicewrap .dc-plaque,
+#dicewrap .dc-plaque-reglages {
+  filter:
+    drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff)
+    drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff)
+    drop-shadow(1px 1px 0 #fff) drop-shadow(-1px -1px 0 #fff)
+    drop-shadow(1px -1px 0 #fff) drop-shadow(-1px 1px 0 #fff);
+}
+
 /* L'or : la piece a couronne occupe les 153 premiers pixels sur 480, le cadre
    fait 36 px de large. */
 #dicewrap .dc-plaque-or {
@@ -1960,6 +1975,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    partagent la ligne ; applique a une icone seule, il donnait une barre d'or de
    quatre cents pixels avec un petit rond au milieu. */
 .pd-ask-row .pd-btn-icone { flex: 0 0 auto; }
+
+/* Le champ du pseudo : il partage l'habit du selecteur, mais il doit laisser la
+   place au bouton « Enregistrer » sur la meme ligne. Dix caracteres max : une
+   largeur bornee suffit, et le clavier ne pousse rien. */
+.pd-pseudo { width: 128px; max-width: 40vw; }
+.pd-row > .pd-pseudo { flex: 0 1 auto; }
+.pd-row [data-pseudo-ok] { flex: 0 0 auto; min-width: 0; }
+.pd-row > [data-capitaine] { max-width: 55vw; }
 
 /* ── les ecrans tres etroits (320 px : le plancher Android) ───────────────── */
 

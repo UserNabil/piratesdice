@@ -514,6 +514,24 @@ export const AR = {
   'away.you': 'فات الأوان — تخطّى دورك',
 
   'set.title': 'الإعدادات',
+
+  'set.pseudo': 'الاسم المستعار',
+
+  'set.pseudoAide': 'من 2 إلى 10 أحرف، فريد',
+
+  'set.pseudoOk': 'تم تغيير الاسم',
+
+  'set.save': 'حفظ',
+
+  'set.captainDefault': 'القبطان الافتراضي',
+
+  'err.nomTaille': 'يجب أن يكون الاسم من 2 إلى 10 أحرف.',
+
+  'err.nomCaracteres': 'حروف وأرقام ومسافات وشرطات فقط.',
+
+  'err.nomInsulte': 'هذا الاسم غير مسموح به على متن السفينة.',
+
+  'err.nomPris': 'هذا الاسم مستخدم بالفعل.',
   'set.sound': 'الصوت',
   'set.fx': 'المؤثرات',
   'set.music': 'الموسيقى',

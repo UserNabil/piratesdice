@@ -1471,6 +1471,63 @@
 #dicewrap .dc-rules li::marker { color: var(--gold); font-family: "Luckiest Guy", "Baloo 2", cursive; }
 #dicewrap .dc-rules b { color: var(--gold-hi); }
 
+/* ── LE PARCHEMIN DES REGLES ────────────────────────────────────────────────
+   Le cadre est l'asset de l'admin (banniere violette, papier, rouleau) : il
+   garde ses proportions (2:3) et ne defile pas. C'est le CORPS — la fenetre de
+   papier a l'interieur du cadre — qui scrolle. Le texte passe a l'encre sepia :
+   sur du papier clair, le blanc du theme serait illisible. */
+#dicewrap .dc-parchemin {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1024 / 1536;
+  margin: 0 auto;
+  background: url(../dice/img/regles_fond.png) center / 100% 100% no-repeat;
+}
+#dicewrap .dc-parchemin-titre {
+  position: absolute;
+  top: 3.2%;
+  left: 22%;
+  right: 22%;
+  height: 9.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(15px, 5vw, 22px);
+  color: #fff;
+  letter-spacing: .5px;
+  text-shadow: 0 2px 3px rgba(40, 10, 70, .85);
+  text-align: center;
+}
+#dicewrap .dc-parchemin-corps {
+  position: absolute;
+  inset: 19% 14% 24% 14%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;             /* l'encre n'a pas d'ascenseur */
+}
+#dicewrap .dc-parchemin-corps::-webkit-scrollbar { display: none; }
+#dicewrap .dc-parchemin .dc-rules {
+  padding-left: 18px;
+  color: #5d4020;                    /* encre sombre, lisible sur papier */
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+#dicewrap .dc-parchemin .dc-rules li { margin-bottom: 6px; }
+#dicewrap .dc-parchemin .dc-rules li::marker { color: #8a5a28; }
+#dicewrap .dc-parchemin .dc-rules b { color: #7c3f10; }
+#dicewrap .dc-parchemin .dc-rules p { margin: 0 0 4px; }
+/* Le schema de chaque regle : la meme encre que les dessins du parchemin. */
+#dicewrap .dc-regle-schema {
+  display: block;
+  width: min(62%, 190px);
+  margin: 2px auto 10px;
+}
+
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
 
 /* La boutique fermee pendant une partie. Un panneau qui EXPLIQUE : un rayon

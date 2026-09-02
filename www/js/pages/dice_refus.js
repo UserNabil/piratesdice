@@ -26,6 +26,11 @@ const REFUS = {
      traduction qui attend un message impossible ne sert qu'a faire croire que
      le mecanisme est encore la. « not enough coins » reste : la boutique, elle,
      refuse toujours un achat trop cher. */
+  /* Le renommage : quatre refus, quatre phrases — voir gateway.onRename. */
+  'name must be 2-10 chars': 'err.nomTaille',
+  'invalid characters': 'err.nomCaracteres',
+  'name not allowed': 'err.nomInsulte',
+  'name already taken': 'err.nomPris',
   'not enough coins': 'err.coins',
   'not your turn': 'game.waitTurn',
   'you already rolled': 'game.alreadyRolled',

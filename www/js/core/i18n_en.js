@@ -504,6 +504,15 @@ export const EN = {
      verifier la suppression de compte. Trouve le 2026-08-23 en comptant les
      cles par langue : 0 contre 16. */
   'set.title': 'Settings',
+  'set.pseudo': 'Nickname',
+  'set.pseudoAide': '2–10 characters, unique',
+  'set.pseudoOk': 'Nickname changed',
+  'set.save': 'Save',
+  'set.captainDefault': 'Default captain',
+  'err.nomTaille': 'Your nickname must be 2–10 characters.',
+  'err.nomCaracteres': 'Letters, digits, spaces and dashes only.',
+  'err.nomInsulte': 'That nickname isn’t allowed aboard.',
+  'err.nomPris': 'That nickname is already taken.',
   'set.sound': 'Sound',
   'set.soundOn': 'On',
   'set.soundOff': 'Off',

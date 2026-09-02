@@ -523,6 +523,24 @@ export const FR = {
   'away.you': 'Trop tard — votre tour a sauté',
 
   'set.title': 'Réglages',
+
+  'set.pseudo': 'Pseudo',
+
+  'set.pseudoAide': '2 à 10 caractères, unique',
+
+  'set.pseudoOk': 'Pseudo changé',
+
+  'set.save': 'Enregistrer',
+
+  'set.captainDefault': 'Capitaine par défaut',
+
+  'err.nomTaille': 'Le pseudo doit faire 2 à 10 caractères.',
+
+  'err.nomCaracteres': 'Lettres, chiffres, espaces et tirets seulement.',
+
+  'err.nomInsulte': 'Ce pseudo n’est pas admis à bord.',
+
+  'err.nomPris': 'Ce pseudo est déjà pris.',
   'set.sound': 'Son',
   'set.fx': 'Effets',
   'set.music': 'Musique',

@@ -512,6 +512,24 @@ export const ES = {
   'away.you': 'Demasiado tarde — se saltó tu turno',
 
   'set.title': 'Ajustes',
+
+  'set.pseudo': 'Apodo',
+
+  'set.pseudoAide': 'De 2 a 10 caracteres, único',
+
+  'set.pseudoOk': 'Apodo cambiado',
+
+  'set.save': 'Guardar',
+
+  'set.captainDefault': 'Capitán por defecto',
+
+  'err.nomTaille': 'El apodo debe tener de 2 a 10 caracteres.',
+
+  'err.nomCaracteres': 'Solo letras, números, espacios y guiones.',
+
+  'err.nomInsulte': 'Ese apodo no se admite a bordo.',
+
+  'err.nomPris': 'Ese apodo ya está en uso.',
   'set.sound': 'Sonido',
   'set.fx': 'Efectos',
   'set.music': 'Música',

@@ -38,22 +38,35 @@ async function api(chemin, methode, corps) {
   }
 }
 
+/* ⛔ LES REGLES SONT UN PARCHEMIN, ET CHACUNE A SON SCHEMA. « Ajoute des
+   schemas, rends le contenu scrollable, et recolorise les schemas a la couleur
+   des dessins deja poses sur le parchemin. » L'asset (regles_fond.png) est le
+   CADRE : banniere violette pour le titre, papier pour le texte. Le papier
+   defile A L'INTERIEUR du cadre — le parchemin, lui, ne bouge pas. Les six
+   schemas (regle_1..6.png) sont l'encre sepia des dessins du fond, un par
+   regle ; la septieme (le capitaine) n'en a pas, elle parle d'un personnage
+   qu'on voit deja sur le pont. */
 export function renderRules(body) {
+  const regle = (i, texte) => `
+      <li>
+        <p>${texte}</p>
+        <img class="dc-regle-schema" src="${ASSETS}img/regle_${i}.png" alt="" loading="lazy">
+      </li>`;
   body.innerHTML = `
-    <h3>${esc(t('rules.title'))}</h3>
-    <ol class="dc-rules">
-      <li>${t('rules.1')}</li>
-      <li>${t('rules.2')}</li>
-      <li>${t('rules.3')}</li>
-      <li>${t('rules.4')}</li>
-      <li>${t('rules.5', { n: S.rules.maxBonusPerMatch })}</li>
-      <li>${t('rules.6', { ia: S.rules.aiReward, rang: S.rules.rankReward })}</li>
-      <li>${t('rules.7')}</li>
-    </ol>
-    <p class="dc-dim dc-keys">${t('rules.shortcuts', {
-      space: '<kbd>Space</kbd>', one: '<kbd>1</kbd>', two: '<kbd>2</kbd>',
-      three: '<kbd>3</kbd>', esc: '<kbd>Esc</kbd>',
-    })}</p>`;
+    <div class="dc-parchemin">
+      <h3 class="dc-parchemin-titre">${esc(t('rules.title'))}</h3>
+      <div class="dc-parchemin-corps">
+        <ol class="dc-rules">
+          ${regle(1, t('rules.1'))}
+          ${regle(2, t('rules.2'))}
+          ${regle(3, t('rules.3'))}
+          ${regle(4, t('rules.4'))}
+          ${regle(5, t('rules.5', { n: S.rules.maxBonusPerMatch }))}
+          ${regle(6, t('rules.6', { ia: S.rules.aiReward, rang: S.rules.rankReward }))}
+          <li><p>${t('rules.7')}</p></li>
+        </ol>
+      </div>
+    </div>`;
 }
 
 /* Le nom et la description des bonus viennent de la BASE, en anglais : le

@@ -261,6 +261,27 @@ function settingsMarkup() {
                >${t('set.eraseShort')}</button>
       </div>
 
+      <!-- ⛔ LE PSEUDO SE CHANGE ICI. Deux a dix caracteres, unique, et le
+           serveur juge (longueur, caracteres, insultes, doublon) : le client ne
+           fait que limiter la saisie et montrer la reponse. Hors reseau, le
+           serveur ne repond pas — la ligne reste, le refus viendra du toast. -->
+      ${row(t('set.pseudo'), `<input class="pd-select pd-pseudo" data-pseudo type="text"
+             maxlength="10" value="${acc.name ? String(acc.name).replace(/"/g, '&quot;') : ''}"
+             aria-label="${t('set.pseudo')}" placeholder="${t('set.pseudoAide')}">
+        <button class="dc-btn dc-btn-sm dc-btn-art" data-pseudo-ok
+                title="${t('set.save')}" aria-label="${t('set.save')}">${t('set.save')}</button>`)}
+
+      <!-- ⛔ ET LE CAPITAINE PAR DEFAUT AUSSI. Le pont sait deja le changer ;
+           les reglages offrent le meme choix sans quitter la modale. Seuls les
+           capitaines DEBLOQUES apparaissent — le serveur refuse les autres de
+           toute facon. En partie, on ne change pas d'equipage (meme regle que
+           le compte). -->
+      ${row(t('set.captainDefault'), `<select class="pd-select" data-capitaine${barre}>${
+        (S.captains || []).filter((c) => (Number(S.me && S.me.games) || 0) >= (Number(c.seuil) || 0))
+          .map((c) => `<option value="${c.id}"${S.me && S.me.captain === c.id ? ' selected' : ''}>${
+            t('cap.' + c.id + '.name')}</option>`).join('')
+      }</select>`)}
+
       ${row(t('set.language'), `<select class="pd-select" data-lang>${
         LANGS.map((l) => `<option value="${l.code}"${l.code === lang() ? ' selected' : ''}>${l.label}</option>`).join('')
       }</select>`)}
@@ -424,6 +445,22 @@ function openSettings() {
      laisser les reglages par-dessus donnerait une feuille sous une boite de
      dialogue — le joueur toucherait le voile en croyant toucher les regles. */
   wrap.querySelector('[data-regles]').onclick = () => { close(); ouvrirPanneau('rules'); };
+  /* Le pseudo part au serveur, qui repond par un `me` neuf (repeint par dice.js)
+     ou par un refus deja traduit (dice_refus.js). On ne devine pas le verdict. */
+  const champPseudo = wrap.querySelector('[data-pseudo]');
+  const okPseudo = wrap.querySelector('[data-pseudo-ok]');
+  if (okPseudo) okPseudo.onclick = () => {
+    const nom = (champPseudo.value || '').trim();
+    if (nom.length < 2 || nom.length > 10) { toast(t('err.nomTaille'), 'warn'); return; }
+    if (!S.net) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    S.net.send({ t: 'rename', name: nom });
+    toast(t('set.pseudoOk'), 'ok');
+  };
+  const selCap = wrap.querySelector('[data-capitaine]');
+  if (selCap) selCap.onchange = (ev) => {
+    if (S.net) S.net.send({ t: 'captain', captain: ev.target.value });
+    if (S.me) S.me.captain = ev.target.value;
+  };
 
   const inBtn = wrap.querySelector('[data-signin]');
   if (inBtn) {
