@@ -1725,15 +1725,44 @@
   bottom: 96px;
   z-index: 30;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: clamp(8px, 2.4vw, 16px);
-  padding: 0 clamp(10px, 5vw, 40px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity .18s ease, visibility 0s linear .18s;
+}
+
+/* ⛔ LE BARILLET — une bande horizontale qu'on fait defiler. Tous les jetons en
+   file, accrochage au centre, et le rembourrage lateral laisse le premier et le
+   dernier venir jusqu'au milieu. Pas de barre de defilement : le geste suffit. */
+#dicewrap .dc-barillet {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: clamp(12px, 3.5vw, 22px);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 14px calc(50% - var(--cbt-bonus-taille, 52px) / 2);
+}
+#dicewrap .dc-barillet::-webkit-scrollbar { display: none; }
+#dicewrap .dc-bonus-open .dc-barillet { pointer-events: auto; }
+#dicewrap .dc-barillet .dc-bonus-btn {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  transform: scale(.82);
+  opacity: .72;
+  transition: transform .18s ease, opacity .18s ease;
+}
+/* Le jeton au centre du barillet ressort — c'est celui qu'on va jouer. */
+#dicewrap .dc-barillet .dc-bonus-centre {
+  transform: scale(1.12);
+  opacity: 1;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .5));
 }
 #dicewrap .dc-bonus-open {
   opacity: 1;

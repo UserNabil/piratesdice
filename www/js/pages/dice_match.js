@@ -1424,30 +1424,39 @@ export function renderBonusRack() {
 
      ⚠️ LE JETON OFFERT EST TOUJOURS EN TETE, donc toujours en premiere page :
      c'est celui qu'on joue le plus, et celui qui ne coute rien. */
-  const pages = [];
-  for (let i = 0; i < tous.length; i += PAR_PAGE) pages.push(tous.slice(i, i + PAR_PAGE));
-  /* La page courante se garde entre deux rendus — le ratelier se refait a chaque
-     coup — mais elle ne doit pas survivre a une liste devenue plus courte. */
-  if (pageRatelier >= pages.length) pageRatelier = Math.max(0, pages.length - 1);
-
-  rack.innerHTML = (pages[pageRatelier] || []).join('')
-    + (pages.length > 1 ? `
-      <div class="dc-bonus-points" role="tablist">
-        ${pages.map((_, i) => `<button class="dc-bonus-point${i === pageRatelier ? ' on' : ''}"
-             data-page="${i}" role="tab" aria-selected="${i === pageRatelier}"
-             aria-label="${esc(t('bonus.page', { n: i + 1, total: pages.length }))}"></button>`).join('')}
-      </div>` : '');
-
-  rack.querySelectorAll('.dc-bonus-point').forEach((p) => {
-    p.onclick = (ev) => {
-      /* Meme precaution que pour les jetons : la cale est posee PAR-DESSUS le
-         plateau, et un clic qui traverse tomberait sur une colonne. */
-      ev.preventDefault();
-      ev.stopPropagation();
-      pageRatelier = parseInt(p.dataset.page, 10) || 0;
-      renderBonusRack();
+  /* ⛔ LE BARILLET : ON FAIT DEFILER, ON NE TOURNE PLUS LES PAGES. « Affiche
+     les bonus comme un barillet ou le joueur scrolle a droite et a gauche pour
+     naviguer. » La pagination a points cede la place a une bande horizontale a
+     accrochage : tous les jetons sont en file, le pouce glisse, et celui du
+     centre est mis en avant. Le jeton offert reste en tete. */
+  rack.innerHTML = '<div class="dc-barillet">' + tous.join('') + '</div>';
+  const barillet = rack.querySelector('.dc-barillet');
+  if (barillet) {
+    /* Le jeton le plus proche du centre porte `.dc-bonus-centre` : c'est ce qui
+       donne le relief du barillet. On le recalcule au defilement, sans reflow. */
+    const marquerCentre = () => {
+      const r = barillet.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      let best = null, dmin = Infinity;
+      barillet.querySelectorAll('.dc-bonus-btn').forEach((b) => {
+        const br = b.getBoundingClientRect();
+        const d = Math.abs(br.left + br.width / 2 - cx);
+        if (d < dmin) { dmin = d; best = b; }
+      });
+      barillet.querySelectorAll('.dc-bonus-centre').forEach((b) => {
+        if (b !== best) b.classList.remove('dc-bonus-centre');
+      });
+      if (best) best.classList.add('dc-bonus-centre');
     };
-  });
+    let raf = 0;
+    barillet.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; marquerCentre(); });
+    }, { passive: true });
+    /* Premier rendu : le jeton offert (en tete) est deja au centre grace au
+       rembourrage lateral ; on marque juste le bon. */
+    requestAnimationFrame(marquerCentre);
+  }
 
   /* ⛔ L'EVENTAIL A VECU. Il tenait pour trois jetons ; a cinq ou six, l'arc se
      resserrait jusqu'a ce qu'ils se recouvrent — « ça affiche mal quand tu as
