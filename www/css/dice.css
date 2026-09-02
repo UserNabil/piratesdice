@@ -1770,47 +1770,51 @@
   transform: translateX(-50%);
   border-radius: 50%;
   touch-action: pan-x;
+  /* ⛔ LE CADRE EST L ASSET DE L ADMIN. L anneau dore ouvrage (barillet.png,
+     centre transparent) se pose PAR-DESSUS une face sombre qui bouche le centre —
+     sinon le plateau se verrait a travers le trou du barillet. */
   background:
-    /* la face violette du cylindre, au centre */
-    radial-gradient(circle at 50% 44%, #6a3fbe 0%, #542f9c 60%, #3f2478 74%,
-      rgba(0,0,0,0) 74.5%),
-    /* le rebord dore mecanique, brosse */
-    conic-gradient(from 210deg,
-      #7a5a1f, #f6df97, #caa24e, #8f6c26, #f6df97, #b98a34, #7a5a1f, #f6df97, #caa24e);
-  border: 2px solid rgba(60, 34, 12, .8);
-  box-shadow:
-    inset 0 0 0 3px rgba(255, 236, 170, .8),   /* filet clair sur le rebord */
-    inset 0 0 0 26px rgba(84, 47, 156, 0),      /* garde la face nette */
-    inset 0 8px 22px rgba(0, 0, 0, .55),
-    0 -4px 22px rgba(0, 0, 0, .5);
+    url(../dice/img/barillet.png) center / 100% 100% no-repeat,
+    radial-gradient(circle at 50% 46%, #4a2a8e 0%, #38206e 62%, #2a1656 100%);
 }
-/* Les rivets du rebord : huit tetes de boulon reparties sur la couronne. */
-#dicewrap .dc-barillet-cercle::before {
-  content: '';
+
+/* Le nom du bonus courant, juste au-dessus du barillet. Il change quand on
+   tourne le cylindre (la chambre du sommet). */
+#dicewrap .dc-barillet-nom {
   position: absolute;
-  inset: 7%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 4%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 85% 22%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 96% 50%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 85% 78%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 15% 22%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 4% 50%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%),
-    radial-gradient(circle at 15% 78%, #3a2410 0 1.6%, rgba(0,0,0,0) 2.2%);
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 15px;
+  color: #ffe479;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, .85);
   pointer-events: none;
-  opacity: .8;
+  z-index: 3;
 }
-/* Le moyeu central, comme l axe d un barillet. */
-#dicewrap .dc-barillet-cercle::after {
-  content: '';
+/* La description, au maintien : une plaque sombre au-dessus du cylindre. */
+#dicewrap .dc-barillet-info {
   position: absolute;
-  left: 50%; top: 50%;
-  width: 26%; height: 26%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, #f3d886, #b98a34 70%, #7a5a1f);
-  box-shadow: inset 0 0 0 2px rgba(60, 34, 12, .5), 0 2px 6px rgba(0, 0, 0, .5);
+  left: 50%;
+  bottom: calc(100% - 4px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(78vw, 320px);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(12, 6, 28, .95);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(232, 200, 106, .4);
+  color: #efe9fb;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  z-index: 41;
 }
 
 /* Chaque chambre part du CENTRE du cylindre ; le JS la projette sur l arc. */

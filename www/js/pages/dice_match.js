@@ -1351,6 +1351,7 @@ let pageRatelier = 0;
    que le cylindre ne saute pas a chaque etat recu. */
 let barilletRot = 0;
 let barilletDrague = false;
+let barilletInfo = false;
 const BARILLET_PAS = 32;   // degres entre deux chambres
 
 /** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
@@ -1366,7 +1367,8 @@ function disposerBarillet(cercle) {
   const maxRot = Math.max(0, (n - 1) * BARILLET_PAS);
   if (barilletRot > maxRot) barilletRot = maxRot;
   if (barilletRot < 0) barilletRot = 0;
-  const RAYON = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
+  const R0 = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
+  const RAYON = R0 * 0.78;   // les chambres se posent sur la bande doree, pas au bord
 
   const placer = () => {
     btns.forEach((b, i) => {
@@ -1377,7 +1379,12 @@ function disposerBarillet(cercle) {
         + RAYON + 'px) rotate(' + (-rel) + 'deg) scale(' + scale.toFixed(3) + ')';
       b.style.opacity = (0.26 + 0.74 * k).toFixed(2);
       b.style.zIndex = String(100 - Math.round(Math.abs(rel)));
-      b.classList.toggle('dc-bonus-centre', Math.abs(rel) < BARILLET_PAS / 2);
+      const auCentre = Math.abs(rel) < BARILLET_PAS / 2;
+      b.classList.toggle('dc-bonus-centre', auCentre);
+      if (auCentre) {
+        const nomEl = cercle.parentElement.querySelector('[data-nom]');
+        if (nomEl) nomEl.textContent = b.dataset.nom || '';
+      }
     });
   };
   placer();
@@ -1492,8 +1499,11 @@ export function renderBonusRack() {
      d'un cercle dont seule la moitie haute depasse le pied. On fait TOURNER le
      cylindre en glissant a gauche/droite ; celui qui arrive en haut est mis en
      avant, et un clic le joue. */
-  rack.innerHTML = '<div class="dc-barillet"><div class="dc-barillet-cercle">'
-    + tous.join('') + '</div></div>';
+  rack.innerHTML = '<div class="dc-barillet">'
+    + '<div class="dc-barillet-nom" data-nom></div>'
+    + '<div class="dc-barillet-cercle">' + tous.join('') + '</div>'
+    + '<div class="dc-barillet-info" data-info hidden></div>'
+    + '</div>';
   const cercle = rack.querySelector('.dc-barillet-cercle');
   if (cercle) disposerBarillet(cercle);
 
@@ -1606,7 +1616,7 @@ export function renderBonusRack() {
       /* ⛔ TOURNER LE BARILLET N'EST PAS LE JOUER. Un glissement pour faire
          defiler les chambres finissait par un clic qui declenchait l'effet du
          jeton relache. On avale ce clic-la. */
-      if (barilletDrague) return;
+      if (barilletDrague || barilletInfo) return;
       const nom = b.dataset.nom || '';
       /* Un refus laisse la cale OUVERTE : le joueur vient de lire pourquoi, il
          doit pouvoir viser un autre jeton sans tout rouvrir. */
@@ -1618,7 +1628,35 @@ export function renderBonusRack() {
          redevenir visible — c'est lui qu'on va viser si l'effet demande une
          cible. */
       fermerCale();
+      barilletDrague = false;
     };
+
+    /* ⛔ CLIC LONG = « QU'EST-CE QUE CET EFFET ? ». « Si on reste clique dessus
+       longtemps, on voit aussi ce que le bonus applique. » Un maintien sur une
+       chambre montre sa description au-dessus du barillet ; un clic court la
+       joue toujours. Le glissement (rotation) annule le maintien. */
+    let tenu = 0;
+    const decrire = () => {
+      const info = document.querySelector('[data-info]');
+      if (!info) return;
+      const desc = t('shop.' + b.dataset.id + '.desc');
+      info.textContent = (desc && !desc.startsWith('shop.')) ? desc : (b.dataset.nom || '');
+      info.hidden = false;
+    };
+    const cacher = () => { const info = document.querySelector('[data-info]'); if (info) info.hidden = true; };
+    const finTenu = () => { if (tenu) { clearTimeout(tenu); tenu = 0; } };
+    b.addEventListener('pointerdown', () => {
+      finTenu();
+      tenu = setTimeout(() => { tenu = 0; barilletInfo = true; decrire(); }, 450);
+    });
+    b.addEventListener('pointermove', () => { /* un glissement annule le maintien */ finTenu(); });
+    const relacher = () => {
+      finTenu();
+      if (barilletInfo) { cacher(); setTimeout(() => { barilletInfo = false; }, 60); }
+    };
+    b.addEventListener('pointerup', relacher);
+    b.addEventListener('pointerleave', relacher);
+    b.addEventListener('pointercancel', relacher);
   });
 }
 
