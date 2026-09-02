@@ -1612,6 +1612,11 @@
   align-items: end;
   gap: clamp(6px, 1.6vw, 14px);
   padding-top: clamp(2px, .6vh, 6px);
+  /* ⛔ LE PIED PASSE DEVANT LE BARILLET. « Le barillet est DERRIERE les boutons
+     du bas. » Il glisse donc sous eux ; les boutons restent en avant et
+     cliquables. */
+  position: relative;
+  z-index: 34;
 }
 
 #dicewrap .dc-foot-btn {
@@ -1723,10 +1728,11 @@
   position: absolute;
   inset-inline: 0;
   bottom: 96px;
-  z-index: 30;
+  /* Sous le pied (z-index 34) : le barillet sort de DERRIERE les boutons. */
+  z-index: 20;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -1736,33 +1742,48 @@
 /* ⛔ LE BARILLET — une bande horizontale qu'on fait defiler. Tous les jetons en
    file, accrochage au centre, et le rembourrage lateral laisse le premier et le
    dernier venir jusqu'au milieu. Pas de barre de defilement : le geste suffit. */
+/* ⛔ LE BARILLET : UN DRUM VIOLET, 3 JETONS VISIBLES, DERRIERE LES BOUTONS.
+   « En forme de barillet, seulement 3 visibles, un fond violet pour pouvoir
+   scroller sans que ca se ferme. » Le fond violet arrondi CAPTURE le geste de
+   defilement (sinon un doigt entre deux jetons tombe sur le plateau et referme
+   la cale). Trois jetons tiennent dans la fenetre : le central grandit, les deux
+   cotes s'enfoncent et retrecissent pour donner la courbe du barillet. On fait
+   defiler pour amener les autres au centre. */
 #dicewrap .dc-barillet {
+  --pd-jeton: var(--cbt-bonus-taille, 52px);
+  box-sizing: border-box;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: clamp(12px, 3.5vw, 22px);
-  max-width: 100%;
+  gap: clamp(10px, 3vw, 18px);
+  /* Trois jetons dans la fenetre, et de quoi entrevoir les suivants. */
+  width: min(100%, calc(var(--pd-jeton) * 3 + 3 * clamp(10px, 3vw, 18px) + 44px));
+  margin: 0 auto;
   overflow-x: auto;
   overflow-y: visible;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 14px calc(50% - var(--cbt-bonus-taille, 52px) / 2);
+  padding: 16px calc(50% - var(--pd-jeton) / 2) 20px;
+  background: linear-gradient(180deg, rgba(101, 60, 190, .96), rgba(70, 38, 140, .96));
+  border-radius: 22px 22px 0 0;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .15), 0 -3px 14px rgba(0, 0, 0, .4);
 }
 #dicewrap .dc-barillet::-webkit-scrollbar { display: none; }
 #dicewrap .dc-bonus-open .dc-barillet { pointer-events: auto; }
 #dicewrap .dc-barillet .dc-bonus-btn {
   flex: 0 0 auto;
   scroll-snap-align: center;
-  transform: scale(.82);
-  opacity: .72;
-  transition: transform .18s ease, opacity .18s ease;
+  transform: scale(.66) translateY(9px);
+  opacity: .6;
+  transition: transform .2s ease, opacity .2s ease;
 }
-/* Le jeton au centre du barillet ressort — c'est celui qu'on va jouer. */
+/* Le jeton au centre ressort et remonte : c'est le sommet du barillet, celui
+   qu'on va jouer. */
 #dicewrap .dc-barillet .dc-bonus-centre {
-  transform: scale(1.12);
+  transform: scale(1.15) translateY(-2px);
   opacity: 1;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .5));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .55));
 }
 #dicewrap .dc-bonus-open {
   opacity: 1;

@@ -37,7 +37,7 @@ const MAX_EFFETS = 3;
    VISUELLE — meme duree qu'en ligne — qui ne change rien au journal : c'est un
    champ d'affichage de plus dans l'instantane, comme le gel ou le brouillard.
    L'IA n'a pas de meche, exactement comme en ligne. */
-const PENDULE_MS = 18000;
+const PENDULE_MS = 10000;
 
 /* ─────────────────────────────────────────────────────────── l'adversaire ── */
 
