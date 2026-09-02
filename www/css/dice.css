@@ -762,10 +762,7 @@
 
 #dicewrap .dc-pc-name {
   font-family: "Luckiest Guy", "Baloo 2", cursive;
-  /* ⚠️ UN CRAN PLUS PETIT DEPUIS QUE LE FANION PREND LE CENTRE : « BARBAROSSA »
-     et « BARTHOLOMEW » tiennent alors a cote du drap au lieu de finir en
-     « BARBAROS… ». */
-  font-size: clamp(11px, 1.05vw, 13px);
+  font-size: clamp(12.5px, 1.2vw, 15px);
   margin-top: 8px;
   color: var(--txt);
   text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
@@ -3561,10 +3558,12 @@
 #dicewrap .dc-pc-baniere {
   position: absolute;
   top: -18px;
+  /* Position par defaut ; les deux camps la deplacent a LEUR coin (voir plus
+     bas) — droite pour moi, gauche pour l'ennemi, la ou part la meche. */
   left: 50%;
   transform: translateX(-50%);
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   background: center / contain no-repeat;
   display: none;
   align-items: flex-end;
@@ -3598,5 +3597,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#dicewrap .dc-pc-theirs > .dc-pc-name { padding-right: 26px; }
-#dicewrap .dc-pc-mine > .dc-pc-name { padding-left: 26px; }
+/* ⛔ LE FANION VA A L'EXTREMITE, PAS AU CENTRE — c'est ce qui rend le pseudo au
+   joueur. Cote portrait, a l'oppose du nom : chez moi a droite, en face a
+   gauche, exactement au depart de la meche. Le nom reprend donc toute sa place
+   et n'a plus besoin d'etre ampute. */
+#dicewrap .dc-pc-mine .dc-pc-baniere { left: auto; right: -3px; transform: none; }
+#dicewrap .dc-pc-theirs .dc-pc-baniere { left: -3px; right: auto; transform: none; }

@@ -630,11 +630,19 @@ function traceDuJonc(clock) {
   const rad = Math.max(0, Math.min(
     (parseFloat(style.borderTopLeftRadius) || 16) - m,
     w / 2, h / 2));
-  /* On part du HAUT AU MILIEU et on tourne dans le sens des aiguilles : c'est
-     la ou l'oeil se pose en premier, et le sens qu'il attend. */
-  const d = [
-    'M', m + w / 2, m,
-    'H', m + w - rad,
+  /* ⛔ LE DEPART A QUITTE LE HAUT-CENTRE POUR L'EXTREMITE DE LA CARTE. « Decale
+     le demarrage de la meche vers l'extreme de chaque rectangle : pour le joueur
+     vers la droite, pour l'ennemi vers la gauche. » Le fanion du timer se pose a
+     ce depart ; au centre, il couvrait le pseudo. Aux coins exterieurs — cote
+     portrait, a l'oppose du nom — le pseudo reste entierement lisible.
+     Les deux traces sont MIROIR l'un de l'autre : le mien part du coin haut-
+     DROIT et tourne dans le sens des aiguilles, celui d'en face du coin haut-
+     GAUCHE dans l'autre sens. La flamme descend alors vers l'exterieur des deux
+     cotes, comme deux meches qui s'eloignent du centre. */
+  const carte = clock.parentElement;
+  const mine = !!(carte && carte.classList && carte.classList.contains('dc-pc-mine'));
+  const d = mine ? [
+    'M', m + w - rad, m,
     'A', rad, rad, 0, 0, 1, m + w, m + rad,
     'V', m + h - rad,
     'A', rad, rad, 0, 0, 1, m + w - rad, m + h,
@@ -642,6 +650,18 @@ function traceDuJonc(clock) {
     'A', rad, rad, 0, 0, 1, m, m + h - rad,
     'V', m + rad,
     'A', rad, rad, 0, 0, 1, m + rad, m,
+    'H', m + w - rad,
+    'Z',
+  ].join(' ') : [
+    'M', m + rad, m,
+    'A', rad, rad, 0, 0, 0, m, m + rad,
+    'V', m + h - rad,
+    'A', rad, rad, 0, 0, 0, m + rad, m + h,
+    'H', m + w - rad,
+    'A', rad, rad, 0, 0, 0, m + w, m + h - rad,
+    'V', m + rad,
+    'A', rad, rad, 0, 0, 0, m + w - rad, m,
+    'H', m + rad,
     'Z',
   ].join(' ');
   svg.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
