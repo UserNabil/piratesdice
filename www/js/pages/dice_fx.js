@@ -354,6 +354,66 @@ function unEffet(f) {
       return;
     }
 
+    /* ══ LES CINQ EFFETS DU SECOND LOT — B012 a B016 ══
+       Meme regle que ci-dessus : un effet qui se voit doit quand meme
+       s'annoncer, parce que l'annonce dit QUI a agi. Le brouillard et la coque
+       se DESSINENT (voir `renderGel` et ses trois couches) ; ce qui suit ne fait
+       que raconter, et l'etat du serveur fait le reste. */
+    if (f.kind === 'brume') {
+      /* `f.seat` est le plateau qui entre — ou sort — de la brume, donc celui
+         qui est PROTEGE. Pour lui c'est une bonne nouvelle, pour l'autre non :
+         c'est l'inverse exact du gel, et la couleur doit suivre. */
+      const mien = f.seat === S.seat;
+      if (f.on) {
+        if (S.sfx) S.sfx.play('gel', 0.3);
+        banner(t(mien ? 'fx.brumeYou' : 'fx.brumeThem',
+                 { name: nomDuSiege(f.seat) }), mien ? 'good' : 'bad', f.seat);
+      } else {
+        /* Elle se dissipe parce qu'elle a SERVI : on dit combien de des elle
+           vient de sauver, sans quoi le joueur voit un brouillard disparaitre
+           sans comprendre ce qu'il a fait. */
+        banner(t(mien ? 'fx.brumeSaved' : 'fx.brumeBlocked',
+                 { n: f.sauves || 0, name: nomDuSiege(f.seat) }),
+               mien ? 'good' : 'bad', f.seat);
+      }
+      return;
+    }
+
+    if (f.kind === 'coque') {
+      const mien = f.seat === S.seat;
+      /* Trois moments, trois phrases : elle se pose, elle encaisse, elle
+         expire. Seule l'expiration muette ne merite rien — la case se denude,
+         cela suffit. */
+      if (f.on) {
+        if (S.sfx) S.sfx.play('gel', 0.28);
+        banner(t(mien ? 'fx.coqueYou' : 'fx.coqueThem',
+                 { name: nomDuSiege(f.seat) }), mien ? 'good' : 'bad', f.seat);
+      } else if (f.sauve) {
+        if (S.sfx) S.sfx.play('degel', 0.34);
+        banner(t(mien ? 'fx.coqueSaved' : 'fx.coqueBlocked',
+                 { name: nomDuSiege(f.seat) }), mien ? 'good' : 'bad', f.seat);
+        if (mien) buzz([0, 40]);
+      }
+      return;
+    }
+
+    if (f.kind === 'manoeuvre') {
+      /* Rien ne disparait : c'est le seul effet, avec le troc, dont la trace est
+         un de qui a change de place. L'annonce le dit, la grille le montre. */
+      banner(t(f.seat === S.seat ? 'fx.manoeuvreYou' : 'fx.manoeuvreThem',
+               { name: nomDuSiege(f.seat) }), f.seat === S.seat ? 'good' : 'bad', f.seat);
+      return;
+    }
+
+    if (f.kind === 'quart') {
+      /* ⚠️ IL VAUT POUR LES DEUX, DONC IL N'EST NI BON NI MAUVAIS. Toutes les
+         autres annonces se colorent selon le camp ; celle-ci ne le peut pas —
+         les multiplicateurs changent des deux cotes, et qui y gagne depend des
+         des deja poses. Le ton neutre est le seul honnete. */
+      banner(t('fx.quart'), 'neutral', f.seat);
+      return;
+    }
+
     if (f.kind === 'rase') {
       /* La destruction elle-meme est deja annoncee par `destroy` (l'explosion
          des cases) : ce mot-ci dit que c'est la COLONNE ENTIERE qui est partie,
@@ -724,6 +784,13 @@ function brulerLaMeche(clock, trace, part) {
     + (pt.y - haut * MECHE.ancre[1]) + 'px)';
 }
 
+/* Le nombre de secondes affiche sur la baniere du tour. On l'ecrit sur les DEUX
+   cartes potentielles : `stopClock` l'efface, `startClock` le remet sur l'active. */
+function poserSecondes(carte, reste) {
+  const secs = carte && carte.querySelector('.dc-pc-secs');
+  if (secs) secs.textContent = Math.max(0, Math.ceil(reste / 1000));
+}
+
 function stopClock() {
   if (clockTimer) { clearInterval(clockTimer); clockTimer = 0; }
   const game = $('#dc-screen-game');
@@ -785,6 +852,7 @@ export function startClock(st) {
   const minutee = !!total && st.awayMs !== null && st.awayMs !== undefined;
   if (!minutee) {
     carte.style.setProperty('--pd-clock', '1');
+    poserSecondes(carte, total || 0);
     if (clock) brulerLaMeche(clock, corde, 1);
     return;
   }
@@ -795,6 +863,7 @@ export function startClock(st) {
     const reste = Math.max(0, fin - Date.now());
     const part = reste / total;
     carte.style.setProperty('--pd-clock', part.toFixed(3));
+    poserSecondes(carte, reste);
     carte.classList.toggle('dc-pc-urgent', reste < 8000);
     if (clock) {
       if (!corde || !corde.isConnected || !longueurDuTrace(corde)) corde = traceDuJonc(clock);

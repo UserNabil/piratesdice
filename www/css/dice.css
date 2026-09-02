@@ -140,8 +140,6 @@
   color: #EDEAF4; text-shadow: none; cursor: default;
 }
 
-#dicewrap .pd-plate--riveted { }
-
 /* ── .pd-socket : une alveole creusee dans le panneau ─────────────────────── */
 #dicewrap .pd-socket {
   position: relative;
@@ -746,7 +744,7 @@
   0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 150, 40, .75)); }
   50% { filter: drop-shadow(0 0 13px rgba(255, 90, 40, .95)) brightness(1.15); }
 }
-}
+
 
 /* ── QUI JOUE, SANS AVOIR A CHERCHER ──────────────────────────────────────
    La seule marque etait un halo qui respirait sur toute la carte : trop discret
@@ -764,7 +762,10 @@
 
 #dicewrap .dc-pc-name {
   font-family: "Luckiest Guy", "Baloo 2", cursive;
-  font-size: clamp(12.5px, 1.2vw, 15px);
+  /* ⚠️ UN CRAN PLUS PETIT DEPUIS QUE LE FANION PREND LE CENTRE : « BARBAROSSA »
+     et « BARTHOLOMEW » tiennent alors a cote du drap au lieu de finir en
+     « BARBAROS… ». */
+  font-size: clamp(11px, 1.05vw, 13px);
   margin-top: 8px;
   color: var(--txt);
   text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
@@ -1812,6 +1813,150 @@
 
 @keyframes dc-gel-vient { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
 
+/* ── DEUX COUCHES DE PLUS, ET LA MEME GEOMETRIE ─────────────────────────────
+   Le brouillard de poudre (B013) et la coque renforcee (B015) se posent sur une
+   case exactement comme le givre : meme boite, meme arrondi, meme animation
+   d'entree. On PARTAGE donc la geometrie plutot que de la recopier trois fois —
+   c'est la meme mecanique, elle n'a aucune raison d'exister en trois exemplaires
+   qui divergeraient au premier ajustement du logement.
+
+   Ce qui les distingue tient en une ligne chacune : leur opacite. Elle ne releve
+   pas du gout mais du JEU — voir `.dc-givre`. */
+#dicewrap .dc-brume,
+#dicewrap .dc-coque {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  border-radius: var(--pd-round, 12px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: dc-gel-vient .22s ease-out;
+}
+
+/* ⚠️ LA BRUME LAISSE LIRE LE DE, ET C'EST UNE REGLE DE JEU. Elle couvre le
+   plateau ENTIER de son proprietaire pendant plusieurs tours : a l'opacite du
+   givre (0,88) le joueur perdrait de vue ses douze des — donc tout ce sur quoi
+   il calcule — et pendant bien plus longtemps qu'un gel de colonne. Elle doit
+   dire « ce plateau est protege », pas « ce plateau est efface ». */
+#dicewrap .dc-brume {
+  opacity: var(--cbt-brume-case-opacite, .5);
+  /* Elle respire : un brouillard fige ressemble a une image restee coincee. La
+     periode est longue et l'ecart faible — on doit la sentir sans la regarder. */
+  animation: dc-gel-vient .22s ease-out, dc-brume-souffle 4.5s ease-in-out .22s infinite;
+}
+
+@keyframes dc-brume-souffle {
+  0%, 100% { opacity: var(--cbt-brume-case-opacite, .5); }
+  50% { opacity: calc(var(--cbt-brume-case-opacite, .5) * .72); }
+}
+
+/* ⚠️ LA COQUE, ELLE, RESTE PLEINE — ET C'EST L'IMAGE QUI LE PERMET. Le dessin
+   livre est un CADRE de chaines, creux en son centre : le de se lit par le trou,
+   sans qu'on ait a rendre le metal transparent. L'affaiblir ne ferait que rendre
+   les chaines grises. */
+#dicewrap .dc-coque {
+  opacity: var(--cbt-coque-case-opacite, 1);
+  /* Un halo d'or, la couleur de ce qui protege dans ce jeu. Il tient au dessin
+     et ne deborde pas sur les cases voisines. */
+  filter: drop-shadow(0 0 5px rgba(255, 196, 74, .55));
+}
+
+/* Le de sous une coque n'est pas assombri : rien ne le couvre, il est ENCADRE.
+   Celui sous la brume, si — c'est ce que la brume raconte. */
+#dicewrap .dc-cell-brume > .dc-face { filter: brightness(.82) saturate(.9); }
+
+/* ── LA PREMIERE COLONNE D'UNE VISEE EN DEUX TEMPS ──────────────────────────
+   ⛔ SANS ELLE, LE PREMIER CLIC PARAIT PERDU. Deux effets demandent deux
+   colonnes (B014, B016) : le joueur en touche une, le plateau reste allume
+   exactement comme avant, et rien ne dit que son geste a ete pris. Il retouche
+   la meme, et recoit un refus qu'il ne comprend pas.
+   La marque est un liseré, pas un voile : la case doit rester lisible, c'est
+   toujours sur son contenu qu'on choisit la seconde. */
+#dicewrap .dc-cell-choisie {
+  box-shadow: inset 0 0 0 2px var(--gold-hi, #e8c86a),
+              0 0 12px rgba(232, 200, 106, .45);
+}
+
+/* ── LE CHOIX DE FACE DU DE PIPE (B012) ─────────────────────────────────────
+   Deux des a toucher, poses au-dessus du bandeau. Ils empruntent la facture des
+   jetons d'effet — meme taille, meme socle — parce que c'est le meme geste au
+   meme endroit : on choisit, et le tour continue. */
+#dicewrap .dc-faces {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 6px 0 2px;
+}
+#dicewrap .dc-face-btn {
+  width: var(--cbt-bonus-taille, 52px);
+  height: var(--cbt-bonus-taille, 52px);
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(24, 12, 48, .72);
+  box-shadow: inset 0 0 0 2px rgba(232, 200, 106, .55), 0 3px 10px rgba(0, 0, 0, .45);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  /* Une pulsation douce : ces deux boutons apparaissent au milieu d'un tour, et
+     rien d'autre ne bouge a ce moment-la. */
+  animation: dc-face-appelle 1.6s ease-in-out infinite;
+}
+#dicewrap .dc-face-btn > .dc-face { width: 78%; height: 78%; }
+#dicewrap .dc-face-btn:active { transform: scale(.94); }
+
+@keyframes dc-face-appelle {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(232, 200, 106, .55), 0 3px 10px rgba(0, 0, 0, .45); }
+  50% { box-shadow: inset 0 0 0 2px rgba(232, 200, 106, .95), 0 0 14px rgba(232, 200, 106, .5); }
+}
+
+/* ── LES POINTS DE PAGINATION DU RATELIER ───────────────────────────────────
+   Cinq jetons par page, un point par page. Ils sont petits, mais leur ZONE
+   TOUCHABLE ne l'est pas : un point de 7 px ne se vise pas au pouce, d'ou les
+   14 px de padding qui l'entourent sans se voir. C'est la regle des 44 px
+   d'Apple appliquee la ou elle compte — un point rate fait tourner la page
+   qu'on ne voulait pas. */
+#dicewrap .dc-bonus-points {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+#dicewrap .dc-bonus-point {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  position: relative;
+}
+#dicewrap .dc-bonus-point::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: rgba(237, 234, 244, .34);
+  transition: background .18s ease, transform .18s ease;
+}
+#dicewrap .dc-bonus-point.on::after {
+  background: var(--gold-hi, #e8c86a);
+  transform: scale(1.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-face-btn { animation: none; }
+  #dicewrap .dc-brume { animation: none; }
+  #dicewrap .dc-bonus-point::after { transition: none; }
+}
+
 #dicewrap .dc-shop-shut {
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 28px 18px; text-align: center;
@@ -2411,7 +2556,7 @@
   z-index: 3;
 }
 
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   #dicewrap .dc-drop > .dc-face, #dicewrap .dc-thud, #dicewrap .dc-quake, #dicewrap .dc-tumbling,
@@ -2710,6 +2855,17 @@
 }
 #dicewrap .dc-shout-bad { color: #ffb3a8; text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 22px rgba(165, 51, 42, .6); }
 
+/* ⚠️ UN TROISIEME TON, PARCE QU'UN EFFET PEUT N'ETRE POUR PERSONNE. Le dore dit
+   « pour moi », le rouge « contre moi » : les deux supposent un camp. Le
+   changement de quart de Sayyida al-Hurra (B016) echange les multiplicateurs
+   pour LES DEUX joueurs — le peindre en dore mentirait a celui qui y perd, en
+   rouge a celui qui y gagne, et personne ne sait lequel est lequel avant d'avoir
+   relu les deux plateaux. Un bleu froid ne prend pas parti. */
+#dicewrap .dc-shout-neutral {
+  color: #cfe3ff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 22px rgba(90, 150, 230, .55);
+}
+
 /* ⛔ LA BANNIERE A ETE LATERALISEE, ET C'ETAIT UNE ERREUR. Posee sur le plateau
    du joueur concerne, celle du haut se retrouvait a 20 % de l'arene — c'est-a-
    dire sous la barre de l'entete sur un ecran a encoche, ou elle etait
@@ -2806,3 +2962,641 @@
    contre QUOI on a joue, pas seulement contre qui. */
 #dicewrap .dc-over-foe { display: flex; align-items: center; justify-content: center; gap: 9px; }
 #dicewrap .dc-over-cap { width: 34px; height: 34px; flex: none; }
+
+/* ══════════════════════════════════════════════ LA FICHE D'UN CAPITAINE ══
+   `maquette_info_cap.png` fait foi, et la structure qu'elle montre est precise :
+   le portrait tient TOUTE la colonne de gauche et deborde vers l'exterieur ; le
+   nom, le surnom, un filet dore et le lore vivent tous dans la colonne de
+   DROITE ; puis deux sections titrees entre filets, et un bouton qui ne prend
+   pas toute la largeur.
+
+   ⛔ MA PREMIERE VERSION AVAIT MIS LE LORE PLEINE LARGEUR, sous un portrait
+   reduit a une vignette. C'est une autre page : le portrait n'y est plus un
+   personnage qu'on regarde mais une icone, et le bloc de texte devient le sujet.
+   La maquette dit l'inverse — le capitaine occupe le tiers gauche, et le texte
+   se range a cote de lui.
+   ========================================================================= */
+
+/* ⛔ ET ELLE DEBORDAIT DE L'ECRAN, COTE DROIT COUPE. La cause est deja ecrite
+   dans mobile.css, vingt lignes de commentaire, pour les cartes de mise et de
+   fin : une carte est un ELEMENT DE GRILLE, et sa taille minimale automatique
+   vaut `min-content` — cette borne passe AVANT la largeur demandee, donc la
+   carte grossit jusqu'a tenir sa ligne la plus large, quoi qu'on ait ecrit.
+   `width: min(420px, ...)` ne suffit pas.
+   Le remede etait la, applique a `.pd-ask-card` et `.pd-first-card` ; ma carte
+   ne portait aucune de ces deux classes, et n'en profitait donc pas. */
+#dicewrap .dc-capf .dc-capf-carte {
+  position: relative;
+  width: min(430px, 100%);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 16px 18px;
+  border-radius: 22px;
+  /* ⛔ DEUX ASSETS ONT ETE LIVRES POUR CE FOND, ET JE N'EN UTILISAIS QU'UN.
+     `background_effect.png` — une trame de points en demi-teinte, dont l'alpha
+     ne depasse jamais 51 — est faite pour etre posee PAR-DESSUS le decor. On la
+     voit nettement sur la maquette, en haut a droite et le long du bord. Je
+     l'avais importee et jamais branchee : la fiche perdait le grain qui la relie
+     au reste du jeu, ou les panneaux violets portent la meme trame.
+
+     ⛔ ET LE DECOR ETAIT NOYE. Mon voile montait a 0,86 : la lune, la falaise et
+     le navire disparaissaient sous une teinte plate, et la carte n'etait plus
+     qu'un rectangle sombre. La maquette les laisse lire. Un voile deux fois plus
+     leger suffit a tenir le texte au-dessus — d'autant que chaque texte porte
+     deja son ombre portee.
+
+     L'ordre compte : la premiere couche listee est la PLUS HAUTE. Trame, puis
+     voile, puis decor. */
+  /* ⛔ LE DECOR ETAIT CHARGE ET INVISIBLE : C'ETAIT LE CADRAGE. Le tableau est
+     un PAYSAGE (1100 x 778, rapport 1,41) et la carte est un PORTRAIT (rapport
+     0,72). En `cover`, le navigateur cale sur la hauteur et rogne 418 px de
+     large — soit 25 % de chaque cote. Or tout le sujet est justement sur les
+     cotes : les palmiers de 0 a 18 %, la lune a 23 %, le navire au-dela de 75 %.
+     La fenetre centrale ne montrait donc que du ciel et de l'eau vides, et la
+     carte paraissait un aplat violet. Ce n'est pas le voile qui effacait le
+     decor, c'est le recadrage.
+     On decale la fenetre vers la GAUCHE : les palmiers, la lune et la falaise
+     entrent, exactement ce que montre la maquette. */
+  background-image:
+    linear-gradient(180deg, rgba(28, 13, 52, .20) 0%, rgba(28, 13, 52, .38) 48%,
+                            rgba(28, 13, 52, .58) 100%),
+    url("../dice/img/background_cap_info.jpg");
+  background-size: auto, cover;
+  /* ⚠️ CADRE A GAUCHE, PAS A 20 %. Mesure : a 20 % la lune tombe a 26 % de la
+     largeur de la carte — c'est-a-dire derriere le portrait, qui la mange.
+     A `left`, elle remonte a 46 % et les palmiers entrent en haut a gauche :
+     c'est la composition de la maquette, ou la lune se devine derriere le nom. */
+  background-position: center, left center;
+  background-repeat: no-repeat, no-repeat;
+  /* Le lisere creme de la maquette : clair et net, pas un halo violet. */
+  /* Le lisere de la maquette est un vrai cadre creme, pas un cheveu. */
+  box-shadow: inset 0 0 0 5px rgba(255, 250, 238, .95),
+              inset 0 0 0 7px rgba(120, 70, 190, .8),
+              0 16px 44px rgba(0, 0, 0, .65);
+}
+
+/* ⛔ ET LA TRAME NE PEUT PAS ETRE UNE COUCHE DE `background-image`. Posee la,
+   elle s'applique a pleine force : `background` n'a pas d'opacite par couche, et
+   ses points gris — meme a 20 % d'alpha dans le fichier — ecrasaient le decor au
+   point que la lune et le navire disparaissaient. Mesure a l'ecran : une carte
+   uniformement grise et pointillee, exactement ce que la maquette ne montre pas.
+   Une couche a part se dose. Elle est en dessous du contenu et par-dessus le
+   decor, elle ne prend aucun clic, et elle epouse l'arrondi de la carte. */
+#dicewrap .dc-capf-carte::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: url("../dice/img/background_effect.png") center / cover no-repeat;
+  opacity: .26;
+  z-index: 1;
+}
+/* ⛔ TROIS COUCHES, ET L'ORDRE EST LE SUJET. « L'image doit etre en effet fade
+   juste au-dessus du background mais en dessous du texte. » C'est exactement ce
+   qui manquait : mon portrait vivait DANS le flux, a cote des mots, donc son
+   fondu ne se fondait dans rien — il s'effacait sur du vide.
+
+     0  le decor peint          (fond de la carte)
+     1  le grain                (::before)
+     2  le portrait             (couche, fondu a droite et en bas)
+     3  le texte et les panneaux
+
+   Tout ce qui n'est pas le portrait monte au niveau 3 ; lui reste au 2. */
+#dicewrap .dc-capf-carte > * { position: relative; z-index: 3; }
+
+/* La croix est POSEE SUR LE COIN, comme sur la maquette : a moitie dehors,
+   entierement touchable. */
+/* ⚠️ ELLE ETAIT TROP PETITE, PAS TROP GROSSE. Mesure a largeur de carte egale :
+   96 px sur la maquette, 78 chez moi. C'est le seul objet de la fiche qu'on
+   cherche du pouce sans regarder — il a besoin de sa taille. */
+#dicewrap .dc-capf-fermer {
+  position: absolute;
+  /* ⛔ ELLE NE REPONDAIT PAS AU DOIGT, ET LE BOUTON N'Y ETAIT POUR RIEN. Toutes
+     les couches du contenu partagent `z-index: 3` ; a niveau egal, c'est
+     l'ORDRE DU DOCUMENT qui departage, et le bloc d'identite — ecrit apres —
+     passait donc par-dessus. Sa boite couvre le coin haut-droit (48 % de marge a
+     gauche, 52 px de rembourrage en haut) : le doigt tombait sur lui.
+     Mesure : `elementFromPoint` au centre de la croix rendait `dc-capf-ident`.
+     Un `click()` par le code marchait — c'est ce qui rendait la panne
+     deroutante : le bouton fonctionnait, il etait simplement recouvert.
+     Elle monte donc au-dessus de tout le reste : c'est la seule commande de la
+     fiche qui doit etre atteignable en toutes circonstances. */
+  z-index: 5;
+  top: 6px;
+  inset-inline-end: 6px;
+  width: 54px; height: 54px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+#dicewrap .dc-capf-fermer img { width: 100%; height: 100%; object-fit: contain; }
+
+/* ── LE HAUT : PORTRAIT A GAUCHE, TOUT LE TEXTE A DROITE ─────────────────── */
+/* ⛔ LE PORTRAIT N'EST PAS UNE COLONNE DE GRILLE, C'EST UN ELEMENT ANCRE AU
+   COIN. Traite en element de grille, il reste DANS le rembourrage de la carte :
+   une marge tout autour, un vide au-dessus du chapeau, et le personnage flotte
+   au milieu de sa case. La maquette montre l'inverse — le portrait est COUPE par
+   le bord haut et par le bord gauche, il entre dans la carte par l'angle. C'est
+   cette coupe qui fait qu'il appartient au decor au lieu d'etre pose dessus.
+
+   Un element positionne peut sortir du rembourrage ; un element de grille, non.
+   D'ou l'ancrage absolu, et la marge de gauche donnee au texte pour lui laisser
+   la place. */
+/* ⚠️ `.dc-capf-haut` A DISPARU. Il n'existait que pour tenir la grille de deux
+   colonnes ; le portrait n'etant plus dans le flux, il n'y a plus de grille — le
+   bloc d'identite se decale simplement. */
+
+/* ⛔ LE PORTRAIT, COUCHE 2. Cadre sur la maquette, a largeur de carte egale :
+   son sommet ne touche PAS le bord haut (il garde de l'air, les plumes ne sont
+   pas coupees), son flanc gauche sort de la carte, et il s'efface vers la droite
+   et vers le bas — la ou le texte et le panneau du bonus commencent.
+   Sorti du flux, il ne pousse plus rien : sa taille et sa position se reglent
+   pour elles-memes, sans rogner la colonne de texte. */
+#dicewrap .dc-capf-portrait {
+  position: absolute;
+  z-index: 2;
+  /* ⚠️ PLUS GRAND, ET LE FONDU SUIT. Les deux vont ensemble : agrandir sans
+     elargir le fondu ferait deborder le portrait en dur sur le texte. A 78 % il
+     occupe presque toute la moitie gauche et descend jusqu'au panneau du bonus,
+     mais seule sa partie centrale est opaque — voir FONDU dans
+     outils/portraits_fiche.py. */
+  top: -1%;
+  inset-inline-start: -8%;
+  width: 78%;
+  pointer-events: none;
+  /* ⛔ PLUS DE MASQUE CSS ICI, ET C'EST LE RESULTAT DE DEUX ECHECS MESURES.
+     1. Deux masques lineaires composes : WebKit retient l'union des couches, le
+        fondu ne se voyait pas du tout.
+     2. Un degrade radial sur la boite de l'image : le portrait etant inscrit a
+        92 % de sa toile, la zone de fondu tombait dans la marge TRANSPARENTE et
+        n'effacait rien du dessin. Calcul : au bord droit le masque ne descendait
+        qu'a 70 % d'opacite — invisible a l'oeil.
+     Le fondu est desormais CUIT dans l'alpha du fichier
+     (outils/portraits_fiche.py) : il porte sur le dessin lui-meme, il est
+     identique partout, et il ne depend d'aucune particularite de moteur. */
+}
+
+#dicewrap .dc-capf-ident {
+  min-width: 0;
+  /* La colonne de droite, a cote de la couche du portrait. */
+  margin-inline-start: 48%;
+  /* ⚠️ LE NOM DESCEND SOUS LA CROIX. A 22 px il passait derriere le bouton de
+     fermeture — le « D » de READ etait sous le disque rouge. La maquette degage
+     franchement le titre : son sommet est a 7,8 % de la hauteur de la carte. */
+  padding-top: 52px;
+  text-align: center;
+}
+#dicewrap .dc-capf-ident h3 {
+  margin: 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  /* ⚠️ MESURE SUR LA MAQUETTE, A LARGEUR DE CARTE EGALE : la hauteur de
+     capitale y vaut 48 px quand la mienne en faisait 62. Un titre trop gros
+     n'est pas qu'une question de gout — c'est lui qui forcait le surnom a
+     passer sur deux lignes et qui poussait le nom sous la croix. */
+  font-size: clamp(17px, 5.2vw, 24.5px);
+  line-height: 1.05;
+  color: var(--gold-hi, #e8c86a);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, .75);
+  overflow-wrap: anywhere;
+}
+#dicewrap .dc-capf-surnom {
+  margin: 5px 0 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(10.5px, 3.1vw, 13.5px);
+  letter-spacing: .5px;
+  line-height: 1.15;
+  color: #F3E9FF;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .7);
+  overflow-wrap: anywhere;
+}
+/* Le filet dore sous le surnom : il n'existe que dans la colonne de droite, et
+   c'est lui qui separe l'identite du recit. */
+/* ⛔ MES FILETS ETAIENT INVISIBLES. Un degrade transparent -> or -> transparent
+   sur 2 px ne laisse qu'un souffle au milieu : a l'ecran, il n'y avait rien. La
+   maquette montre un TRAIT franc, qui ne s'estompe qu'a ses extremites. On garde
+   donc l'or a pleine opacite sur l'essentiel de la course. */
+#dicewrap .dc-capf-filet {
+  display: block;
+  width: 86%;
+  height: 2px;
+  margin: 10px auto 9px;
+  background: linear-gradient(90deg, rgba(232, 200, 106, 0) 0%,
+                                     var(--gold-hi, #e8c86a) 18%,
+                                     var(--gold-hi, #e8c86a) 82%,
+                                     rgba(232, 200, 106, 0) 100%);
+}
+#dicewrap .dc-capf-lore {
+  margin: 0;
+  font-size: clamp(12.5px, 3.6vw, 15.5px);
+  line-height: 1.46;
+  text-align: justify;
+  hyphens: auto;
+  color: #EDEAF4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+
+/* ── LES TITRES DE SECTION : un mot dore entre deux filets ───────────────── */
+#dicewrap .dc-capf-titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  /* ⛔ ILS ETAIENT DEUX FOIS TROP PETITS. Je les avais traites comme des
+     etiquettes de rubrique ; la maquette en fait des TITRES, a peine plus bas
+     que le nom du capitaine — c'est eux qui decoupent la fiche en trois temps,
+     et une fiche qui defile a besoin de reperes qu'on voit sans lire. Mesure sur
+     la maquette : « BONUS OFFERT » vaut 5 % de la largeur de la carte, la ou
+     j'etais a 3 %. */
+  font-size: clamp(14px, 4.6vw, 19px);
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--gold-hi, #e8c86a);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, .8);
+  white-space: nowrap;
+}
+/* Meme correction pour les deux filets qui encadrent un titre de section : ils
+   partent de l'or et ne s'effacent qu'en s'eloignant du mot. */
+#dicewrap .dc-capf-titre::before,
+#dicewrap .dc-capf-titre::after {
+  content: "";
+  flex: 1 1 0;
+  min-width: 16px;
+  height: 2px;
+}
+#dicewrap .dc-capf-titre::before {
+  background: linear-gradient(90deg, rgba(232, 200, 106, 0), var(--gold-hi, #e8c86a));
+}
+#dicewrap .dc-capf-titre::after {
+  background: linear-gradient(90deg, var(--gold-hi, #e8c86a), rgba(232, 200, 106, 0));
+}
+
+/* ── LE BONUS OFFERT ─────────────────────────────────────────────────────── */
+/* ⚠️ L'ICONE DEBORDE DU PANNEAU, comme sur la maquette : posee dedans, elle
+   redevient une puce de liste. La marge de gauche du panneau lui fait sa place
+   sans qu'elle ait a sortir de la carte. */
+/* ⚠️ LE TEXTE EST ALIGNE A GAUCHE, PAS CENTRE. Centre, il flotte au milieu du
+   panneau et le nom de l'effet cesse d'etre un titre : la maquette cale les deux
+   lignes sur le meme bord, juste apres l'icone. */
+#dicewrap .dc-capf-bonus {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  min-height: 74px;
+  margin-inline-start: 42px;
+  padding: 10px 14px 10px 50px;
+  border-radius: 16px;
+  background: rgba(108, 72, 186, .58);
+  box-shadow: inset 0 0 0 1px rgba(237, 234, 244, .26);
+  text-align: start;
+}
+/* L'icone sort franchement du panneau, comme sur la maquette : posee dedans,
+   elle redevient une puce de liste. */
+#dicewrap .dc-capf-bonus > img {
+  position: absolute;
+  inset-inline-start: -42px;
+  top: 50%;
+  width: 84px; height: 84px;
+  transform: translateY(-50%);
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .65));
+}
+#dicewrap .dc-capf-bonus > div { min-width: 0; }
+/* ⛔ IL ETAIT DORE, IL DOIT ETRE BLANC. Mesure sur la maquette : (246,243,249),
+   c'est-a-dire blanc. Et la raison se comprend en regardant la page — l'or y est
+   reserve aux TITRES DE SECTION et au nom du capitaine. Un nom d'effet en or de
+   plus, juste sous « BONUS OFFERT » lui-meme en or, fait deux titres l'un sur
+   l'autre et l'on ne sait plus lequel commande. */
+#dicewrap .dc-capf-bonus b {
+  display: block;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(14.5px, 4.3vw, 18.5px);
+  letter-spacing: .4px;
+  color: #FFFFFF;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .55);
+  overflow-wrap: anywhere;
+}
+#dicewrap .dc-capf-bonus span {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(12px, 3.5vw, 15px);
+  line-height: 1.4;
+  color: #EDEAF4;
+  overflow-wrap: anywhere;
+}
+
+/* ── LA PROGRESSION ──────────────────────────────────────────────────────── */
+#dicewrap .dc-capf-progres {
+  padding: 10px 12px 12px;
+  border-radius: 14px;
+  background: rgba(108, 72, 186, .45);
+  box-shadow: inset 0 0 0 1px rgba(237, 234, 244, .2);
+}
+#dicewrap .dc-capf-progres > span {
+  display: block;
+  margin-bottom: 9px;
+  font-size: clamp(12px, 3.5vw, 15px);
+  line-height: 1.4;
+  color: #EDEAF4;
+  text-align: center;
+}
+#dicewrap .dc-capf-jauge {
+  position: relative;
+  height: 25px;
+  border-radius: 13px;
+  background: rgba(12, 6, 30, .66);
+  box-shadow: inset 0 0 0 2px rgba(232, 200, 106, .75);
+  overflow: hidden;
+}
+#dicewrap .dc-capf-jauge > i {
+  display: block;
+  height: 100%;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #f6d872, #d9a52c);
+  transition: width .3s ease;
+}
+#dicewrap .dc-capf-jauge > b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(12px, 3.5vw, 14.5px);
+  font-weight: 700;
+  color: #2a1806;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .4);
+}
+
+/* ── LE BOUTON ───────────────────────────────────────────────────────────── */
+/* ⚠️ IL NE PREND PAS TOUTE LA LARGEUR. La maquette lui donne un peu plus de la
+   moitie et le centre : un bouton pleine largeur au bas d'une carte se lit
+   comme une barre de navigation, pas comme une decision. */
+#dicewrap .dc-capf-choisir {
+  display: block;
+  width: min(240px, 58%);
+  margin: 18px auto 4px;
+}
+#dicewrap .dc-capf-choisir[disabled] {
+  opacity: .7;
+  cursor: default;
+  filter: grayscale(.8);
+}
+
+/* ⛔ ET LE VOILE DE LA FICHE NE DESCEND PAS VERS LE BAS. `.pd-ask` aligne ses
+   cartes en `safe end` — un choix fait pour les petites boites de dialogue, que
+   le pouce doit atteindre. Une fiche plein ecran, elle, doit se centrer : collee
+   en bas, elle laissait une bande vide au-dessus et sortait sous l'encoche. */
+#dicewrap .dc-capf { align-content: safe center; }
+
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-capf-jauge > i { transition: none; }
+}
+
+/* ══════════════════════ LES TROIS MODES, COTE A COTE ════════════════════
+   La disposition demandee (home_btn_need.png) : trois cartes de meme largeur,
+   le dessin pose au-dessus et debordant vers le haut, le libelle sur deux
+   lignes en dessous. Trois couleurs, parce que trois modes qui se ressemblent
+   se lisent comme une liste — donc comme un ordre de preference.
+
+   ⚠️ LE DEBORDEMENT PASSE EN HAUT, ET C'EST UNE CONSEQUENCE, PAS UN GOUT.
+   L'ancienne disposition faisait sortir le dessin sur le COTE : possible quand
+   le bouton fait toute la largeur, impossible quand il en fait le tiers — deux
+   voisins immediats, rien pour deborder. Le haut est la seule direction libre.
+
+   ⚠️ ET LA CARTE DEFILE : `overflow-y: auto` sur le pont force `overflow-x` a
+   `auto` aussi, donc a CLIPPER. Un dessin qui sortirait par le cote serait
+   coupe — c'est une panne deja vue ici, capture a l'appui. Vers le haut, il
+   reste dans la boite. */
+#dicewrap .dc-menu-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(8px, 2.5vw, 14px);
+  align-items: stretch;
+  flex-wrap: nowrap;
+  /* ⚠️ ILS NE DEFILENT PAS : c'est le pied de la carte, et il ne bouge jamais.
+     Voir `.dc-menu-pont`. Le rembourrage du haut reserve la place aux dessins,
+     qui debordent par le HAUT de chaque bouton. */
+  flex: 0 0 auto;
+  padding-top: calc(var(--pd-mode-art, 76px) * .52);
+}
+
+/* ⛔ LA CARTE DU PONT SE COUPE EN DEUX. Tout tenait dans une seule boite qui
+   defile : les trois boutons de mode, poses a la fin, passaient donc sous le pli
+   des que le bandeau des capitaines prenait trois rangees — coupes en deux par
+   le bord, alors que ce sont les seules actions de l'ecran.
+   Une zone qui defile, un pied qui ne bouge pas. `min-height: 0` sur la zone
+   defilante n'est pas une precaution : sans lui, un enfant de boite flexible ne
+   peut pas devenir plus petit que son contenu, et c'est toute la carte qui
+   grandirait de nouveau. La lecon est deja ecrite vingt lignes plus haut dans
+   mobile.css, pour la carte elle-meme. */
+#dicewrap #dc-screen-menu .dc-menu-card.dc-menu-pont {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+#dicewrap .dc-menu-defile {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#dicewrap .dc-carte-mode {
+  --pd-mode-art: clamp(58px, 17vw, 86px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0;
+  /* La reserve du haut vaut la moitie du dessin : c'est ce qui l'empeche de
+     couvrir le libelle. */
+  padding: calc(var(--pd-mode-art) * .58) 6px 12px;
+  min-height: calc(var(--pd-mode-art) * 1.5);
+  border-radius: 16px;
+  overflow: visible;
+  text-align: center;
+  line-height: 1.12;
+  font-size: clamp(11px, 3.1vw, 14px);
+  letter-spacing: .3px;
+  /* ⚠️ LE LIBELLE TIENT SUR DEUX LIGNES, ET IL DOIT POUVOIR. « Challenge a
+     player » ne rentre pas sur une seule au tiers d'un ecran de telephone :
+     sans coupure, il deborderait ou serait rogne. */
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+#dicewrap .dc-carte-mode > img {
+  position: absolute;
+  top: calc(var(--pd-mode-art) * -.42);
+  left: 50%;
+  width: var(--pd-mode-art);
+  height: var(--pd-mode-art);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
+  pointer-events: none;
+}
+/* ⛔ IL NE S'ENFONCAIT PAS. Seul le DESSIN bougeait de deux pixels ; la carte,
+   elle, ne repondait pas au doigt. Or c'est elle qu'on touche, et c'est le seul
+   retour qu'on ait avant que l'ecran change — sans lui, on ne sait pas si
+   l'appui a pris et on reappuie.
+
+   Le jeu a deja son idiome pour cela (`.dc-btn:active`) : l'ombre est un BLOC
+   decale, pas un flou, et le bouton descend DESSUS. On le reprend en l'appuyant
+   davantage — la carte s'ecrase aussi en hauteur (`scaleY`), pivot en bas, ce
+   qui donne la matiere souple qu'on attend d'un gros bouton. */
+#dicewrap .dc-carte-mode {
+  transform-origin: bottom center;
+  transition: transform .07s ease, box-shadow .07s ease, filter .15s ease;
+}
+#dicewrap .dc-carte-mode:active:not([disabled]) {
+  transform: translateY(5px) scaleY(.93);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5),
+              0 1px 0 var(--pd-mode-lip, rgba(0, 0, 0, .5)),
+              0 3px 7px rgba(0, 0, 0, .45);
+}
+#dicewrap .dc-carte-mode:active:not([disabled]) > img {
+  transform: translateX(-50%) translateY(4px) scale(.96);
+}
+
+/* ⚠️ EN ARABE, LE DESSIN NE BOUGE PAS. Il est centre : le sens de lecture ne
+   change rien a un objet pose au milieu. Seul le texte s'inverse, et il le fait
+   tout seul. Les regles `dc-btn-deborde-g/-d` ne s'appliquent plus ici. */
+
+/* Les trois couleurs. Elles reprennent la palette du jeu — l'or de l'action
+   principale, le violet des panneaux, l'ardoise du secondaire — plutot que d'en
+   inventer trois nouvelles. */
+#dicewrap .dc-carte-solo {
+  background: linear-gradient(180deg, #f6d872, #e0a92e);
+  color: #2a1806;
+  --pd-mode-lip: #a9761b;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55), 0 4px 0 var(--pd-mode-lip),
+              0 8px 16px rgba(0, 0, 0, .4);
+  text-shadow: none;
+}
+#dicewrap .dc-carte-multi {
+  background: linear-gradient(180deg, #8f5fd6, #6a3bb0);
+  color: #FFF6DA;
+  --pd-mode-lip: #472777;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5), 0 4px 0 var(--pd-mode-lip),
+              0 8px 16px rgba(0, 0, 0, .4);
+}
+#dicewrap .dc-carte-ami {
+  background: linear-gradient(180deg, #6b6480, #494257);
+  color: #EDEAF4;
+  --pd-mode-lip: #2e2939;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .42), 0 4px 0 var(--pd-mode-lip),
+              0 8px 16px rgba(0, 0, 0, .4);
+}
+
+/* ⚠️ L'ETAT DESACTIVE RESTE LISIBLE. Deux des trois boutons se grisent sans
+   reseau, et c'est le bandeau au-dessus qui explique pourquoi : le bouton doit
+   avoir l'air eteint, pas effacé. */
+#dicewrap .dc-carte-mode[disabled] {
+  filter: grayscale(.85) brightness(.78);
+  opacity: .78;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25), 0 3px 0 rgba(0, 0, 0, .35);
+}
+#dicewrap .dc-carte-mode[disabled] > img { filter: grayscale(1) brightness(.8); }
+
+/* ⛔ ET SUR UN TRES PETIT ECRAN, ON NE FORCE PAS TROIS COLONNES. En dessous de
+   330 px de large, un tiers d'ecran ne tient plus un libelle lisible : la
+   rangee redevient une colonne plutot que de couper les mots en trois. Le
+   dessin, lui, garde sa place au-dessus. */
+@media (max-width: 330px) {
+  #dicewrap .dc-menu-trio { grid-template-columns: 1fr; }
+  #dicewrap .dc-carte-mode { flex-direction: row; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-carte-mode,
+  #dicewrap .dc-carte-mode:active:not([disabled]) { transition: none; transform: none; }
+  #dicewrap .dc-carte-mode:active:not([disabled]) > img { transform: translateX(-50%); }
+}
+
+/* ── LE FEUILLETAGE DE LA FICHE ──────────────────────────────────────────────
+   ⚠️ LE SENS DU GESTE DOIT SE VOIR. Deux capitaines qui se ressemblent — meme
+   cadre, meme mise en page — donnent l'impression que rien ne s'est passe si la
+   carte se contente d'etre remplacee. Elle entre donc par le cote d'ou elle
+   vient, brievement. L'animation est courte : c'est un accuse de reception, pas
+   un effet. */
+@keyframes dc-capf-vient-d {
+  from { opacity: 0; transform: translateX(9%); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes dc-capf-vient-g {
+  from { opacity: 0; transform: translateX(-9%); }
+  to   { opacity: 1; transform: none; }
+}
+#dicewrap .dc-capf-vient-d { animation: dc-capf-vient-d .17s ease-out; }
+#dicewrap .dc-capf-vient-g { animation: dc-capf-vient-g .17s ease-out; }
+
+/* ⚠️ ET LE GLISSEMENT HORIZONTAL APPARTIENT A LA FICHE. Sans cela, le navigateur
+   peut interpreter un geste de cote comme un retour de page ou un rebond
+   elastique, et le feuilletage devient une loterie. Le geste VERTICAL, lui,
+   reste au defilement de la carte — c'est ce que `pan-y` preserve. */
+#dicewrap .dc-capf .dc-capf-carte { touch-action: pan-y; }
+
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-capf-vient-d,
+  #dicewrap .dc-capf-vient-g { animation: none; }
+}
+
+/* ══ LA BANNIERE DU TIMER, AU DEPART DE LA MECHE ═══════════════════════════
+   ⛔ « LE TIMER NE MARCHE PLUS » + une baniere neuve a poser. La mèche brûle,
+   mais le nombre de secondes restait invisible : l'admin a dessiné `timer.png`,
+   un fanion a accrocher LA OU LA MECHE COMMENCE — le haut-centre de la carte,
+   d'ou part le feu (voir `traceDuJonc`, `M m+w/2, m`). Le fanion porte les
+   secondes qui s'ecoulent ; il ne parait qu'au tour actif, comme la mèche. */
+#dicewrap .dc-pc-baniere {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 46px;
+  background: center / contain no-repeat;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .5));
+}
+/* Seul le tour actif porte son fanion — la meche et lui s'allument ensemble. */
+#dicewrap .dc-pc-timed .dc-pc-baniere { display: flex; }
+
+/* Les secondes, posees sur le drap violet du fanion (sous la roue). */
+#dicewrap .dc-pc-secs {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 13px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 1px rgba(0, 0, 0, .9);
+}
+/* La derniere ligne droite : le nombre rougeoie avec la meche. */
+#dicewrap .dc-pc-urgent .dc-pc-secs { color: #FFD24A; }
+
+/* ⚠️ LE NOM CEDE LA PLACE AU FANION, il ne passe plus dessous. La baniere occupe
+   le haut-centre ; le nom, aligne sur son cote (a gauche en face, a droite chez
+   moi), s'arrete donc avant le centre au lieu de courir sous le drap. Il garde
+   toute sa ligne, seulement ampute de la largeur du fanion du cote du centre. */
+#dicewrap .dc-pc-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#dicewrap .dc-pc-theirs > .dc-pc-name { padding-right: 26px; }
+#dicewrap .dc-pc-mine > .dc-pc-name { padding-left: 26px; }

@@ -14,7 +14,8 @@
 
 import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
-import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase } from './dice_state.js';
+import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase,
+         envoyerCoup } from './dice_state.js';
 import { t } from '../core/i18n.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
@@ -96,6 +97,14 @@ function buildGame() {
         <div class="dc-board-slot" id="dc-slot-me"></div>
       </div>
 
+      <!-- ⚠️ LE CHOIX DE FACE DU DE PIPE (B012). Les deux autres formes de
+           visee se font SUR LE PLATEAU — une case, une colonne — et n'ont donc
+           besoin d'aucun objet a l'ecran. Celle-ci ne vise rien de pose : elle
+           choisit une VALEUR, et il n'existe nulle part ou la toucher. D'ou ces
+           deux boutons, poses juste au-dessus du bandeau, la ou le pouce est
+           deja quand on vient de lancer. Vide et cache le reste du temps. -->
+      <div class="dc-faces" id="dc-faces" hidden></div>
+
       <!-- L'eventail de la cale, ferme par defaut. Il se pose AU-DESSUS du
            bandeau : deploye en dessous, le pouce qui l'ouvre le recouvrirait. -->
       <div class="dc-bonus" id="dc-bonus"></div>
@@ -160,7 +169,7 @@ function buildGame() {
         return;
       }
       clearLanding(mine);
-      S.net.send({ t: 'place', column: parseInt(col.dataset.col, 10) });
+      envoyerCoup({ t: 'place', column: parseInt(col.dataset.col, 10) });
     };
   });
 
@@ -182,7 +191,7 @@ function buildGame() {
            et c'est meme la que le pari a le plus de sel. */
         if (!pending.column && !box.classList.contains('dc-cell-filled')) return;
         ev.stopPropagation();
-        S.net.send({ t: 'cell', cell: parseInt(box.dataset.cell, 10) });
+        envoyerCoup({ t: 'cell', cell: parseInt(box.dataset.cell, 10) });
       };
     });
   });
@@ -194,7 +203,7 @@ function buildGame() {
     if (vise) { if (S.net) S.net.send({ t: 'unbonus' }); return; }
     if (!myTurn()) { toast(t('game.waitTurn'), 'warn'); return; }
     if (S.state.dice[S.seat] !== null) { toast(t('game.alreadyRolled'), 'warn'); return; }
-    S.net.send({ t: 'roll' });
+    envoyerCoup({ t: 'roll' });
   };
   $('#dc-quit').onclick = () => UI.requestClose();
   /* ⚠️ LA CALE S'OUVRE TANT QU'ON APPUIE, ET SE REFERME QUAND ON LACHE.
@@ -678,6 +687,62 @@ function casesGelees(st, seat) {
   return prises;
 }
 
+/**
+ * LES CASES PRISES DANS LA BRUME — le brouillard de poudre (B013).
+ *
+ * ⚠️ IL COUVRE LE PLATEAU PROTEGE, PAS CELUI QUI ATTAQUE. L'effet dit « il ne
+ * detruit aucun de TES des » : c'est donc le plateau de celui qui l'a joue qui
+ * disparait dans la fumee, et l'adversaire qui vise a l'aveugle. Les deux
+ * joueurs le voient, comme le gel — celui qui protege doit savoir que son jeton
+ * a pris, celui qui va se heurter doit savoir a quoi.
+ */
+function casesEmbrumees(st, seat) {
+  const prises = new Set();
+  if (st.phase !== 'playing') return prises;
+  if (!st.brume || !st.brume[seat]) return prises;
+  for (let cell = 0; cell < 12; cell++) prises.add(cell);
+  return prises;
+}
+
+/**
+ * LES CASES SOUS COQUE — la coque renforcee (B015).
+ *
+ * Une seule par plateau, et c'est voulu : `check` refuse la seconde.
+ */
+function casesSousCoque(st, seat) {
+  const prises = new Set();
+  if (st.phase !== 'playing') return prises;
+  const cell = st.protege ? st.protege[seat] : -1;
+  if (cell >= 0) prises.add(cell);
+  return prises;
+}
+
+/* ⛔ TROIS EFFETS SE POSENT SUR LES CASES, ET IL N'Y A QU'UNE SEULE GRILLE.
+   Le givre a ouvert la voie ; la brume et la coque la suivent, exactement.
+   Chacune est un `<i>` pose DANS le logement du de, dimensionne par lui, retire
+   quand l'etat du serveur ne le porte plus. Le de reste dessous, intact : ces
+   images ne changent jamais l'etat reel, elles le MONTRENT.
+
+   ⚠️ ET C'EST CE QUI LES FAIT SURVIVRE A UNE RECONNEXION SANS UNE LIGNE DE PLUS.
+   Le rendu se refait a chaque instantane, a partir du seul etat du serveur : un
+   joueur qui revient recoit `brume` et `protege` dans son `match`, et les trois
+   couches se redessinent comme si rien ne s'etait passe. Une seconde grille, ou
+   un etat garde cote client, aurait demande d'etre reconstruit a la main — et
+   aurait fini par mentir.
+
+   `viseur` : la brume change de couleur selon le cote d'ou on la regarde. Le
+   jeu colore deja ses annonces ainsi (`f.seat === S.seat ? 'bad' : 'good'`), et
+   les deux images ont ete livrees pour cela — violette chez soi, bleue et
+   froide en face. */
+const COUCHES = [
+  { classe: 'dc-givre', marque: 'dc-cell-gel', cases: casesGelees,
+    image: () => 'fx_gel_case.png' },
+  { classe: 'dc-brume', marque: 'dc-cell-brume', cases: casesEmbrumees,
+    image: (seat) => (seat === S.seat ? 'fx_brume_moi.png' : 'fx_brume_adverse.png') },
+  { classe: 'dc-coque', marque: 'dc-cell-coque', cases: casesSousCoque,
+    image: () => 'fx_bouclier_case.png' },
+];
+
 function renderGel(st) {
   for (let seat = 0; seat < 2; seat++) {
     const board = boardOf(seat);
@@ -689,20 +754,23 @@ function renderGel(st) {
     const vieux = board.querySelector('.dc-gel');
     if (vieux) vieux.remove();
 
-    const prises = casesGelees(st, seat);
+    const prises = COUCHES.map((c) => c.cases(st, seat));
     board.querySelectorAll('.dc-cell').forEach((box) => {
-      const gele = prises.has(parseInt(box.dataset.cell, 10));
-      box.classList.toggle('dc-cell-gel', gele);
-      const pose = box.querySelector('.dc-givre');
-      if (!gele) { if (pose) pose.remove(); return; }
-      /* Deja pose : on n'y retouche pas. Le rendu passe a chaque instantane —
-         recreer l'image relancerait son animation d'entree a chaque lancer de
-         de, ce qui donnerait un clignotement pour rien. */
-      if (pose) return;
-      const givre = document.createElement('i');
-      givre.className = 'dc-givre';
-      givre.style.backgroundImage = 'url(' + ASSETS + 'img/fx_gel_case.png)';
-      box.appendChild(givre);
+      const cell = parseInt(box.dataset.cell, 10);
+      COUCHES.forEach((couche, i) => {
+        const dessus = prises[i].has(cell);
+        box.classList.toggle(couche.marque, dessus);
+        const pose = box.querySelector('.' + couche.classe);
+        if (!dessus) { if (pose) pose.remove(); return; }
+        /* Deja pose : on n'y retouche pas. Le rendu passe a chaque instantane —
+           recreer l'image relancerait son animation d'entree a chaque lancer de
+           de, ce qui donnerait un clignotement pour rien. */
+        if (pose) return;
+        const voile = document.createElement('i');
+        voile.className = couche.classe;
+        voile.style.backgroundImage = 'url(' + ASSETS + 'img/' + couche.image(seat) + ')';
+        box.appendChild(voile);
+      });
     });
   }
 }
@@ -968,7 +1036,10 @@ function meche() {
         <path class="dc-meche-trace"></path>
       </svg>
       <canvas class="dc-meche-corde"></canvas>
-      <img class="dc-pc-flamme" src="${ASSETS}img/fx_meche.png" alt="">`;
+      <img class="dc-pc-flamme" src="${ASSETS}img/fx_meche.png" alt="">
+      <span class="dc-pc-baniere" style="background-image:url(${ASSETS}img/timer.png)">
+        <b class="dc-pc-secs"></b>
+      </span>`;
   return el;
 }
 
@@ -1237,6 +1308,42 @@ function renderCup(st) {
  * dispararait donc a chaque etat recu. C'est pourquoi cette fonction est appelee
  * APRES elle dans `paint()` — l'ordre n'est pas cosmetique, il est structurel.
  */
+/**
+ * Peut-on encore manoeuvrer sur ce plateau ? (B014)
+ *
+ * ⚠️ MEME REGLE QUE `check()` COTE SERVEUR, PAS UNE APPROXIMATION. Il faut une
+ * colonne d'ou partir ET une autre, differente, ou aller. Se contenter de
+ * « mon plateau n'est pas vide » laisserait le jeton vif sur un plateau plein,
+ * ou l'effet est refuse.
+ */
+function peutManoeuvrer(grid) {
+  if (!grid) return false;
+  const pleine = (col) => [0, 1, 2].every((i) => grid[col * 3 + i] !== null);
+  const occupee = (col) => [0, 1, 2].some((i) => grid[col * 3 + i] !== null);
+  for (let a = 0; a < 4; a++) {
+    if (!occupee(a)) continue;
+    for (let b = 0; b < 4; b++) if (a !== b && !pleine(b)) return true;
+  }
+  return false;
+}
+
+/** Deux quarts identiques ne s'echangent pas : B016 n'aurait rien a faire. */
+function quartsTousEgaux(quarters) {
+  if (!Array.isArray(quarters) || quarters.length < 2) return true;
+  return quarters.every((q) => q === quarters[0]);
+}
+
+/* Combien de jetons par page du ratelier. Cinq : c'est ce qui tient sur une
+   rangee a la largeur d'un telephone sans que les jetons ne se resserrent, et
+   c'est le nombre d'effets qu'un lot de capitaines apporte — les pages suivront
+   donc les lots, ce qui se lit tout seul. */
+const PAR_PAGE = 5;
+let pageRatelier = 0;
+
+/** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
+    trois parties plus tot, on reprend la ou est le jeton offert. */
+export function ratelierAuDebut() { pageRatelier = 0; }
+
 export function renderBonusRack() {
   const rack = $('#dc-bonus');
   if (!rack || !S.state) return;
@@ -1297,7 +1404,43 @@ export function renderBonusRack() {
     .concat(boutons.map((i) => bouton(i.identify, nomDeLEffet(i.identify, i.description),
                                       i.quantity, false)));
 
-  rack.innerHTML = tous.join('');
+  /* ⛔ SEIZE EFFETS NE TIENNENT PAS DANS UNE BANDE. L'eventail avait deja cede
+     la place a une grille parce qu'un arc n'a que trois places ; la grille, elle,
+     passe a la ligne — et a seize jetons elle passe a la ligne quatre fois,
+     mange la moitie de l'ecran et recouvre les deux plateaux. Ce n'est pas un
+     defaut de la grille : c'est qu'on lui demande de tout montrer d'un coup.
+
+     ⚠️ ET LA LISTE VA CONTINUER DE GRANDIR. « On va ajouter au fur et a mesure
+     des capitaines et effets » : une mise en page qui tient pour seize et casse
+     a vingt-et-un ne fait que repousser le probleme. Cinq par page, des points
+     dessous, et le nombre d'effets cesse d'etre une contrainte de dessin.
+
+     ⚠️ LE JETON OFFERT EST TOUJOURS EN TETE, donc toujours en premiere page :
+     c'est celui qu'on joue le plus, et celui qui ne coute rien. */
+  const pages = [];
+  for (let i = 0; i < tous.length; i += PAR_PAGE) pages.push(tous.slice(i, i + PAR_PAGE));
+  /* La page courante se garde entre deux rendus — le ratelier se refait a chaque
+     coup — mais elle ne doit pas survivre a une liste devenue plus courte. */
+  if (pageRatelier >= pages.length) pageRatelier = Math.max(0, pages.length - 1);
+
+  rack.innerHTML = (pages[pageRatelier] || []).join('')
+    + (pages.length > 1 ? `
+      <div class="dc-bonus-points" role="tablist">
+        ${pages.map((_, i) => `<button class="dc-bonus-point${i === pageRatelier ? ' on' : ''}"
+             data-page="${i}" role="tab" aria-selected="${i === pageRatelier}"
+             aria-label="${esc(t('bonus.page', { n: i + 1, total: pages.length }))}"></button>`).join('')}
+      </div>` : '');
+
+  rack.querySelectorAll('.dc-bonus-point').forEach((p) => {
+    p.onclick = (ev) => {
+      /* Meme precaution que pour les jetons : la cale est posee PAR-DESSUS le
+         plateau, et un clic qui traverse tomberait sur une colonne. */
+      ev.preventDefault();
+      ev.stopPropagation();
+      pageRatelier = parseInt(p.dataset.page, 10) || 0;
+      renderBonusRack();
+    };
+  });
 
   /* ⛔ L'EVENTAIL A VECU. Il tenait pour trois jetons ; a cinq ou six, l'arc se
      resserrait jusqu'a ce qu'ils se recouvrent — « ça affiche mal quand tu as
@@ -1371,6 +1514,17 @@ export function renderBonusRack() {
       ? 'offline.pasIci'
       : (dit.tourCourt && dit.tourCourt[foe] ? 'fx.alreadySlowed' : null),
     B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
+    /* ⚠️ LES CINQ NOUVEAUX SUIVENT LA MEME REGLE, et il fallait la leur donner :
+       cette table n'est pas une decoration, c'est ce qui evite au joueur de
+       bruler l'une de ses trois places d'effet contre un refus. Chaque ligne dit
+       exactement ce que dit le `check()` du serveur — pas davantage, sinon
+       l'ecran interdirait un coup que le serveur accepte. */
+    B012: !deEnMain ? 'err.lanceDabord' : null,
+    B013: dit.brume && dit.brume[S.seat] ? 'fx.brumeAlready' : null,
+    B014: !peutManoeuvrer(dit.grids && dit.grids[S.seat]) ? 'err.pasDeManoeuvre' : null,
+    B015: monPlateauVide ? 'err.monPlateauVide'
+      : (dit.protege && dit.protege[S.seat] >= 0 ? 'fx.coqueAlready' : null),
+    B016: quartsTousEgaux(dit.quarters) ? 'err.quartsEgaux' : null,
   };
   rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
     /* ⛔ LE JETON OFFERT ECHAPPAIT AU PLAFOND, ET C'ETAIT LA MOITIE D'UNE TRICHE.
@@ -1394,7 +1548,7 @@ export function renderBonusRack() {
       if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
       if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
       if (redondant) { toast(t(pourquoi), 'warn'); return; }
-      S.net.send({ t: 'bonus', identify: b.dataset.id });
+      envoyerCoup({ t: 'bonus', identify: b.dataset.id });
       /* L'effet part : la cale n'a plus rien a montrer, et le plateau doit
          redevenir visible — c'est lui qu'on va viser si l'effet demande une
          cible. */
@@ -1495,6 +1649,18 @@ function renderTargeting(st) {
        qu'aucun selecteur ne remonte d'un enfant a son parent. */
     const env = board.parentNode;
     if (env && env.classList.contains('dc-boardwrap')) env.classList.toggle('dc-vise', vise);
+
+    /* ⚠️ LA PREMIERE COLONNE DEJA CHOISIE DOIT SE VOIR. Sans marque, une visee
+       en deux temps est indistinguable d'un premier clic ignore : le joueur
+       retouche la meme colonne, le serveur repond « choisissez-en une autre »,
+       et rien n'explique pourquoi. Elle vient de l'ETAT du serveur
+       (`pending.premiere`), donc elle survit a une reconnexion comme le reste. */
+    const dejaPrise = vise && pending.premiere !== null && pending.premiere !== undefined
+      ? Math.floor(pending.premiere / 3) : -1;
+    board.querySelectorAll('.dc-cell').forEach((box) => {
+      const col = Math.floor(parseInt(box.dataset.cell, 10) / 3);
+      box.classList.toggle('dc-cell-choisie', dejaPrise >= 0 && col === dejaPrise);
+    });
   });
   /* ⚠️ UN EFFET ARME NE POUVAIT PLUS ETRE DESARME. Le serveur sait pourtant le
      faire depuis le debut — le message `unbonus` et `cancelBonus()` existent —
@@ -1510,10 +1676,59 @@ function renderTargeting(st) {
     const mot = cup.querySelector('span:last-child');
     if (mot) mot.textContent = pending ? t('game.cancelBonus') : t('foot.roll');
   }
+  renderFaces(pending);
   if (pending) {
     const turn = $('#dc-turn');
-    if (turn) turn.textContent = t('game.pickBlast');
+    if (turn) turn.textContent = consigneDeVisee(pending);
   }
+}
+
+/**
+ * CE QU'ON DEMANDE AU JOUEUR, EN TOUTES LETTRES.
+ *
+ * ⛔ UNE SEULE PHRASE POUR TOUTES LES VISEES NE SUFFIT PLUS. « Choisissez une
+ * case » convenait tant qu'un effet ne visait qu'une fois : deux d'entre eux
+ * demandent desormais DEUX colonnes, et sans une consigne qui dit laquelle, le
+ * joueur touche la premiere, voit le plateau rester allume, et croit son geste
+ * perdu. On nomme donc l'etape ou l'on est.
+ */
+function consigneDeVisee(pending) {
+  const deuxTemps = { B014: ['game.pickFrom', 'game.pickTo'],
+                      B016: ['game.pickSwapA', 'game.pickSwapB'] };
+  const etapes = deuxTemps[pending.identify];
+  if (etapes) return t(etapes[pending.premiere === null ? 0 : 1]);
+  if (pending.faces) return t('game.pickFace');
+  return t('game.pickBlast');
+}
+
+/**
+ * LES DEUX FACES OFFERTES PAR LE DE PIPE (B012).
+ *
+ * ⚠️ C'EST LE SERVEUR QUI DIT LESQUELLES, et l'ecran n'en propose pas d'autres.
+ * Le « pas de boucle » — un 1 ne monte pas a 6 — n'est PAS une regle de dessin :
+ * `pending.faces` arrive deja calcule, et `pickFace` refuse tout ce qui n'y est
+ * pas. L'ecran ne fait que rendre touchable ce qui est deja permis.
+ */
+function renderFaces(pending) {
+  const zone = $('#dc-faces');
+  if (!zone) return;
+  const faces = pending && Array.isArray(pending.faces) ? pending.faces : null;
+  zone.hidden = !faces;
+  if (!faces) { zone.innerHTML = ''; return; }
+  /* La parure du joueur, par le meme chemin que partout ailleurs : un de pipe
+     reste SON de, gravure et motif compris. Refaire le calcul ici aurait donne
+     un de nu a qui a paye une parure. */
+  const parure = skinOf(S.seat);
+  zone.innerHTML = faces.map((v) => `
+      <button class="dc-face-btn" data-face="${v}" title="${esc(String(v))}">
+        ${dieFace(v, false, parure)}
+      </button>`).join('');
+  zone.querySelectorAll('.dc-face-btn').forEach((b) => {
+    b.onclick = () => {
+      if (!S.net) return;
+      envoyerCoup({ t: 'face', face: parseInt(b.dataset.face, 10) });
+    };
+  });
 }
 
 /* ⛔ `rain` EST PARTIE DANS `dice_end.js`, ET C'ETAIT UN BOGUE MUET. Elle
