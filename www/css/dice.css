@@ -1765,23 +1765,28 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding: 16px calc(50% - var(--pd-jeton) / 2) 20px;
-  background: linear-gradient(180deg, rgba(101, 60, 190, .96), rgba(70, 38, 140, .96));
-  border-radius: 22px 22px 0 0;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .15), 0 -3px 14px rgba(0, 0, 0, .4);
+  background:
+    radial-gradient(120% 150% at 50% 0%, rgba(128, 78, 224, .98) 0%, rgba(88, 48, 168, .98) 55%, rgba(64, 34, 128, .98) 100%);
+  /* ⛔ ARRONDI COMME UN BARILLET. Le haut est un ARC bombe (grand rayon), les
+     coins bas restent doux : la bande a la courbe d'un tonneau vu de face, pas
+     celle d'une simple barre. */
+  border-radius: 60% 60% 22px 22px / 90px 90px 22px 22px;
+  border: 2px solid rgba(232, 200, 106, .35);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .18), 0 -4px 18px rgba(0, 0, 0, .45);
 }
 #dicewrap .dc-barillet::-webkit-scrollbar { display: none; }
 #dicewrap .dc-bonus-open .dc-barillet { pointer-events: auto; }
 #dicewrap .dc-barillet .dc-bonus-btn {
   flex: 0 0 auto;
   scroll-snap-align: center;
-  transform: scale(.66) translateY(9px);
+  transform: scale(.62) translateY(16px);
   opacity: .6;
   transition: transform .2s ease, opacity .2s ease;
 }
 /* Le jeton au centre ressort et remonte : c'est le sommet du barillet, celui
    qu'on va jouer. */
 #dicewrap .dc-barillet .dc-bonus-centre {
-  transform: scale(1.15) translateY(-2px);
+  transform: scale(1.18) translateY(-6px);
   opacity: 1;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .55));
 }

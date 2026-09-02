@@ -1476,7 +1476,7 @@ export function renderBonusRack() {
        du pied (au lieu de flotter au-dessus) : le panneau violet plonge donc
        derriere les boutons, et seuls les trois jetons du haut depassent. Le pied
        (z-index 34) le recouvre par en bas. */
-    rack.style.bottom = Math.max(0, scene.bottom - r.bottom + 4) + 'px';
+    rack.style.bottom = Math.max(0, scene.bottom - r.top - 6) + 'px';
   }
 
   /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
