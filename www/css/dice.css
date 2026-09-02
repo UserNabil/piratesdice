@@ -1483,20 +1483,26 @@
   margin: 0 auto;
   background: url(../dice/img/regles_fond.png) center / 100% 100% no-repeat;
 }
+#dicewrap .dc-panel .dc-parchemin-titre,
 #dicewrap .dc-parchemin-titre {
+  padding: 0;
   position: absolute;
-  top: 3.2%;
-  left: 22%;
-  right: 22%;
-  height: 9.5%;
+  top: 10%;
+  left: 26%;
+  right: 26%;
+  height: 7.5%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 0;
   border: 0;
+  overflow: hidden;
   font-family: "Luckiest Guy", "Baloo 2", cursive;
-  font-size: clamp(15px, 5vw, 22px);
+  /* Le titre VIT DANS la banniere dessinee : il ne doit jamais en deborder,
+     quelle que soit la langue. Deux lignes serrees au pire. */
+  font-size: clamp(12px, 4vw, 17px);
+  line-height: 1.05;
   color: #fff;
   letter-spacing: .5px;
   text-shadow: 0 2px 3px rgba(40, 10, 70, .85);
@@ -1852,7 +1858,11 @@
 #dicewrap .dc-barillet-nom {
   position: absolute;
   left: 50%;
-  top: -14px;
+  /* Juste au-dessus de la couronne du cylindre — PAS au bord du conteneur :
+     le conteneur est plus haut que le tambour (il coupe sa moitie basse), et
+     une plaque a son bord flottait au milieu du plateau, rognee par
+     l'overflow. Le haut du tambour est a jeton*0.75 du haut du conteneur. */
+  top: calc(var(--pd-jeton) * 0.75 - 38px);
   transform: translateX(-50%);
   max-width: 92%;
   white-space: nowrap;
