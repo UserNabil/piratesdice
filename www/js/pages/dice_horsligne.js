@@ -29,6 +29,16 @@ import { generateur } from './dice_hasard.js';
 
 const MAX_EFFETS = 3;
 
+/* ⛔ HORS LIGNE, LA MECHE RESTAIT PLEINE — « le timer ne marche plus, la meche
+   reste bloquee au debut ». Le moteur de poche n'a pas de VRAIE pendule (rien
+   n'y joue a la place d'un absent, et la verification ne regarde pas le temps),
+   mais l'ecran, lui, attend `awayMs`/`awayTotal` pour animer le jonc. Sans eux
+   la fraction reste a 1. On donne donc au tour du joueur une meche PUREMENT
+   VISUELLE — meme duree qu'en ligne — qui ne change rien au journal : c'est un
+   champ d'affichage de plus dans l'instantane, comme le gel ou le brouillard.
+   L'IA n'a pas de meche, exactement comme en ligne. */
+const PENDULE_MS = 18000;
+
 /* ─────────────────────────────────────────────────────────── l'adversaire ── */
 
 /**
@@ -106,9 +116,20 @@ export class PartieHorsLigne {
     this.maudit = [null, null];
     this.geleCol = [-1, -1];
     this.gele = [false, false];
+    /* ⚠️ ET LES TROIS DU SECOND LOT, AUX MEMES NOMS QUE SUR LE SERVEUR. Ce
+       moteur et `src/game/match.js` doivent produire la MEME suite de coups :
+       c'est de cette egalite que depend l'acceptation d'une partie hors ligne au
+       retour du reseau. Une divergence sur le brouillard ou la coque ferait
+       rejeter des parties honnetes — c'est exactement ce qui est arrive avec les
+       quatre effets a cible, 167 parties refusees sur 167. */
+    this.brume = [false, false];
+    this.protege = [-1, -1];
+    this.protegeTours = [0, 0];
     this.effets = [[], []];
     this.gratuitUtilise = [false, false];
     this.tour = 0;
+    /* L'instant ou le tour courant a commence : la meche visuelle s'en sert. */
+    this.tourArmeA = Date.now();
     /* L'instant de la derniere pique : personne ne parle deux fois de suite. */
     this.dernierePique = 0;
     this.finie = false;
@@ -169,6 +190,18 @@ export class PartieHorsLigne {
       maudCol: [this.maudit[0] === null ? -1 : this.maudit[0],
                 this.maudit[1] === null ? -1 : this.maudit[1]],
       tourCourt: [false, false],
+      /* La meche visuelle : seulement au tour du joueur, jamais a celui de l'IA
+         — comme en ligne. `awayTotal` donne la duree, `awayMs` le reste. */
+      awayTotal: this.tour === this.moi && !this.finie ? PENDULE_MS : null,
+      awayMs: this.tour === this.moi && !this.finie
+        ? Math.max(0, PENDULE_MS - (Date.now() - this.tourArmeA))
+        : null,
+      /* Les deux etats que l'ecran DESSINE : le brouillard couvre un plateau, la
+         coque encadre un de. Absents de l'instantane, les couches ne se
+         peindraient pas — la meme panne que le gel, restee invisible une version
+         entiere faute d'etre envoyee. */
+      brume: this.brume.slice(),
+      protege: this.protege.slice(),
       boostCol: this.boost.slice(),
       quarters: this.quarts.slice(),
       foresee: null,
@@ -228,10 +261,39 @@ export class PartieHorsLigne {
     const fx = [{ kind: 'place', seat: siege, cell: mis.cell, value: v }];
     const avantEcart = R.totalScore(this.grilles[siege], opts(this, siege))
                      - R.totalScore(this.grilles[1 - siege], opts(this, 1 - siege));
-    const touche = R.destroyMatching(this.grilles[siege], this.grilles[1 - siege]);
+    /* ⚠️ MEME ORDRE QUE LE SERVEUR : brouillard, puis coque. Le brouillard
+       annule la destruction entiere — la coque n'a alors rien a depenser — et la
+       coque n'epargne qu'un de. Voir `Match.place` : les deux moteurs doivent
+       rendre la meme grille, coup pour coup. */
+    const victime = 1 - siege;
+    const avantVictime = this.grilles[victime];
+    let touche;
+    if (this.brume[victime]) {
+      const menace = R.destroyMatching(this.grilles[siege], avantVictime);
+      if (menace.destroyed.length) {
+        this.brume[victime] = false;
+        fx.push({ kind: 'brume', seat: victime, on: false, sauves: menace.destroyed.length });
+        touche = { grid: avantVictime, destroyed: [] };
+      } else {
+        touche = menace;
+      }
+    } else {
+      touche = R.destroyMatching(this.grilles[siege], avantVictime,
+                                 { garde: this.protege[victime] });
+      if (touche.epargne) {
+        const sauve = this.protege[victime];
+        this.protege[victime] = -1;
+        this.protegeTours[victime] = 0;
+        fx.push({ kind: 'coque', seat: victime, cell: sauve, on: false, sauve: true });
+      }
+    }
     if (touche.destroyed.length) {
-      this.grilles[1 - siege] = touche.grid;
-      fx.push({ kind: 'destroy', seat: 1 - siege, cells: touche.destroyed });
+      this.grilles[victime] = touche.grid;
+      if (this.protege[victime] >= 0) {
+        this.protege[victime] = R.suivreCase(avantVictime, touche.destroyed, this.protege[victime]);
+        if (this.protege[victime] < 0) this.protegeTours[victime] = 0;
+      }
+      fx.push({ kind: 'destroy', seat: victime, cells: touche.destroyed });
       if (touche.destroyed.length >= 2) {
         fx.push({ kind: 'broadside', seat: siege, count: touche.destroyed.length });
       }
@@ -290,7 +352,21 @@ export class PartieHorsLigne {
    * MEME suite de coups, sinon la verification rejette une partie honnete.
    */
   passerLaMain(siege, fx) {
+    /* Nouveau tour, nouvelle meche — que la main change de camp ou revienne a
+       celui qui a gele. */
+    this.tourArmeA = Date.now();
     this.geleCol[siege] = -1;
+    /* La coque expire a la fin du prochain tour adverse : deux changements de
+       main, et le compteur descend pour LES DEUX sieges puisque c'est le TOUR
+       qui passe. Meme regle, meme endroit que sur le serveur. */
+    for (let s = 0; s < 2; s++) {
+      if (this.protegeTours[s] <= 0) continue;
+      this.protegeTours[s] -= 1;
+      if (this.protegeTours[s] > 0) continue;
+      const cell = this.protege[s];
+      this.protege[s] = -1;
+      if (cell >= 0 && fx) fx.push({ kind: 'coque', seat: s, cell, on: false, sauve: false });
+    }
     const victime = 1 - siege;
     if (this.gele[victime]) {
       this.gele[victime] = false;
@@ -324,7 +400,7 @@ export class PartieHorsLigne {
     return true;
   }
 
-  effet(siege, identifiant, cellule) {
+  effet(siege, identifiant, cellule, premiere) {
     if (this.finie || this.tour !== siege) return null;
     /* ⛔ DEUX EFFETS NE SE JOUENT PAS HORS LIGNE, ET C'EST UN CHOIX ASSUME.
        La longue-vue (B004) demande de tirer le de SUIVANT avant qu'il ne soit
@@ -407,13 +483,82 @@ export class PartieHorsLigne {
       }
       if (!touche) return null;
       fx.push({ kind: 'rase', column: col, by: siege });
+    } else if (identifiant === 'B013') {
+      /* Le brouillard ne vise rien : il se pose sur SON propre plateau. Il
+         arrive ici parce qu'il n'est pas dans `A_CIBLE` — `effet()` le recoit
+         donc avec une cellule nulle, et n'en a pas besoin. */
+      if (this.brume[siege]) return null;
+      this.brume[siege] = true;
+      fx.push({ kind: 'brume', seat: siege, by: siege, on: true });
+    } else if (identifiant === 'B015') {
+      if (this.grilles[siege][cellule] === null) return null;
+      if (this.protege[siege] >= 0) return null;
+      this.protege[siege] = cellule;
+      this.protegeTours[siege] = 2;
+      fx.push({ kind: 'coque', seat: siege, cell: cellule, on: true });
+    } else if (identifiant === 'B014') {
+      if (!Number.isInteger(premiere)) return null;
+      const depuis = R.columnOf(premiere);
+      if (depuis === col) return null;
+      const bouge = R.moveTop(this.grilles[siege], depuis, col);
+      if (!bouge.ok) return null;
+      this.grilles[siege] = bouge.grid;
+      if (this.protege[siege] === bouge.de) this.protege[siege] = bouge.a;
+      fx.push({ kind: 'manoeuvre', seat: siege, de: bouge.de, a: bouge.a,
+                value: bouge.value, depuis, vers: col });
+    } else if (identifiant === 'B016') {
+      if (!Number.isInteger(premiere)) return null;
+      const a = R.columnOf(premiere);
+      if (a === col || this.quarts[a] === this.quarts[col]) return null;
+      const echange = R.swapQuarters(this.quarts, a, col);
+      if (!echange.ok) return null;
+      this.quarts = echange.quarters;
+      fx.push({ kind: 'quart', seat: siege, a, b: col, quarters: this.quarts.slice() });
     } else {
       return null;
     }
 
     this.effets[siege].push(identifiant);
-    this.noter({ t: 'effet', s: siege, b: identifiant, case: cellule, offert: true });
+    /* ⚠️ UN EFFET EN DEUX TEMPS NOTE SES DEUX TEMPS. Sans `premiere`, le
+       verificateur du serveur refuse la partie : « manoeuvre sans ses deux
+       colonnes ». Le champ n'apparait que la ou il existe, comme en ligne. */
+    const ligne = { t: 'effet', s: siege, b: identifiant, case: cellule, offert: true };
+    if (Number.isInteger(premiere)) ligne.premiere = premiere;
+    this.noter(ligne);
     return fx;
+  }
+
+  /**
+   * LE DE PIPE (B012) — la troisieme forme de visee, hors ligne aussi.
+   *
+   * ⚠️ IL NE CONSOMME AUCUN TIRAGE, et c'est ce qui le rend jouable ici. La
+   * longue-vue est refusee hors ligne parce qu'elle demande le de SUIVANT, donc
+   * casse l'ordre de consommation du hasard ; le de pipe, lui, ne fait que
+   * changer une valeur deja tiree. Le serveur revalide la regle du « pas de
+   * boucle » sur le journal.
+   */
+  effetFace(siege, identifiant, face) {
+    if (this.finie || this.tour !== siege) return null;
+    if (identifiant !== 'B012') return null;
+    if (this.effets[siege].includes(identifiant)) return null;
+    if (this.effets[siege].length >= this.maxEffets) return null;
+    const avant = this.des[siege];
+    if (avant === null || !Number.isInteger(face)) return null;
+    if (Math.abs(face - avant) !== 1 || face < 1 || face > R.DIE_FACES) return null;
+    this.des[siege] = face;
+    this.effets[siege].push(identifiant);
+    this.noter({ t: 'effet', s: siege, b: identifiant, face, offert: true });
+    return [{ kind: 'roll', seat: siege, value: face, from: avant, bonus: 'B012' }];
+  }
+
+  /** Les deux valeurs atteignables depuis le de en main, ou une liste vide. */
+  facesPossibles(siege) {
+    const v = this.des[siege];
+    if (v === null || v === undefined) return [];
+    const out = [];
+    if (v > 1) out.push(v - 1);
+    if (v < R.DIE_FACES) out.push(v + 1);
+    return out;
   }
 
   /** Le tour de la machine, d'un bloc : elle lance puis elle pose. */
