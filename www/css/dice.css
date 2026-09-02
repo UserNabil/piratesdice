@@ -1795,24 +1795,29 @@
 #dicewrap .dc-barillet-nom {
   position: absolute;
   left: 50%;
-  top: -6px;
+  top: -14px;
   transform: translateX(-50%);
-  max-width: 90%;
+  max-width: 92%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 5px 14px;
+  border-radius: 12px;
+  background: rgba(12, 6, 28, .9);
+  box-shadow: inset 0 0 0 1px rgba(232, 200, 106, .45), 0 3px 10px rgba(0, 0, 0, .5);
   font-family: "Luckiest Guy", "Baloo 2", cursive;
-  font-size: 15px;
+  font-size: 14px;
   color: #ffe479;
-  text-shadow: 0 2px 3px rgba(0, 0, 0, .85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .85);
   pointer-events: none;
-  z-index: 3;
+  z-index: 42;
 }
+#dicewrap .dc-barillet-nom:empty { display: none; }
 /* La description, au maintien : une plaque sombre au-dessus du cylindre. */
 #dicewrap .dc-barillet-info {
   position: absolute;
   left: 50%;
-  bottom: calc(100% - 4px);
+  bottom: calc(100% + 6px);
   transform: translateX(-50%);
   width: max-content;
   max-width: min(78vw, 320px);
@@ -1835,19 +1840,16 @@
   left: 50%;
   top: 50%;
   margin: 0;
+  /* L asset DESSINE deja les trous : le jeton s y pose, sans puits CSS. Il fait
+     la taille d un trou (~0,42 du rayon du tambour). */
+  width: calc(var(--pd-rayon) * 0.42);
+  height: calc(var(--pd-rayon) * 0.42);
+  background: none;
   border-radius: 50%;
-  /* Chaque chambre est un PUITS : fond sombre, rebord dore, l icone encastree —
-     comme les alveoles d un vrai barillet. */
-  background: radial-gradient(circle at 50% 38%, #2b1550, #180b30 78%);
-  box-shadow: inset 0 0 0 2px rgba(255, 214, 120, .55),
-              inset 0 3px 7px rgba(0, 0, 0, .7),
-              0 2px 5px rgba(0, 0, 0, .45);
   transition: opacity .15s ease;
   will-change: transform;
 }
-#dicewrap .dc-barillet-cercle .dc-bonus-in {
-  width: 74%; height: 74%; margin: 13%;
-}
+#dicewrap .dc-barillet-cercle .dc-bonus-in { width: 100%; height: 100%; margin: 0; }
 /* La chambre en haut ressort : anneau d or, comme la maquette. */
 #dicewrap .dc-barillet-cercle .dc-bonus-centre {
   box-shadow: 0 0 0 3px rgba(255, 214, 90, .95), 0 0 16px rgba(255, 200, 60, .7);

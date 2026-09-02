@@ -1352,7 +1352,7 @@ let pageRatelier = 0;
 let barilletRot = 0;
 let barilletDrague = false;
 let barilletInfo = false;
-const BARILLET_PAS = 32;   // degres entre deux chambres
+const BARILLET_PAS = 60;   // 6 chambres, alignees sur les trous de l'asset
 
 /** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
     trois parties plus tot, on reprend la ou est le jeton offert. */
@@ -1368,7 +1368,7 @@ function disposerBarillet(cercle) {
   if (barilletRot > maxRot) barilletRot = maxRot;
   if (barilletRot < 0) barilletRot = 0;
   const R0 = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
-  const RAYON = R0 * 0.78;   // les chambres se posent sur la bande doree, pas au bord
+  const RAYON = R0 * 0.60;   // au CENTRE des trous dessines dans l'asset
 
   const placer = () => {
     btns.forEach((b, i) => {
@@ -1503,10 +1503,14 @@ export function renderBonusRack() {
      d'un cercle dont seule la moitie haute depasse le pied. On fait TOURNER le
      cylindre en glissant a gauche/droite ; celui qui arrive en haut est mis en
      avant, et un clic le joue. */
+  /* ⛔ SIX CHAMBRES, SIX BONUS. L'asset du barillet a six trous : on n'en pose
+     donc que six (l'offert en tete). Au-dela, le barillet ne peut pas les
+     montrer — c'est la limite d'un vrai barillet a six coups. */
+  const enChambre = tous.slice(0, 6);
   rack.innerHTML = '<div class="dc-barillet">'
     + '<div class="dc-barillet-nom" data-nom></div>'
     + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
-    + tous.join('') + '</div>'
+    + enChambre.join('') + '</div>'
     + '<div class="dc-barillet-info" data-info hidden></div>'
     + '</div>';
   const cercle = rack.querySelector('.dc-barillet-cercle');
