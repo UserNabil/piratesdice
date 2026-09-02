@@ -75,8 +75,12 @@ bart 400, lionne 450, … jusqu'à 800). Le serveur seul juge (`captains.ouvert`
 - **15 paliers**, un par capitaine, dans l'ordre des seuils actuels
   (palier 1 = Mary Read... palier 15 = le dernier). Chaque palier porte le
   portrait et l'univers de SON capitaine.
-- Chaque palier = **5 niveaux**. Chaque niveau = une partie contre l'IA, avec
-  jusqu'à **3 étoiles** :
+- Chaque palier = **5 niveaux** : les niveaux 1 à 4 se jouent contre des
+  **SBIRES** — des pirates anonymes tirés au sort dans une galerie de vingt
+  trognes (avatar + nom aléatoires, voir §6) — et le niveau 5 est le **BOSS** :
+  le capitaine du palier en personne, qui joue SON effet. Le capitaine est la
+  récompense ET le dernier obstacle ; on ne le croise jamais avant son niveau 5.
+- Chaque niveau = une partie contre l'IA, avec jusqu'à **3 étoiles** :
   - ★ gagner la partie ;
   - ★★ gagner en respectant la **contrainte de style** du niveau ;
   - ★★★ gagner en respectant la **contrainte d'excellence** du niveau.
@@ -106,8 +110,10 @@ recompter à la main.
 | 4–8     | normal → strong      | glouton sans bévue + anticipation 2 coups |
 | 9–12    | strong               | anticipation 2 coups + effets mieux joués |
 | 13–15   | brutal + meilleurs poids | anticipation 3 coups (budget fixe, déterministe) |
-En ligne, l'IA joue en outre le CAPITAINE du palier (son effet offert) — le
-boss du palier 4 gèle, celui du palier 9 a sa longue-vue, etc.
+Aux niveaux 1–4 l'IA est un sbire SANS effet de capitaine (elle joue les
+effets génériques selon son niveau). Au niveau 5, le BOSS joue le trait de son
+capitaine — le boss du palier 4 gèle, celui du palier 9 a sa longue-vue, etc.,
+un cran d'IA au-dessus des sbires de son palier.
 
 ### Les écrans
 - Pont : carte **Campagne** (2×2 avec les trois modes existants).
@@ -172,9 +178,119 @@ vérification visuelle au simulateur, commit.
 
 ## 5. CE QUI RESTE À DÉCIDER (demander avant de coder)
 
-- Les assets : carte au trésor, îles, étoiles, coffres — prompts à préparer
-  comme `PROMPT_SUCCES_101_200.md` une fois la maquette validée.
 - Le nom du bouton : « Campagne » / « L'Aventure » / autre.
 - L'or exact par étoile et le contenu du coffre de palier (équilibrage).
 - Les 75 contraintes précises (15 paliers × 5 niveaux) — proposer un tableau
   complet à l'admin avant l'écriture SQL.
+
+---
+
+## 6. LES ASSETS — prompts complets, prêts à générer
+
+Quatre générations suffisent. Même discipline que `PROMPT_SUCCES_101_200.md` :
+fond transparent, planches découpables, style unique. Livraison dans Downloads ;
+je découpe, je renomme, je range.
+
+### 6a. La planche des VINGT SBIRES — `sbire_01.png` … `sbire_20.png`
+
+Le style de référence est celui des portraits de capitaines
+(`www/dice/img/cap_*.png`, 512×512) : buste cartoon aux influences manga,
+trait épais, liseré blanc autocollant. Les sbires doivent être du MÊME atelier
+mais se lire comme la piétaille : plus simples, plus comiques, jamais aussi
+majestueux qu'un capitaine.
+
+> One **sprite sheet of exactly 20 pirate henchman portrait stickers**,
+> arranged in a strict **5-column × 4-row grid**, read left to right, top to
+> bottom, aspect ratio 5:4, **fully transparent background** across the sheet.
+>
+> **GRID DISCIPLINE — the sheet will be machine-cut.** Every portrait sits
+> fully inside its own invisible square cell, centered, same visual scale.
+> Clean empty gutter of at least 6% of the cell width between cells: **no two
+> stickers may ever touch or overlap.** No cell borders, no labels, no text.
+>
+> **ONE HAND FOR ALL 20.** Identical outline weight, palette, lighting and
+> detail level. Style: cartoon **head-and-shoulders pirate bust** with light
+> manga influence — thick clean dark outlines, rich cel shading, warm skin
+> tones, costumes in browns, purples and muted reds with small gold accents.
+> Each bust wears a bold **white die-cut sticker border** hugging its
+> silhouette. These are HENCHMEN, not captains: scruffy, comical, endearing
+> low-rank pirates — no bicorne admiral hats, no majestic hero lighting, no
+> jewels. Readable at 80 px. No text anywhere.
+>
+> The 20 henchmen, in reading order — vary age, build, skin tone and gender:
+> 1. A gap-toothed young deckhand with a red bandana and a mop over his shoulder.
+> 2. A round jolly cook with a stained apron and a wooden spoon tucked in his belt.
+> 3. A wiry old salt with a white beard braided in two, squinting one eye.
+> 4. A tall broad bosun with a tiny hat too small for his head.
+> 5. A powder monkey teenager with soot on her cheeks and a match behind her ear.
+> 6. A one-eyed lookout with a cracked monocle on the OTHER eye.
+> 7. A grumpy carpenter chewing a nail, hammer resting on his shoulder.
+> 8. A seasick-looking rower, green-tinged, cheeks puffed.
+> 9. A grinning cabin girl with freckles and a slingshot in her collar.
+> 10. A sleepy night-watch pirate with a lantern hooked to his hat.
+> 11. A muscular gunner with a cannonball under one arm and burnt eyebrows.
+> 12. A skinny accountant pirate with cracked spectacles and a quill in his hat.
+> 13. A woman quartermaster with a headscarf and a keyring of huge keys.
+> 14. A bald tattooed brute with a tiny seagull perched on his head.
+> 15. A young flag-waver with a flag pole and a bandaged nose.
+> 16. An elderly cook's helper hugging a giant soup pot like a shield.
+> 17. A rope-maker with coils of rope worn like bandoliers.
+> 18. A superstitious pirate clutching a rabbit's foot, wide worried eyes.
+> 19. A snoring hammock specialist with a pillow tied to his back.
+> 20. A proud fisherman holding up a comically tiny fish.
+
+Découpe → `www/dice/img/sbires/sbire_01.png` … `sbire_20.png` (512×512).
+
+### 6b. La planche des ÉLÉMENTS DE CARTE — l'interface de la campagne
+
+> One **sprite sheet of exactly 12 game UI stickers**, strict **4-column ×
+> 3-row grid**, read left to right, top to bottom, aspect ratio 4:3, **fully
+> transparent background**. Same machine-cut discipline: each sticker centered
+> in its own cell, 6% empty gutters, never touching. **One hand for all 12** :
+> cartoon mobile-game UI props, thick dark outlines, crisp cel shading, warm
+> gold-brown palette with deep purple-navy accents, bold white die-cut sticker
+> border on each. No text, no numbers.
+>
+> The 12 stickers, in reading order:
+> 1. A small tropical island seen from three-quarter view, one palm tree, a wooden dock — neutral state.
+> 2. The same style of island but chained and padlocked in grey fog — locked state.
+> 3. The same style of island crowned with a golden glow and a planted victory flag — completed state.
+> 4. A round wooden step-stone medallion with rope border — a level node, empty.
+> 5. The same medallion with a heavy iron padlock on it — level locked.
+> 6. The same medallion with a red boss skull wearing a captain hat — boss level node.
+> 7. A single golden star, chunky and glossy, slight tilt.
+> 8. The same star but hollow: dark empty outline version.
+> 9. A closed wooden treasure chest with brass corners and a purple ribbon.
+> 10. The same chest wide open, glowing gold light and coins spilling.
+> 11. A folded treasure map corner-piece with a red X and dotted path.
+> 12. A small brass ship's compass with a purple needle.
+
+Découpe → `www/dice/img/campagne/` (`ile.png`, `ile_fermee.png`,
+`ile_finie.png`, `etape.png`, `etape_fermee.png`, `etape_boss.png`,
+`etoile.png`, `etoile_vide.png`, `coffre.png`, `coffre_ouvert.png`,
+`carte.png`, `boussole.png`), 256×256 sauf les îles (384×384).
+
+### 6c. Le FOND de la carte au trésor (une seule image)
+
+> A tall vertical **treasure map background** for a mobile game campaign
+> screen, aspect ratio 9:32 (very tall, will scroll), painted parchment ocean
+> chart: aged beige parchment, faint compass rose, dotted sea routes, small
+> hand-drawn waves, a few tiny sea monsters and ship silhouettes in the SAME
+> faint sepia ink (like watermarks, low contrast so UI can sit on top),
+> torn edges left and right, deep purple-navy border vignette. Cartoon style,
+> warm and inviting, no text, no letters. The middle of the image must stay
+> CALM and low-detail: real islands and buttons will be laid over it.
+
+Livraison ≥ 1024×3640 → `www/dice/img/campagne/fond_carte.png`.
+
+### 6d. L'icône de la carte de mode « Campagne » (pont)
+
+> One cartoon game-mode sticker, single centered object on a fully transparent
+> background, square 1:1: a rolled **treasure map** partly open showing a red
+> X and a dotted path, a small brass compass resting against it, thick dark
+> outlines, crisp cel shading, warm gold-brown with purple accents, bold white
+> die-cut sticker border, same hand as a modern mobile board game, no text.
+
+Livraison 512×512 → `www/dice/img/mode_campagne.png` (même famille que les
+icônes des trois cartes de mode existantes).
+
