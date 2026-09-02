@@ -2087,10 +2087,25 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   #dicewrap .dc-cap {
     width: 100%;
     height: auto;
-    /* Dix medaillons sur deux rangees plutot que cinq sur une : le bandeau
-       double de hauteur. On rend un peu de ce qu'il prend, sans descendre sous
-       la taille ou un visage cesse de se reconnaitre — mesure a 38 px. */
-    max-width: min(15vw, clamp(38px, 6.6vh, 62px));
+    /* ⛔ QUINZE MEDAILLONS FONT TROIS RANGEES, ET LA TROISIEME POUSSAIT LES
+       TROIS BOUTONS DE MODE HORS DE L'ECRAN. Mesure sur iPhone 17 Pro Max, la
+       plus grande dalle du parc : les libelles « Defier un joueur » et « Jouer
+       avec un ami » etaient coupes en deux par le bas de la carte. Sur un
+       telephone plus petit, les boutons disparaissaient entierement — et ce
+       sont les seules actions de la page.
+
+       La regle etait ecrite pour DEUX rangees (« dix medaillons sur deux
+       rangees plutot que cinq sur une ») ; elle n'a pas survecu au lot suivant,
+       et elle ne survivrait pas au troisieme. On rend donc ce que la rangee de
+       plus a pris — un cinquieme de hauteur par medaillon — sans descendre sous
+       38 px, la taille ou un visage cesse d'etre reconnaissable et ou le
+       bandeau ne donne plus envie de rien.
+
+       ⚠️ ET LA PAGE DEFILE DE TOUTE FACON. Ce reglage ne cherche pas a tout
+       faire tenir pour toujours — au quatrieme lot il faudra autre chose, comme
+       les points de pagination du ratelier — il fait tenir CE QUI COMPTE : les
+       trois boutons, sans avoir a chercher. */
+    max-width: min(15vw, clamp(38px, 5.2vh, 54px));
   }
   #dicewrap .dc-cap-card {
     min-height: clamp(40px, 6.4vh, 54px);

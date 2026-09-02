@@ -39,6 +39,16 @@ GARDE = [
     'isColumnFull', 'isFull', 'isEmpty', 'freeCellInColumn',
     'place', 'compact', 'columnScore', 'columnScores', 'totalScore',
     'drawQuarters', 'destroyMatching', 'destroyValueInColumn', 'clearCell', 'rollDie',
+    # ⚠️ CETTE LISTE AVAIT PRIS DEUX FONCTIONS DE RETARD. `clearColumn` et
+    # `swapCell` etaient exportees par le fichier ENGENDRE sans figurer ici :
+    # quelqu'un avait donc corrige la copie a la main, ce que son propre en-tete
+    # interdit. `--verifier` le disait depuis, et personne ne le lisait.
+    'clearColumn', 'swapCell',
+    # Les quatre briques du second lot d'effets (B012 a B016). Le mode hors
+    # ligne joue les memes effets que le mode en ligne : sans elles, cinq
+    # capitaines seraient injouables sans reseau — et pire, le telephone
+    # produirait un journal que le serveur refuserait.
+    'suivreCase', 'topCell', 'moveTop', 'swapQuarters',
 ]
 
 ENTETE = """/* ============================================================================

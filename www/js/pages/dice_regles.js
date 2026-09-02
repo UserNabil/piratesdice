@@ -184,20 +184,36 @@ function destroyValueInColumn(grid, col, value) {
   return { grid: destroyed.length ? compact(next) : next, destroyed };
 }
 
-function destroyMatching(myGrid, oppGrid) {
+/**
+ * `options.garde` : une case d'en face qu'on n'a PAS le droit d'emporter — la
+ * coque renforcee de Black Caesar (B015).
+ *
+ * ⚠️ ELLE EST EPARGNEE, PAS EXCLUE DU CALCUL. Les autres des de la meme valeur
+ * partent quand meme : « s'il devait etre detruit, il survit » ne protege qu'un
+ * de, pas sa valeur ni sa colonne — c'est exactement le cas que le besoin
+ * demande de traiter, « une destruction multiple d'une meme valeur ».
+ *
+ * `epargne` dit si la garde a REELLEMENT servi. C'est ce qui decide de la
+ * consommation de la protection : une protection qui n'a rien empeche ne se
+ * depense pas.
+ */
+function destroyMatching(myGrid, oppGrid, options) {
+  const garde = options && Number.isInteger(options.garde) ? options.garde : -1;
   const destroyed = [];
+  let epargne = false;
   const next = oppGrid.slice();
   for (let col = 0; col < COLUMNS; col++) {
     const mine = columnValues(myGrid, col).filter((v) => v !== null);
     for (const cell of cellsOfColumn(col)) {
       const v = next[cell];
       if (v !== null && mine.includes(v)) {
+        if (cell === garde) { epargne = true; continue; }
         next[cell] = null;
         destroyed.push(cell);
       }
     }
   }
-  return { grid: destroyed.length ? compact(next) : next, destroyed };
+  return { grid: destroyed.length ? compact(next) : next, destroyed, epargne };
 }
 
 /**
@@ -211,16 +227,21 @@ function destroyMatching(myGrid, oppGrid) {
  * Rend les cases REELLEMENT emportees : une colonne a moitie pleine n'en
  * annonce pas trois, sinon l'ecran ferait exploser des cases vides.
  */
-function clearColumn(grid, col) {
-  if (col < 0 || col >= COLUMNS) return { grid, cells: [] };
+function clearColumn(grid, col, options) {
+  if (col < 0 || col >= COLUMNS) return { grid, cells: [], epargne: false };
+  /* `options.garde` : la case protegee par une coque renforcee. Meme regle que
+     pour la pose — un de protege survit, ses voisins non. */
+  const garde = options && Number.isInteger(options.garde) ? options.garde : -1;
   const cells = [];
+  let epargne = false;
   const next = grid.slice();
   for (const cell of cellsOfColumn(col)) {
     if (next[cell] === null) continue;
+    if (cell === garde) { epargne = true; continue; }
     next[cell] = null;
     cells.push(cell);
   }
-  return { grid: cells.length ? compact(next) : next, cells };
+  return { grid: cells.length ? compact(next) : next, cells, epargne };
 }
 
 /**
@@ -246,6 +267,102 @@ function clearCell(grid, cell) {
   const next = grid.slice();
   next[cell] = null;
   return { grid: compact(next), ok: true };
+}
+
+/**
+ * LA CASE OU CE DE SE RETROUVE APRES UN TASSEMENT — la coque de Black Caesar.
+ *
+ * ⛔ UNE PROTECTION QUI RETIENT UN NUMERO DE CASE NE PROTEGE PLUS RIEN DES LE
+ * PREMIER TASSEMENT. `compact()` fait redescendre ce qui reste dans la colonne :
+ * un de protege en case 5 dont le voisin de la case 3 vient d'etre emporte se
+ * retrouve en case 4, et la protection garde son pointeur sur une case qui
+ * contient desormais autre chose — ou rien. Le tour d'apres, elle sauve le
+ * mauvais de, ou aucun.
+ *
+ * On ne suit donc pas le numero, on le RECALCULE : dans sa colonne, un de
+ * descend d'autant de rangs qu'il y avait de des detruits sous lui. C'est
+ * l'arithmetique de `compact`, ecrite pour un seul de.
+ *
+ * @param avant     la grille AVANT la destruction
+ * @param detruites les cases emportees (indices dans `avant`)
+ * @param cell      la case suivie
+ * @returns sa nouvelle case, ou -1 si le de lui-meme a ete emporte
+ */
+function suivreCase(avant, detruites, cell) {
+  if (cell < 0 || cell >= CELLS || avant[cell] === null) return -1;
+  const perdues = new Set(detruites || []);
+  if (perdues.has(cell)) return -1;
+  const col = columnOf(cell);
+  let rang = 0;
+  for (const c of cellsOfColumn(col)) {
+    if (c >= cell) break;
+    if (avant[c] !== null && !perdues.has(c)) rang += 1;
+  }
+  return col * COLUMN_SIZE + rang;
+}
+
+/**
+ * LE DE DU SOMMET D'UNE COLONNE — la manoeuvre d'Anne Levent.
+ *
+ * « Le de superieur » est le dernier pose : celui qui occupe le rang le plus
+ * haut effectivement rempli. Une colonne vide n'en a pas.
+ */
+function topCell(grid, col) {
+  if (col < 0 || col >= COLUMNS) return -1;
+  const cells = cellsOfColumn(col);
+  for (let i = cells.length - 1; i >= 0; i--) {
+    if (grid[cells[i]] !== null) return cells[i];
+  }
+  return -1;
+}
+
+/**
+ * DEPLACER LE DE DU SOMMET D'UNE COLONNE VERS UNE AUTRE — B014.
+ *
+ * ⚠️ CE N'EST PAS UNE POSE, ET C'EST TOUTE LA DIFFERENCE. Rien n'est detruit,
+ * ni ici ni en face : la pose du moteur enchaine sur `destroyMatching`, ce
+ * chemin-ci ne le fait pas. Un deplacement qui detruirait vaudrait un de
+ * gratuit, ce que l'effet n'est pas — « aucune destruction declenchee par ce
+ * deplacement ».
+ *
+ * ⚠️ ET LE TASSEMENT NE COUTE RIEN ICI : le de part du SOMMET, donc rien ne
+ * descend derriere lui. On passe quand meme par `compact`, pour que ce chemin
+ * ne soit pas le seul du fichier a rendre une grille non tassee le jour ou la
+ * hauteur changera.
+ */
+function moveTop(grid, depuis, vers) {
+  const rate = { grid, ok: false, de: -1, a: -1, value: null };
+  if (depuis === vers) return rate;
+  if (depuis < 0 || depuis >= COLUMNS || vers < 0 || vers >= COLUMNS) return rate;
+  const source = topCell(grid, depuis);
+  if (source < 0) return rate;
+  if (isColumnFull(grid, vers)) return rate;
+  const value = grid[source];
+  const next = grid.slice();
+  next[source] = null;
+  const libre = freeCellInColumn(next, vers);
+  if (libre < 0) return rate;
+  next[libre] = value;
+  return { grid: compact(next), ok: true, de: source, a: libre, value };
+}
+
+/**
+ * ECHANGER DEUX QUARTS DU PONT — le changement de quart de Sayyida al-Hurra.
+ *
+ * ⚠️ LES QUARTS SONT COMMUNS AUX DEUX CAMPS, donc l'echange l'est aussi : une
+ * table doit etre la meme des deux cotes, sinon ce n'est plus un duel. Ce qui
+ * rend l'effet interessant n'est pas une asymetrie du multiplicateur — il n'y en
+ * a pas — mais celle des DES DEJA POSES : on echange la colonne ou l'autre a
+ * bati contre celle qui punit, et les deux totaux bougent sans qu'un seul de ait
+ * remue.
+ */
+function swapQuarters(quarters, a, b) {
+  if (a === b) return { quarters, ok: false };
+  if (a < 0 || a >= COLUMNS || b < 0 || b >= COLUMNS) return { quarters, ok: false };
+  const next = quarters.slice();
+  next[a] = quarters[b];
+  next[b] = quarters[a];
+  return { quarters: next, ok: true };
 }
 
 function rollDie(rng) {
@@ -353,7 +470,11 @@ export {
   destroyMatching,
   destroyValueInColumn,
   clearCell,
+  rollDie,
   clearColumn,
   swapCell,
-  rollDie,
+  suivreCase,
+  topCell,
+  moveTop,
+  swapQuarters,
 };

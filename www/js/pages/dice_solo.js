@@ -37,6 +37,16 @@ const A_CIBLE = new Map([
   ['B009', { colonne: false, adverse: false }],   // le troc de des face a face
   ['B010', { colonne: true, adverse: false }],    // la bordee, les deux colonnes
   ['B011', { colonne: true, adverse: true }],     // la malediction
+  /* ⚠️ LE SECOND LOT, ET DEUX D'ENTRE EUX VISENT DEUX FOIS. `deux: true` dit
+     que l'effet demande une PREMIERE colonne avant la seconde : le serveur de
+     poche retient la premiere et ne joue l'effet qu'a la seconde, exactement
+     comme `Match.pickCell`. Sans cela, la manoeuvre partirait avec une seule
+     colonne, le moteur rendrait null, et le joueur verrait un jeton mort.
+     Le brouillard (B013) ne vise rien : il n'est pas dans cette table. Le de
+     pipe (B012) non plus — il vise une VALEUR, et passe par `face`. */
+  ['B014', { colonne: true, adverse: false, deux: true }],  // la manoeuvre de pont
+  ['B015', { colonne: false, adverse: false }],             // la coque renforcee
+  ['B016', { colonne: true, adverse: false, deux: true }],  // le changement de quart
 ]);
 
 const PAUSE_MACHINE = 900;
@@ -47,6 +57,11 @@ export class ServeurDePoche {
     this.on = handlers || {};
     this.horloges = new Set();
     this.mort = false;
+    /* L'effet arme, et la PREMIERE colonne d'une visee en deux temps. Les deux
+       vivent ici et non dans le moteur : viser est un etat d'ecran (voir
+       `avecVisee`), et le moteur ne connait pas d'effet a moitie joue. */
+    this.enAttente = null;
+    this.premiere = null;
   }
 
   /** Toujours pret : il n'y a pas de socket a attendre. */
@@ -94,6 +109,26 @@ export class ServeurDePoche {
         seat: this.partie.moi,
         target: spec.adverse ? 1 - this.partie.moi : this.partie.moi,
         column: spec.colonne,
+        /* ⚠️ LES TROIS CHAMPS QUE L'ECRAN LIT DEPUIS B012-B016, et il les lit
+           SANS savoir s'il parle a un serveur ou a ce moteur de poche : c'est
+           tout l'objet de cette couche. `identify` nomme l'etape en cours,
+           `premiere` marque la colonne deja designee, `faces` reste nul —
+           un effet a cible n'en propose pas. */
+        identify: this.enAttente,
+        premiere: this.premiere === null || this.premiere === undefined
+          ? null : this.premiere,
+        faces: null,
+      };
+    } else if (this.enAttente === 'B012') {
+      /* Le de pipe ne vise pas une case : il n'est pas dans `A_CIBLE`, et son
+         attente se decrit par les deux valeurs qu'il propose. */
+      st.pending = {
+        seat: this.partie.moi,
+        target: this.partie.moi,
+        column: false,
+        identify: 'B012',
+        premiere: null,
+        faces: this.partie.facesPossibles(this.partie.moi),
       };
     }
     return st;
@@ -157,6 +192,7 @@ export class ServeurDePoche {
            dans `passerLaMain` ; ici elle restait armee pendant tout le tour de
            la machine, et le plateau refusait le de au retour. */
         this.enAttente = null;
+        this.premiere = null;
         this.pousser(fx);
         if (this.partie.finie) this.plusTard(() => this.conclure(), 700);
         else this.faireJouerLaMachine();
@@ -191,14 +227,49 @@ export class ServeurDePoche {
            raison, que l'ecran affiche. On refuse aux memes conditions que le
            moteur, en silence comme lui : c'est le ratelier qui grise. */
         if (!this.partie.peutJouer(moi, msg.identify)) { this.pousser([]); return true; }
-        if (A_CIBLE.has(msg.identify)) { this.enAttente = msg.identify; this.pousser([]); return true; }
+        /* Le de pipe vise une VALEUR : on arme, l'ecran propose ses deux faces,
+           et `face` conclut. Meme chemin que `pickFace` sur le serveur. */
+        if (msg.identify === 'B012') {
+          this.enAttente = msg.identify;
+          this.premiere = null;
+          this.pousser([]);
+          return true;
+        }
+        if (A_CIBLE.has(msg.identify)) {
+          this.enAttente = msg.identify;
+          this.premiere = null;
+          this.pousser([]);
+          return true;
+        }
         const fx = this.partie.effet(moi, msg.identify, null);
+        this.pousser(fx || []);
+        return true;
+      }
+      case 'face': {
+        /* ⚠️ LE MOTEUR REVALIDE, ET C'EST LUI QUI TRANCHE. L'ecran ne propose
+           que deux faces, mais ce n'est pas l'ecran qui fait la regle : le
+           serveur de poche refuse comme le vrai refuserait, et le verificateur
+           du serveur relira le journal de toute facon. */
+        if (this.enAttente !== 'B012') return true;
+        const fx = this.partie.effetFace(moi, 'B012', msg.face);
+        if (fx) { this.enAttente = null; this.premiere = null; }
         this.pousser(fx || []);
         return true;
       }
       case 'cell': {
         if (!this.enAttente) return true;
-        const fx = this.partie.effet(moi, this.enAttente, msg.cell);
+        /* ⚠️ PREMIER TEMPS D'UNE VISEE EN DEUX TEMPS : rien n'est joue, on
+           retient la colonne et on repeint pour que l'ecran la marque. Le
+           moteur, lui, ne connait pas d'effet a moitie joue — c'est ici que
+           l'etat intermediaire vit, exactement comme `pending.premiere` cote
+           serveur. */
+        const forme = A_CIBLE.get(this.enAttente);
+        if (forme && forme.deux && this.premiere === null) {
+          this.premiere = msg.cell;
+          this.pousser([]);
+          return true;
+        }
+        const fx = this.partie.effet(moi, this.enAttente, msg.cell, this.premiere);
         /* ⚠️ UNE CASE REFUSEE NE DESARME PAS L'EFFET. C'est ce que fait le vrai
            serveur — « `pending` reste POSE : l'effet demeure arme, on vise
            ailleurs ». Le desarmer ici obligeait a rouvrir la cale et a recliquer
@@ -210,6 +281,7 @@ export class ServeurDePoche {
       }
       case 'unbonus':
         this.enAttente = null;
+        this.premiere = null;
         this.pousser([]);
         return true;
       case 'leave':

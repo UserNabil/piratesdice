@@ -26,7 +26,8 @@ import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
+         envoyerCoup } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
@@ -335,12 +336,36 @@ function build() {
 
 /* Le reseau revient, ou l'application repasse au premier plan : ce sont les deux
    instants ou une tentative aboutit. On ne les laisse pas passer. */
+/**
+ * ⛔ ET CE RACCOURCI NE SERVAIT JAMAIS AU MOMENT OU IL COMPTE. Les deux
+ * ecouteurs etaient gardes par `!S.net` — or `connect()` pose `S.net` AVANT
+ * d'attendre la socket. Pendant les secondes ou une tentative est en vol,
+ * `S.net` n'est donc pas nul, et l'evenement qui annonce le retour du reseau
+ * etait ignore : on continuait d'attendre la garde d'une tentative partie quand
+ * il n'y avait pas de reseau, au lieu d'en lancer une qui aboutirait.
+ *
+ * C'est exactement l'instant qu'il ne faut pas manquer quand une table nous
+ * attend : on abandonne la tentative morte et on recommence tout de suite.
+ */
+function reveiller() {
+  if (!S.open) return;
+  if (!S.net) { arreterRelance(); connect(); return; }
+  /* Une socket vivante n'a rien a se faire dire ; une partie de poche non plus,
+     c'est elle qui tient `S.net`. */
+  if (S.net.ready || S.poche) return;
+  if (!enPartie()) return;
+  /* `close()` marque `closedByUs` : le gestionnaire `closed` sortira sans
+     reprogrammer quoi que ce soit, et c'est nous qui reprenons la main. */
+  try { S.net.close(); } catch (_) { /* deja morte */ }
+  S.net = null;
+  arreterRelance();
+  connect();
+}
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => {
-    if (S.open && !S.net) { arreterRelance(); connect(); }
-  });
+  window.addEventListener('online', reveiller);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && S.open && !S.net) { arreterRelance(); connect(); }
+    if (!document.hidden) reveiller();
   });
 }
 
@@ -391,7 +416,7 @@ async function connect() {
       + '<p>' + esc(t('connect.boarding')) + '</p></div>';
   }
 
-  S.net = new DiceNet({
+  const net = new DiceNet({
     welcome: (m) => {
       /* On est passe : l'attente repart de zero pour la prochaine coupure. */
       arreterRelance();
@@ -562,6 +587,10 @@ async function connect() {
          laisser en place derriere une socket morte, c'est promettre un canal
          qui n'existe plus. */
       if (byUs) return;
+      /* ⚠️ MAIS SEULEMENT SI C'EST ENCORE LA NOTRE. Une socket abandonnee peut
+         rendre son `close` longtemps apres qu'une liaison neuve l'a remplacee :
+         effacer `S.net` a ce moment-la jetterait celle qui marche. */
+      if (S.net !== net) return;
       S.net = null;
       if (!S.open) return;
       /* ⚠️ LE PONT DOIT DIRE QU'IL EST SEUL. Le bandeau « sans reseau » et le
@@ -579,9 +608,17 @@ async function connect() {
       relancerPlusTard();
     },
   });
+  S.net = net;
 
-  try { await S.net.connect(); }
-  catch (_) { connectFailed(); }
+  /* ⚠️ UNE TENTATIVE ABANDONNEE NE PARLE PLUS AU NOM DU JEU. `reveiller()` peut
+     jeter celle-ci pour en lancer une meilleure pendant qu'on attend ici : son
+     echec arriverait alors APRES, et reprogrammerait une relance par-dessus la
+     tentative en cours. On ne conclut que si l'on est encore la tentative
+     courante. */
+  /* En partie, la garde est courte : mieux vaut six tentatives dans la fenetre
+     de reprise qu'une seule attente de huit secondes (voir RELANCE_PARTIE). */
+  try { await net.connect(enPartie() ? { garde: GARDE_PARTIE } : undefined); }
+  catch (_) { if (S.net === net) connectFailed(); }
 }
 
 
@@ -646,6 +683,37 @@ const RELANCE_MAX = 15000;
 let relanceDelai = RELANCE_MIN;
 let relanceTimer = 0;
 
+/* ⛔ LE BACKOFF FAISAIT PERDRE DES PARTIES, ET DES POINTS DE CLASSEMENT.
+   Signale en production : « apres un lance de des un joueur a ete ejecte du
+   serveur et n'a pas pu la reprendre et a perdu des points de classement. »
+
+   Ce n'est pas une panne du serveur, c'est une COURSE, et le telephone la
+   perdait. Le serveur garde la table de cote pendant `DICE_RESUME_MS` puis
+   declare forfait — et un forfait par deconnexion deplace bien l'Elo (c'est
+   voulu : sans cela, couper son reseau serait la sortie gratuite d'une partie
+   perdue). En face, la relance doublait son attente a chaque echec, une seule
+   tentative en vol, et chaque tentative pouvait couter jusqu'a quatorze
+   secondes (six pour le jeton, huit pour la garde de la socket) :
+
+     t=0     coupure
+     t=1s    tentative 1  ── echoue au pire a t=15s
+     t=17s   tentative 2  ── echoue au pire a t=31s
+     t=30s   le serveur a deja declare forfait
+
+   DEUX tentatives ratees suffisaient a bruler la fenetre. L'attente qui double
+   a tout son sens devant un serveur eteint — marteler le ralentit et vide la
+   batterie — mais elle n'en a AUCUN quand une table nous attend et qu'un
+   chronometre tourne dessus. En partie, on frappe donc a cadence fixe et avec
+   une garde courte, pour depenser la fenetre en TENTATIVES plutot qu'en
+   attente. */
+const RELANCE_PARTIE = 500;
+const GARDE_PARTIE = 4000;
+
+/** Une table nous attend-elle a l'autre bout ? La cadence en depend. */
+function enPartie() {
+  return !!(S.state && S.state.phase !== 'over' && !S.poche);
+}
+
 /* ⛔ `RELANCE_MUETTE` A DISPARU AVEC L'ECRAN D'ECHEC. Elle comptait les
    tentatives silencieuses avant de MONTRER la panne : au quatrieme essai, le
    joueur recevait le diagnostic en pleine figure. Il n'y a plus rien a montrer,
@@ -659,8 +727,11 @@ function arreterRelance() {
 
 function relancerPlusTard() {
   if (relanceTimer) return;                     // une seule tentative en vol
-  const dans = relanceDelai;
-  relanceDelai = Math.min(RELANCE_MAX, relanceDelai * 2);
+  /* En partie, la cadence est fixe et courte : voir RELANCE_PARTIE. L'attente
+     qui double reste la regle partout ailleurs. */
+  const pressee = enPartie();
+  const dans = pressee ? RELANCE_PARTIE : relanceDelai;
+  if (!pressee) relanceDelai = Math.min(RELANCE_MAX, relanceDelai * 2);
   relanceTimer = setTimeout(() => {
     relanceTimer = 0;
     if (!S.open) return;                        // le joueur est parti : on se tait
@@ -738,12 +809,12 @@ function onKey(ev) {
   if (!S.state || S.state.phase !== 'playing' || S.state.turn !== S.seat) return;
 
   if (ev.key === ' ' || ev.key === 'r' || ev.key === 'R') {
-    if (S.state.dice[S.seat] === null) { ev.preventDefault(); S.net.send({ t: 'roll' }); }
+    if (S.state.dice[S.seat] === null) { ev.preventDefault(); envoyerCoup({ t: 'roll' }); }
     return;
   }
   if (['1', '2', '3', '4'].includes(ev.key) && S.state.dice[S.seat] !== null) {
     ev.preventDefault();
-    S.net.send({ t: 'place', column: parseInt(ev.key, 10) - 1 });
+    envoyerCoup({ t: 'place', column: parseInt(ev.key, 10) - 1 });
   }
 }
 
@@ -833,7 +904,27 @@ function tailleBourse(n) {
  * dans le pont et dans le classement, qui sont faits pour cela.
  */
 function renderWallet() {
+  /* ⛔ SANS RESEAU, LA BARRE DU HAUT SE VIDAIT — OR ELLE SAIT. `S.me` n'arrive
+     qu'avec le message d'accueil : tant qu'il n'est pas venu, cette fonction
+     sortait a la premiere ligne et les trois plaques disparaissaient. Le joueur
+     ouvrait le jeu dans le metro et voyait une barre nue, comme si sa bourse
+     avait ete remise a zero.
+
+     La cale garde pourtant la derniere fiche connue — c'est elle qui habille
+     deja le mode hors ligne (`cale.moi()`, voir dice_cale.js). On la lit ICI,
+     au rendu, plutot que d'attendre qu'un autre chemin veuille bien remplir
+     `S.me` : c'est le seul endroit par lequel les plaques passent, donc le seul
+     ou l'oubli ne peut pas se reproduire.
+
+     ⚠️ CE N'EST PAS UNE VERITE, C'EST UN SOUVENIR. Ces nombres n'engagent rien :
+     la bourse est arbitree par le serveur, et le premier `welcome` les remplace.
+     Montrer la derniere valeur connue en attendant vaut mieux que ne rien
+     montrer — un compteur absent se lit comme une perte. */
+  if (!S.me) S.me = cale.moi();
   if (!S.me) return;
+  /* Le rang suit la meme regle que la bourse : la derniere position connue
+     plutot qu'un tiret, tant que le serveur n'a pas repondu. */
+  if (!S.rang) S.rang = cale.rangConnu();
   /* ⚠️ LES TROIS PLAQUES SONT DES IMAGES, PAS DES BOITES DESSINEES EN CSS. Elles
      portent leur piece, leurs rivets et leur usure : les refaire en degrades et
      en ombres aurait donne trois rectangles qui ressemblent au jeu sans en etre.
@@ -859,6 +950,16 @@ function renderWallet() {
 function showMenu() {
   /* Le pont a sa boucle ; l'arene aura la sienne. */
   if (S.musique) S.musique.jouer('menu');
+  /* ⛔ ET LA BARRE DU HAUT SE PEINT ICI, PAS SEULEMENT SUR REPONSE DU SERVEUR.
+     `renderWallet` n'etait appele que depuis quatre gestionnaires de messages —
+     l'accueil, la fiche joueur, les hauts faits, le classement. Aucun ne se
+     declenche quand le serveur est injoignable : sans reseau, les trois plaques
+     n'etaient jamais dessinees, et le joueur ouvrait le jeu sur une barre nue,
+     comme si sa bourse avait ete videe.
+     Le pont est le seul endroit par lequel on arrive sur cet ecran, avec ou sans
+     reseau. C'est donc lui qui peint la barre, avec la derniere valeur connue
+     s'il le faut (voir `renderWallet`). */
+  renderWallet();
   renderMenu($('#dc-screen-menu'));
 }
 

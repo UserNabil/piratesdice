@@ -1842,8 +1842,8 @@
   margin: 0;
   /* L asset DESSINE deja les trous : le jeton s y pose, sans puits CSS. Il fait
      la taille d un trou (~0,42 du rayon du tambour). */
-  width: calc(var(--pd-rayon) * 0.42);
-  height: calc(var(--pd-rayon) * 0.42);
+  width: calc(var(--pd-rayon) * 0.40);
+  height: calc(var(--pd-rayon) * 0.40);
   background: none;
   border-radius: 50%;
   transition: opacity .15s ease;
@@ -1977,7 +1977,7 @@
   /* ⛔ L'ASSET NE COUVRAIT PAS TOUT LE DE. « Etire-le en vertical vers le bas
      pour couvrir tout le slot. » On deborde donc le cadre de chaines legerement
      en bas (et un rien sur les cotes), et on l'etire pour remplir la case. */
-  inset: -5% -4% -13% -4%;
+  inset: -8% -6% -20% -6%;
   background-size: 100% 100%;
   opacity: var(--cbt-coque-case-opacite, 1);
   /* Un halo d'or, la couleur de ce qui protege dans ce jeu. Il tient au dessin
@@ -1985,8 +1985,15 @@
   filter: drop-shadow(0 0 5px rgba(255, 196, 74, .55));
 }
 
-/* Le de sous une coque n'est pas assombri : rien ne le couvre, il est ENCADRE.
-   Celui sous la brume, si — c'est ce que la brume raconte. */
+/* ⛔ LE DE SOUS COQUE PORTE MAINTENANT SA PROTECTION. « Ajoute un filtre sur le
+   de comme une sorte de protection. » Il n'est plus assombri comme sous la brume :
+   il recoit une teinte doree — la couleur de ce qui protege dans ce jeu — et un
+   leger vernis, pour qu'on lise « blinde » et non « efface ». */
+#dicewrap .dc-cell-coque > .dc-face {
+  filter: brightness(1.05) saturate(1.25)
+          drop-shadow(0 0 3px rgba(255, 200, 90, .75));
+}
+/* Celui sous la brume, lui, est bien assombri — c'est ce que la brume raconte. */
 #dicewrap .dc-cell-brume > .dc-face { filter: brightness(.5) saturate(.7); }
 
 /* ── LA PREMIERE COLONNE D'UNE VISEE EN DEUX TEMPS ──────────────────────────

@@ -1361,289 +1361,110 @@ export function ratelierAuDebut() { pageRatelier = 0; }
 /* Poser les chambres autour du cylindre du barillet, et le rendre tournant.
    Les jetons sont poses en absolu depuis le CENTRE du cercle (bas du bloc) et
    projetes sur l arc du haut ; glisser a gauche/droite tourne le cylindre. */
-function disposerBarillet(cercle) {
-  const btns = Array.prototype.slice.call(cercle.querySelectorAll('.dc-bonus-btn'));
-  const n = btns.length;
-  const maxRot = Math.max(0, (n - 1) * BARILLET_PAS);
-  if (barilletRot > maxRot) barilletRot = maxRot;
-  if (barilletRot < 0) barilletRot = 0;
+/* ⛔ SIX TROUS, MAIS PAS SIX BONUS : ON FAIT DEFILER. « Il montre autant de
+   bonus qu'on defile a droite et a gauche ; plus on scrolle, plus on affiche les
+   suivants. » Le cadre reste FIXE ; ce sont les jetons qui glissent de trou en
+   trou. Le trou du haut porte toujours le bonus courant ; a plus de six bonus,
+   on tourne le barillet et les chambres se rechargent avec les suivants. */
+let barilletCentre = 0;   // index du bonus pose tout en haut du barillet
+
+/* Angles (degres depuis le haut) des six trous, du plus central au plus bas :
+   on remplit d'abord le trou du haut, puis ses voisins. L'offset entier associe
+   dit quel bonus, relatif au centre, occupe chaque trou. */
+const BARILLET_TROUS = [0, -60, 60, -120, 120, 180];
+const BARILLET_OFF   = BARILLET_TROUS.map((a) => Math.round(a / 60)); // 0,-1,1,-2,2,3
+
+function disposerBarillet(cercle, donnees, ctx) {
+  const slots = Array.prototype.slice.call(cercle.querySelectorAll('.dc-bonus-btn'));
+  const N = donnees.length;
+  if (!N) return;
   const R0 = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
-  const RAYON = R0 * 0.60;   // au CENTRE des trous dessines dans l'asset
+  const RAYON = R0 * 0.595;                 // centre exact des trous dessines dans l'asset
+  const defile = N > slots.length;          // plus de bonus que de trous : le barillet tourne
+  if (!defile) barilletCentre = 0;
+  const mod = (k) => ((k % N) + N) % N;
 
-  const placer = () => {
-    btns.forEach((b, i) => {
-      const rel = i * BARILLET_PAS - barilletRot;      // 0 = tout en haut
-      const k = Math.max(0, 1 - Math.abs(rel) / (BARILLET_PAS * 2.6));
-      const scale = 0.6 + 0.55 * k;
-      b.style.transform = 'translate(-50%, -50%) rotate(' + rel + 'deg) translateY(-'
-        + RAYON + 'px) rotate(' + (-rel) + 'deg) scale(' + scale.toFixed(3) + ')';
-      b.style.opacity = (0.26 + 0.74 * k).toFixed(2);
-      b.style.zIndex = String(100 - Math.round(Math.abs(rel)));
-      /* Le cadre tourne du meme angle : le barillet pivote pour de vrai, les
-         bonus restent poses dans leurs chambres. */
-      const auCentre = Math.abs(rel) < BARILLET_PAS / 2;
-      b.classList.toggle('dc-bonus-centre', auCentre);
-      if (auCentre) {
-        const nomEl = cercle.parentElement.querySelector('[data-nom]');
-        if (nomEl) nomEl.textContent = b.dataset.nom || '';
-      }
+  const remplir = () => {
+    const nomEl = cercle.parentElement.querySelector('[data-nom]');
+    slots.forEach((b, i) => {
+      const angle = BARILLET_TROUS[i];
+      const idx = defile ? mod(barilletCentre + BARILLET_OFF[i]) : (i < N ? i : -1);
+      if (idx < 0) { b.hidden = true; b.onclick = null; return; }  // trou vide (peu de bonus)
+      b.hidden = false;
+      const d = donnees[idx];
+      b.dataset.id = d.id;
+      b.dataset.nom = d.nom;
+      b.innerHTML = '<span class="dc-bonus-in"><img src="' + bonusArt(d.id)
+        + '" alt=""><span class="dc-bonus-qty">' + esc(String(d.badge)) + '</span></span>';
+      b.classList.toggle('dc-bonus-free', !!d.cadeau);
+      b.classList.toggle('dc-bonus-joue', !!d.joue);
+      /* Pose le jeton au CENTRE du trou (rotation puis contre-rotation pour le
+         garder droit). Le trou du haut est en avant, plus grand ; les autres
+         reculent legerement. Le cadre, lui, ne tourne pas. */
+      const central = Math.abs(angle) < 1;
+      const proche = Math.abs(angle) <= 61;
+      const scale = central ? 1.1 : (proche ? 0.92 : 0.76);
+      b.style.transform = 'translate(-50%,-50%) rotate(' + angle + 'deg) translateY(-'
+        + RAYON + 'px) rotate(' + (-angle) + 'deg) scale(' + scale + ')';
+      b.style.opacity = proche ? '1' : '0.88';
+      b.style.zIndex = String(100 - Math.round(Math.abs(angle)));
+      b.classList.toggle('dc-bonus-centre', central);
+      const epuise = ctx.left <= 0;
+      const pourquoi = ctx.raison(d.id);
+      b.classList.toggle('dc-bonus-mute', !ctx.monTour() || epuise || !!pourquoi);
+      if (central && nomEl) nomEl.textContent = d.nom || '';
     });
-    const cadre = cercle.querySelector('.dc-barillet-cadre');
-    if (cadre) cadre.style.transform = 'rotate(' + (-barilletRot) + 'deg)';
   };
-  placer();
+  remplir();
 
-  let actif = false, x0 = 0, rot0 = 0, bouge = 0;
-  const down = (ev) => {
-    actif = true; bouge = 0; x0 = ev.clientX; rot0 = barilletRot;
-    if (cercle.setPointerCapture) { try { cercle.setPointerCapture(ev.pointerId); } catch (_) { /* rien */ } }
-  };
-  const move = (ev) => {
-    if (!actif) return;
-    const dx = ev.clientX - x0;
-    if (Math.abs(dx) > bouge) bouge = Math.abs(dx);
-    barilletRot = Math.max(0, Math.min(maxRot, rot0 - dx * 0.42));
-    placer();
-  };
-  const up = () => {
-    if (!actif) return;
-    actif = false;
-    if (bouge > 6) barilletDrague = true;                 // glissement, pas un clic
-    barilletRot = Math.max(0, Math.min(maxRot,
-      Math.round(barilletRot / BARILLET_PAS) * BARILLET_PAS));
-    placer();
-    setTimeout(() => { barilletDrague = false; }, 60);
-  };
-  cercle.addEventListener('pointerdown', down);
-  cercle.addEventListener('pointermove', move);
-  cercle.addEventListener('pointerup', up);
-  cercle.addEventListener('pointercancel', up);
-}
-
-export function renderBonusRack() {
-  const rack = $('#dc-bonus');
-  if (!rack || !S.state) return;
-  const left = S.state.bonusLeft ? S.state.bonusLeft[S.seat] : 0;
-  /* ⚠️ L'EFFET OFFERT PAR LE CAPITAINE N'EST PLUS FORCEMENT LA RELANCE.
-     Chaque capitaine en offre un — relance, longue-vue ou benediction — et il
-     apparait dans le ratelier meme sans jeton en cale, sinon le trait resterait
-     invisible a qui n'a rien achete. Le serveur dit LEQUEL. */
-  const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
-  const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i));
-
-  /* ⛔ LE SAC DEVENAIT UN BOUTON MORT, ET ON NE POUVAIT PAS SAVOIR POURQUOI.
-     Quand il n'y avait plus rien a montrer, le ratelier se vidait — et
-     `ouvrirCale()`, voyant un ratelier vide, refusait de s'ouvrir. Le joueur
-     appuyait sur « Inventaire », rien ne bougeait, et il en concluait a un
-     blocage : « quand le joueur a joue ses 3 bonus, le bouton d'inventaire
-     devient grise et bloque. »
-     C'est la meme lecon que pour les jetons eux-memes, apprise deux fois deja :
-     un bouton qui ne peut rien faire doit le DIRE, pas se taire. Le ratelier
-     porte donc une ligne qui explique, et le sac s'ouvre toujours. */
-  if (!owned.length && !offert) {
-    rack.innerHTML = '<div class="dc-bonus-vide">'
-      + esc(left <= 0 ? t('bonus.plusDeTour') : t('bonus.empty')) + '</div>';
-    return;
-  }
-  /* L'effet offert ne se compte pas deux fois : s'il en reste aussi en cale, il
-     n'apparait qu'une seule fois, gratuit — c'est celui-la qu'on depense d'abord. */
-  /* ⚠️ UN EFFET DEJA JOUE RESTE VISIBLE, MAIS ETEINT. Le serveur refuse le
-     second usage (un effet par partie) : le retirer du ratelier ferait
-     disparaitre un jeton sans explication, et le joueur croirait l'avoir
-     perdu. Il reste a sa place, grise, et son infobulle dit pourquoi. */
-  const joues = (S.state.bonusJoues && S.state.bonusJoues[S.seat]) || [];
-  const boutons = owned.filter((i) => i.identify !== offert);
-  /* ⚠️ UN INTERIEUR EN PLUS, ET IL N'EST PAS DECORATIF. Le jeton est pose sur
-     l'arc par une rotation ; sans un enfant qui la DEFAIT, le dessin et son
-     compteur penchent de l'angle du jeton — c'est exactement le piege qu'on
-     avait deja rencontre avec les humeurs, et la meme parade. */
-  const bouton = (id, titre, badge, cadeau) => `
-      <button class="dc-bonus-btn${cadeau ? ' dc-bonus-free' : ''}${joues.includes(id) ? ' dc-bonus-joue' : ''}"
-              data-id="${esc(id)}" data-nom="${esc(titre)}"
-              title="${esc(titre)} — ${esc(joues.includes(id) ? t('bonus.spent') : t('bonus.left', { n: left }))}">
-        <span class="dc-bonus-in">
-          <img src="${bonusArt(id)}" alt="">
-          <span class="dc-bonus-qty">${esc(String(badge))}</span>
-        </span>
-      </button>`;
-
-  /* ⛔ LES JETONS ACHETES PORTAIENT LE TEXTE DE LA BASE, C'EST-A-DIRE L'ANGLAIS.
-     `i.description` vient du catalogue serveur, qui ne parle qu'une langue ; le
-     jeton OFFERT, lui, passait deja par `t()`. Deux jetons cote a cote dans le
-     meme ratelier, l'un en francais et l'autre en anglais. La traduction existe
-     pour les onze effets — il suffisait de la demander. */
-  const nomDeLEffet = (id, secours) => {
-    const dit = t('shop.' + id + '.name');
-    return dit && !dit.startsWith('shop.') ? dit : (secours || id);
-  };
-  const tous = (offert ? [bouton(offert, nomDeLEffet(offert), t('bonus.free'), true)] : [])
-    .concat(boutons.map((i) => bouton(i.identify, nomDeLEffet(i.identify, i.description),
-                                      i.quantity, false)));
-
-  /* ⛔ SEIZE EFFETS NE TIENNENT PAS DANS UNE BANDE. L'eventail avait deja cede
-     la place a une grille parce qu'un arc n'a que trois places ; la grille, elle,
-     passe a la ligne — et a seize jetons elle passe a la ligne quatre fois,
-     mange la moitie de l'ecran et recouvre les deux plateaux. Ce n'est pas un
-     defaut de la grille : c'est qu'on lui demande de tout montrer d'un coup.
-
-     ⚠️ ET LA LISTE VA CONTINUER DE GRANDIR. « On va ajouter au fur et a mesure
-     des capitaines et effets » : une mise en page qui tient pour seize et casse
-     a vingt-et-un ne fait que repousser le probleme. Cinq par page, des points
-     dessous, et le nombre d'effets cesse d'etre une contrainte de dessin.
-
-     ⚠️ LE JETON OFFERT EST TOUJOURS EN TETE, donc toujours en premiere page :
-     c'est celui qu'on joue le plus, et celui qui ne coute rien. */
-  /* ⛔ LE BARILLET : ON FAIT DEFILER, ON NE TOURNE PLUS LES PAGES. « Affiche
-     les bonus comme un barillet ou le joueur scrolle a droite et a gauche pour
-     naviguer. » La pagination a points cede la place a une bande horizontale a
-     accrochage : tous les jetons sont en file, le pouce glisse, et celui du
-     centre est mis en avant. Le jeton offert reste en tete. */
-  /* ⛔ UN VRAI BARILLET DE REVOLVER. « Un cylindre de pistolet qui apparait a
-     moitie au-dessus des boutons. » Les jetons sont les CHAMBRES, posees autour
-     d'un cercle dont seule la moitie haute depasse le pied. On fait TOURNER le
-     cylindre en glissant a gauche/droite ; celui qui arrive en haut est mis en
-     avant, et un clic le joue. */
-  /* ⛔ SIX CHAMBRES, SIX BONUS. L'asset du barillet a six trous : on n'en pose
-     donc que six (l'offert en tete). Au-dela, le barillet ne peut pas les
-     montrer — c'est la limite d'un vrai barillet a six coups. */
-  const enChambre = tous.slice(0, 6);
-  rack.innerHTML = '<div class="dc-barillet">'
-    + '<div class="dc-barillet-nom" data-nom></div>'
-    + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
-    + enChambre.join('') + '</div>'
-    + '<div class="dc-barillet-info" data-info hidden></div>'
-    + '</div>';
-  const cercle = rack.querySelector('.dc-barillet-cercle');
-  if (cercle) disposerBarillet(cercle);
-
-  /* ⛔ L'EVENTAIL A VECU. Il tenait pour trois jetons ; a cinq ou six, l'arc se
-     resserrait jusqu'a ce qu'ils se recouvrent — « ça affiche mal quand tu as
-     plusieurs bonus ». Un arc a une longueur, donc un nombre de places : au-dela
-     il ne reste que le choix de mal l'afficher. Une GRILLE, elle, n'a pas cette
-     limite ; elle passe a la ligne.
-     Elle se pose au meme endroit que la rangee des humeurs — juste au-dessus du
-     bandeau, la seule bande que les plateaux ne disputent pas — et c'est le CSS
-     qui la centre : plus un seul angle a calculer. */
-  const pied = $('#dicewrap .dc-foot');
-  if (pied) {
-    const r = pied.getBoundingClientRect();
-    const scene = rack.offsetParent
-      ? rack.offsetParent.getBoundingClientRect()
-      : { bottom: window.innerHeight };
-    /* ⛔ LE BARILLET SORT DE DERRIERE LES BOUTONS. Son bas s'aligne sur le bas
-       du pied (au lieu de flotter au-dessus) : le panneau violet plonge donc
-       derriere les boutons, et seuls les trois jetons du haut depassent. Le pied
-       (z-index 34) le recouvre par en bas. */
-    /* La fenetre du cylindre plonge dans le pied : sa moitie basse passe donc
-       DERRIERE les boutons, et seule la couronne haute des chambres depasse. */
-    rack.style.bottom = Math.max(0, scene.bottom - r.top - 30) + 'px';
+  /* On tourne le barillet en glissant a gauche/droite : chaque pas d'un demi-cran
+     recharge les chambres avec les bonus suivants. Fond violet oblige, le
+     glissement ne referme pas la cale. Un seul cran par ~46 px, accrochage net. */
+  if (defile) {
+    const PAS_PX = 46;
+    let actif = false, x0 = 0, c0 = 0, bouge = 0;
+    const down = (ev) => {
+      actif = true; bouge = 0; x0 = ev.clientX; c0 = barilletCentre;
+      if (cercle.setPointerCapture) { try { cercle.setPointerCapture(ev.pointerId); } catch (_) { /* rien */ } }
+    };
+    const move = (ev) => {
+      if (!actif) return;
+      const dx = ev.clientX - x0;
+      if (Math.abs(dx) > bouge) bouge = Math.abs(dx);
+      const c = c0 - Math.round(dx / PAS_PX);
+      if (c !== barilletCentre) { barilletCentre = c; remplir(); }
+    };
+    const up = () => {
+      if (!actif) return;
+      actif = false;
+      if (bouge > 6) { barilletDrague = true; setTimeout(() => { barilletDrague = false; }, 60); }
+    };
+    cercle.addEventListener('pointerdown', down);
+    cercle.addEventListener('pointermove', move);
+    cercle.addEventListener('pointerup', up);
+    cercle.addEventListener('pointercancel', up);
   }
 
-  /* ⚠️ UN BOUTON DESACTIVE NE DIT RIEN, ET SUR TELEPHONE IL NE DIT MEME PAS SON
-     NOM : il n'y a pas de survol, donc pas d'infobulle. Le joueur appuyait sur un
-     jeton grise sans savoir ni a quoi il sert, ni pourquoi il ne part pas. Le
-     bouton reste donc VIVANT : il repond, et ce qu'il repond est la raison —
-     exactement ce que fait deja le gobelet quand ce n'est pas votre tour. */
-  /* ⚠️ LE GEL POUVAIT SE MARTELER. Le serveur refuse bien un second gel tant que
-     le premier n'a pas ete consomme — `check` de B006 — mais l'ecran, lui, ne
-     disait rien : le jeton restait vif, on appuyait, et le refus revenait en
-     message d'erreur. Trois appuis, trois erreurs, et l'impression que le jeu
-     ne repond pas. Un bouton qui ne peut rien faire doit le montrer AVANT. */
-  /* ⚠️ CINQ EFFETS SE MARTELAIENT, PAS UN SEUL. La regle etait ecrite pour le
-     gel, en dur, et les quatre effets qui ont depuis la meme forme — un drapeau
-     unique par siege que le serveur refuse de poser deux fois — repassaient tous
-     par le chemin du message d'erreur. Cette table dit ce que `check()` dit
-     cote serveur ; elle ne le REMPLACE pas, elle l'annonce plus tot. Deux
-     verites, oui, mais la seconde ne fait que rendre la premiere lisible : c'est
-     le serveur qui refuse, l'ecran ne fait qu'eviter le geste inutile. */
-  const foe = 1 - S.seat;
-  const dit = S.state || {};
-  /* ⛔ ET DEUX EFFETS N'EXISTENT PAS DANS UNE PARTIE HORS LIGNE. La longue-vue
-     casserait l'ordre de consommation du hasard sur lequel repose la
-     verification ; le tour rallonge n'a pas de pendule a rallonger. Le moteur de
-     poche les refuse tous les deux — en silence, donc le jeton paraissait mort.
-     On le dit avant le geste, comme pour tous les autres refus. */
-  const enPoche = !!S.poche;
-  /* ⛔ CINQ JETONS AVAIENT L'AIR JOUABLES AU PREMIER TOUR DE CHAQUE PARTIE, et
-     le serveur les refusait tous les cinq. La table ci-dessous ne connaissait que
-     les refus rares — une colonne deja gelee, un tour deja vole — et ignorait les
-     plus frequents de tous : un de pas encore lance, un plateau encore vide.
-     Mesure : plateaux vides, de en main, cinq refus sur onze jetons vifs.
-     Un bouton qui ne peut rien faire doit le montrer AVANT le geste ; c'est la
-     regle que ce bloc s'est deja donnee pour le gel. */
-  const monPlateauVide = !(dit.grids && dit.grids[S.seat] || []).some((v) => v !== null);
-  const sonPlateauVide = !(dit.grids && dit.grids[foe] || []).some((v) => v !== null);
-  const deEnMain = !!(dit.dice && dit.dice[S.seat] !== null && dit.dice[S.seat] !== undefined);
-  const IMPOSSIBLE = {
-    /* Relancer demande un de en main ; effacer une de ses cases demande d'en
-       avoir une ; le canon, le troc et la bordee demandent un plateau en face. */
-    B001: !deEnMain ? 'err.lanceDabord' : null,
-    B002: monPlateauVide ? 'err.monPlateauVide' : null,
-    B003: sonPlateauVide ? 'err.plateauAdverseVide' : null,
-    B004: enPoche ? 'offline.pasIci' : null,
-    B009: (monPlateauVide || sonPlateauVide) ? 'err.pasDeVisAVis' : null,
-    B010: (monPlateauVide && sonPlateauVide) ? 'err.deuxPlateauxVides' : null,
-    B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
-    B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
-    /* Il vise desormais EN FACE : plus besoin d'etre sur son propre tour au sens
-       ou l'entendait l'ancienne version, mais on ne presse pas deux fois. */
-    /* ⚠️ ET CONTRE UNE IA NON PLUS : une machine n'a pas de pendule a presser.
-       Le serveur le refuse desormais ; l'ecran le dit avant le geste, pour qu'on
-       ne brule pas une des trois places d'effet pour rien. */
-    B008: (enPoche || (dit.players && dit.players[foe] && dit.players[foe].ai))
-      ? 'offline.pasIci'
-      : (dit.tourCourt && dit.tourCourt[foe] ? 'fx.alreadySlowed' : null),
-    B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
-    /* ⚠️ LES CINQ NOUVEAUX SUIVENT LA MEME REGLE, et il fallait la leur donner :
-       cette table n'est pas une decoration, c'est ce qui evite au joueur de
-       bruler l'une de ses trois places d'effet contre un refus. Chaque ligne dit
-       exactement ce que dit le `check()` du serveur — pas davantage, sinon
-       l'ecran interdirait un coup que le serveur accepte. */
-    B012: !deEnMain ? 'err.lanceDabord' : null,
-    B013: dit.brume && dit.brume[S.seat] ? 'fx.brumeAlready' : null,
-    B014: !peutManoeuvrer(dit.grids && dit.grids[S.seat]) ? 'err.pasDeManoeuvre' : null,
-    B015: monPlateauVide ? 'err.monPlateauVide'
-      : (dit.protege && dit.protege[S.seat] >= 0 ? 'fx.coqueAlready' : null),
-    B016: quartsTousEgaux(dit.quarters) ? 'err.quartsEgaux' : null,
-  };
-  rack.querySelectorAll('.dc-bonus-btn').forEach((b) => {
-    /* ⛔ LE JETON OFFERT ECHAPPAIT AU PLAFOND, ET C'ETAIT LA MOITIE D'UNE TRICHE.
-       `!cadeau` l'exemptait : les trois effets depenses, le trait du capitaine
-       restait vif — et chaque clic dessus relancait la pendule du tour. Le
-       plafond compte desormais TOUT ce qui a ete joue, offert compris ; l'ecran
-       suit la meme regle que le serveur, sinon il promet un coup que le serveur
-       refusera. */
-    const epuise = left <= 0;
-    const pourquoi = IMPOSSIBLE[b.dataset.id] || null;
-    const redondant = !!pourquoi;
-    b.classList.toggle('dc-bonus-mute', !myTurn() || epuise || redondant);
+  /* ⛔ CHAQUE CHAMBRE SE JOUE ET SE DECRIT. Un clic court joue le bonus qui s'y
+     trouve A CET INSTANT (lu dans le dataset, car il change quand on tourne) ; un
+     maintien long montre sa description au-dessus du barillet. Le glissement (on
+     tourne) avale le clic. Les elements sont recrees a chaque rendu du ratelier,
+     donc les ecouteurs ne s'empilent pas. */
+  slots.forEach((b) => {
     b.onclick = (ev) => {
-      /* ⚠️ CE CLIC NE VA NULLE PART D'AUTRE. La cale se dessine PAR-DESSUS le
-         plateau : tout ce qui remonte ou retombe finit sur une colonne. */
       ev.preventDefault();
       ev.stopPropagation();
-      /* ⛔ TOURNER LE BARILLET N'EST PAS LE JOUER. Un glissement pour faire
-         defiler les chambres finissait par un clic qui declenchait l'effet du
-         jeton relache. On avale ce clic-la. */
       if (barilletDrague || barilletInfo) return;
+      const id = b.dataset.id;
+      if (!id) return;
       const nom = b.dataset.nom || '';
-      /* Un refus laisse la cale OUVERTE : le joueur vient de lire pourquoi, il
-         doit pouvoir viser un autre jeton sans tout rouvrir. */
-      if (!myTurn()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
-      if (epuise) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
-      if (redondant) { toast(t(pourquoi), 'warn'); return; }
-      envoyerCoup({ t: 'bonus', identify: b.dataset.id });
-      /* L'effet part : la cale n'a plus rien a montrer, et le plateau doit
-         redevenir visible — c'est lui qu'on va viser si l'effet demande une
-         cible. */
+      if (!ctx.monTour()) { toast(nom + ' — ' + t('game.waitTurn'), 'warn'); return; }
+      if (ctx.left <= 0) { toast(nom + ' — ' + t('bonus.left', { n: 0 }), 'warn'); return; }
+      const pourquoi = ctx.raison(id);
+      if (pourquoi) { toast(t(pourquoi), 'warn'); return; }
+      envoyerCoup({ t: 'bonus', identify: id });
       fermerCale();
-      barilletDrague = false;
     };
-
-    /* ⛔ CLIC LONG = « QU'EST-CE QUE CET EFFET ? ». « Si on reste clique dessus
-       longtemps, on voit aussi ce que le bonus applique. » Un maintien sur une
-       chambre montre sa description au-dessus du barillet ; un clic court la
-       joue toujours. Le glissement (rotation) annule le maintien. */
     let tenu = 0;
     const decrire = () => {
       const info = document.querySelector('[data-info]');
@@ -1658,7 +1479,7 @@ export function renderBonusRack() {
       finTenu();
       tenu = setTimeout(() => { tenu = 0; barilletInfo = true; decrire(); }, 450);
     });
-    b.addEventListener('pointermove', () => { /* un glissement annule le maintien */ finTenu(); });
+    b.addEventListener('pointermove', finTenu);
     const relacher = () => {
       finTenu();
       if (barilletInfo) { cacher(); setTimeout(() => { barilletInfo = false; }, 60); }
@@ -1666,6 +1487,84 @@ export function renderBonusRack() {
     b.addEventListener('pointerup', relacher);
     b.addEventListener('pointerleave', relacher);
     b.addEventListener('pointercancel', relacher);
+  });
+}
+
+export function renderBonusRack() {
+  const rack = $('#dc-bonus');
+  if (!rack || !S.state) return;
+  const left = S.state.bonusLeft ? S.state.bonusLeft[S.seat] : 0;
+  const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
+  const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i));
+
+  if (!owned.length && !offert) {
+    rack.innerHTML = '<div class="dc-bonus-vide">'
+      + esc(left <= 0 ? t('bonus.plusDeTour') : t('bonus.empty')) + '</div>';
+    return;
+  }
+  const joues = (S.state.bonusJoues && S.state.bonusJoues[S.seat]) || [];
+  const boutons = owned.filter((i) => i.identify !== offert);
+  const nomDeLEffet = (id, secours) => {
+    const dit = t('shop.' + id + '.name');
+    return dit && !dit.startsWith('shop.') ? dit : (secours || id);
+  };
+  /* L'offert en tete (toujours le trou du haut), puis les jetons achetes. */
+  const donnees = (offert
+    ? [{ id: offert, nom: nomDeLEffet(offert), badge: t('bonus.free'), cadeau: true, joue: joues.includes(offert) }]
+    : []).concat(boutons.map((i) => ({
+      id: i.identify, nom: nomDeLEffet(i.identify, i.description),
+      badge: i.quantity, cadeau: false, joue: joues.includes(i.identify),
+    })));
+
+  const foe = 1 - S.seat;
+  const dit = S.state || {};
+  const enPoche = !!S.poche;
+  const monPlateauVide = !(dit.grids && dit.grids[S.seat] || []).some((v) => v !== null);
+  const sonPlateauVide = !(dit.grids && dit.grids[foe] || []).some((v) => v !== null);
+  const deEnMain = !!(dit.dice && dit.dice[S.seat] !== null && dit.dice[S.seat] !== undefined);
+  const IMPOSSIBLE = {
+    B001: !deEnMain ? 'err.lanceDabord' : null,
+    B002: monPlateauVide ? 'err.monPlateauVide' : null,
+    B003: sonPlateauVide ? 'err.plateauAdverseVide' : null,
+    B004: enPoche ? 'offline.pasIci' : null,
+    B009: (monPlateauVide || sonPlateauVide) ? 'err.pasDeVisAVis' : null,
+    B010: (monPlateauVide && sonPlateauVide) ? 'err.deuxPlateauxVides' : null,
+    B006: dit.geleCol && dit.geleCol[foe] >= 0 ? 'fx.colAlreadyFrozen' : null,
+    B007: dit.gele && dit.gele[foe] ? 'fx.alreadyFrozen' : null,
+    B008: (enPoche || (dit.players && dit.players[foe] && dit.players[foe].ai))
+      ? 'offline.pasIci'
+      : (dit.tourCourt && dit.tourCourt[foe] ? 'fx.alreadySlowed' : null),
+    B011: dit.maudCol && dit.maudCol[foe] >= 0 ? 'fx.colAlreadyCursed' : null,
+    B012: !deEnMain ? 'err.lanceDabord' : null,
+    B013: dit.brume && dit.brume[S.seat] ? 'fx.brumeAlready' : null,
+    B014: !peutManoeuvrer(dit.grids && dit.grids[S.seat]) ? 'err.pasDeManoeuvre' : null,
+    B015: monPlateauVide ? 'err.monPlateauVide'
+      : (dit.protege && dit.protege[S.seat] >= 0 ? 'fx.coqueAlready' : null),
+    B016: quartsTousEgaux(dit.quarters) ? 'err.quartsEgaux' : null,
+  };
+
+  rack.innerHTML = '<div class="dc-barillet">'
+    + '<div class="dc-barillet-nom" data-nom></div>'
+    + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
+    + '<button class="dc-bonus-btn"></button>'.repeat(6)
+    + '</div>'
+    + '<div class="dc-barillet-info" data-info hidden></div>'
+    + '</div>';
+
+  /* Le barillet sort de derriere les boutons : son bas plonge dans le pied, seule
+     la couronne haute des chambres depasse. */
+  const pied = $('#dicewrap .dc-foot');
+  if (pied) {
+    const r = pied.getBoundingClientRect();
+    const scene = rack.offsetParent
+      ? rack.offsetParent.getBoundingClientRect()
+      : { bottom: window.innerHeight };
+    rack.style.bottom = Math.max(0, scene.bottom - r.top - 30) + 'px';
+  }
+
+  const cercle = rack.querySelector('.dc-barillet-cercle');
+  if (cercle) disposerBarillet(cercle, donnees, {
+    left, monTour: myTurn, raison: (id) => IMPOSSIBLE[id] || null,
   });
 }
 

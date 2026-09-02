@@ -23,6 +23,19 @@ import { api } from '../core/api.js';
    secondes, contre une minute et demie devant une table morte. */
 const PING_MS = 6000;
 
+/* ⛔ HUIT SECONDES D'ATTENTE MUETTE COUTAIENT DES PARTIES. Quand la socket
+   tombe EN PLEINE PARTIE, le seul chronometre qui compte est la fenetre de
+   reprise du serveur : passe ce delai il declare forfait, et le classement
+   bouge. Une garde de huit secondes y consomme un quart de la fenetre PAR
+   TENTATIVE — deux essais malheureux et la table est perdue avant qu'on ait pu
+   revenir. Hors partie, rien ne presse et la garde large evite de declarer
+   morte une liaison lente. L'appelant dit donc ce qu'il attend. */
+const GARDE_DEFAUT = 8000;
+
+/* Combien de cadences sans un mot du serveur valent une liaison morte. Trois,
+   comme cote serveur : les deux bouts mesurent la meme chose. Voir `perdue()`. */
+const SILENCES_TOLERES = 3;
+
 export class DiceNet {
   constructor(handlers) {
     this.on = handlers || {};
@@ -30,14 +43,22 @@ export class DiceNet {
     this.ws = null;
     this.pinger = null;
     this.closedByUs = false;
+    /* La derniere fois qu'on a entendu LE SERVEUR. Voir `perdue()`. */
+    this.vu = 0;
   }
 
   get ready() { return !!(this.ws && this.ws.readyState === WebSocket.OPEN); }
 
-  /** Fetches a token, opens the socket and says hello. Resolves once welcomed. */
-  async connect() {
+  /**
+   * Fetches a token, opens the socket and says hello. Resolves once welcomed.
+   *
+   * `options.garde` : combien de temps on laisse au serveur pour repondre. Une
+   * reprise de partie en veut une courte (voir GARDE_DEFAUT).
+   */
+  async connect(options) {
     this.closedByUs = false;
     this.session = await api.get('/api/dice/session');
+    const garde = (options && Number(options.garde)) || GARDE_DEFAUT;
 
     await new Promise((resolve, reject) => {
       let settled = false;
@@ -51,13 +72,16 @@ export class DiceNet {
       const guard = setTimeout(() => {
         done(reject, new Error('the game server did not answer in time'));
         try { ws.close(); } catch (_) { /* already dead */ }
-      }, 8000);
+      }, garde);
 
       /* On annonce notre cadence : le serveur ne peut pas la deviner, et les
          versions deja distribuees ne la disent pas. */
       ws.onopen = () => this.send({ t: 'hello', token: this.session.token, pingMs: PING_MS });
 
       ws.onmessage = (ev) => {
+        /* Le signe de vie du SERVEUR, quel que soit le message : un `pong`, un
+           instantane de partie, une annonce. Voir `perdue()`. */
+        this.vu = Date.now();
         let msg;
         try { msg = JSON.parse(ev.data); } catch (_) { return; }
         if (msg.t === 'welcome') { clearTimeout(guard); done(resolve); }
@@ -93,9 +117,57 @@ export class DiceNet {
     catch (_) { return false; }
   }
 
+  /* ⛔ ON PARLAIT SANS JAMAIS VERIFIER QU'ON ETAIT ENTENDU, et c'est ainsi
+     qu'une partie se perdait sans qu'aucun des deux cotes n'ait tort.
+
+     Le serveur, lui, a sa mesure : trois silences et il termine la session
+     (SILENCE_DEFAUT). Le telephone n'en avait aucune. Or une socket a demi
+     morte — le cas ordinaire d'un passage wifi vers 4G, d'un tunnel, d'un
+     changement de cellule — ne rend PAS d'erreur : `ws.send()` met la trame
+     dans un tampon et repond vrai, `readyState` reste OPEN, et `onclose`
+     n'arrive jamais parce que le paquet qui l'annoncerait ne traverse plus.
+
+     Resultat, vu de l'exterieur : le serveur declare la session muette, range
+     la table, lance la pendule de reprise et finit par declarer forfait — pendant
+     que le telephone, persuade d'etre connecte, n'a pas lance la moindre
+     tentative de reconnexion. « Ejecte du serveur et n'a pas pu la reprendre. »
+     La fenetre de reprise ne servait a rien : personne ne s'en servait.
+
+     On adopte donc la MEME regle que le serveur, dans l'autre sens : toute
+     trame recue est un signe de vie (le `pong` en est un, les instantanes de
+     partie aussi), et trois cadences sans un mot valent une liaison morte. On
+     ferme alors nous-memes, ce qui declenche `closed` — donc le chemin normal
+     de la relance, celui qui sait deja quoi faire. */
   startPing() {
     this.stopPing();
-    this.pinger = setInterval(() => this.send({ t: 'ping' }), PING_MS);
+    this.vu = Date.now();
+    this.pinger = setInterval(() => {
+      if (Date.now() - this.vu > PING_MS * SILENCES_TOLERES) return this.perdue();
+      this.send({ t: 'ping' });
+    }, PING_MS);
+  }
+
+  /**
+   * La liaison ne repond plus. On la termine soi-meme.
+   *
+   * ⚠️ `closedByUs` RESTE FAUX : ce n'est pas le joueur qui part, c'est la
+   * liaison qui est morte. Le gestionnaire `closed` doit donc relancer, comme
+   * pour n'importe quelle coupure — le marquer comme voulu ferait exactement le
+   * contraire de ce qu'on cherche.
+   */
+  perdue() {
+    this.stopPing();
+    const ws = this.ws;
+    this.ws = null;
+    if (!ws) return;
+    /* ⚠️ ON DETACHE AVANT DE FERMER. Une socket a demi morte peut rendre son
+       `close` bien plus tard — parfois apres qu'une NOUVELLE liaison a ete
+       etablie. Le gestionnaire du jeu, lui, ne fait pas la difference : il
+       remettrait `S.net` a null et jetterait la liaison neuve. La sortie est
+       prise ici, une seule fois. */
+    ws.onclose = null; ws.onmessage = null; ws.onerror = null; ws.onopen = null;
+    try { ws.close(); } catch (_) { /* deja morte */ }
+    if (this.on.closed) this.on.closed(false);
   }
 
   stopPing() {

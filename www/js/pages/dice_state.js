@@ -18,7 +18,20 @@ export const ASSETS = '/dice/';
    traduit ICI plutot que de reecrire la base : le nom d'un objet de gameplay et
    le fichier qui le dessine n'ont pas a etre la meme chose. */
 const BONUS_ART = {
-  B001: 'bonus_reroll.png',
+  /* ⛔ DEUX DESSINS POUR UNE SEULE RELANCE. Le pont montre le trait de Mary Read
+     (`trait_read.png` — un de cercle de deux fleches) ; la boutique et le
+     ratelier montraient `bonus_reroll.png` — deux des et un gobelet violet. Le
+     meme effet, deux images sans rien de commun : « l'icone dans la page
+     d'accueil pour Mary Read pour la relance des des n'est pas la meme que
+     l'icone dans le market ». Le joueur qui gagne le capitaine ne reconnait pas
+     l'effet qu'il vient d'ouvrir.
+     Les deux ecrans pointent desormais sur LE MEME fichier — pas sur une copie :
+     c'est toute la raison d'etre de cette table. Les huit traits suivants le
+     faisaient deja ; la relance, la premiere de toutes, avait ete oubliee.
+     `bonus_reroll.png` reste au depot : il ne sert plus de dessin d'effet, mais
+     rien ne dit qu'il ne resservira pas, et on ne jette pas un asset peint a la
+     main pour gagner 40 Ko. */
+  B001: 'trait_read.png',
   B002: 'bonus_clear_own.png',
   B003: 'bonus_blast_enemy.png',
   /* Les suivants empruntent le dessin du TRAIT qui les offre. C'est exactement
@@ -43,6 +56,14 @@ const BONUS_ART = {
   B009: 'trait_bart.png',
   B010: 'trait_ching.png',
   B011: 'trait_levasseur.png',
+  /* Les cinq du second lot, meme regle : l'effet porte le dessin du capitaine
+     qui l'offre, et le joueur qui a vu le capitaine reconnait l'effet en
+     boutique. */
+  B012: 'trait_kidd.png',
+  B013: 'trait_wangzhi.png',
+  B014: 'trait_levent.png',
+  B015: 'trait_caesar.png',
+  B016: 'trait_sayyida.png',
 };
 
 /**
@@ -155,6 +176,53 @@ export function bonusArt(identify) {
   return ASSETS + 'img/' + (BONUS_ART[identify] || 'bonus_reroll.png');
 }
 
+/* ══════════════════════════ ENVOYER UNE COMMANDE DE PARTIE ══════════════
+   ⛔ UN DOUBLE APPUI ENVOYAIT DEUX COMMANDES, ET RIEN NE LES DISTINGUAIT. Elles
+   ne produisaient qu'une action — parce que chaque commande change l'etat
+   qu'elle verifie — mais cela tenait par accident : le jour ou un effet laisse
+   la main au joueur ET peut se rejouer, il s'appliquerait deux fois. Le serveur
+   sait desormais reconnaitre un doublon, encore faut-il qu'on le lui dise.
+
+   Deux champs suffisent, et ils sont poses ICI plutot qu'a chaque appel :
+   sept endroits envoient une commande de partie, et en oublier un revient a
+   n'avoir rien fait.
+
+     `cmd`     un identifiant unique. Deux paquets identiques portent le MEME
+               identifiant — c'est le point : le serveur applique le premier et
+               ignore le second.
+     `turnId`  le tour d'ou part la commande. Une commande partie au tour 12 et
+               arrivee au tour 13 est rejetee : c'est le rejeu du §21.
+
+   ⚠️ ILS SONT OPTIONNELS COTE SERVEUR, ET C'EST VOULU. Une version deja
+   distribuee ne les envoie pas et continue de jouer. Voir `Gateway.inMatch`. */
+let numeroDeCommande = 0;
+
+/** Un identifiant unique pour CETTE commande, dans CETTE session. */
+function marque() {
+  numeroDeCommande += 1;
+  /* Pas besoin de cryptographie : il suffit que deux commandes de la meme
+     session ne se confondent pas, et que deux sessions ne se marchent pas
+     dessus. Le hasard couvre la seconde, le compteur la premiere. */
+  return numeroDeCommande.toString(36) + '-'
+    + Math.random().toString(36).slice(2, 10);
+}
+
+/**
+ * Envoyer une commande de partie, estampillee.
+ *
+ * ⚠️ ELLE RETOURNE LE MEME `false` QUE `send` quand il n'y a pas de canal : les
+ * appelants s'y fient deja.
+ */
+export function envoyerCoup(payload) {
+  if (!S.net) return false;
+  const coup = Object.assign({ cmd: marque() }, payload);
+  /* Le tour vient du DERNIER etat recu : c'est exactement ce que le serveur
+     compare. S'il manque — un instantane pas encore arrive — on n'invente pas
+     de numero, et le serveur retombe sur ses gardes d'etat. */
+  if (S.state && Number.isInteger(S.state.turnId)) coup.turnId = S.state.turnId;
+  return S.net.send(coup);
+}
+
 /* ── LES EFFETS SONT PRECHARGES A L'OUVERTURE, PUIS JOUES DEPUIS LA MEMOIRE ──
    Mesure du 2026-08-19 : un APNG rejoue avec la MEME url ne repart PAS de sa
    premiere image (il reste sur la derniere) — d'ou le `?t=` historique. Mais
@@ -177,7 +245,10 @@ const STILL_FILES = [
   'bas_shop.png', 'bas_rank.png', 'bas_succes.png', 'bas_replay.png',
   'slot_bas_home.png',
   'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
-  'bonus_reroll.png', 'bonus_clear_own.png', 'bonus_blast_enemy.png',
+  /* `bonus_reroll.png` n'est plus le dessin de B001 (voir BONUS_ART) : il ne
+     sert que de dernier recours pour un identifiant inconnu. On ne prend plus
+     40 Ko au demarrage pour une image que personne n'affiche. */
+  'bonus_clear_own.png', 'bonus_blast_enemy.png',
   'bonus_freeze.png', 'icon_loader.png',
   'icon_bag.png', 'icon_versus.png', 'icon_leave.png',
   'menu_ai.png', 'menu_versus.png', 'menu_friend.png',
@@ -190,13 +261,22 @@ const STILL_FILES = [
   'die_5_hot.png', 'die_6_hot.png',
   'cap_read.png', 'cap_teach.png', 'cap_ching.png', 'cap_omalley.png', 'cap_jack.png',
   'cap_bonny.png', 'cap_bart.png', 'cap_lionne.png', 'cap_morgan.png', 'cap_levasseur.png',
+  'cap_kidd.png', 'cap_wangzhi.png', 'cap_levent.png', 'cap_caesar.png', 'cap_sayyida.png',
   'trait_read.png', 'trait_teach.png', 'trait_ching.png', 'trait_omalley.png', 'trait_jack.png',
   'trait_bonny.png', 'trait_bart.png', 'trait_lionne.png', 'trait_morgan.png',
   'trait_levasseur.png',
+  'trait_kidd.png', 'trait_wangzhi.png', 'trait_levent.png', 'trait_caesar.png',
+  'trait_sayyida.png',
   /* Le givre des cases. Il se pose au milieu d'un tour, sur un geste de
      l'adversaire : arrive en retard, on verrait la case rester nue une demi-
      seconde apres l'annonce — l'effet paraitrait rate. */
   'fx_gel_case.png',
+  /* Meme raison pour les deux couches qui l'ont suivi : la brume (B013) tombe
+     sur un plateau entier et la coque (B015) autour d'un de, toutes deux au
+     milieu d'un tour. Une couche qui arrive apres son annonce donne un effet
+     rate. Les deux brumes partent ensemble : on ne sait pas de quel cote de la
+     table on sera. */
+  'fx_brume_moi.png', 'fx_brume_adverse.png', 'fx_bouclier_case.png',
 ];
 
 const FX_BLOBS = new Map();
