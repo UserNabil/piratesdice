@@ -263,7 +263,12 @@ function buildGame() {
        le joueur voit de nouveau son plateau en entier. */
     if (caleOuverte()) { fermerCale(); avaler(ev); return; }
 
-    if (dans('.dc-board') || dans('#dc-cup') || dans('.dc-foot-btn')) return;
+    /* ⛔ ET SURTOUT PAS SUR LES DEUX FACES DU DE PIPE. Elles flottent HORS du
+       plateau : l'appui partait donc dans la branche « geste dans le vide »,
+       envoyait `unbonus`, et le choix de face arrivait sur un effet deja
+       desarme — avale en silence. Le tap suivant trouvait la colonne et posait
+       le de : « j'ai clique sur 5 pour selectionner et ca a depose mon 4 ». */
+    if (dans('.dc-board') || dans('#dc-cup') || dans('.dc-foot-btn') || dans('#dc-faces')) return;
     const vise = S.state && S.state.pending && S.state.pending.seat === S.seat;
     if (vise && S.net) S.net.send({ t: 'unbonus' });
   }, true);

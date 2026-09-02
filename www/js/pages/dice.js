@@ -1008,6 +1008,19 @@ function togglePanel(name) {
        regarde plus. */
     if (S.panel !== name) fermerLecteur();
     S.panel = name;
+    /* ⛔ UNE PAGE QU'ON OUVRE SE RELIT, TOUJOURS. « Quand je vais sur chaque
+       page, un appel doit recharger les donnees » — vecu : un pseudo renomme
+       restait a l'ancien nom dans le classement, une bourse changee gardait son
+       vieux chiffre. Le classement se relisait deja ; la boutique, les hauts
+       faits et le journal gardaient leur premiere lecture pour toute la
+       session. On jette donc leur cache A L'OUVERTURE — et seulement la : le
+       meme `refreshPanel` repasse aussi sur chaque `me`, et invalider a cet
+       endroit-la aurait fait boucler demande et reponse. */
+    if (name === 'shop') S.shop = [];
+    else if (name === 'succes') S.succes = null;
+    else if (name === 'replay') S.historique = null;
+    /* La bourse et le rang du bandeau suivent le meme principe. */
+    if (S.net) S.net.send({ t: 'refresh' });
     panel.classList.add('on');
     S.sfx.play('open', 0.2);
     refreshPanel();

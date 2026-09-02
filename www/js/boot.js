@@ -204,7 +204,12 @@ function volRow(canal, label, valeur) {
 
 function settingsMarkup() {
   const acc = account();
-  const who = acc.google ? t('set.signedInAs', { name: acc.name }) : t('set.guest');
+  /* ⛔ LE NOM AFFICHE EST CELUI DU SERVEUR, PAS CELUI DU CACHE. La session
+     d'identite garde le nom du jour de la connexion : apres un renommage, la
+     modale montrait l'ancien — « je change de pseudo et ca ne change rien ».
+     `S.me` est repeint a chaque message `me` ; c'est lui qui dit vrai. */
+  const nomVif = (S.me && S.me.name) || acc.name;
+  const who = acc.google ? t('set.signedInAs', { name: nomVif }) : t('set.guest');
   /* Le libelle ET le dessin nomment le fournisseur de CETTE plateforme :
      « avec Google » sur un iPhone serait faux, et « avec Apple » sur Android
      n'existe pas. Le logo dit lequel avant meme qu'on ait lu. */
@@ -266,7 +271,7 @@ function settingsMarkup() {
            fait que limiter la saisie et montrer la reponse. Hors reseau, le
            serveur ne repond pas — la ligne reste, le refus viendra du toast. -->
       ${row(t('set.pseudo'), `<input class="pd-select pd-pseudo" data-pseudo type="text"
-             maxlength="10" value="${acc.name ? String(acc.name).replace(/"/g, '&quot;') : ''}"
+             maxlength="10" value="${nomVif ? String(nomVif).replace(/"/g, '&quot;') : ''}"
              aria-label="${t('set.pseudo')}" placeholder="${t('set.pseudoAide')}">
         <button class="pd-pseudo-ok" data-pseudo-ok
                 title="${t('set.save')}" aria-label="${t('set.save')}">${t('set.save')}</button>`)}
@@ -454,7 +459,14 @@ function openSettings() {
     if (nom.length < 2 || nom.length > 10) { toast(t('err.nomTaille'), 'warn'); return; }
     if (!S.net) { toast(t('offline.besoinReseau'), 'warn'); return; }
     S.net.send({ t: 'rename', name: nom });
-    toast(t('set.pseudoOk'), 'ok');
+    /* ⛔ ON NE FETE PAS AVANT LA REPONSE. Le premier jet disait « pseudo mis a
+       jour » des l'envoi, meme quand le serveur refusait ensuite — deux toasts
+       qui se contredisent, et le joueur croit a une mise a jour fantome. On
+       attend le `me` : s'il porte le nouveau nom, c'est fait ; sinon le refus
+       traduit s'est deja affiche tout seul. */
+    setTimeout(() => {
+      if (S.me && S.me.name === nom) toast(t('set.pseudoOk'), 'ok');
+    }, 1200);
   };
   const selCap = wrap.querySelector('[data-capitaine]');
   if (selCap) selCap.onchange = (ev) => {
