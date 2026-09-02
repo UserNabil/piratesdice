@@ -1372,15 +1372,19 @@ export function ratelierAuDebut() { pageRatelier = 0; }
    positionnes ». Chaque jeton est donc epingle sur SON trou, aux coordonnees
    relevees au pixel dans l'asset : [angle depuis le haut, rayon du centre,
    diametre], relatifs au rayon du tambour. */
+/* Mesure par BOITE ENGLOBANTE, pas par centre de gravite : l'ombre interne du
+   dessin, plus epaisse d'un cote, tirait le centre de gravite vers le haut et
+   les jetons flottaient au-dessus des trous. Le centre de la boite est le
+   centre VISUEL du trou. */
 const BARILLET_TROUS = [
-  [-1.2, 0.640, 0.371],
-  [43.9, 0.610, 0.354],
-  [86.9, 0.605, 0.353],
-  [131.1, 0.556, 0.356],
-  [181.8, 0.543, 0.364],
-  [-129.2, 0.580, 0.354],
-  [-87.0, 0.638, 0.353],
-  [-45.9, 0.631, 0.350],
+  [-1.3, 0.643, 0.376],
+  [43.8, 0.615, 0.367],
+  [86.7, 0.607, 0.373],
+  [130.7, 0.560, 0.367],
+  [181.3, 0.542, 0.373],
+  [-129.4, 0.576, 0.364],
+  [-87.0, 0.636, 0.370],
+  [-45.3, 0.628, 0.364],
 ];
 
 function disposerBarillet(cercle, donnees, ctx) {
@@ -1423,7 +1427,7 @@ function disposerBarillet(cercle, donnees, ctx) {
       const vide = k < 0 || k >= N;
       b.hidden = vide;
       if (!vide && b.dataset.k !== String(k)) { b.dataset.k = String(k); habiller(b, donnees[k]); }
-      const taille = diamRel * R0 * 0.88;
+      const taille = diamRel * R0 * 0.98;
       b.style.width = taille.toFixed(1) + 'px';
       b.style.height = taille.toFixed(1) + 'px';
       b.style.transform = 'translate(-50%,-50%) rotate(' + rel + 'deg) translateY(-'
