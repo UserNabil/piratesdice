@@ -140,7 +140,17 @@ export async function renderShop(body) {
      l'acces : pour voir une gravure il fallait passer devant tous les jeux de
      des. En onglets, chaque rayon est a un doigt du precedent et la liste
      tient dans un ecran. */
-  const pleins = RAYONS.map((r) => ({ r, lot: products.filter((p) => r.tient(p)) }))
+  /* ⚠️ LES EFFETS DANS L'ORDRE OU ON LES DEBLOQUE. « Affiche-les dans l'ordre
+     d'obtention dans le jeu. » Chaque effet s'ouvre avec un capitaine, a un
+     seuil de parties (`seuilDEffet`) : on trie donc le rayon des effets sur ce
+     seuil — reroll (0), puis la bordee de Ching (100), le gel de Barbe-Noire
+     (150)… jusqu'au dernier capitaine. A seuil egal (les effets de base), on
+     garde l'ordre des identifiants. Les autres rayons ne changent pas. */
+  const trier = (cle, lot) => cle !== 'bonus' ? lot
+    : lot.slice().sort((a, b) =>
+        (seuilDEffet(a.identify) - seuilDEffet(b.identify))
+        || String(a.identify).localeCompare(String(b.identify)));
+  const pleins = RAYONS.map((r) => ({ r, lot: trier(r.cle, products.filter((p) => r.tient(p))) }))
     .filter((x) => x.lot.length);
   if (!pleins.some((x) => x.r.cle === rayonOuvert)) {
     rayonOuvert = pleins.length ? pleins[0].r.cle : 'bonus';
