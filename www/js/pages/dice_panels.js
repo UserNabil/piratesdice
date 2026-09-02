@@ -46,13 +46,21 @@ async function api(chemin, methode, corps) {
    schemas (regle_1..6.png) sont l'encre sepia des dessins du fond, un par
    regle ; la septieme (le capitaine) n'en a pas, elle parle d'un personnage
    qu'on voit deja sur le pont. */
-export function renderRules(body) {
+/* ⛔ LES REGLES SONT UNE MODALE, PAS UNE PAGE. « C'est une modale qu'on
+   affiche AU-DESSUS du contenu, qui prend Echap pour se fermer, avec le bouton
+   fermer en bas. » Le parchemin flotte donc sur un voile sombre, par-dessus ce
+   que le joueur regardait ; Echap, la croix du bas ou un clic sur le voile la
+   referment, et l'on retrouve l'ecran exactement ou on l'avait laisse. */
+export function ouvrirRegles() {
+  if (document.querySelector('.dc-regles-voile')) return;
   const regle = (i, texte) => `
       <li>
         <p>${texte}</p>
         <img class="dc-regle-schema" src="${ASSETS}img/regle_${i}.png" alt="" loading="lazy">
       </li>`;
-  body.innerHTML = `
+  const voile = document.createElement('div');
+  voile.className = 'dc-regles-voile';
+  voile.innerHTML = `
     <div class="dc-parchemin">
       <h3 class="dc-parchemin-titre">${esc(t('rules.title'))}</h3>
       <div class="dc-parchemin-corps">
@@ -66,7 +74,27 @@ export function renderRules(body) {
           <li><p>${t('rules.7')}</p></li>
         </ol>
       </div>
+      <button class="pd-btn-icone dc-regles-fermer" data-fermer
+              title="${esc(t('set.close'))}" aria-label="${esc(t('set.close'))}">
+        <img src="${ASSETS}img/icon_close.png" alt="">
+      </button>
     </div>`;
+  const hote = $('#dicewrap') || document.body;
+  hote.appendChild(voile);
+  const fermer = () => {
+    document.removeEventListener('keydown', surTouche, true);
+    voile.remove();
+  };
+  const surTouche = (ev) => {
+    if (ev.key !== 'Escape') return;
+    ev.stopPropagation();
+    ev.preventDefault();
+    fermer();
+  };
+  document.addEventListener('keydown', surTouche, true);
+  voile.querySelector('[data-fermer]').onclick = fermer;
+  /* Le voile ferme, le parchemin non : on peut poser le doigt pour scroller. */
+  voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
 }
 
 /* Le nom et la description des bonus viennent de la BASE, en anglais : le

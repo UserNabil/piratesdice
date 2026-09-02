@@ -1352,104 +1352,124 @@ let pageRatelier = 0;
 let barilletRot = 0;
 let barilletDrague = false;
 let barilletInfo = false;
-const BARILLET_PAS = 60;   // 6 chambres, alignees sur les trous de l'asset
+const BARILLET_PAS = 45;   // 8 chambres sur l'asset, un pas de 45 degres
 
 /** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
     trois parties plus tot, on reprend la ou est le jeton offert. */
 export function ratelierAuDebut() { pageRatelier = 0; }
 
-/* Poser les chambres autour du cylindre du barillet, et le rendre tournant.
-   Les jetons sont poses en absolu depuis le CENTRE du cercle (bas du bloc) et
-   projetes sur l arc du haut ; glisser a gauche/droite tourne le cylindre. */
-/* ⛔ SIX TROUS, MAIS PAS SIX BONUS : ON FAIT DEFILER. « Il montre autant de
-   bonus qu'on defile a droite et a gauche ; plus on scrolle, plus on affiche les
-   suivants. » Le cadre reste FIXE ; ce sont les jetons qui glissent de trou en
-   trou. Le trou du haut porte toujours le bonus courant ; a plus de six bonus,
-   on tourne le barillet et les chambres se rechargent avec les suivants. */
-let barilletCentre = 0;   // index du bonus pose tout en haut du barillet
+/* ⛔ LE BARILLET TOURNE POUR DE VRAI, LES JETONS DANS LEURS TROUS. « Le
+   barillet ne tourne pas quand je change de bonus » : la version a fenetre
+   glissante echangeait le contenu des chambres sans bouger le dessin — un
+   distributeur, pas un barillet. Ici le CADRE et les JETONS pivotent d'un seul
+   bloc ; ce qui change de chambre change dans la moitie basse, cachee derriere
+   les boutons, pour que plus de huit bonus restent atteignables sans que
+   l'echange se voie jamais.
 
-/* Angles (degres depuis le haut) des six trous, du plus central au plus bas :
-   on remplit d'abord le trou du haut, puis ses voisins. L'offset entier associe
-   dit quel bonus, relatif au centre, occupe chaque trou. */
-const BARILLET_TROUS = [0, -60, 60, -120, 120, 180];
-const BARILLET_OFF   = BARILLET_TROUS.map((a) => Math.round(a / 60)); // 0,-1,1,-2,2,3
+   ⚠️ LES TROUS SONT MESURES, PAS SUPPOSES. Le dessin n'est pas parfaitement
+   regulier (angles a ±6°, rayons de 0,54 a 0,64) : poser les jetons sur une
+   grille ideale les ferait flotter a cote des trous — « les bonus sont mal
+   positionnes ». Chaque jeton est donc epingle sur SON trou, aux coordonnees
+   relevees au pixel dans l'asset : [angle depuis le haut, rayon du centre,
+   diametre], relatifs au rayon du tambour. */
+const BARILLET_TROUS = [
+  [-1.2, 0.640, 0.371],
+  [43.9, 0.610, 0.354],
+  [86.9, 0.605, 0.353],
+  [131.1, 0.556, 0.356],
+  [181.8, 0.543, 0.364],
+  [-129.2, 0.580, 0.354],
+  [-87.0, 0.638, 0.353],
+  [-45.9, 0.631, 0.350],
+];
 
 function disposerBarillet(cercle, donnees, ctx) {
   const slots = Array.prototype.slice.call(cercle.querySelectorAll('.dc-bonus-btn'));
+  const NC = slots.length;                 // huit chambres
   const N = donnees.length;
   if (!N) return;
   const R0 = parseFloat(getComputedStyle(cercle).getPropertyValue('--pd-rayon')) || 130;
-  const RAYON = R0 * 0.595;                 // centre exact des trous dessines dans l'asset
-  const defile = N > slots.length;          // plus de bonus que de trous : le barillet tourne
-  if (!defile) barilletCentre = 0;
-  const mod = (k) => ((k % N) + N) % N;
+  const cadre = cercle.querySelector('.dc-barillet-cadre');
+  /* Moins de neuf bonus : le tambour bute aux extremites. Au-dela, il tourne
+     sans fin et les chambres cachees se rechargent en chemin. */
+  const infini = N > NC;
+  const maxRot = infini ? Infinity : (N - 1) * BARILLET_PAS;
+  if (!infini) barilletRot = Math.max(0, Math.min(maxRot, barilletRot));
 
-  const remplir = () => {
+  const habiller = (b, d) => {
+    b.dataset.id = d.id;
+    b.dataset.nom = d.nom;
+    b.innerHTML = '<span class="dc-bonus-in"><img src="' + bonusArt(d.id)
+      + '" alt=""><span class="dc-bonus-qty">' + esc(String(d.badge)) + '</span></span>';
+    b.classList.toggle('dc-bonus-free', !!d.cadeau);
+    b.classList.toggle('dc-bonus-joue', !!d.joue);
+    const epuise = ctx.left <= 0;
+    b.classList.toggle('dc-bonus-mute', !ctx.monTour() || epuise || !!ctx.raison(d.id));
+  };
+
+  const placer = () => {
+    /* Le cran courant : quel bonus est (ou approche de) la chambre du haut. */
+    const c = Math.round(barilletRot / BARILLET_PAS);
     const nomEl = cercle.parentElement.querySelector('[data-nom]');
     slots.forEach((b, i) => {
-      const angle = BARILLET_TROUS[i];
-      const idx = defile ? mod(barilletCentre + BARILLET_OFF[i]) : (i < N ? i : -1);
-      if (idx < 0) { b.hidden = true; b.onclick = null; return; }  // trou vide (peu de bonus)
-      b.hidden = false;
-      const d = donnees[idx];
-      b.dataset.id = d.id;
-      b.dataset.nom = d.nom;
-      b.innerHTML = '<span class="dc-bonus-in"><img src="' + bonusArt(d.id)
-        + '" alt=""><span class="dc-bonus-qty">' + esc(String(d.badge)) + '</span></span>';
-      b.classList.toggle('dc-bonus-free', !!d.cadeau);
-      b.classList.toggle('dc-bonus-joue', !!d.joue);
-      /* Pose le jeton au CENTRE du trou (rotation puis contre-rotation pour le
-         garder droit). Le trou du haut est en avant, plus grand ; les autres
-         reculent legerement. Le cadre, lui, ne tourne pas. */
-      const central = Math.abs(angle) < 1;
-      const proche = Math.abs(angle) <= 61;
-      const scale = central ? 1.1 : (proche ? 0.92 : 0.76);
-      b.style.transform = 'translate(-50%,-50%) rotate(' + angle + 'deg) translateY(-'
-        + RAYON + 'px) rotate(' + (-angle) + 'deg) scale(' + scale + ')';
-      b.style.opacity = proche ? '1' : '0.88';
-      b.style.zIndex = String(100 - Math.round(Math.abs(angle)));
-      b.classList.toggle('dc-bonus-centre', central);
-      const epuise = ctx.left <= 0;
-      const pourquoi = ctx.raison(d.id);
-      b.classList.toggle('dc-bonus-mute', !ctx.monTour() || epuise || !!pourquoi);
-      if (central && nomEl) nomEl.textContent = d.nom || '';
+      const [angTrou, rayRel, diamRel] = BARILLET_TROUS[i];
+      /* La chambre i, une fois le tambour tourne, se presente a cet angle. */
+      const rel = angTrou - barilletRot;
+      /* Quel bonus occupe cette chambre : son ecart de crans au sommet. */
+      let s = (((i - c) % NC) + NC) % NC;
+      if (s > NC / 2) s -= NC;
+      let k = c + s;
+      if (infini) k = ((k % N) + N) % N;
+      const vide = k < 0 || k >= N;
+      b.hidden = vide;
+      if (!vide && b.dataset.k !== String(k)) { b.dataset.k = String(k); habiller(b, donnees[k]); }
+      const taille = diamRel * R0 * 0.88;
+      b.style.width = taille.toFixed(1) + 'px';
+      b.style.height = taille.toFixed(1) + 'px';
+      b.style.transform = 'translate(-50%,-50%) rotate(' + rel + 'deg) translateY(-'
+        + (rayRel * R0).toFixed(1) + 'px) rotate(' + (-rel) + 'deg)';
+      const relNorm = ((rel % 360) + 540) % 360 - 180;   // dans [-180, 180)
+      b.style.zIndex = String(200 - Math.round(Math.abs(relNorm)));
+      const auSommet = Math.abs(relNorm) < BARILLET_PAS / 2;
+      b.classList.toggle('dc-bonus-centre', !vide && auSommet);
+      if (auSommet && !vide && nomEl) nomEl.textContent = b.dataset.nom || '';
     });
+    /* Le cadre tourne du MEME angle : les trous dessines suivent les jetons. */
+    if (cadre) cadre.style.transform = 'rotate(' + (-barilletRot) + 'deg)';
   };
-  remplir();
+  placer();
 
-  /* On tourne le barillet en glissant a gauche/droite : chaque pas d'un demi-cran
-     recharge les chambres avec les bonus suivants. Fond violet oblige, le
-     glissement ne referme pas la cale. Un seul cran par ~46 px, accrochage net. */
-  if (defile) {
-    const PAS_PX = 46;
-    let actif = false, x0 = 0, c0 = 0, bouge = 0;
-    const down = (ev) => {
-      actif = true; bouge = 0; x0 = ev.clientX; c0 = barilletCentre;
-      if (cercle.setPointerCapture) { try { cercle.setPointerCapture(ev.pointerId); } catch (_) { /* rien */ } }
-    };
-    const move = (ev) => {
-      if (!actif) return;
-      const dx = ev.clientX - x0;
-      if (Math.abs(dx) > bouge) bouge = Math.abs(dx);
-      const c = c0 - Math.round(dx / PAS_PX);
-      if (c !== barilletCentre) { barilletCentre = c; remplir(); }
-    };
-    const up = () => {
-      if (!actif) return;
-      actif = false;
-      if (bouge > 6) { barilletDrague = true; setTimeout(() => { barilletDrague = false; }, 60); }
-    };
-    cercle.addEventListener('pointerdown', down);
-    cercle.addEventListener('pointermove', move);
-    cercle.addEventListener('pointerup', up);
-    cercle.addEventListener('pointercancel', up);
-  }
+  /* Glisser a gauche/droite fait pivoter le tambour ; on lache, il s'accroche
+     au cran le plus proche. Fond violet oblige, le geste ne ferme pas la cale. */
+  let actif = false, x0 = 0, rot0 = 0, bouge = 0;
+  const down = (ev) => {
+    actif = true; bouge = 0; x0 = ev.clientX; rot0 = barilletRot;
+    if (cercle.setPointerCapture) { try { cercle.setPointerCapture(ev.pointerId); } catch (_) { /* rien */ } }
+  };
+  const move = (ev) => {
+    if (!actif) return;
+    const dx = ev.clientX - x0;
+    if (Math.abs(dx) > bouge) bouge = Math.abs(dx);
+    barilletRot = rot0 - dx * 0.42;
+    if (!infini) barilletRot = Math.max(0, Math.min(maxRot, barilletRot));
+    placer();
+  };
+  const up = () => {
+    if (!actif) return;
+    actif = false;
+    if (bouge > 6) { barilletDrague = true; setTimeout(() => { barilletDrague = false; }, 60); }
+    barilletRot = Math.round(barilletRot / BARILLET_PAS) * BARILLET_PAS;
+    if (!infini) barilletRot = Math.max(0, Math.min(maxRot, barilletRot));
+    placer();
+  };
+  cercle.addEventListener('pointerdown', down);
+  cercle.addEventListener('pointermove', move);
+  cercle.addEventListener('pointerup', up);
+  cercle.addEventListener('pointercancel', up);
 
-  /* ⛔ CHAQUE CHAMBRE SE JOUE ET SE DECRIT. Un clic court joue le bonus qui s'y
-     trouve A CET INSTANT (lu dans le dataset, car il change quand on tourne) ; un
-     maintien long montre sa description au-dessus du barillet. Le glissement (on
-     tourne) avale le clic. Les elements sont recrees a chaque rendu du ratelier,
-     donc les ecouteurs ne s'empilent pas. */
+  /* Chaque chambre se joue (clic court, sur ce qu'elle contient A CET instant)
+     et se decrit (maintien long). Le glissement avale le clic. Les elements
+     sont recrees a chaque rendu : les ecouteurs ne s'empilent pas. */
   slots.forEach((b) => {
     b.onclick = (ev) => {
       ev.preventDefault();
@@ -1546,7 +1566,7 @@ export function renderBonusRack() {
   rack.innerHTML = '<div class="dc-barillet">'
     + '<div class="dc-barillet-nom" data-nom></div>'
     + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
-    + '<button class="dc-bonus-btn"></button>'.repeat(6)
+    + '<button class="dc-bonus-btn"></button>'.repeat(8)
     + '</div>'
     + '<div class="dc-barillet-info" data-info hidden></div>'
     + '</div>';

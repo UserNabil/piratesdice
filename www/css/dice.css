@@ -1476,10 +1476,23 @@
    garde ses proportions (2:3) et ne defile pas. C'est le CORPS — la fenetre de
    papier a l'interieur du cadre — qui scrolle. Le texte passe a l'encre sepia :
    sur du papier clair, le blanc du theme serait illisible. */
+/* Le voile : la modale des regles couvre TOUT, et un clic a cote la ferme. */
+#dicewrap .dc-regles-voile {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 4, 26, .62);
+  animation: dc-gel-vient .18s ease-out;
+}
 #dicewrap .dc-parchemin {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1024 / 1536;
+  /* La taille suit l'asset (941 x 1672) et se plie a l'ecran : jamais plus
+     large que la fenetre, jamais plus haut qu'elle. */
+  width: min(90vw, calc(86vh * 0.5628));
+  aspect-ratio: 941 / 1672;
   margin: 0 auto;
   background: url(../dice/img/regles_fond.png) center / 100% 100% no-repeat;
 }
@@ -1487,10 +1500,10 @@
 #dicewrap .dc-parchemin-titre {
   padding: 0;
   position: absolute;
-  top: 10%;
-  left: 26%;
-  right: 26%;
-  height: 7.5%;
+  top: 7.8%;
+  left: 25%;
+  right: 25%;
+  height: 6.2%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1510,7 +1523,7 @@
 }
 #dicewrap .dc-parchemin-corps {
   position: absolute;
-  inset: 19% 14% 24% 14%;
+  inset: 16.5% 15% 17% 15%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -1533,6 +1546,17 @@
   width: min(62%, 190px);
   margin: 2px auto 10px;
 }
+
+/* La croix de fermeture, EN BAS, posee sur le rouleau du parchemin — la ou la
+   maquette des reglages met la sienne. */
+#dicewrap .dc-regles-fermer {
+  position: absolute;
+  left: 50%;
+  bottom: 1.2%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+#dicewrap .dc-regles-fermer img { width: 52px; height: 52px; display: block; }
 
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
 

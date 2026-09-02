@@ -30,7 +30,7 @@ import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
          envoyerCoup } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
-import { renderRules, renderShop, renderRanking, renderSucces } from './dice_panels.js';
+import { ouvrirRegles, renderShop, renderRanking, renderSucces } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
@@ -967,6 +967,10 @@ function showMenu() {
 
 /** Ouvrir une page depuis l'exterieur — les reglages y envoient les regles. */
 export function ouvrirPanneau(nom) {
+  /* ⛔ LES REGLES NE SONT PLUS UNE PAGE. Elles s'ouvrent en MODALE au-dessus de
+     ce que le joueur regarde — voir `ouvrirRegles` — et laissent la navigation
+     des pages tranquille. */
+  if (nom === 'rules') { ouvrirRegles(); return; }
   if (S.panel !== nom) togglePanel(nom);
 }
 
@@ -1142,8 +1146,7 @@ function marquerOnglets() {
 function refreshPanel() {
   if (!S.panel) return;
   const body = $('#dc-panel .dc-panel-in');
-  if (S.panel === 'rules') renderRules(body);
-  else if (S.panel === 'shop') renderShop(body);
+  if (S.panel === 'shop') renderShop(body);
   else if (S.panel === 'ranking') renderRanking(body);
   else if (S.panel === 'succes') renderSucces(body);
   else if (S.panel === 'replay') renderReplays(body);
