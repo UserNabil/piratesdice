@@ -1979,9 +1979,26 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 /* Le champ du pseudo : il partage l'habit du selecteur, mais il doit laisser la
    place au bouton « Enregistrer » sur la meme ligne. Dix caracteres max : une
    largeur bornee suffit, et le clavier ne pousse rien. */
-.pd-pseudo { width: 128px; max-width: 40vw; }
+.pd-pseudo { width: 112px; max-width: 36vw; }
 .pd-row > .pd-pseudo { flex: 0 1 auto; }
-.pd-row [data-pseudo-ok] { flex: 0 0 auto; min-width: 0; }
+/* Le bouton d'enregistrement porte l'habit des selecteurs, pas celui des grands
+   boutons du jeu : sur une ligne de formulaire, un bouton bombe a ombre portee
+   ecrasait tout et passait a la ligne. */
+.pd-pseudo-ok {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2a1656;
+  background: linear-gradient(180deg, #ffe479, #f3b73c);
+  box-shadow: inset 0 0 0 2px var(--blanc, #FFFFFF);
+  cursor: pointer;
+}
+.pd-pseudo-ok:active { transform: translateY(1px); }
 .pd-row > [data-capitaine] { max-width: 55vw; }
 
 /* ── les ecrans tres etroits (320 px : le plancher Android) ───────────────── */

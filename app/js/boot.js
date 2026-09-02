@@ -268,7 +268,7 @@ function settingsMarkup() {
       ${row(t('set.pseudo'), `<input class="pd-select pd-pseudo" data-pseudo type="text"
              maxlength="10" value="${acc.name ? String(acc.name).replace(/"/g, '&quot;') : ''}"
              aria-label="${t('set.pseudo')}" placeholder="${t('set.pseudoAide')}">
-        <button class="dc-btn dc-btn-sm dc-btn-art" data-pseudo-ok
+        <button class="pd-pseudo-ok" data-pseudo-ok
                 title="${t('set.save')}" aria-label="${t('set.save')}">${t('set.save')}</button>`)}
 
       <!-- ⛔ ET LE CAPITAINE PAR DEFAUT AUSSI. Le pont sait deja le changer ;
