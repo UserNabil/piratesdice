@@ -371,6 +371,27 @@ function reveiller() {
   connect();
 }
 
+/* ⛔ UNE SENTINELLE CONTRE LA TABLE FIGEE. « L'IA a joue et n'a jamais pose, la
+   table est bloquee. » Une trame d'etat peut se perdre sur un reseau mobile : la
+   socket reste vivante (donc rien ne se reconnecte), mais l'ecran garde le
+   dernier etat — l'adversaire y tient son de pour toujours. Toutes les trois
+   secondes, si c'est le tour de l'AUTRE et qu'aucun etat n'est venu depuis dix
+   secondes, on redemande l'etat courant. Douze octets, et seulement quand la
+   table a vraiment l'air morte — jamais pendant mon tour, ou l'attente est
+   normale. */
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    if (!S.open || S.poche || !S.net || !S.net.ready) return;
+    const st = S.state;
+    if (!st || st.phase !== 'playing') return;
+    if (st.turn === S.seat) return;                 // mon tour : rien d'anormal a attendre
+    if (Date.now() - (S.dernierEtat || 0) < 10000) return;
+    if (S.resyncDemande && Date.now() - S.resyncDemande < 8000) return;
+    S.resyncDemande = Date.now();
+    S.net.send({ t: 'resync' });
+  }, 3000);
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('online', reveiller);
   document.addEventListener('visibilitychange', () => {
@@ -1440,6 +1461,12 @@ export function initDice() {
   UI.jouerSolo = () => {
     if (S.net && S.net.ready) { S.net.send({ t: 'play', mode: 'solo' }); return; }
     if (UI.jouerHorsLigne) UI.jouerHorsLigne();
+  };
+  /* Le tutoriel gele la pendule tant qu'il est ouvert : en ligne, le serveur
+     s'en charge ; hors ligne, c'est le moteur de poche (il expose `pause`). */
+  UI.pauseTimer = (on) => {
+    if (S.poche && typeof S.poche.pause === 'function') { S.poche.pause(!!on); return; }
+    if (S.net && S.net.ready) S.net.send({ t: 'pauseAway', on: !!on });
   };
   UI.snapshotJeu = () => {
     const st = S.state;

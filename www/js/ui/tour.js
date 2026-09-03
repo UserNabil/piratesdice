@@ -61,6 +61,9 @@ export function lancerTutoriel(force) {
   /* On demarre la partie d'entrainement. Si le crochet manque (vieille coque),
      on ne fait rien plutot que de planter. */
   if (UI && typeof UI.jouerSolo === 'function') UI.jouerSolo();
+  /* ⛔ LA PENDULE SE GELE PENDANT LE TUTORIEL. On la relance a la fermeture —
+     passe, fini, Echap : tous passent par `fermer()`. */
+  if (UI && typeof UI.pauseTimer === 'function') UI.pauseTimer(true);
 
   const hote = document.getElementById('dicewrap') || document.body;
   const voile = document.createElement('div');
@@ -158,6 +161,7 @@ export function lancerTutoriel(force) {
   }
 
   function fermer() {
+    if (UI && typeof UI.pauseTimer === 'function') UI.pauseTimer(false);
     if (minuterie) { clearInterval(minuterie); minuterie = 0; }
     window.removeEventListener('resize', replacer);
     document.removeEventListener('keydown', surTouche, true);

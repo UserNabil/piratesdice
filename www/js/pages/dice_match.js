@@ -581,6 +581,10 @@ function wireMoodFan() {
 
 export function onState(msg) {
   S.state = msg.state;
+  /* Horodatage du dernier etat : la sentinelle de dice.js s'en sert pour
+     savoir si la table s'est figee (trame perdue). */
+  S.dernierEtat = Date.now();
+  S.resyncDemande = 0;
 
   const fx = msg.fx || [];
   const destroyed = fx.filter((f) => f.kind === 'destroy');
@@ -1411,7 +1415,9 @@ function disposerBarillet(cercle, donnees, ctx) {
   const slots = Array.prototype.slice.call(cercle.querySelectorAll('.dc-bonus-btn'));
   const NC = slots.length;                 // huit chambres
   const N = donnees.length;
-  if (!N) return;
+  /* Barillet vide : le cadre (l'asset) reste, avec ses trous ; on masque juste
+     les chambres. Le tambour se montre vide plutot qu'un texte tronque. */
+  if (!N) { slots.forEach((b) => { b.hidden = true; b.onclick = null; }); return; }
   /* ⛔ LE RAYON SE MESURE, IL NE SE RELIT PAS. `getComputedStyle` rend la
      variable NON RESOLUE — la chaine « clamp(112px, 33vw, 150px) » — dont
      parseFloat ne tire rien : on retombait sur 130 en dur. Sur un ecran de
@@ -1532,11 +1538,11 @@ export function renderBonusRack() {
   const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i)
     && (i.identify === 'B002' || i.identify === 'B003'));
 
-  if (!owned.length && !offert) {
-    rack.innerHTML = '<div class="dc-bonus-vide">'
-      + esc(left <= 0 ? t('bonus.plusDeTour') : t('bonus.empty')) + '</div>';
-    return;
-  }
+  /* ⛔ PLUS DE MESSAGE CACHE DERRIERE LES BOUTONS. « Quand on n'a plus de bonus,
+     on affiche le barillet VIDE, pas ce texte a moitie masque. » Le tambour a
+     ses trous dessines : sans jeton, il se montre vide, ce qui dit deja tout.
+     On ne coupe donc plus le rendu ici — le barillet se dessine dans tous les
+     cas, avec zero jeton s'il le faut (voir disposerBarillet). */
   const joues = (S.state.bonusJoues && S.state.bonusJoues[S.seat]) || [];
   const boutons = owned.filter((i) => i.identify !== offert);
   const nomDeLEffet = (id, secours) => {
