@@ -500,7 +500,7 @@ async function connect() {
     campagne: (m) => {
       S.campagne = m;
       if (Array.isArray(m.capitaines)) S.campCaps = m.capitaines;
-      if (S.panel === 'campagne') refreshPanel();
+      if (S.panel === 'campagne') { refreshPanel(); renderWallet(); }
     },
     /* Le verdict d'un niveau : les etoiles nouvelles paient, le pont peut
        avoir un capitaine de plus a deverrouiller. */
@@ -952,6 +952,92 @@ function tailleBourse(n) {
  * partie et qui volaient la place aux deux seuls qui comptent. Le detail vit
  * dans le pont et dans le classement, qui sont faits pour cela.
  */
+/* Le palier ou l'on se bat : le plus haut dont un niveau est ouvert. */
+function palierCourant(niveaux) {
+  let p = 1;
+  for (const n of niveaux) if (n.ouvert && n.palier > p) p = n.palier;
+  return p;
+}
+function etoilesPalier(niveaux, p) {
+  return niveaux.filter((n) => n.palier === p)
+    .reduce((t, n) => t + (n.etoiles & 1 ? 1 : 0) + (n.etoiles & 2 ? 1 : 0) + (n.etoiles & 4 ? 1 : 0), 0);
+}
+function capitaineDuPalier(niveaux, p) {
+  const boss = niveaux.find((n) => n.palier === p && n.boss);
+  return boss ? boss.capitaine : null;
+}
+
+let deroulantCampagne = null;
+function fermerDeroulantCampagne() {
+  if (deroulantCampagne) { deroulantCampagne.remove(); deroulantCampagne = null; }
+}
+
+function renderWalletCampagne() {
+  const w = $('#dc-wallet');
+  const niveaux = (S.campagne && S.campagne.niveaux) || [];
+  if (!niveaux.length) {
+    /* Pas encore recu la carte : on montre un chargement sobre, pas la bourse. */
+    w.innerHTML = '<div class="dc-plaque dc-plaque-camp"><span>' + esc(t('camp.titre')) + '</span></div>';
+    if (S.net) S.net.send({ t: 'campagne' });
+    return;
+  }
+  const p = palierCourant(niveaux);
+  const cap = capitaineDuPalier(niveaux, p);
+  const nom = cap ? t('cap.' + cap + '.name') : '';
+  const etoiles = etoilesPalier(niveaux, p);
+  w.innerHTML = `
+    <button class="dc-camp-hud" data-camp-hud>
+      ${cap ? `<img src="${ASSETS}img/cap_${esc(cap)}.png" alt="">` : ''}
+      <span class="dc-camp-hud-txt">
+        <b>${esc(t('camp.palier', { n: p }))}</b>
+        <em>${esc(nom)}</em>
+      </span>
+      <span class="dc-camp-hud-etoiles">\u2b50 ${etoiles}/15</span>
+      <span class="dc-camp-hud-fleche">\u25be</span>
+    </button>`;
+  w.querySelector('[data-camp-hud]').onclick = (ev) => {
+    ev.stopPropagation();
+    basculerDeroulantCampagne(niveaux, ev.currentTarget);
+  };
+}
+
+/* Le menu deroulant : les quinze paliers, leur capitaine (grise tant qu'il
+   n'est pas gagne) et leur compte d'etoiles. C'est la carte des deblocages, en
+   petit, depuis le bandeau. */
+function basculerDeroulantCampagne(niveaux, ancre) {
+  if (deroulantCampagne) { fermerDeroulantCampagne(); return; }
+  const dejaGagnes = S.campCaps || [];
+  const paliers = [];
+  for (let p = 1; p <= 15; p++) {
+    const cap = capitaineDuPalier(niveaux, p);
+    if (!cap) continue;
+    paliers.push({ p, cap, etoiles: etoilesPalier(niveaux, p), gagne: dejaGagnes.includes(cap) });
+  }
+  const d = document.createElement('div');
+  d.className = 'dc-camp-drop';
+  d.innerHTML = paliers.map((x) => `
+    <div class="dc-camp-drop-l${x.etoiles >= 15 ? ' dc-camp-drop-plein' : ''}">
+      <img src="${ASSETS}img/cap_${esc(x.cap)}.png" alt="" class="${x.gagne ? '' : 'dc-camp-gris'}">
+      <span><b>${esc(t('camp.palier', { n: x.p }))}</b><em>${esc(t('cap.' + x.cap + '.name'))}</em></span>
+      <i>\u2b50 ${x.etoiles}/15</i>
+    </div>`).join('');
+  ($('#dicewrap') || document.body).appendChild(d);
+  const r = ancre.getBoundingClientRect();
+  d.style.left = Math.max(8, Math.min(window.innerWidth - d.offsetWidth - 8, r.left)) + 'px';
+  d.style.top = (r.bottom + 6) + 'px';
+  deroulantCampagne = d;
+  /* Un clic ailleurs referme. En capture, pour passer avant le reste. */
+  setTimeout(() => {
+    const fermer = (ev) => {
+      if (deroulantCampagne && !deroulantCampagne.contains(ev.target)) {
+        fermerDeroulantCampagne();
+        document.removeEventListener('pointerdown', fermer, true);
+      }
+    };
+    document.addEventListener('pointerdown', fermer, true);
+  }, 0);
+}
+
 function renderWallet() {
   /* ⛔ SANS RESEAU, LA BARRE DU HAUT SE VIDAIT — OR ELLE SAIT. `S.me` n'arrive
      qu'avec le message d'accueil : tant qu'il n'est pas venu, cette fonction
@@ -969,6 +1055,12 @@ function renderWallet() {
      la bourse est arbitree par le serveur, et le premier `welcome` les remplace.
      Montrer la derniere valeur connue en attendant vaut mieux que ne rien
      montrer — un compteur absent se lit comme une perte. */
+  /* ⛔ PENDANT LA PIRATERIE, LE BANDEAU CHANGE DE METIER. « Au lieu d'afficher
+     mes pieces et mon rang, je prefere le palier et le capitaine courant, avec
+     un menu deroulant des etoiles. » Le classement et la bourse n'ont rien a
+     faire sur un ecran d'aventure solo : on montre OU l'on en est. */
+  if (S.panel === 'campagne') { renderWalletCampagne(); return; }
+  fermerDeroulantCampagne();
   if (!S.me) S.me = cale.moi();
   if (!S.me) return;
   /* Le rang suit la meme regle que la bourse : la derniere position connue
@@ -1035,6 +1127,7 @@ function togglePanel(name) {
     if (S.panel) {
       S.panel = null;
       panel.classList.remove('on');
+      renderWallet();
       fermerLecteur();
       S.sfx.play('shut', 0.2);
     }
@@ -1044,6 +1137,7 @@ function togglePanel(name) {
   if (S.panel === name) {
     S.panel = null;
     panel.classList.remove('on');
+    renderWallet();
     /* ⚠️ LE LECTEUR NE SURVIT PAS A LA FERMETURE. Son horloge continuerait de
        tourner derriere un panneau invisible, a peindre des plateaux retires du
        document et a jouer des explosions que personne ne regarde. */
@@ -1057,6 +1151,8 @@ function togglePanel(name) {
        regarde plus. */
     if (S.panel !== name) fermerLecteur();
     S.panel = name;
+    /* Le bandeau change de metier sur la page Piraterie (voir renderWallet). */
+    renderWallet();
     /* ⛔ UNE PAGE QU'ON OUVRE SE RELIT, TOUJOURS. « Quand je vais sur chaque
        page, un appel doit recharger les donnees » — vecu : un pseudo renomme
        restait a l'ancien nom dans le classement, une bourse changee gardait son

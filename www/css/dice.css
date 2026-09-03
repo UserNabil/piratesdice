@@ -4030,3 +4030,59 @@
 }
 #dicewrap .dc-obj-rate { opacity: .55; }
 #dicewrap .dc-obj-neuve { color: var(--gold-hi, #ffe479); font-weight: 700; }
+
+/* ── LE BANDEAU DE LA PIRATERIE : palier + capitaine + deroulant ──────────── */
+#dicewrap .dc-camp-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  padding: 3px 10px 3px 4px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #4a2a8e, #2a1656);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5);
+  color: #fff;
+}
+#dicewrap .dc-camp-hud > img { width: 40px; height: 40px; flex: 0 0 auto; }
+#dicewrap .dc-camp-hud-txt { display: flex; flex-direction: column; line-height: 1.05; min-width: 0; }
+#dicewrap .dc-camp-hud-txt b {
+  font-family: "Luckiest Guy", "Baloo 2", cursive; color: var(--gold-hi, #ffe479); font-size: 14px;
+}
+#dicewrap .dc-camp-hud-txt em { font-style: normal; font-size: 11px; color: #c9aef5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+#dicewrap .dc-camp-hud-etoiles { margin-inline-start: auto; font-size: 13px; color: var(--gold-hi, #ffe479); white-space: nowrap; }
+#dicewrap .dc-camp-hud-fleche { color: #c9aef5; font-size: 12px; }
+#dicewrap .dc-plaque-camp {
+  display: flex; align-items: center; justify-content: center;
+  height: var(--pd-bar-h); padding: 0 16px; border-radius: 12px;
+  background: rgba(0,0,0,.4); box-shadow: inset 0 0 0 2px var(--blanc, #fff);
+  color: var(--gold-hi, #ffe479); font-family: "Luckiest Guy", "Baloo 2", cursive;
+}
+
+#dicewrap .dc-camp-drop {
+  position: fixed;
+  z-index: 60;
+  width: min(300px, 88vw);
+  max-height: 62vh;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(12, 6, 28, .97);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(232, 200, 106, .4);
+  -webkit-overflow-scrolling: touch;
+}
+#dicewrap .dc-camp-drop-l {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 8px; border-radius: 10px;
+}
+#dicewrap .dc-camp-drop-l + .dc-camp-drop-l { border-top: 1px solid rgba(255,255,255,.06); }
+#dicewrap .dc-camp-drop-plein { background: rgba(255, 214, 90, .12); }
+#dicewrap .dc-camp-drop-l img { width: 34px; height: 34px; flex: 0 0 auto; }
+#dicewrap .dc-camp-gris { filter: grayscale(1) brightness(.75); }
+#dicewrap .dc-camp-drop-l span { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+#dicewrap .dc-camp-drop-l b { color: var(--gold-hi, #ffe479); font-size: 13px; }
+#dicewrap .dc-camp-drop-l em { font-style: normal; font-size: 11px; color: var(--txt-dim, #c9aef5);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+#dicewrap .dc-camp-drop-l i { margin-inline-start: auto; font-style: normal; font-size: 12px; color: var(--gold-hi, #ffe479); white-space: nowrap; }
