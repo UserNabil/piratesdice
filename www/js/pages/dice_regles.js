@@ -199,11 +199,23 @@ function destroyValueInColumn(grid, col, value) {
  */
 function destroyMatching(myGrid, oppGrid, options) {
   const garde = options && Number.isInteger(options.garde) ? options.garde : -1;
+  /* `inerte` = des cases de MA grille dont le de N'EMPORTE PAS : les des
+     recus/donnes par l'echange de Black Bart (B009). La destruction normale
+     compare la colonne entiere ; un de arrive par l'echange ne combat pas. On
+     exclut la CASE, pas la valeur (un autre de non inerte de meme valeur emporte
+     toujours). Liste vide => comportement d'origine. MIROIR EXACT de `rules.js`
+     cote serveur (contrat anti-triche). */
+  const inerte = options && Array.isArray(options.inerte) && options.inerte.length
+    ? options.inerte : null;
   const destroyed = [];
   let epargne = false;
   const next = oppGrid.slice();
   for (let col = 0; col < COLUMNS; col++) {
-    const mine = columnValues(myGrid, col).filter((v) => v !== null);
+    const mine = inerte
+      ? cellsOfColumn(col)
+          .filter((c) => myGrid[c] !== null && !inerte.includes(c))
+          .map((c) => myGrid[c])
+      : columnValues(myGrid, col).filter((v) => v !== null);
     for (const cell of cellsOfColumn(col)) {
       const v = next[cell];
       if (v !== null && mine.includes(v)) {
