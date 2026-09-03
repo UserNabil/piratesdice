@@ -144,6 +144,11 @@ function guestName() {
    client Android, lui, ne s'ecrit nulle part ici — Google le reconnait a la
    signature de l'application et a son nom de paquet. */
 const CLIENT_WEB = '975326394375-5rrfp97jmjtmqggser8jvc3ec8mvplii.apps.googleusercontent.com';
+/* ⛔ LE CLIENT iOS EST DISTINCT DU CLIENT WEB. Le plugin exige `iOSClientId`
+   pour la connexion Google sur iPhone (le web sert au serverAuthCode que le
+   serveur echange). Son identifiant inverse doit AUSSI etre un schema d'URL de
+   l'Info.plist, sinon le retour d'authentification ne revient jamais a l'app. */
+const CLIENT_IOS = '975326394375-2tt38bv4rum7vdtj2m9o9qanhggpcu3h.apps.googleusercontent.com';
 
 let prepare = null;
 
@@ -188,7 +193,7 @@ function pret() {
          quelle application le demande, et c'est le serveur qui verifie que le
          jeton lui etait bien destine. */
       ? { apple: {} }
-      : { google: { webClientId: CLIENT_WEB, mode: 'offline' } });
+      : { google: { webClientId: CLIENT_WEB, iOSClientId: CLIENT_IOS, mode: 'offline' } });
   }
   return prepare;
 }
