@@ -599,6 +599,8 @@ async function connect() {
       /* Le niveau de campagne en cours, ou null : l'ecran de fin s'en sert
          pour que « Rejouer » relance LE NIVEAU. */
       S.campagneEnCours = m.campagne || null;
+      /* Compteurs des missions vivantes, remis a zero a chaque nouvelle table. */
+      S.partieDetruits = 0; S.partiePerdus = 0;
       /* ⛔ LA TABLE S'OUVRE, LA PAGE SE RANGE. Une partie lancee depuis la
          carte de la Piraterie laissait le panneau des paliers ouvert PAR-DESSUS
          l'arene — « j'ai encore le menu du choix du niveau au lieu de la
@@ -1005,24 +1007,90 @@ function objectifCampagne(code, seuil) {
    ne sait pas encore lesquelles sont decrochees (le serveur tranche au solde) :
    ce sont des OBJECTIFS a viser, pas un bilan. La carte de fin, elle, dira ce
    qui est pris. */
+/* ⛔ UN OBJECTIF « ATTEINT » EN DIRECT, MAIS RIEN N'EST ACQUIS TANT QU'ON NE
+   GAGNE PAS. On lit l'etat courant pour barrer un objectif dont la condition est
+   DEJA remplie — un indicateur « tu es sur la voie », purement visuel. Le
+   serveur seul decerne l'etoile au solde ; quitter la partie ne valide rien. */
+function missionAtteinte(code, seuil, st) {
+  const me = S.seat, foe = 1 - me;
+  const g = (st.grids && st.grids[me]) || [];
+  const total = (st.totals && st.totals[me]) || 0;
+  const totalFoe = (st.totals && st.totals[foe]) || 0;
+  const enTete = total > totalFoe;
+  const joues = (st.bonusJoues && st.bonusJoues[me]) || [];
+  const compte = (v) => g.filter((x) => x === v).length;
+  const plein = g.length > 0 && g.every((x) => x !== null && x !== undefined);
+  const triples = () => {
+    let n = 0;
+    for (let c = 0; c < 4; c++) {
+      const col = [g[c * 3], g[c * 3 + 1], g[c * 3 + 2]];
+      if (col.every((x) => x !== null && x !== undefined && x === col[0])) n += 1;
+    }
+    return n;
+  };
+  switch (code) {
+    case 'max.score': return total >= seuil;
+    case 'sum.detruits': return (S.partieDetruits || 0) >= seuil;
+    case 'sum.triples':
+    case 'max.triples.partie': return triples() >= seuil;
+    case 'max.six.plateau': return compte(6) >= seuil;
+    case 'sum.pont.refait': return plein;
+    case 'sum.escalier':
+      for (let c = 0; c < 4; c++) {
+        const set = new Set([g[c * 3], g[c * 3 + 1], g[c * 3 + 2]]);
+        if (set.has(1) && set.has(2) && set.has(3)) return true;
+      }
+      return false;
+    case 'sum.rangement':
+      for (let c = 0; c < 4; c++) {
+        const col = [g[c * 3], g[c * 3 + 1], g[c * 3 + 2]];
+        if (col.every((x) => x !== null && x !== undefined)
+            && col[0] >= col[1] && col[1] >= col[2] && col[0] > col[2]) return true;
+      }
+      return false;
+    case 'sum.tour.pont':
+      for (let c = 0; c < 4; c++) {
+        if (![g[c * 3], g[c * 3 + 1], g[c * 3 + 2]].some((x) => x !== null && x !== undefined)) return false;
+      }
+      return true;
+    case 'sum.victoires.sanssix': return enTete && compte(6) === 0;
+    case 'sum.victoires.charpentier': return enTete && (S.partiePerdus || 0) <= 2;
+    case 'sum.victoires.mainsnues': return enTete && joues.length === 0;
+    case 'sum.victoires.sansdetruire': return enTete && (S.partieDetruits || 0) === 0;
+    case 'sum.victoires.intact': return enTete && (S.partiePerdus || 0) === 0;
+    case 'sum.victoires.boucher': return enTete && (S.partieDetruits || 0) >= 8;
+    case 'sum.victoires.double': {
+      const q = st.quarters || [];
+      const idx = q.indexOf(1.3);
+      const cs = (st.columnScores && st.columnScores[me]) || [];
+      if (idx < 0 || !cs.length) return false;
+      const best = Math.max.apply(null, cs);
+      return enTete && best > 0 && cs[idx] === best;
+    }
+    default: return false;
+  }
+}
+
 function renderWalletMissions() {
   const w = $('#dc-wallet');
   const niveaux = (S.campagne && S.campagne.niveaux) || [];
   const def = niveaux.find((n) => n.identify === S.campagneEnCours);
   if (!def) {
-    /* Pas encore la carte : on demande, et on montre un titre sobre en attendant. */
     if (S.net && S.net.ready) S.net.send({ t: 'campagne' });
     w.innerHTML = '<div class="dc-missions-jeu"><b>' + esc(t('camp.missions')) + '</b></div>';
     return;
   }
-  const lignes = [
-    t('camp.obj1'),
-    objectifCampagne(def.contrainte2, def.seuil2),
-    objectifCampagne(def.contrainte3, def.seuil3),
+  const st = S.state || {};
+  const enTete = ((st.totals && st.totals[S.seat]) || 0) > ((st.totals && st.totals[1 - S.seat]) || 0);
+  const objs = [
+    { txt: t('camp.obj1'), pris: enTete },
+    { txt: objectifCampagne(def.contrainte2, def.seuil2), pris: missionAtteinte(def.contrainte2, def.seuil2, st) },
+    { txt: objectifCampagne(def.contrainte3, def.seuil3), pris: missionAtteinte(def.contrainte3, def.seuil3, st) },
   ];
   w.innerHTML = '<div class="dc-missions-jeu">'
     + '<b>' + esc(t('camp.missions')) + '</b>'
-    + lignes.map((l) => '<span>\u2606 ' + esc(l) + '</span>').join('')
+    + objs.map((o) => '<span class="' + (o.pris ? 'dc-mission-pris' : '') + '">'
+        + (o.pris ? '\u2b50' : '\u2606') + ' ' + esc(o.txt) + '</span>').join('')
     + '</div>';
 }
 
@@ -1039,6 +1107,10 @@ function renderWalletCampagne() {
   const cap = capitaineDuPalier(niveaux, p);
   const nom = cap ? t('cap.' + cap + '.name') : '';
   const etoiles = etoilesPalier(niveaux, p);
+  const me = S.me || {};
+  /* ⛔ ET LES TROIS COMPTEURS REVIENNENT, A COTE DU DEROULANT. « Dans la
+     section ou se trouve le dropdown, retablir le nombre d'or, de maudit et le
+     classement. » Ils sont compacts pour laisser la place au palier. */
   w.innerHTML = `
     <button class="dc-camp-hud" data-camp-hud>
       ${cap ? `<img src="${ASSETS}img/cap_${esc(cap)}.png" alt="">` : ''}
@@ -1048,7 +1120,15 @@ function renderWalletCampagne() {
       </span>
       <span class="dc-camp-hud-etoiles">\u2b50 ${etoiles}/15</span>
       <span class="dc-camp-hud-fleche">\u25be</span>
-    </button>`;
+    </button>
+    <div class="dc-camp-minis">
+      <span class="dc-camp-mini" title="${esc(t('hdr.coins'))}">
+        <img src="${ASSETS}img/icon_coin.png" alt="">${nombre(me.coins || 0)}</span>
+      <span class="dc-camp-mini" title="${esc(t('hdr.cursed'))}">
+        <img src="${ASSETS}img/icon_maudit.png" alt="">${nombre(me.premium || 0)}</span>
+      <span class="dc-camp-mini" title="${esc(t('menu.rang'))}">
+        <img src="${ASSETS}img/icon_elo.png" alt="">${S.rang ? '#' + nombre(S.rang) : '\u2014'}</span>
+    </div>`;
   w.querySelector('[data-camp-hud]').onclick = (ev) => {
     ev.stopPropagation();
     basculerDeroulantCampagne(niveaux, ev.currentTarget);

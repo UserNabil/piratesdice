@@ -4054,6 +4054,21 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
 #dicewrap .dc-camp-hud-etoiles { margin-inline-start: auto; font-size: 13px; color: var(--gold-hi, #ffe479); white-space: nowrap; }
 #dicewrap .dc-camp-hud-fleche { color: #c9aef5; font-size: 12px; }
+/* Les trois compteurs compacts sur la page palier, a cote du deroulant. */
+#dicewrap .dc-camp-minis { display: flex; gap: 5px; align-items: center; flex: 0 0 auto; }
+#dicewrap .dc-camp-mini {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 7px; border-radius: 9px;
+  background: rgba(0, 0, 0, .4);
+  box-shadow: inset 0 0 0 1.5px var(--blanc, #fff);
+  color: var(--gold-hi, #ffe479);
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 12px; white-space: nowrap;
+}
+#dicewrap .dc-camp-mini img { width: 15px; height: 15px; }
+/* Le bouton palier laisse la place aux compteurs. */
+#dicewrap .dc-camp-hud { flex: 1 1 auto; min-width: 0; }
+#dicewrap .dc-camp-hud .dc-camp-hud-txt em { color: var(--gold-hi, #ffe479); }
 #dicewrap .dc-plaque-camp {
   display: flex; align-items: center; justify-content: center;
   height: var(--pd-bar-h); padding: 0 16px; border-radius: 12px;
@@ -4089,11 +4104,12 @@
 
 /* ── LES MISSIONS DU NIVEAU, DANS LE BANDEAU, PENDANT UNE PARTIE PIRATERIE ── */
 #dicewrap .dc-missions-jeu {
+  /* ⛔ PLUS DE PANNEAU VIOLET : le texte se pose DIRECTEMENT sur le bandeau
+     principal (le rectangle a lisere blanc, celui de la roue des reglages). */
   width: 100%;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #4a2a8e, #2a1656);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5);
+  padding: 3px 8px;
+  background: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -4102,15 +4118,22 @@
 #dicewrap .dc-missions-jeu b {
   font-family: "Luckiest Guy", "Baloo 2", cursive;
   color: var(--gold-hi, #ffe479);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: .4px;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 #dicewrap .dc-missions-jeu span {
-  font-size: 10.5px;
-  line-height: 1.2;
+  font-size: 12px;
+  line-height: 1.25;
   color: #efe9fb;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Un objectif en passe d'etre decroche : barre, et dore. */
+#dicewrap .dc-mission-pris {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 214, 90, .9);
+  color: var(--gold-hi, #ffe479);
+  opacity: .95;
 }

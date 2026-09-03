@@ -588,6 +588,14 @@ export function onState(msg) {
 
   const fx = msg.fx || [];
   const destroyed = fx.filter((f) => f.kind === 'destroy');
+  /* ⛔ SUIVI VIVANT POUR LES MISSIONS DE LA PIRATERIE. Les des que J'AI detruits
+     et ceux que J'AI perdus s'accumulent ici, le temps de la partie : c'est ce
+     que l'evaluateur des missions (dice.js) lit pour barrer un objectif atteint.
+     Purement visuel — le serveur tranche les vraies etoiles au solde. */
+  for (const d of destroyed) {
+    if (d.seat === S.seat) S.partiePerdus = (S.partiePerdus || 0) + 1;
+    else S.partieDetruits = (S.partieDetruits || 0) + 1;
+  }
   const placed = fx.find((f) => f.kind === 'place');
 
   const rolled = fx.find((f) => f.kind === 'roll');
@@ -612,6 +620,9 @@ export function onState(msg) {
   if (rolled && rolled.seat === S.seat) S.rolling = true;
 
   paint(false, new Set(destroyed.map((f) => f.seat)));
+  /* Le bandeau des missions suit l'etat : un objectif franchi se barre tout de
+     suite. Rien d'autre a repeindre que lui. */
+  if (S.campagneEnCours && UI.renderWallet) UI.renderWallet();
 
   /* Le de du joueur ROULE avant de se fixer : le gobelet vient d'etre secoue. */
   if (rolled && rolled.seat === S.seat) {
