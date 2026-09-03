@@ -557,7 +557,12 @@ async function connect() {
     idle: () => { S.queued = false; S.seat = -1; S.state = null; showMenu(); },
     room: (m) => onRoom(m, $('#dc-screen-menu')),
     roomfail: onRoomFail,
-    match: (m) => { resetLobby(); onMatch(m); },
+    match: (m) => {
+      /* Le niveau de campagne en cours, ou null : l'ecran de fin s'en sert
+         pour que « Rejouer » relance LE NIVEAU. */
+      S.campagneEnCours = m.campagne || null;
+      resetLobby(); onMatch(m);
+    },
     state: onState,
     over: onOver,
     /* ⚠️ UN REFUS DU SERVEUR DOIT RENDRE LA MAIN, PAS SEULEMENT PARLER.

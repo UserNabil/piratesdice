@@ -394,7 +394,11 @@ export class PartieHorsLigne {
    */
   peutJouer(siege, identifiant) {
     if (this.finie || this.tour !== siege) return false;
-    if (identifiant === 'B004' || identifiant === 'B008') return false;
+    /* ⛔ SEULS LES DEUX EFFETS DE BASE SE JOUENT ICI. La nouvelle regle du jeu
+       reserve chaque autre effet a SON capitaine — et le mode hors ligne n'a
+       pas de trait de capitaine du tout (`freeBonus` y est nul). Le
+       verificateur du serveur refuse aux memes conditions. */
+    if (identifiant !== 'B002' && identifiant !== 'B003') return false;
     if (this.effets[siege].includes(identifiant)) return false;
     if (this.effets[siege].length >= this.maxEffets) return false;
     return true;
@@ -409,7 +413,7 @@ export class PartieHorsLigne {
        rallonge (B008) n'a rien a rallonger — il n'y a pas de pendule sur un
        telephone qui joue seul. Mieux vaut deux effets absents qu'un effet qui
        ment ou qui brule un jeton pour rien ; le ratelier les grise. */
-    if (identifiant === 'B004' || identifiant === 'B008') return null;
+    if (identifiant !== 'B002' && identifiant !== 'B003') return null;
     if (this.effets[siege].includes(identifiant)) return null;
     if (this.effets[siege].length >= this.maxEffets) return null;
 

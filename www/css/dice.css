@@ -3760,6 +3760,16 @@
               0 8px 16px rgba(0, 0, 0, .4);
   text-shadow: none;
 }
+#dicewrap .dc-carte-campagne {
+  /* Bleue, comme demande : ni l'or du solo ni le violet du duel — la couleur
+     du grand large. */
+  background: linear-gradient(180deg, #58b7e8, #2a7fc0);
+  color: #08243a;
+  --pd-mode-lip: #1b5a8e;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55), 0 4px 0 var(--pd-mode-lip),
+              0 8px 16px rgba(0, 0, 0, .4);
+  text-shadow: none;
+}
 #dicewrap .dc-carte-multi {
   background: linear-gradient(180deg, #8f5fd6, #6a3bb0);
   color: #FFF6DA;

@@ -1534,7 +1534,11 @@ export function renderBonusRack() {
   if (!rack || !S.state) return;
   const left = S.state.bonusLeft ? S.state.bonusLeft[S.seat] : 0;
   const offert = (S.state.freeBonus && S.state.freeBonus[S.seat]) || null;
-  const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i));
+  /* ⛔ LA CALE NE MONTRE PLUS QUE CE QUE LA REGLE PERMET : les deux effets de
+     base, plus le trait du capitaine (l'offert). Les autres jetons d'un vieil
+     inventaire restent en soute — les montrer, c'est promettre un refus. */
+  const owned = S.inventory.filter((i) => i.quantity > 0 && jouable(i)
+    && (i.identify === 'B002' || i.identify === 'B003'));
 
   if (!owned.length && !offert) {
     rack.innerHTML = '<div class="dc-bonus-vide">'

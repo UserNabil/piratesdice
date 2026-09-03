@@ -722,14 +722,6 @@ export function renderMenu(el) {
         <button class="dc-btn dc-carte-mode dc-carte-solo" id="dc-solo">
           <img src="${ASSETS}img/menu_ai.png" alt="">
           <span>${esc(t('menu.solo'))}</span></button>
-        <button class="dc-btn dc-carte-mode dc-carte-multi" id="dc-multi"
-                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
-          <img src="${ASSETS}img/menu_versus.png" alt="">
-          <span>${esc(t('menu.multi'))}</span></button>
-        <button class="dc-btn dc-carte-mode dc-carte-ami" id="dc-friend"
-                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
-          <img src="${ASSETS}img/menu_friend.png" alt="">
-          <span>${esc(t('menu.friend'))}</span></button>
         <!-- ⛔ LA CAMPAGNE EST LA QUATRIEME CARTE, pas un onglet : c'est une
              facon de JOUER, elle vit avec les trois autres. Elle demande le
              reseau pour l'instant (les etoiles se calculent au solde, cote
@@ -740,6 +732,14 @@ export function renderMenu(el) {
           <img src="${ASSETS}img/mode_campagne.png" alt=""
                onerror="this.onerror=null;this.src='${ASSETS}img/menu_ai.png'">
           <span>${esc(t('menu.campagne'))}</span></button>
+        <button class="dc-btn dc-carte-mode dc-carte-multi" id="dc-multi"
+                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
+          <img src="${ASSETS}img/menu_versus.png" alt="">
+          <span>${esc(t('menu.multi'))}</span></button>
+        <button class="dc-btn dc-carte-mode dc-carte-ami" id="dc-friend"
+                ${horsLigne ? 'disabled title="' + esc(t('offline.besoinReseau')) + '"' : ''}>
+          <img src="${ASSETS}img/menu_friend.png" alt="">
+          <span>${esc(t('menu.friend'))}</span></button>
       </div>
       <!-- ⛔ LA RANGEE « PARTIES / CLASSEMENT / PIECES » A ETE RETIREE.
            Trois nombres au bas de la carte d'accueil, et les trois se lisaient

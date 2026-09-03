@@ -27,6 +27,9 @@ const REFUS = {
      le mecanisme est encore la. « not enough coins » reste : la boutique, elle,
      refuse toujours un achat trop cher. */
   /* Le renommage : quatre refus, quatre phrases — voir gateway.onRename. */
+  /* La nouvelle regle des effets : chacun le sien, plus les deux de base. */
+  'this bonus belongs to another captain': 'err.bonusDuCapitaine',
+  'cet effet ne se joue pas hors ligne': 'offline.pasIci',
   'name must be 2-10 chars': 'err.nomTaille',
   'invalid characters': 'err.nomCaracteres',
   'name not allowed': 'err.nomInsulte',

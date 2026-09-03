@@ -175,7 +175,7 @@ export function renderCampagne(body) {
       <div class="dc-camp-niveaux">
         ${liste.map((n) => `
           <button class="dc-camp-niv${n.ouvert ? '' : ' dc-camp-verrou'}${n.boss ? ' dc-camp-bossniv' : ''}"
-                  data-niveau="${esc(n.identify)}" ${n.ouvert ? '' : 'disabled'}>
+                  data-niveau="${esc(n.identify)}">
             <b>${n.boss ? '\u2620' : n.ordre}</b>
             <span>${'\u2b50'.repeat(etoilesDuMasque(n.etoiles))}${'\u2606'.repeat(3 - etoilesDuMasque(n.etoiles))}</span>
           </button>`).join('')}
@@ -186,7 +186,17 @@ export function renderCampagne(body) {
   body.querySelectorAll('[data-niveau]').forEach((b) => {
     b.onclick = () => {
       const n = niveaux.find((x) => x.identify === b.dataset.niveau);
-      if (n) ficheNiveau(n);
+      if (!n) return;
+      /* ⛔ UN CADENAS MUET RESSEMBLE A UNE PANNE — « j'ai beau lancer, ca ne
+         marche pas ». Un niveau ferme repond donc, et dit LAQUELLE des deux
+         portes est fermee : le niveau d'avant, ou le palier d'avant. */
+      if (!n.ouvert) {
+        const duPalier = niveaux.filter((x) => x.palier === n.palier && x.ouvert);
+        toast(t(duPalier.length ? 'camp.verrouNiveau' : 'camp.verrouPalier',
+                { n: n.ordre - 1, p: n.palier - 1 }), 'warn');
+        return;
+      }
+      ficheNiveau(n);
     };
   });
 }
