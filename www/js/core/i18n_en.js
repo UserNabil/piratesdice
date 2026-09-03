@@ -704,6 +704,7 @@ export const EN = {
      verifier la suppression de compte. Trouve le 2026-08-23 en comptant les
      cles par langue : 0 contre 16. */
   'set.title': 'Settings',
+  'camp.etoilesGagnees': '{n} star(s) this game',
   'game.aiForce': 'Strength: {n}/5',
   'tour.passer': 'Skip',
   'tour.suivant': 'Next',

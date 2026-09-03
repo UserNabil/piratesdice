@@ -713,6 +713,8 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'camp.etoilesGagnees': '{n} estrella(s) esta partida',
+
   'game.aiForce': 'Fuerza: {n}/5',
 
   'tour.passer': 'Saltar',

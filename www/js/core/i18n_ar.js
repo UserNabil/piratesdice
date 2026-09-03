@@ -715,6 +715,8 @@ export const AR = {
 
   'set.title': 'الإعدادات',
 
+  'camp.etoilesGagnees': '{n} نجمة في هذه المباراة',
+
   'game.aiForce': 'القوة: {n}/5',
 
   'tour.passer': 'تخطٍّ',

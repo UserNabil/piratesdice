@@ -1508,7 +1508,8 @@
 #dicewrap .dc-parchemin-titre {
   padding: 0;
   position: absolute;
-  top: 7.8%;
+  /* Descendu de ~10 % dans la banniere, a la demande. */
+  top: 17.5%;
   left: 25%;
   right: 25%;
   height: 6.2%;
@@ -1560,10 +1561,15 @@
 #dicewrap .dc-regles-fermer {
   position: absolute;
   left: 50%;
-  bottom: 1.2%;
+  /* Remonte de ~10 % (du rouleau vers le centre), a la demande. */
+  bottom: 11%;
   transform: translateX(-50%);
   z-index: 3;
 }
+/* ⛔ IL SAUTAIT A DROITE AU CLIC. `.pd-btn-icone:active` posait
+   `transform: translateY(1px)` — qui EFFACAIT le `translateX(-50%)` de centrage,
+   d'ou le bond lateral. On garde les deux transformations ensemble. */
+#dicewrap .dc-regles-fermer:active { transform: translateX(-50%) translateY(1px); }
 #dicewrap .dc-regles-fermer img { width: 52px; height: 52px; display: block; }
 
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
@@ -3993,3 +3999,27 @@
 }
 #dicewrap .pd-tour-suivant { flex: 0 0 auto; }
 
+/* ── LES ETOILES SUR LA CARTE DE FIN ─────────────────────────────────────── */
+#dicewrap .dc-over-etoiles {
+  margin: 6px auto 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, .28);
+  box-shadow: inset 0 0 0 1px rgba(232, 200, 106, .3);
+  max-width: 320px;
+}
+#dicewrap .dc-over-etoiles-tete {
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi, #ffe479);
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+#dicewrap .dc-over-etoiles ul { list-style: none; margin: 0; padding: 0; }
+#dicewrap .dc-over-etoiles li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--txt, #efe9fb);
+}
+#dicewrap .dc-obj-rate { opacity: .55; }
+#dicewrap .dc-obj-neuve { color: var(--gold-hi, #ffe479); font-weight: 700; }

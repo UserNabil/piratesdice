@@ -59,6 +59,36 @@ function hautsFaits(m) {
   </div>`;
 }
 
+/* ⛔ LES ETOILES SUR LA CARTE DE FIN. « Dans le resultat final on doit
+   afficher les etoiles et la description des etoiles gagnees durant la partie. »
+   Trois lignes : gagner, la contrainte de style, la contrainte d'excellence —
+   chacune allumee si elle a ete DECROCHEE CETTE PARTIE (masquePartie), avec sa
+   phrase. Une etoile toute neuve (jamais eue avant) brille en plus. */
+function objectifTexte(code, seuil) {
+  const cle = 'camp.obj.' + code;
+  const dit = t(cle, { n: seuil });
+  return dit && !dit.startsWith('camp.obj.') ? dit : code;
+}
+function etoilesCampagne(m) {
+  const c = m.campagne;
+  if (!c) return '';
+  const lignes = [
+    { bit: 1, txt: t('camp.obj1') },
+    { bit: 2, txt: objectifTexte(c.contrainte2, c.seuil2) },
+    { bit: 4, txt: objectifTexte(c.contrainte3, c.seuil3) },
+  ];
+  const gagnees = (c.masquePartie & 1 ? 1 : 0) + (c.masquePartie & 2 ? 1 : 0) + (c.masquePartie & 4 ? 1 : 0);
+  return `<div class="dc-over-etoiles">
+      <div class="dc-over-etoiles-tete">${esc(t('camp.etoilesGagnees', { n: gagnees }))}</div>
+      <ul>${lignes.map((l) => {
+        const pris = (c.masquePartie & l.bit) !== 0;
+        const neuve = (c.neuves & l.bit) !== 0;
+        return `<li class="${pris ? 'dc-obj-pris' : 'dc-obj-rate'}${neuve ? ' dc-obj-neuve' : ''}">${
+          pris ? '\u2b50' : '\u2606'} ${esc(l.txt)}</li>`;
+      }).join('')}</ul>
+    </div>`;
+}
+
 export function onOver(m) {
   /* ⚠️ CELUI QUI PART A DEJA CHOISI. `requestClose` pose ce drapeau avant
      d'envoyer `leave` : l'annonce de fin qui suit lui est destinee autant qu'a
@@ -115,6 +145,7 @@ export function onOver(m) {
              title="${esc(captainTrait(m.opponentCaptain))}">
         ${esc(t('over.against', { name: m.opponent }))}
       </div>
+      ${etoilesCampagne(m)}
       ${rating}
       <!-- ⚠️ L'OR DES HAUTS FAITS S'AJOUTE A LA PRIME, ET IL DOIT SE VOIR. La
            ligne n'annoncait que la prime de match : le joueur lisait « +20 »
