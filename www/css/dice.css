@@ -1508,8 +1508,9 @@
 #dicewrap .dc-parchemin-titre {
   padding: 0;
   position: absolute;
-  /* Descendu de ~10 % dans la banniere, a la demande. */
-  top: 17.5%;
+  /* Cale DANS le ruban violet (mesure : 6,8 a 13,2 % du parchemin), un peu
+     vers le bas comme demande. */
+  top: 8%;
   left: 25%;
   right: 25%;
   height: 6.2%;
