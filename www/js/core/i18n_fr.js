@@ -724,6 +724,8 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'game.aiForce': 'Force : {n}/5',
+
   'tour.passer': 'Passer',
 
   'tour.suivant': 'Suivant',

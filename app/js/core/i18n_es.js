@@ -713,6 +713,8 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'game.aiForce': 'Fuerza: {n}/5',
+
   'tour.passer': 'Saltar',
 
   'tour.suivant': 'Siguiente',

@@ -784,6 +784,14 @@
   text-shadow: 0 1px 0 rgba(0, 0, 0, .45);
   margin-top: 2px;
 }
+#dicewrap .dc-pc-force {
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: #ffe479;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  white-space: nowrap;
+}
 
 /* Le score est LE chiffre du jeu : blanc, cerne, et gros. En or sur violet il
    se noyait dans le panneau — vu a l'ecran. */

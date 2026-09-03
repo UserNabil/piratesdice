@@ -261,6 +261,13 @@ function buildGame() {
        j'ai perdu. » Un menu ouvert prend le geste suivant POUR LUI : on ferme,
        et on avale le clic qui va avec. Le coup se joue au geste d'apres, quand
        le joueur voit de nouveau son plateau en entier. */
+    /* ⛔ MAIS LANCER LE DE NE FERME PAS LA CALE. « On peut relancer un de,
+       inventaire ouvert, sans pour autant le fermer. » Le gobelet est le seul
+       geste qu'on veut enchainer sans quitter le barillet — un lancer change ce
+       qui est jouable (la relance demande un de en main), et rouvrir la cale a
+       chaque fois etait une corvee. On le laisse passer a son propre onclick,
+       cale ouverte comprise ; tout le reste referme comme avant. */
+    if (caleOuverte() && dans('#dc-cup')) return;
     if (caleOuverte()) { fermerCale(); avaler(ev); return; }
 
     /* ⛔ ET SURTOUT PAS SUR LES DEUX FACES DU DE PIPE. Elles flottent HORS du
@@ -1021,8 +1028,14 @@ function renderPlayerCard(sel, st, seat, isMe) {
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
-      <div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
-           alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>
+      ${(p.ai && p.etoiles)
+        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Cinq crans
+           d'etoiles selon son niveau d'IA — un Elo sur un adversaire qui ne
+           monte ni ne descend n'apprend rien. */
+        ? `<div class="dc-pc-force" title="${esc(t('game.aiForce', { n: p.etoiles }))}">${
+            '\u2b50'.repeat(p.etoiles) + '\u2606'.repeat(Math.max(0, 5 - p.etoiles))}</div>`
+        : `<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+           alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>`}
       ${stockMarkup(st, seat)}
     </div>
     <div class="dc-pc-total" data-v="${st.totals[seat]}"
@@ -1359,7 +1372,6 @@ let pageRatelier = 0;
    que le cylindre ne saute pas a chaque etat recu. */
 let barilletRot = 0;
 let barilletDrague = false;
-let barilletInfo = false;
 const BARILLET_PAS = 45;   // 8 chambres sur l'asset, un pas de 45 degres
 
 /** La cale se rouvre a sa premiere page : on ne reprend pas ou l'on en etait
@@ -1385,14 +1397,14 @@ export function ratelierAuDebut() { pageRatelier = 0; }
    les jetons flottaient au-dessus des trous. Le centre de la boite est le
    centre VISUEL du trou. */
 const BARILLET_TROUS = [
-  [-1.3, 0.643, 0.376],
-  [43.8, 0.615, 0.367],
-  [86.7, 0.607, 0.373],
-  [130.7, 0.560, 0.367],
-  [181.3, 0.542, 0.373],
-  [-129.4, 0.576, 0.364],
-  [-87.0, 0.636, 0.370],
-  [-45.3, 0.628, 0.364],
+  [-0.1, 0.646, 0.408],
+  [44.1, 0.619, 0.380],
+  [86.6, 0.617, 0.380],
+  [130.3, 0.560, 0.386],
+  [180.8, 0.539, 0.389],
+  [-129.5, 0.569, 0.383],
+  [-86.6, 0.625, 0.383],
+  [-44.6, 0.625, 0.383],
 ];
 
 function disposerBarillet(cercle, donnees, ctx) {
@@ -1486,14 +1498,16 @@ function disposerBarillet(cercle, donnees, ctx) {
   cercle.addEventListener('pointerup', up);
   cercle.addEventListener('pointercancel', up);
 
-  /* Chaque chambre se joue (clic court, sur ce qu'elle contient A CET instant)
-     et se decrit (maintien long). Le glissement avale le clic. Les elements
-     sont recrees a chaque rendu : les ecouteurs ne s'empilent pas. */
+  /* ⛔ PLUS DE DESCRIPTION AU CLIC LONG. Elle gênait plus qu'elle n'aidait :
+     un maintien pour tourner le barillet la déclenchait par accident, et le
+     nom du bonus au-dessus suffit à le reconnaître. Un clic court joue la
+     chambre — c'est tout ce que fait une chambre. Les éléments sont recrées à
+     chaque rendu : les écouteurs ne s'empilent pas. */
   slots.forEach((b) => {
     b.onclick = (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
-      if (barilletDrague || barilletInfo) return;
+      if (barilletDrague) return;
       const id = b.dataset.id;
       if (!id) return;
       const nom = b.dataset.nom || '';
@@ -1504,28 +1518,6 @@ function disposerBarillet(cercle, donnees, ctx) {
       envoyerCoup({ t: 'bonus', identify: id });
       fermerCale();
     };
-    let tenu = 0;
-    const decrire = () => {
-      const info = document.querySelector('[data-info]');
-      if (!info) return;
-      const desc = t('shop.' + b.dataset.id + '.desc');
-      info.textContent = (desc && !desc.startsWith('shop.')) ? desc : (b.dataset.nom || '');
-      info.hidden = false;
-    };
-    const cacher = () => { const info = document.querySelector('[data-info]'); if (info) info.hidden = true; };
-    const finTenu = () => { if (tenu) { clearTimeout(tenu); tenu = 0; } };
-    b.addEventListener('pointerdown', () => {
-      finTenu();
-      tenu = setTimeout(() => { tenu = 0; barilletInfo = true; decrire(); }, 450);
-    });
-    b.addEventListener('pointermove', finTenu);
-    const relacher = () => {
-      finTenu();
-      if (barilletInfo) { cacher(); setTimeout(() => { barilletInfo = false; }, 60); }
-    };
-    b.addEventListener('pointerup', relacher);
-    b.addEventListener('pointerleave', relacher);
-    b.addEventListener('pointercancel', relacher);
   });
 }
 
@@ -1591,7 +1583,6 @@ export function renderBonusRack() {
     + '<div class="dc-barillet-cercle"><div class="dc-barillet-cadre"></div>'
     + '<button class="dc-bonus-btn"></button>'.repeat(8)
     + '</div>'
-    + '<div class="dc-barillet-info" data-info hidden></div>'
     + '</div>';
 
   /* Le barillet sort de derriere les boutons : son bas plonge dans le pied, seule

@@ -204,12 +204,16 @@ export function onOver(m) {
     if (S.campagneEnCours && S.net && S.net.ready) {
       let cible = S.campagneEnCours;
       if (m.outcome === 'win') {
-        const lu = /^C(\d{2})N(\d)$/.exec(S.campagneEnCours);
-        if (lu) {
-          const p = parseInt(lu[1], 10);
-          const o = parseInt(lu[2], 10);
-          if (o < 5) cible = 'C' + String(p).padStart(2, '0') + 'N' + (o + 1);
-          else if (p < 15) cible = 'C' + String(p + 1).padStart(2, '0') + 'N1';
+        /* ⚠️ ON DECOUPE LA CHAINE, ON NE LA REGEXE PAS. Un litteral d'expression
+           reguliere avec groupes — `/^C(..)N(.)$/` — se lisait « appel a C() et
+           N() » pour le controleur statique du build, qui refusait de compiler.
+           L'identifiant « C01N3 » se lit aussi bien au caractere pres. */
+        const code = String(S.campagneEnCours);
+        if (code.length === 5 && code[0] === 'C' && code[3] === 'N') {
+          const pal = parseInt(code.slice(1, 3), 10);
+          const ord = parseInt(code.slice(4), 10);
+          if (ord < 5) cible = 'C' + String(pal).padStart(2, '0') + 'N' + (ord + 1);
+          else if (pal < 15) cible = 'C' + String(pal + 1).padStart(2, '0') + 'N1';
           /* Le tout dernier boss battu : il n'y a plus de suivant, on rejoue. */
         }
       }

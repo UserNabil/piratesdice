@@ -715,6 +715,8 @@ export const AR = {
 
   'set.title': 'الإعدادات',
 
+  'game.aiForce': 'القوة: {n}/5',
+
   'tour.passer': 'تخطٍّ',
 
   'tour.suivant': 'التالي',
