@@ -31,10 +31,19 @@ const CLE_VU = 'pd.tuto';
 const ETAPES = [
   { cible: '#dc-cup', cle: 'lancer',
     atteint: (a, b) => (a.de === null || a.de === undefined) && b.de !== null && b.de !== undefined },
-  { cible: '.dc-board:last-child, #dicewrap .dc-board', cle: 'poser',
+  /* ⛔ MON PLATEAU, PAS CELUI D'EN FACE. Le plateau adverse porte `.dc-board-top`
+     (il est empile a l'envers) ; le mien ne l'a pas. `:last-child` tombait sur
+     le mauvais — il eclairait la grille de l'adversaire. */
+  { cible: '#dicewrap .dc-board:not(.dc-board-top)', cle: 'poser',
     atteint: (a, b) => b.poses > a.poses },
+  /* ⛔ OUVRIR LE SAC SUFFIT A AVANCER. Attendre qu'un bonus soit VRAIMENT joue
+     laissait le tuto bloque : le joueur ouvrait l'inventaire et rien ne suivait,
+     parce qu'un bonus peut ne pas etre jouable a cet instant. On montre le sac,
+     et des qu'il s'ouvre (le barillet apparait) — ou qu'un bonus part — on passe
+     a la fin. Le joueur termine sa partie a son rythme. */
   { cible: '#dc-bag', cle: 'bonus',
-    atteint: (a, b) => b.bonus > a.bonus },
+    atteint: (a, b) => b.bonus > a.bonus,
+    domFait: () => !!document.querySelector('#dc-bonus.dc-bonus-open') },
 ];
 
 export function tutorielDejaVu() {
@@ -142,7 +151,7 @@ export function lancerTutoriel(force) {
     replacer();                                   // la mise en page bouge : on suit
     const e = ETAPES[i];
     if (ap.over) { fermer(); return; }            // partie finie pendant le tuto
-    if (e.atteint(avant, ap)) { montrer(i + 1); return; }
+    if (e.atteint(avant, ap) || (e.domFait && e.domFait())) { montrer(i + 1); return; }
     /* On ne fige pas `avant` sur le de : une fois lance il reste non nul, donc
        la comparaison tient. Pour « poser » et « bonus », on garde la reference
        du debut de l'etape (posee dans `montrer`). */
