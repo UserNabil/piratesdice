@@ -561,6 +561,12 @@ async function connect() {
       /* Le niveau de campagne en cours, ou null : l'ecran de fin s'en sert
          pour que « Rejouer » relance LE NIVEAU. */
       S.campagneEnCours = m.campagne || null;
+      /* ⛔ LA TABLE S'OUVRE, LA PAGE SE RANGE. Une partie lancee depuis la
+         carte de la Piraterie laissait le panneau des paliers ouvert PAR-DESSUS
+         l'arene — « j'ai encore le menu du choix du niveau au lieu de la
+         partie ». Ce que le pont fait tout seul (il n'est pas une page), la
+         page doit le faire ici. */
+      if (S.panel) togglePanel('accueil');
       resetLobby(); onMatch(m);
     },
     state: onState,

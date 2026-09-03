@@ -730,9 +730,9 @@ export const FR = {
 
   'camp.verrouPalier': 'Il faut 11 étoiles au palier {p} pour ouvrir celui-ci.',
 
-  'menu.campagne': 'Campagne',
+  'menu.campagne': 'La Piraterie',
 
-  'camp.titre': 'La Campagne',
+  'camp.titre': 'La Piraterie',
 
   'camp.palier': 'Palier {n}',
 

@@ -719,9 +719,9 @@ export const ES = {
 
   'camp.verrouPalier': 'Necesitas 11 estrellas en el nivel {p} para abrir este.',
 
-  'menu.campagne': 'Campaña',
+  'menu.campagne': 'La Piratería',
 
-  'camp.titre': 'La Campaña',
+  'camp.titre': 'La Piratería',
 
   'camp.palier': 'Nivel {n}',
 

@@ -721,9 +721,9 @@ export const AR = {
 
   'camp.verrouPalier': 'تحتاج 11 نجمة في المرحلة {p} لفتح هذه.',
 
-  'menu.campagne': 'الحملة',
+  'menu.campagne': 'القرصنة',
 
-  'camp.titre': 'الحملة',
+  'camp.titre': 'القرصنة',
 
   'camp.palier': 'المرحلة {n}',
 
