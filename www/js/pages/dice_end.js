@@ -139,8 +139,14 @@ export function onOver(m) {
       <div class="dc-over-btns">
         <button class="dc-btn" id="dc-again">${esc(S.salon
           ? t('over.againFriend', { name: m.opponent || t('game.opponent') })
-          : t('over.again'))}</button>
-        <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(t('over.back'))}</button>
+          /* ⛔ EN MODE PIRATERIE, ON AVANCE. Une victoire propose d'abord le
+             NIVEAU SUIVANT ; une defaite propose de rejouer le niveau. Le
+             second bouton ramene a la carte de l'aventure, pas au pont. */
+          : (S.campagneEnCours && m.outcome === 'win'
+              ? t('camp.suivant')
+              : t('over.again')))}</button>
+        <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(
+          S.campagneEnCours ? t('camp.retourAventure') : t('over.back'))}</button>
       </div>
     </div>`;
   /* ⛔ LA PLUIE DE DOUBLONS EST PARTIE, ET LE SCEAU AVEC. Personne ne les avait
@@ -190,11 +196,24 @@ export function onOver(m) {
        s'attendre pour rien — alors que leur salon est encore ouvert. On y
        retourne directement : c'est le sens du bouton quand il porte un nom. */
     if (S.salon) { S.net.send({ t: 'relancer' }); return; }
-    /* ⛔ APRES UN NIVEAU DE CAMPAGNE, « REJOUER » REJOUE LE NIVEAU. L'envoyer
-       dans un solo anonyme perdait les etoiles en jeu — le joueur croyait
-       retenter sa contrainte et jouait une partie qui ne comptait pour rien. */
+    /* ⛔ EN PIRATERIE, LE BOUTON PRINCIPAL AVANCE OU RETENTE. Victoire : le
+       niveau suivant (C01N2 apres C01N1, C02N1 apres un boss) ; si le serveur
+       le juge encore ferme, son refus traduit s'affiche et on n'a rien perdu.
+       Defaite : on rejoue LE niveau — pas un solo anonyme qui ne compterait
+       pour rien. */
     if (S.campagneEnCours && S.net && S.net.ready) {
-      S.net.send({ t: 'campagne.jouer', identify: S.campagneEnCours });
+      let cible = S.campagneEnCours;
+      if (m.outcome === 'win') {
+        const lu = /^C(\d{2})N(\d)$/.exec(S.campagneEnCours);
+        if (lu) {
+          const p = parseInt(lu[1], 10);
+          const o = parseInt(lu[2], 10);
+          if (o < 5) cible = 'C' + String(p).padStart(2, '0') + 'N' + (o + 1);
+          else if (p < 15) cible = 'C' + String(p + 1).padStart(2, '0') + 'N1';
+          /* Le tout dernier boss battu : il n'y a plus de suivant, on rejoue. */
+        }
+      }
+      S.net.send({ t: 'campagne.jouer', identify: cible });
       return;
     }
     /* ⛔ ET HORS LIGNE, CE BOUTON NE FAISAIT RIEN. `S.net` est alors la vraie
@@ -209,5 +228,10 @@ export function onOver(m) {
     }
     S.net.send({ t: 'play', mode });
   };
-  $('#dc-back').onclick = leave;
+  $('#dc-back').onclick = () => {
+    const versAventure = !!S.campagneEnCours;
+    leave();
+    /* Retour a la carte de la Piraterie : c'est d'elle qu'on etait parti. */
+    if (versAventure && UI.openPage) UI.openPage('campagne');
+  };
 }

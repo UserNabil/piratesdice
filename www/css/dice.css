@@ -3921,6 +3921,12 @@
 #dicewrap .dc-camp-niv span { font-size: 9px; letter-spacing: 1px; }
 #dicewrap .dc-camp-bossniv { background: rgba(122, 28, 42, .85); }
 #dicewrap .dc-camp-verrou { opacity: .45; cursor: not-allowed; }
+#dicewrap .dc-camp-trogne {
+  display: block;
+  width: 96px; height: 96px;
+  margin: 0 auto 6px;
+}
+#dicewrap .dc-camp-trogne-boss { width: 118px; height: 118px; }
 #dicewrap .dc-camp-objectifs { list-style: none; margin: 0 0 14px; padding: 0; }
 #dicewrap .dc-camp-objectifs li { margin: 7px 0; font-size: 14px; color: var(--txt); }
 #dicewrap .dc-camp-fiche .pd-ask-row { display: flex; gap: 10px; align-items: center; justify-content: center; }

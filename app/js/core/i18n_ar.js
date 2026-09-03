@@ -715,6 +715,10 @@ export const AR = {
 
   'set.title': 'الإعدادات',
 
+  'camp.suivant': 'المستوى التالي',
+
+  'camp.retourAventure': 'العودة إلى القرصنة',
+
   'err.bonusDuCapitaine': 'هذا التأثير يخص قبطانًا آخر.',
 
   'camp.verrouNiveau': 'اربح المستوى {n} أولاً.',

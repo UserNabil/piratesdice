@@ -117,8 +117,15 @@ function ficheNiveau(n) {
   const voile = document.createElement('div');
   voile.className = 'pd-ask on';
   const nomBoss = n.boss && n.capitaine ? t('cap.' + n.capitaine + '.name') : null;
+  /* La trogne de l'adversaire, sur la fiche : on sait QUI on va affronter
+     avant de monter a bord — le sbire tire au sort, ou le capitaine du palier. */
+  const trogne = n.boss && n.capitaine
+    ? ASSETS + 'img/cap_' + n.capitaine + '.png'
+    : (n.sbire ? ASSETS + 'img/sbires/' + n.sbire + '.png' : null);
   voile.innerHTML = `
     <div class="pd-ask-card pd-panel dc-camp-fiche">
+      ${trogne ? `<img class="dc-camp-trogne${n.boss ? ' dc-camp-trogne-boss' : ''}"
+           src="${trogne}" alt="" onerror="this.remove()">` : ''}
       <h3>${esc(n.boss ? t('camp.boss', { nom: nomBoss || '' }) : t('camp.niveau', { n: n.ordre }))}</h3>
       <ul class="dc-camp-objectifs">
         <li>${(n.etoiles & 1) ? '\u2b50' : '\u2606'} ${esc(t('camp.obj1'))}</li>

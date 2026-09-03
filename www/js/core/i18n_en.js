@@ -704,6 +704,8 @@ export const EN = {
      verifier la suppression de compte. Trouve le 2026-08-23 en comptant les
      cles par langue : 0 contre 16. */
   'set.title': 'Settings',
+  'camp.suivant': 'Next level',
+  'camp.retourAventure': 'Back to Piracy',
   'err.bonusDuCapitaine': 'That effect belongs to another captain.',
   'camp.verrouNiveau': 'Win level {n} first.',
   'camp.verrouPalier': 'You need 11 stars on tier {p} to open this one.',

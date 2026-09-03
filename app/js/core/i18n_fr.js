@@ -724,6 +724,10 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'camp.suivant': 'Niveau suivant',
+
+  'camp.retourAventure': 'La Piraterie',
+
   'err.bonusDuCapitaine': 'Cet effet appartient à un autre capitaine.',
 
   'camp.verrouNiveau': 'Gagnez d’abord le niveau {n}.',

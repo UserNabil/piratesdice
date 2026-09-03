@@ -713,6 +713,10 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'camp.suivant': 'Siguiente etapa',
+
+  'camp.retourAventure': 'La Piratería',
+
   'err.bonusDuCapitaine': 'Ese efecto pertenece a otro capitán.',
 
   'camp.verrouNiveau': 'Gana primero la etapa {n}.',
