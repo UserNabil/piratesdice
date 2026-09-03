@@ -3951,6 +3951,10 @@
   position: fixed;
   inset: 0;
   z-index: 95;
+  /* ⛔ LE VOILE LAISSE PASSER LES CLICS. Le tutoriel accompagne une VRAIE
+     partie : le joueur doit toucher les vrais boutons (lancer, poser, sac) a
+     travers lui. Seule la bulle capte le doigt. */
+  pointer-events: none;
 }
 /* Le projecteur : un trou clair dans un voile sombre, cale sur la cible. Une
    ombre portee ENORME fait tout le voile — pas besoin d'un second calque. */
@@ -3965,6 +3969,8 @@
 }
 #dicewrap .pd-tour-bulle {
   position: absolute;
+  pointer-events: auto;
+  z-index: 2;
   max-width: min(84vw, 340px);
   padding: 14px 16px 12px;
   border-radius: 16px;

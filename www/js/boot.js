@@ -310,12 +310,6 @@ function settingsMarkup() {
              title="${t('tab.rules')}" aria-label="${t('tab.rules')}"
       ><img src="${ASSETS}img/icon_rules.png" alt=""></button>`)}
 
-      <!-- Revoir le tutoriel : le meme guide que le premier lancement, rappele
-           a la demande. -->
-      ${row(t('tour.revoir'), `<button class="pd-link-art" data-tutoriel
-             title="${t('tour.revoir')}" aria-label="${t('tour.revoir')}"
-      ><img src="${ASSETS}img/icon_rules.png" alt=""></button>`)}
-
       ${row(t('set.terms'), `<a class="pd-link-art" href="${TERMS_URL}" target="_blank"
              rel="noopener" title="${t('set.terms')}"
              aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
@@ -457,8 +451,6 @@ function openSettings() {
      laisser les reglages par-dessus donnerait une feuille sous une boite de
      dialogue — le joueur toucherait le voile en croyant toucher les regles. */
   wrap.querySelector('[data-regles]').onclick = () => { close(); ouvrirPanneau('rules'); };
-  const tuto = wrap.querySelector('[data-tutoriel]');
-  if (tuto) tuto.onclick = () => { close(); setTimeout(() => lancerTutoriel(true), 250); };
   /* Le pseudo part au serveur, qui repond par un `me` neuf (repeint par dice.js)
      ou par un refus deja traduit (dice_refus.js). On ne devine pas le verdict. */
   const champPseudo = wrap.querySelector('[data-pseudo]');

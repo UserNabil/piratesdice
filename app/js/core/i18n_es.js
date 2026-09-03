@@ -713,6 +713,14 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'tour.demarre': '¡Bienvenido! Aquí tienes una partida para aprender. Sigue la guía.',
+
+  'tour.lancer': 'Toca el cubilete para lanzar tu dado.',
+
+  'tour.poser': 'Coloca tu dado en una de tus cuatro columnas.',
+
+  'tour.bonus': 'Abre tu bolsa y usa un efecto de capitán.',
+
   'camp.etoilesGagnees': '{n} estrella(s) esta partida',
 
   'game.aiForce': 'Fuerza: {n}/5',

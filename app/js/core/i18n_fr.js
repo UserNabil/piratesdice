@@ -724,6 +724,14 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'tour.demarre': 'Bienvenue ! Voici une partie pour apprendre. Suivez le guide.',
+
+  'tour.lancer': 'Tapez le gobelet pour lancer votre dé.',
+
+  'tour.poser': 'Posez votre dé dans une de vos quatre colonnes.',
+
+  'tour.bonus': 'Ouvrez votre sac et jouez un effet de capitaine.',
+
   'camp.etoilesGagnees': '{n} étoile(s) cette partie',
 
   'game.aiForce': 'Force : {n}/5',

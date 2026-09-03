@@ -1336,4 +1336,26 @@ export function initDice() {
   };
   UI.renderWallet = renderWallet;
   UI.requestClose = requestClose;
+
+  /* ── ce dont le tutoriel a besoin, et rien de plus ──────────────────────
+     Le guide du premier lancement joue une VRAIE partie contre l'IA : il lui
+     faut de quoi la demarrer et de quoi observer les gestes du joueur (lancer,
+     poser, jouer un bonus). Deux crochets suffisent — il ne touche a rien. */
+  UI.jouerSolo = () => {
+    if (S.net && S.net.ready) { S.net.send({ t: 'play', mode: 'solo' }); return; }
+    if (UI.jouerHorsLigne) UI.jouerHorsLigne();
+  };
+  UI.snapshotJeu = () => {
+    const st = S.state;
+    if (!st) return { phase: null };
+    const grille = (st.grids && st.grids[S.seat]) || [];
+    const poses = grille.filter((v) => v !== null && v !== undefined).length;
+    const joues = (st.bonusJoues && st.bonusJoues[S.seat]) || [];
+    return {
+      phase: st.phase, seat: S.seat, turn: st.turn,
+      monTour: st.turn === S.seat,
+      de: st.dice ? st.dice[S.seat] : null,
+      poses, bonus: joues.length, over: st.phase === 'over',
+    };
+  };
 }
