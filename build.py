@@ -28,7 +28,11 @@ STATIC = os.path.join(TOOL, "static")
 APP = os.path.join(HERE, "app")
 WWW = os.path.join(HERE, "www")
 
-DEFAULT_SERVER = "http://192.168.1.19:8100"
+# ⛔ UN SEUL ENVIRONNEMENT : LA PROD. « On a un seul env, c'est prod. » Le
+# defaut n'est plus une adresse LAN — un `build.py` sans --server ne peut plus
+# graver « 192.168.1.19 » dans un index.html distribue. Le simulateur lui-meme
+# tape la prod : le serveur de jeu deploye est la seule verite.
+DEFAULT_SERVER = "https://dice.my-officeapps.com"
 
 # Le jeu partage : (source, destination dans www)
 SHARED_FILES = [
