@@ -715,6 +715,8 @@ export const AR = {
 
   'set.title': 'الإعدادات',
 
+  'camp.missions': 'المهام',
+
   'tour.demarre': 'مرحبًا! هذه مباراة للتعلّم. اتبع الدليل.',
 
   'tour.lancer': 'انقر على الكوب لرمي النرد.',

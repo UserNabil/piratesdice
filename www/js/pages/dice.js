@@ -606,9 +606,12 @@ async function connect() {
          page doit le faire ici. */
       if (S.panel) togglePanel('accueil');
       resetLobby(); onMatch(m);
+      /* Le bandeau montre les missions du niveau si c'est une partie de la
+         Piraterie ; sinon il garde les plaques. */
+      renderWallet();
     },
     state: onState,
-    over: onOver,
+    over: (m) => { onOver(m); renderWallet(); },
     /* ⚠️ UN REFUS DU SERVEUR DOIT RENDRE LA MAIN, PAS SEULEMENT PARLER.
        L'ecran de mise se desactivait a l'envoi ; un refus affichait bien son
        toast, mais aucun etat ne suivait, donc rien ne rallumait le bouton et
@@ -993,6 +996,36 @@ function fermerDeroulantCampagne() {
   if (deroulantCampagne) { deroulantCampagne.remove(); deroulantCampagne = null; }
 }
 
+function objectifCampagne(code, seuil) {
+  const dit = t('camp.obj.' + code, { n: seuil });
+  return dit && !dit.startsWith('camp.obj.') ? dit : code;
+}
+
+/* Les trois missions d'etoile du niveau en cours, dans le bandeau du haut. On
+   ne sait pas encore lesquelles sont decrochees (le serveur tranche au solde) :
+   ce sont des OBJECTIFS a viser, pas un bilan. La carte de fin, elle, dira ce
+   qui est pris. */
+function renderWalletMissions() {
+  const w = $('#dc-wallet');
+  const niveaux = (S.campagne && S.campagne.niveaux) || [];
+  const def = niveaux.find((n) => n.identify === S.campagneEnCours);
+  if (!def) {
+    /* Pas encore la carte : on demande, et on montre un titre sobre en attendant. */
+    if (S.net && S.net.ready) S.net.send({ t: 'campagne' });
+    w.innerHTML = '<div class="dc-missions-jeu"><b>' + esc(t('camp.missions')) + '</b></div>';
+    return;
+  }
+  const lignes = [
+    t('camp.obj1'),
+    objectifCampagne(def.contrainte2, def.seuil2),
+    objectifCampagne(def.contrainte3, def.seuil3),
+  ];
+  w.innerHTML = '<div class="dc-missions-jeu">'
+    + '<b>' + esc(t('camp.missions')) + '</b>'
+    + lignes.map((l) => '<span>\u2606 ' + esc(l) + '</span>').join('')
+    + '</div>';
+}
+
 function renderWalletCampagne() {
   const w = $('#dc-wallet');
   const niveaux = (S.campagne && S.campagne.niveaux) || [];
@@ -1081,6 +1114,12 @@ function renderWallet() {
      un menu deroulant des etoiles. » Le classement et la bourse n'ont rien a
      faire sur un ecran d'aventure solo : on montre OU l'on en est. */
   if (S.panel === 'campagne') { renderWalletCampagne(); return; }
+  /* ⛔ PENDANT UNE PARTIE DE LA PIRATERIE, LES MISSIONS D'ETOILE S'AFFICHENT.
+     « Mettre les missions d'etoile durant une partie d'un niveau. » Le bandeau
+     montre alors les trois objectifs a viser, a la place des pieces et du rang. */
+  if (S.campagneEnCours && !S.panel && S.state && S.state.phase && S.state.phase !== 'over') {
+    renderWalletMissions(); return;
+  }
   fermerDeroulantCampagne();
   if (!S.me) S.me = cale.moi();
   if (!S.me) return;

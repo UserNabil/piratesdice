@@ -713,6 +713,8 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'camp.missions': 'Misiones',
+
   'tour.demarre': '¡Bienvenido! Aquí tienes una partida para aprender. Sigue la guía.',
 
   'tour.lancer': 'Toca el cubilete para lanzar tu dado.',

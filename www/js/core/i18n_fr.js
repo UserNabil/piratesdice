@@ -724,6 +724,8 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'camp.missions': 'Missions',
+
   'tour.demarre': 'Bienvenue ! Voici une partie pour apprendre. Suivez le guide.',
 
   'tour.lancer': 'Tapez le gobelet pour lancer votre dé.',
