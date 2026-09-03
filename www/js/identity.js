@@ -194,6 +194,12 @@ function pret() {
          jeton lui etait bien destine. */
       ? { apple: {} }
       : { google: { webClientId: CLIENT_WEB, iOSClientId: CLIENT_IOS, mode: 'offline' } });
+    /* ⚠️ ON NE MEMOISE QUE LE SUCCES. Un echec transitoire (reseau, greffon pas
+       encore pret) laissait `prepare` sur une promesse REJETEE pour toute la
+       session : Google/Apple restaient morts jusqu'au redemarrage. On vide le
+       cache sur rejet pour que l'appel suivant retente. Le rejet part quand meme
+       a l'appelant, qui l'attrape. */
+    prepare.catch(() => { prepare = null; });
   }
   return prepare;
 }

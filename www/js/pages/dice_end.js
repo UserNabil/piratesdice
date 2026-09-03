@@ -113,6 +113,14 @@ export function onOver(m) {
   if (S.me && typeof m.bourseMaudite === 'number') S.me.premium = m.bourseMaudite;
   if (S.quitting) { S.quitting = false; return; }
   const el = $('#dc-over');
+  /* ⚠️ SANS CE GARDE, UNE CARTE DE FIN QUI NE S'AFFICHE PAS. Si le conteneur a
+     disparu (navigation en cours), `el.innerHTML` plus bas jetait, le routeur
+     avalait l'exception, et le joueur restait sur le plateau mort sans rien. */
+  if (!el) { console.error('[fin] conteneur #dc-over introuvable'); return; }
+  /* ⚠️ MEME PIEGE POUR LES SCORES. Le serveur les envoie toujours, mais un
+     message de fin mutile ferait jeter `m.scores[0]` — exception avalee, carte
+     jamais peinte. On retombe sur un score neutre plutot que sur un ecran fige. */
+  const sc = Array.isArray(m.scores) ? m.scores : [0, 0];
   const verdict = t(m.outcome === 'win' ? 'over.victory' : (m.outcome === 'loss' ? 'over.defeat' : 'over.draw'));
   const seal = m.outcome === 'win' ? 'seal_victory' : (m.outcome === 'loss' ? 'seal_defeat' : 'seal_draw');
   const delta = m.ratingAfter - m.ratingBefore;
@@ -139,7 +147,7 @@ export function onOver(m) {
     <div class="dc-over-card pd-panel dc-over-${esc(m.outcome)}">
       <img class="dc-over-seal" src="${ASSETS}img/${seal}.png" alt="">
       <h2>${verdict}</h2>
-      <div class="dc-over-score">${m.scores[0]} <span>—</span> ${m.scores[1]}</div>
+      <div class="dc-over-score">${sc[0]} <span>—</span> ${sc[1]}</div>
       <div class="dc-over-line dc-over-foe">
         <img class="dc-over-cap" src="${captainArt(m.opponentCaptain)}" alt=""
              title="${esc(captainTrait(m.opponentCaptain))}">

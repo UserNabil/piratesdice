@@ -70,7 +70,12 @@ const HOLE = /\{(\w+)\}/g;
 let current = 'en';
 
 function detect() {
-  const saved = (localStorage.getItem(KEY) || '').trim();
+  /* ⚠️ HORS try/catch, `getItem` FAISAIT ECRAN NOIR. En navigation privee ou
+     dans un WKWebView bride, l'acces au stockage LEVE — et `detect()` tourne au
+     chargement du module (initLang), donc l'import d'i18n echouait et l'app ne
+     s'affichait jamais. Meme garde que `setLang` plus bas. */
+  let saved = '';
+  try { saved = (localStorage.getItem(KEY) || '').trim(); } catch (_) { /* stockage refuse */ }
   if (TABLES[saved]) return saved;
   const wanted = (navigator.languages || [navigator.language || 'en'])
     .map((l) => String(l).slice(0, 2).toLowerCase());
