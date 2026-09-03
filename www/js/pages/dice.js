@@ -1112,15 +1112,14 @@ function renderWalletCampagne() {
      section ou se trouve le dropdown, retablir le nombre d'or, de maudit et le
      classement. » Ils sont compacts pour laisser la place au palier. */
   w.innerHTML = `
-    <button class="dc-camp-hud" data-camp-hud>
+    <div class="dc-camp-hud">
       ${cap ? `<img src="${ASSETS}img/cap_${esc(cap)}.png" alt="">` : ''}
       <span class="dc-camp-hud-txt">
         <b>${esc(t('camp.palier', { n: p }))}</b>
         <em>${esc(nom)}</em>
       </span>
       <span class="dc-camp-hud-etoiles">\u2b50 ${etoiles}/15</span>
-      <span class="dc-camp-hud-fleche">\u25be</span>
-    </button>
+    </div>
     <div class="dc-camp-minis">
       <span class="dc-camp-mini" title="${esc(t('hdr.coins'))}">
         <img src="${ASSETS}img/icon_coin.png" alt="">${nombre(me.coins || 0)}</span>
@@ -1129,10 +1128,6 @@ function renderWalletCampagne() {
       <span class="dc-camp-mini" title="${esc(t('menu.rang'))}">
         <img src="${ASSETS}img/icon_elo.png" alt="">${S.rang ? '#' + nombre(S.rang) : '\u2014'}</span>
     </div>`;
-  w.querySelector('[data-camp-hud]').onclick = (ev) => {
-    ev.stopPropagation();
-    basculerDeroulantCampagne(niveaux, ev.currentTarget);
-  };
 }
 
 /* Le menu deroulant : les quinze paliers, leur capitaine (grise tant qu'il
@@ -1193,14 +1188,13 @@ function renderWallet() {
      mes pieces et mon rang, je prefere le palier et le capitaine courant, avec
      un menu deroulant des etoiles. » Le classement et la bourse n'ont rien a
      faire sur un ecran d'aventure solo : on montre OU l'on en est. */
-  if (S.panel === 'campagne') { renderWalletCampagne(); return; }
-  /* ⛔ PENDANT UNE PARTIE DE LA PIRATERIE, LES MISSIONS D'ETOILE S'AFFICHENT.
-     « Mettre les missions d'etoile durant une partie d'un niveau. » Le bandeau
-     montre alors les trois objectifs a viser, a la place des pieces et du rang. */
+  /* ⛔ LA PAGE PALIER GARDE LE HEADER NORMAL, comme les autres pages : pieces,
+     maudite, rang. Le bandeau special palier/capitaine a ete retire — la liste
+     des paliers, elle, porte deja tout. Seules les MISSIONS d'un niveau EN COURS
+     de partie remplacent le header, le temps de la partie. */
   if (S.campagneEnCours && !S.panel && S.state && S.state.phase && S.state.phase !== 'over') {
     renderWalletMissions(); return;
   }
-  fermerDeroulantCampagne();
   if (!S.me) S.me = cale.moi();
   if (!S.me) return;
   /* Le rang suit la meme regle que la bourse : la derniere position connue
