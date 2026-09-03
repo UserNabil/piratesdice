@@ -350,12 +350,21 @@ function build() {
 function reveiller() {
   if (!S.open) return;
   if (!S.net) { arreterRelance(); connect(); return; }
-  /* Une socket vivante n'a rien a se faire dire ; une partie de poche non plus,
-     c'est elle qui tient `S.net`. */
-  if (S.net.ready || S.poche) return;
-  if (!enPartie()) return;
-  /* `close()` marque `closedByUs` : le gestionnaire `closed` sortira sans
-     reprogrammer quoi que ce soit, et c'est nous qui reprenons la main. */
+  /* Une partie de poche tient `S.net` : c'est elle qui joue, on ne touche pas. */
+  if (S.poche) return;
+  /* ⛔ « OPEN » NE PROUVE PLUS RIEN AU REVEIL. On lisait `ready` (readyState
+     OPEN) et on repartait content — or c'est exactement l'etat d'une socket a
+     demi-morte apres une veille : le proxy a lache, plus rien ne passe, mais le
+     readyState ment. Le joueur restait « sans reseau » jusqu'a relancer l'appli.
+     On interroge donc `vivant` — OPEN ET un mot du serveur dans la derniere
+     fenetre de silence : si la liaison est fraiche, on ne fait rien (aucun
+     paquet inutile) ; sinon, en partie OU hors partie, on la remplace tout de
+     suite. C'est le moment ou une tentative aboutit, et le seul cout est UNE
+     reconnexion, pile quand elle est utile. */
+  if (S.net.vivant || S.net.enCours) return;
+  /* Douteuse : on la termine soi-meme et on repart de zero. `close()` marque
+     `closedByUs`, donc le gestionnaire `closed` ne reprogrammera rien — c'est
+     nous qui reprenons la main, ici, sans attendre les 18 s du ping. */
   try { S.net.close(); } catch (_) { /* deja morte */ }
   S.net = null;
   arreterRelance();
@@ -367,6 +376,14 @@ if (typeof window !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) reveiller();
   });
+  /* ⛔ `visibilitychange` NE SUFFIT PAS SUR IOS. Le WKWebView de la coque ne le
+     tire pas toujours au sortir de veille — mais `pageshow` et `focus`, si. Les
+     trois pointent vers le meme reveil, qui ne fait rien quand la liaison est
+     deja fraiche : les cumuler ne coute donc rien et ferme les cas ou l'un
+     manque a l'appel. (Le battement du ping reste le dernier filet : au premier
+     tic apres le reveil, un `vu` perime declenche la reprise de lui-meme.) */
+  window.addEventListener('pageshow', reveiller);
+  window.addEventListener('focus', reveiller);
 }
 
 export async function openDice() {

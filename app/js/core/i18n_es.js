@@ -713,6 +713,26 @@ export const ES = {
 
   'set.title': 'Ajustes',
 
+  'tour.passer': 'Saltar',
+
+  'tour.suivant': 'Siguiente',
+
+  'tour.fini': '¡Vamos!',
+
+  'tour.revoir': 'Ver el tutorial de nuevo',
+
+  'tour.solo': 'Enfréntate a la máquina para practicar — jugable incluso sin conexión.',
+
+  'tour.piraterie': 'La Piratería: sube niveles, gana estrellas y desbloquea capitanes.',
+
+  'tour.multi': 'Reta a un jugador real en línea: aquí se juega tu clasificación.',
+
+  'tour.capitaines': 'Elige tu capitán: cada uno ofrece un efecto único por partida.',
+
+  'tour.bourse': 'Tus monedas: se ganan jugando y se gastan en la tienda.',
+
+  'tour.reglages': 'Ajustes: sonido, apodo, idioma — y este tutorial, cuando quieras.',
+
   'camp.suivant': 'Siguiente etapa',
 
   'camp.retourAventure': 'La Piratería',

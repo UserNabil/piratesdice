@@ -3930,3 +3930,58 @@
 #dicewrap .dc-camp-objectifs { list-style: none; margin: 0 0 14px; padding: 0; }
 #dicewrap .dc-camp-objectifs li { margin: 7px 0; font-size: 14px; color: var(--txt); }
 #dicewrap .dc-camp-fiche .pd-ask-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+
+/* ── LE TUTORIEL DU PREMIER LANCEMENT ─────────────────────────────────────── */
+#dicewrap .pd-tour {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+}
+/* Le projecteur : un trou clair dans un voile sombre, cale sur la cible. Une
+   ombre portee ENORME fait tout le voile — pas besoin d'un second calque. */
+#dicewrap .pd-tour-trou {
+  position: absolute;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(8, 4, 24, .78);
+  outline: 3px solid var(--gold-hi, #FFE479);
+  outline-offset: 0;
+  transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease;
+  pointer-events: none;
+}
+#dicewrap .pd-tour-bulle {
+  position: absolute;
+  max-width: min(84vw, 340px);
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: linear-gradient(170deg, #4a2a8e, #2a1656);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5), 0 10px 30px rgba(0, 0, 0, .6);
+  color: #efe9fb;
+  transition: left .25s ease, top .25s ease;
+}
+#dicewrap .pd-tour-bulle p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+#dicewrap .pd-tour-pieds {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#dicewrap .pd-tour-pas {
+  font-size: 12px;
+  color: #c9aef5;
+  margin-inline-start: auto;
+}
+#dicewrap .pd-tour-passer {
+  border: 0;
+  background: none;
+  color: #c9aef5;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+#dicewrap .pd-tour-suivant { flex: 0 0 auto; }
+

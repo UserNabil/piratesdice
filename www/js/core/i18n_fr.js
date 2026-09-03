@@ -724,6 +724,26 @@ export const FR = {
 
   'set.title': 'Réglages',
 
+  'tour.passer': 'Passer',
+
+  'tour.suivant': 'Suivant',
+
+  'tour.fini': 'C’est parti !',
+
+  'tour.revoir': 'Revoir le tutoriel',
+
+  'tour.solo': 'Affrontez la machine pour vous faire la main — jouable même sans réseau.',
+
+  'tour.piraterie': 'La Piraterie : gravissez les paliers, gagnez des étoiles et débloquez les capitaines.',
+
+  'tour.multi': 'Défiez un vrai joueur en ligne : c’est ici que votre classement se joue.',
+
+  'tour.capitaines': 'Choisissez votre capitaine : chacun offre un effet unique par partie.',
+
+  'tour.bourse': 'Vos pièces : gagnées en jouant, dépensées à la boutique pour des parures.',
+
+  'tour.reglages': 'Les réglages : son, pseudo, langue — et ce tutoriel, à revoir quand vous voulez.',
+
   'camp.suivant': 'Niveau suivant',
 
   'camp.retourAventure': 'La Piraterie',

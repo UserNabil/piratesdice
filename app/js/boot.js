@@ -17,6 +17,7 @@ import { startMotion } from './motion.js';
 import { toast } from './ui/toast.js';
 import { uiConfirm } from './ui/dialogs.js';
 import { brancherStudio } from './ui/studio.js';
+import { lancerTutoriel } from './ui/tour.js';
 import { volumes, reglerVolume, surVolume, DEFAUT } from './ui/volumes.js';
 
 const TERMS_URL = 'https://usernabil.github.io/piratesdice-site/privacy.html';
@@ -309,6 +310,12 @@ function settingsMarkup() {
              title="${t('tab.rules')}" aria-label="${t('tab.rules')}"
       ><img src="${ASSETS}img/icon_rules.png" alt=""></button>`)}
 
+      <!-- Revoir le tutoriel : le meme guide que le premier lancement, rappele
+           a la demande. -->
+      ${row(t('tour.revoir'), `<button class="pd-link-art" data-tutoriel
+             title="${t('tour.revoir')}" aria-label="${t('tour.revoir')}"
+      ><img src="${ASSETS}img/icon_rules.png" alt=""></button>`)}
+
       ${row(t('set.terms'), `<a class="pd-link-art" href="${TERMS_URL}" target="_blank"
              rel="noopener" title="${t('set.terms')}"
              aria-label="${t('set.terms')}"><img src="${ASSETS}img/icon_link.png" alt=""></a>`)}
@@ -450,6 +457,8 @@ function openSettings() {
      laisser les reglages par-dessus donnerait une feuille sous une boite de
      dialogue — le joueur toucherait le voile en croyant toucher les regles. */
   wrap.querySelector('[data-regles]').onclick = () => { close(); ouvrirPanneau('rules'); };
+  const tuto = wrap.querySelector('[data-tutoriel]');
+  if (tuto) tuto.onclick = () => { close(); setTimeout(() => lancerTutoriel(true), 250); };
   /* Le pseudo part au serveur, qui repond par un `me` neuf (repeint par dice.js)
      ou par un refus deja traduit (dice_refus.js). On ne devine pas le verdict. */
   const champPseudo = wrap.querySelector('[data-pseudo]');
@@ -648,6 +657,14 @@ async function start() {
      les yeux du joueur. */
   await pretAAfficher();
   splashOff();
+  /* ⛔ LE TUTORIEL, AU PREMIER LANCEMENT SEULEMENT. Apres le rideau (les cibles
+     existent a l'ecran) et seulement si aucune partie n'est deja en cours —
+     une reprise apres coupure ne doit pas se voir couverte d'un guide. Il ne
+     s'invite qu'une fois : voir `tutorielDejaVu`. `S` n'est pas importe ici, on
+     lit l'ecran — pas de partie visible = pas de plateau. */
+  if (!document.querySelector('#dicewrap .dc-board .dc-cell-filled')) {
+    setTimeout(() => lancerTutoriel(false), 400);
+  }
   /* ⚠️ APRES LE RIDEAU, PAS AVANT. Chercher l'atelier coute deux requetes qui
      echouent sur un vrai telephone : les faire au demarrage retarderait
      l'ouverture du jeu pour une fonction que personne n'utilise en jouant. */

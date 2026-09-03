@@ -704,6 +704,16 @@ export const EN = {
      verifier la suppression de compte. Trouve le 2026-08-23 en comptant les
      cles par langue : 0 contre 16. */
   'set.title': 'Settings',
+  'tour.passer': 'Skip',
+  'tour.suivant': 'Next',
+  'tour.fini': 'Let’s go!',
+  'tour.revoir': 'Replay the tutorial',
+  'tour.solo': 'Face the machine to learn the ropes — playable even offline.',
+  'tour.piraterie': 'Piracy: climb the tiers, earn stars and unlock captains.',
+  'tour.multi': 'Challenge a real player online: this is where your ranking is made.',
+  'tour.capitaines': 'Pick your captain: each grants a unique effect once per match.',
+  'tour.bourse': 'Your coins: earned by playing, spent in the shop on cosmetics.',
+  'tour.reglages': 'Settings: sound, nickname, language — and this tutorial, anytime.',
   'camp.suivant': 'Next level',
   'camp.retourAventure': 'Back to Piracy',
   'err.bonusDuCapitaine': 'That effect belongs to another captain.',

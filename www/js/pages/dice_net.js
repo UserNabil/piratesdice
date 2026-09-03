@@ -49,6 +49,21 @@ export class DiceNet {
 
   get ready() { return !!(this.ws && this.ws.readyState === WebSocket.OPEN); }
 
+  /* ⚠️ « OPEN » NE VEUT PAS DIRE « VIVANT ». Une socket a demi-morte — reveil
+     apres veille iOS, proxy qui a lache sans trame de cloture — garde son
+     readyState a OPEN alors que plus rien ne passe. `vivant` ajoute la seule
+     preuve qui compte : un mot du serveur dans la derniere fenetre de silence
+     toleree. C'est ce que la reprise au premier plan doit interroger, pas
+     `ready`. Gratuit : une soustraction, aucun paquet emis. */
+  get vivant() {
+    return this.ready && (Date.now() - this.vu) < PING_MS * SILENCES_TOLERES;
+  }
+
+  /* En train de s'ouvrir : la garde de `connect()` tranchera d'elle-meme. Le
+     reveil ne doit pas la remplacer — ce serait interrompre une tentative
+     saine pour en relancer une identique. */
+  get enCours() { return !!(this.ws && this.ws.readyState === WebSocket.CONNECTING); }
+
   /**
    * Fetches a token, opens the socket and says hello. Resolves once welcomed.
    *
