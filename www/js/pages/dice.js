@@ -522,6 +522,16 @@ async function connect() {
       S.campagne = m;
       if (Array.isArray(m.capitaines)) S.campCaps = m.capitaines;
       if (S.panel === 'campagne') { refreshPanel(); renderWallet(); }
+      /* ⛔ ET EN PLEINE PARTIE, LES MISSIONS ATTENDAIENT CETTE CARTE. Apres une
+         partie, `campagne.resultat` vide `S.campagne` pour la relire a jour ; au
+         REJEU immediat (surtout apres une defaite), `renderWalletMissions` ne
+         trouvait pas encore le niveau, peignait un bandeau VIDE et redemandait
+         la carte — mais rien ne repeignait a son arrivee tant qu'on n'etait pas
+         sur le panneau. Les missions n'apparaissaient donc qu'au premier coup
+         joue. On repeint le bandeau des que la carte revient, partie en cours. */
+      else if (S.campagneEnCours && S.state && S.state.phase && S.state.phase !== 'over') {
+        renderWallet();
+      }
     },
     /* Le verdict d'un niveau : les etoiles nouvelles paient, le pont peut
        avoir un capitaine de plus a deverrouiller. */
