@@ -647,6 +647,20 @@ export const FR = {
   'shop.S009.desc': 'Ivoire et suie, points de pierre polie. Apparence seulement.',
 
   'shop.S010.name': 'Dés d’améthyste',
+  'shop.S011.name': 'Dés de lave',
+  'shop.S011.desc': 'Roche en fusion, braises dans les points. Apparence uniquement.',
+  'shop.S012.name': 'Dés de tempête',
+  'shop.S012.desc': 'Traversés d’éclairs bleus. Apparence uniquement.',
+  'shop.S013.name': 'Dés de jade',
+  'shop.S013.desc': 'Jade impérial sculpté. Apparence uniquement.',
+  'shop.S014.name': 'Dés d’ivoire',
+  'shop.S014.desc': 'Vieil ivoire, points sombres. Apparence uniquement.',
+  'shop.S015.name': 'Dés royaux',
+  'shop.S015.desc': 'Pourpre profond, une couronne par point. Apparence uniquement.',
+  'shop.S016.name': 'Dés spectraux',
+  'shop.S016.desc': 'Marbre cyan spectral. Apparence uniquement.',
+  'shop.S017.name': 'Dés d’onyx',
+  'shop.S017.desc': 'Onyx noir poli. Apparence uniquement.',
 
   'shop.S010.desc': 'Améthyste taillée sur ivoire. Apparence seulement.',
 

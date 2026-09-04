@@ -640,6 +640,20 @@ export const ES = {
   'shop.S009.desc': 'Marfil y hollín, puntos de piedra pulida. Solo apariencia.',
 
   'shop.S010.name': 'Dados de amatista',
+  'shop.S011.name': 'Dados de lava',
+  'shop.S011.desc': 'Roca fundida, brasas en los puntos. Solo apariencia.',
+  'shop.S012.name': 'Dados de tormenta',
+  'shop.S012.desc': 'Cargados de rayos azules. Solo apariencia.',
+  'shop.S013.name': 'Dados de jade',
+  'shop.S013.desc': 'Jade imperial tallado. Solo apariencia.',
+  'shop.S014.name': 'Dados de marfil',
+  'shop.S014.desc': 'Marfil viejo, puntos oscuros. Solo apariencia.',
+  'shop.S015.name': 'Dados reales',
+  'shop.S015.desc': 'Púrpura profundo, una corona por punto. Solo apariencia.',
+  'shop.S016.name': 'Dados espectrales',
+  'shop.S016.desc': 'Mármol cian espectral. Solo apariencia.',
+  'shop.S017.name': 'Dados de ónice',
+  'shop.S017.desc': 'Ónice negro pulido. Solo apariencia.',
 
   'shop.S010.desc': 'Amatista tallada sobre marfil. Solo apariencia.',
 

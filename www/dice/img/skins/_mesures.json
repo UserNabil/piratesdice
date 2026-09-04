@@ -62,5 +62,54 @@
     "rayon": 34.7,
     "corps": 0.926,
     "note": "decoupe par forme (chaque de sur la sienne) et remis a l echelle le 2026-08-28"
+  },
+  "S011": {
+    "dossier": "lave",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 23.6,
+    "corps": 0.922
+  },
+  "S012": {
+    "dossier": "tempete",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 21.2,
+    "corps": 0.922
+  },
+  "S013": {
+    "dossier": "jade",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 22.9,
+    "corps": 0.922
+  },
+  "S014": {
+    "dossier": "ivoire",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 25.7,
+    "corps": 0.922
+  },
+  "S015": {
+    "dossier": "royal",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 21.9,
+    "corps": 0.922
+  },
+  "S016": {
+    "dossier": "spectral",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 28.4,
+    "corps": 0.924
+  },
+  "S017": {
+    "dossier": "obsidienne",
+    "images": 12,
+    "chaudes": true,
+    "rayon": 22.2,
+    "corps": 0.922
   }
 }
