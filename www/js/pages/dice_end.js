@@ -176,7 +176,8 @@ export function onOver(m) {
         ? 'over.horsLigneLibre' : 'over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
-        <button class="dc-btn" id="dc-again">${esc(S.salon
+        <button class="dc-btn dc-again-btn" id="dc-again"><img class="dc-again-icone"
+             src="${ASSETS}img/icon_replay.png" alt="">${esc(S.salon
           ? t('over.againFriend', { name: m.opponent || t('game.opponent') })
           /* ⛔ EN MODE PIRATERIE, ON AVANCE. Une victoire propose d'abord le
              NIVEAU SUIVANT ; une defaite propose de rejouer le niveau. Le
