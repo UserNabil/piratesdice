@@ -1008,6 +1008,8 @@ function renderPlayerCard(sel, st, seat, isMe) {
   el.classList.add('dc-pc');
   el.classList.toggle('dc-pc-mine', isMe);
   el.classList.toggle('dc-pc-theirs', !isMe);
+  /* Carte d'une IA : la force (puces) merite une vraie largeur — voir .dc-pc-ia. */
+  el.classList.toggle('dc-pc-ia', !!(p.ai && p.etoiles));
   el.classList.toggle('dc-pc-active', active);
   el.classList.toggle('dc-pc-idle', !active);
   /* ⚠️ LE NOM EST SORTI DU BLOC D'IDENTITE, ET C'EST CE QUI LE FAIT TENIR.

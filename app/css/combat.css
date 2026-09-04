@@ -413,7 +413,7 @@
      Le nom a depuis change de place — il enjambe le score — et le medaillon a
      pu reprendre sa cote.
      Mesure : 14 vw laisse 92 px, soit quatre pixels de marge. */
-  --cbt-versus-marque: clamp(66px, 19vw, 110px);
+  --cbt-versus-marque: clamp(92px, 22vw, 140px);
 
   /* ── LE BANDEAU DU BAS : CALE, GOBELET, SORTIE ─────────────────────────── */
 
@@ -775,7 +775,7 @@
      ecrire `width` ici perdait a specificite egale, et le medaillon gardait ses
      88 px — vingt de trop, que la carte du joueur payait en passant sous le
      bandeau. Une feuille pilotee par des variables se regle par ses variables. */
-  #dicewrap { --cbt-versus-marque: 76px; }
+  #dicewrap { --cbt-versus-marque: clamp(94px, 21vmin, 134px); }
 }
 #dicewrap .dc-vs-mark { width: var(--cbt-versus-marque); }
 

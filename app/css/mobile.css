@@ -394,7 +394,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    Human Interface Guidelines). Fond noir, logo Apple officiel et texte blancs,
    coin arrondi, cible tactile de 44 px. Il partage la rangee avec « Effacer »,
    d'ou le meme comportement flex que `.pd-row-btns .dc-btn`. */
-.pd-row-btns .dc-signin-apple { flex: 1; min-width: 130px; }
+.pd-row-btns .dc-signin-apple { flex: 1 0 100%; min-width: 0; }  /* pleine largeur : le texte complet ne tient pas sur une demi-rangee (boite noire tronquee) */
 .dc-signin-apple {
   display: inline-flex;
   align-items: center;
