@@ -2146,6 +2146,18 @@
   inset: -8% -6% -20% -6%;
   background-size: 100% 100%;
   opacity: var(--cbt-coque-case-opacite, 1);
+  /* ⚠️ LE VERRE DU BOUCLIER ANIME EST PLEIN, ET LE DE DOIT SE LIRE A TRAVERS.
+     L'ancien dessin etait un cadre CREUX (centre a 1/255 d'alpha) : le de se
+     lisait par le trou, et l'opacite pleine ne genait rien. Le bouclier anime
+     remplit son centre (~214/255) : pose tel quel, il EFFACE le de — la valeur
+     sur laquelle le joueur calcule. On n'affaiblit pas tout (les chaines
+     deviendraient grises) et on ne retouche pas les 25 images de l'APNG (le
+     re-encodage decuple son poids) : un masque radial, sur LE MEME element,
+     rend le centre translucide et laisse le bord a pleine force. */
+  -webkit-mask-image: radial-gradient(circle at 50% 46%,
+      rgba(0, 0, 0, .34) 0 30%, rgba(0, 0, 0, 1) 47%);
+  mask-image: radial-gradient(circle at 50% 46%,
+      rgba(0, 0, 0, .34) 0 30%, rgba(0, 0, 0, 1) 47%);
   /* Un halo d'or, la couleur de ce qui protege dans ce jeu. Il tient au dessin
      et ne deborde pas sur les cases voisines. */
   filter: drop-shadow(0 0 5px rgba(255, 196, 74, .55));
