@@ -331,7 +331,15 @@ async function codeGoogle(games, interactive) {
      passe donc par la SESSION GARDEE, plus haut, qui vaut pour les deux
      plateformes. Ici, on n'agit que sur demande explicite. */
   if (!interactive) return null;
-  const rep = await games.login({ provider: 'google', options: {} });
+  /* ⛔ `forceRefreshToken: true` — SANS LUI, CHANGER DE COMPTE RENVOIE L'ANCIEN.
+     En mode offline, le greffon demande un code d'autorisation via
+     AuthorizationClient. Si un compte a DEJA autorise l'app, `authorize()` tombe
+     dans « Access already granted » et rend le code du PREMIER compte, meme si
+     le selecteur vient d'en choisir un autre — se connecter avec zorroxun
+     ramenait les donnees de n.ouldterki. Et la deconnexion ne repare rien : le
+     `logout` du greffon ne fait RIEN en mode offline. En forcant un code neuf a
+     chaque connexion, on repart du compte reellement choisi. */
+  const rep = await games.login({ provider: 'google', options: { forceRefreshToken: true } });
   return rep && rep.result ? rep.result : null;
 }
 
