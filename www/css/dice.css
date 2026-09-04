@@ -1508,9 +1508,9 @@
 #dicewrap .dc-parchemin-titre {
   padding: 0;
   position: absolute;
-  /* Cale DANS le ruban violet (mesure : 6,8 a 13,2 % du parchemin), un peu
-     vers le bas comme demande. */
-  top: 8%;
+  /* Cale DANS le ruban violet (mesure : 6,8 a 13,2 % du parchemin), descendu
+     encore un cran pour bien tenir au CENTRE du ruban, pas contre son bord haut. */
+  top: 9.6%;
   left: 25%;
   right: 25%;
   height: 6.2%;
@@ -1562,8 +1562,8 @@
 #dicewrap .dc-regles-fermer {
   position: absolute;
   left: 50%;
-  /* Remonte de ~10 % (du rouleau vers le centre), a la demande. */
-  bottom: 11%;
+  /* Redescendue sur le rouleau du bas, a la demande (etait a 11 %). */
+  bottom: 6.5%;
   transform: translateX(-50%);
   z-index: 3;
 }
