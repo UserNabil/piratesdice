@@ -223,7 +223,7 @@ def couleur_du_motif(a, visage):
     return tuple(int(255 * c) for c in colorsys.hsv_to_rgb(h, s, v))
 
 
-def graver(chemin_de, motif):
+def graver(chemin_de, motif, pips_froids=None):
     im = Image.open(chemin_de).convert('RGBA')
     a = np.array(im).astype(int)
     # `die_4_hot.png` annonce quatre points : c'est ce qui permet a `anatomie`
@@ -231,6 +231,18 @@ def graver(chemin_de, motif):
     nom = os.path.basename(chemin_de)
     attendu = int(nom[4]) if nom.startswith('die_') and nom[4].isdigit() else None
     pleine, visage, pips = anatomie(a, attendu)
+    # ⛔ LE HALO D'UNE BRAISE FAIT ECLATER LE MASQUE DES POINTS. Un point allume
+    # est clair comme la face : il cesse d'etre un TROU dans celle-ci, et
+    # `anatomie` ne le rend plus qu'en miettes — mesure sur la parure royale,
+    # face 2 en braise : 2897 px en CENT SIX fragments, la ou la meme face
+    # froide donne 4190 px en deux taches franches. Resultat a l'ecran : la
+    # gravure passait DEVANT les couronnes et la valeur du de devenait illisible
+    # (jusqu'a 50 % de l'or d'un point recouvert).
+    # La face froide, elle, porte ses points au MEME endroit et les rend
+    # proprement : on lui emprunte son masque. L'union des deux ne peut que
+    # rendre plus de points a leur place, jamais moins.
+    if pips_froids is not None and pips_froids.shape == pips.shape:
+        pips = pips | pips_froids
     # La couleur se lit LOIN des pips : leur halo clair fausserait la teinte.
     propre = visage & ~ndimage.binary_dilation(pips, iterations=3)
     coul = couleur_du_motif(a, propre if propre.any() else visage)
@@ -248,6 +260,25 @@ def graver(chemin_de, motif):
     res = out.astype(np.uint8)
     res[pips] = a[pips].astype(np.uint8)        # les points repassent devant
     return Image.fromarray(res)
+
+
+def pips_des_faces_froides(jeu):
+    """Les points de chaque face FROIDE, par valeur — le masque de secours des
+    faces en braise (voir `graver`). Calcule une fois par jeu : il ne depend pas
+    du motif qu'on grave."""
+    out = {}
+    dossier = dossier_du_jeu(jeu)
+    for valeur in range(1, 7):
+        chemin = os.path.join(dossier, 'die_%d.png' % valeur)
+        if not os.path.isfile(chemin):
+            continue
+        a = np.array(Image.open(chemin).convert('RGBA')).astype(int)
+        try:
+            _, _, pips = anatomie(a, valeur)
+        except ValueError:
+            continue
+        out[valeur] = pips
+    return out
 
 
 def morceaux():
@@ -277,12 +308,15 @@ def tout(ecrire=True, jeux=None):
     pieces = morceaux()
     total = 0
     for jeu in (jeux or JEUX):
+        secours = pips_des_faces_froides(jeu)
         for ident, (nom, motif) in pieces.items():
             cible = os.path.join(SKINS, '%s_%s' % (jeu, ident))
             if ecrire:
                 os.makedirs(cible, exist_ok=True)
             for fichier, chemin in faces(jeu):
-                grave = graver(chemin, motif)
+                froids = (secours.get(int(fichier[4]))
+                          if fichier.endswith('_hot.png') else None)
+                grave = graver(chemin, motif, froids)
                 if not ecrire:
                     continue
                 # Palette de 255 couleurs : cinq fois plus leger, invisible a l'oeil.
