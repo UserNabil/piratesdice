@@ -4272,26 +4272,6 @@
 }
 #dicewrap .dc-plaque-act:active { transform: translateY(2px); }
 
-/* ⛔ LA PASTILLE NE S'ALLUME QUE S'IL Y A QUELQUE CHOSE A PRENDRE. Un badge
-   permanent cesse d'etre lu au bout de deux jours — il devient un ornement.
-   Celui-ci s'eteint des que le butin du jour est ramasse. */
-#dicewrap .dc-plaque-pastille {
-  position: absolute;
-  top: -2px;
-  inset-inline-end: -2px;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ff6a5e, #d92d20);
-  box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 8px rgba(255, 90, 70, .8);
-  animation: dc-pastille-bat 1.6s ease-in-out infinite;
-}
-@keyframes dc-pastille-bat {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.18); }
-}
-@media (prefers-reduced-motion: reduce) {
-  #dicewrap .dc-plaque-pastille { animation: none; }
 }
 
 /* ── LA FEUILLE DU BUTIN DU JOUR ──────────────────────────────────────────── */

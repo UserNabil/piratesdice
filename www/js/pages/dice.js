@@ -1193,9 +1193,24 @@ function basculerDeroulantCampagne(niveaux, ancre) {
    aujourd'hui. C'est le serveur qui le dit (`reclamable`), jamais une horloge
    locale — celle du telephone se change dans les reglages. */
 function majPastilleButin() {
-  const p = $('#dc-butin-pastille');
-  if (!p) return;
-  p.hidden = !(S.butin && S.butin.reclamable);
+  /* ⛔ LE MEME BADGE QUE LES HAUTS FAITS, PAS UN COUSIN. Le butin avait son
+     propre point rouge pendant que l'onglet des hauts faits porte sa pilule
+     `.dc-pastille` — deux dessins pour dire la meme chose : « il y a quelque
+     chose a prendre ». On reutilise LA classe et LE geste de peindreBulles :
+     creee quand c'est du, retiree sinon. (Un attribut `hidden` ne suffirait
+     pas : `.dc-pastille` pose `display:flex`, qui l'emporte sur la feuille du
+     navigateur.) */
+  const bouton = $('#dc-btn-butin');
+  if (!bouton) return;
+  let pastille = bouton.querySelector('.dc-pastille');
+  const due = !!(S.butin && S.butin.reclamable);
+  if (!due) { if (pastille) pastille.remove(); return; }
+  if (!pastille) {
+    pastille = document.createElement('span');
+    pastille.className = 'dc-pastille';
+    bouton.appendChild(pastille);
+  }
+  pastille.textContent = '1';
 }
 
 function renderWallet() {
@@ -1255,9 +1270,6 @@ function renderWallet() {
     <button class="dc-plaque-act" id="dc-btn-butin"
             title="${esc(t('butin.titre'))}" aria-label="${esc(t('butin.titre'))}">
       <img src="${ASSETS}img/icon_butin.png" alt="">
-      <!-- La pastille ne s'allume que s'il y a VRAIMENT quelque chose a prendre :
-           un badge permanent cesse d'etre lu au bout de deux jours. -->
-      <i class="dc-plaque-pastille" id="dc-butin-pastille" hidden></i>
     </button>
     <button class="dc-plaque-act" id="dc-btn-regles"
             title="${esc(t('rules.title'))}" aria-label="${esc(t('rules.title'))}">

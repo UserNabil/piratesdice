@@ -1009,7 +1009,7 @@ function renderPlayerCard(sel, st, seat, isMe) {
   el.classList.toggle('dc-pc-mine', isMe);
   el.classList.toggle('dc-pc-theirs', !isMe);
   /* Carte d'une IA : la force (puces) merite une vraie largeur — voir .dc-pc-ia. */
-  el.classList.toggle('dc-pc-ia', !!(p.ai && p.etoiles));
+  el.classList.toggle('dc-pc-ia', false);
   el.classList.toggle('dc-pc-active', active);
   el.classList.toggle('dc-pc-idle', !active);
   /* ⚠️ LE NOM EST SORTI DU BLOC D'IDENTITE, ET C'EST CE QUI LE FAIT TENIR.
@@ -1045,13 +1045,13 @@ function renderPlayerCard(sel, st, seat, isMe) {
     </div>
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
-      ${(p.ai && p.etoiles)
-        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Trois micro-puces
-           allumees selon son niveau d'IA — un Elo sur un adversaire qui ne
-           monte ni ne descend n'apprend rien. */
-        ? `<div class="dc-pc-force" title="${esc(t('game.aiForce', { n: p.etoiles }))}">${
-            pucesForce(p.etoiles)}</div>`
-        : `<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+      ${p.ai
+        /* LA JAUGE DE FORCE EST RETIREE POUR LE MOMENT (elle ne sert a rien,
+           dit l'admin) : ni puces ni Elo pour une machine — le tirage des
+           niveaux reste actif cote serveur, et pucesForce (dice_state.js)
+           attend toujours si on la remet. */
+        ? ''
+        : ``<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
            alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>`}
       ${stockMarkup(st, seat)}
     </div>
