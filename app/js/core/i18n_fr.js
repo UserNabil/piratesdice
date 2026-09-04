@@ -765,7 +765,7 @@ export const FR = {
 
   'camp.etoilesGagnees': '{n} étoile(s) cette partie',
 
-  'game.aiForce': 'Force : {n}/4',
+  'game.aiForce': 'Force : {n}/3',
 
   'tour.passer': 'Passer',
 

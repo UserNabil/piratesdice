@@ -719,7 +719,7 @@ export const EN = {
   'tour.poser': 'Drop your die into one of your four columns.',
   'tour.bonus': 'Open your bag and play a captain effect.',
   'camp.etoilesGagnees': '{n} star(s) this game',
-  'game.aiForce': 'Strength: {n}/4',
+  'game.aiForce': 'Strength: {n}/3',
   'tour.passer': 'Skip',
   'tour.suivant': 'Next',
   'tour.fini': 'Let’s go!',

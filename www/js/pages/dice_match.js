@@ -1046,7 +1046,7 @@ function renderPlayerCard(sel, st, seat, isMe) {
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
       ${(p.ai && p.etoiles)
-        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Quatre micro-puces
+        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Trois micro-puces
            allumees selon son niveau d'IA — un Elo sur un adversaire qui ne
            monte ni ne descend n'apprend rien. */
         ? `<div class="dc-pc-force" title="${esc(t('game.aiForce', { n: p.etoiles }))}">${

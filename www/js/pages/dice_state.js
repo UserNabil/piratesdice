@@ -16,15 +16,15 @@ export const ASSETS = '/dice/';
 
 /* ── Les puces de force de l'IA et les etoiles des missions ────────────────
    Deux petits pictogrammes qui ont remplace les caracteres ★/☆ : une micro-
-   puce doree (pleine) ou grise (vide) pour la force d'une machine — quatre
-   crans, pas cinq —, et une etoile doree ou grise pour une mission de la
+   puce doree (pleine) ou grise (vide) pour la force d'une machine — trois
+   crans desormais —, et une etoile doree ou grise pour une mission de la
    piraterie prise ou non. On les dessine ICI, en un seul endroit, pour que les
    quatre ecrans qui les affichent ne divergent jamais. Le suffixe `_unlocked`
    est la version DECROCHEE (doree) ; le nom nu, la version eteinte (grise). */
 export function puceImg(pleine) {
   return `<img class="dc-puce" src="${ASSETS}img/puce${pleine ? '_unlocked' : ''}.png" alt="">`;
 }
-export function pucesForce(n, total = 4) {
+export function pucesForce(n, total = 3) {
   const pleines = Math.max(0, Math.min(total, n | 0));
   let out = '';
   for (let i = 0; i < total; i++) out += puceImg(i < pleines);

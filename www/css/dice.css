@@ -808,7 +808,9 @@
   align-items: center;
   gap: clamp(2px, 1vmin, 6px);
   width: 100%;
-  max-width: clamp(116px, 42vmin, 248px);
+  /* Reduite de 20 % a la demande (« reduire la taille de la zone niveau ia »).
+     Trois puces au lieu de quatre y gagnent d'ailleurs la meme aisance. */
+  max-width: clamp(93px, 33.6vmin, 198px);
 }
 /* ── LES MICRO-PUCES DE FORCE DE L'IA ET LES ETOILES DES MISSIONS ──────────
    Deux pictogrammes qui ont remplace les caracteres ★/☆. Tailles en `em`
