@@ -688,7 +688,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    rectangulaire, pas un trait qui suit le dessin. Des drop-shadow blancs
    empiles tracent le contour sur la silhouette meme du dessin — or, maudite,
    rang ET l'engrenage des reglages, tous cernes du meme trait. */
+/* ⚠️ ET LES DEUX BOUTONS DU BUTIN ET DES REGLES PORTENT LE MEME LISERE. Sans
+   lui ils voisinaient une barre entierement cernee de blanc en etant les seuls
+   nus — « pourquoi les boutons n'ont pas le meme contour que le bouton
+   settings ? ». Le contour n'est pas une bordure mais huit ombres portees
+   blanches : c'est ce qui lui permet d'epouser la forme PEINTE de la plaque au
+   lieu du rectangle qui la contient. */
 #dicewrap .dc-plaque,
+#dicewrap .dc-plaque-act,
 #dicewrap .dc-plaque-reglages {
   filter:
     drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff)
