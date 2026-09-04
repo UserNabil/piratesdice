@@ -1051,7 +1051,7 @@ function renderPlayerCard(sel, st, seat, isMe) {
            niveaux reste actif cote serveur, et pucesForce (dice_state.js)
            attend toujours si on la remet. */
         ? ''
-        : ``<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
+        : `<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
            alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>`}
       ${stockMarkup(st, seat)}
     </div>

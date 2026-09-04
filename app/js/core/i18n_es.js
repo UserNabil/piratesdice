@@ -183,9 +183,9 @@ export const ES = {
   'suc.A048.name': 'El constructor',
   'suc.A048.txt': 'Gana una partida completa sin destruir ni un solo dado rival.',
   'suc.A049.name': 'El carpintero',
-  'suc.A049.txt': 'Gana una partida completa sin destruir ningún dado ni jugar ningún efecto.',
+  'suc.A049.txt': 'Gana una partida completa perdiendo como mucho seis dados.',
   'suc.A050.name': 'Ni un rasguño',
-  'suc.A050.txt': 'Gana una partida completa sin perder ni un solo dado.',
+  'suc.A050.txt': 'Gana una partida completa perdiendo como mucho cinco dados.',
   'suc.A051.name': 'Erguido sobre el pecio',
   'suc.A051.txt': 'Gana una partida después de haber perdido seis dados.',
   'suc.A052.name': 'Tregua entre lobos',
@@ -369,9 +369,9 @@ export const ES = {
   'suc.A141.name': 'El carnicero de los siete mares',
   'suc.A141.txt': 'Gana 100 partidas destruyendo al menos 8 dados en cada una.',
   'suc.A142.name': 'El carpintero mayor',
-  'suc.A142.txt': 'Gana 100 partidas perdiendo como mucho 2 dados en cada una.',
+  'suc.A142.txt': 'Gana 100 partidas perdiendo como mucho seis dados en cada una.',
   'suc.A143.name': 'Cincuenta veces intacto',
-  'suc.A143.txt': 'Gana 50 partidas sin perder ni un solo dado.',
+  'suc.A143.txt': 'Gana 50 partidas perdiendo como mucho cinco dados en cada una.',
   'suc.A144.name': 'El pacifista convencido',
   'suc.A144.txt': 'Gana 25 partidas sin destruir ni un solo dado rival.',
   'suc.A145.name': 'Cincuenta treguas entre lobos',
@@ -810,7 +810,7 @@ export const ES = {
 
   'camp.obj.sum.rangement': 'Ganar con una columna ordenada de mayor a menor',
 
-  'camp.obj.sum.victoires.charpentier': 'Ganar perdiendo como mucho dos dados',
+  'camp.obj.sum.victoires.charpentier': 'Ganar perdiendo como mucho seis dados',
 
   'camp.obj.sum.escalier': 'Ganar con una escalera 1-2-3',
 
@@ -830,7 +830,7 @@ export const ES = {
 
   'camp.obj.sum.pont.refait': 'Ganar con todo tu tablero lleno',
 
-  'camp.obj.sum.victoires.intact': 'Ganar sin perder ningún dado',
+  'camp.obj.sum.victoires.intact': 'Ganar perdiendo como mucho cinco dados',
 
   'camp.obj.sum.victoires.boucher': 'Ganar destruyendo ocho dados o más',
 
