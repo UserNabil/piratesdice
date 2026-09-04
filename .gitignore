@@ -27,3 +27,6 @@ dist/
 # les versions JPEG partent chez Play et chez Apple. `outils/vitrine.py` les
 # refait en quelques minutes.
 store/captures/
+
+# macOS
+.DS_Store

@@ -261,7 +261,11 @@ export function envoyerCoup(payload) {
 const FX_FILES = ['fx_burst.png', 'fx_place.png', 'fx_roll.png'];
 
 const STILL_FILES = [
-  'bg.jpg', 'die_unknown.png', 'cup.png', 'cup_active.png', 'brand_mark.png',
+  /* ⚠️ `bg.jpg` A DISPARU DU PRECHARGEMENT AVEC LE FICHIER. Il a ete supprime
+     le 2026-08-30 avec cinq autres images ; le code de cinq d'entre elles a ete
+     nettoye, celui-ci non. Plus aucune feuille ni aucun `img` ne l'affiche : il
+     ne restait qu'une requete 404 a chaque ouverture. */
+  'die_unknown.png', 'cup.png', 'cup_active.png', 'brand_mark.png',
   'icon_coin.png', 'icon_anchor.png', 'icon_bell.png', 'icon_settings.png',
   'icon_shop.png', 'icon_ranking.png', 'icon_rules.png', 'icon_duel.png',
   /* ⚠️ LES CINQ DESSINS DE LA BARRE DU BAS SONT A L'ECRAN DES LA PREMIERE
