@@ -652,8 +652,6 @@ export const ES = {
   'shop.S015.desc': 'Púrpura profundo, una corona por punto. Solo apariencia.',
   'shop.S016.name': 'Dados espectrales',
   'shop.S016.desc': 'Mármol cian espectral. Solo apariencia.',
-  'shop.S017.name': 'Dados de ónice',
-  'shop.S017.desc': 'Ónice negro pulido. Solo apariencia.',
 
   'shop.S010.desc': 'Amatista tallada sobre marfil. Solo apariencia.',
 
@@ -718,6 +716,15 @@ export const ES = {
   'ladder.d': 'E',
 
   'rules.title': 'Las reglas de la mesa',
+  'butin.titre': 'Botín del día',
+  'butin.duJour': 'Recompensa de hoy',
+  'butin.jour': 'Día {n}',
+  'butin.prendre': 'Recoger',
+  'butin.revenir': 'Vuelve mañana',
+  'butin.parure': 'Dados',
+  'butin.gainOr': '+{n} oro',
+  'butin.gainMaudit': '+{n} malditas',
+  'butin.gainParure': '¡Dados nuevos!',
   'rules.1': 'En tu turno, tira el dado y colócalo en una de tus cuatro columnas.',
   'rules.2': 'Una columna vale <b>valor × repeticiones²</b>: tres 4 valen 36, no 12.',
   'rules.3': 'Colocar un dado <b>destruye todos los dados rivales de ese valor en la misma columna</b> — '

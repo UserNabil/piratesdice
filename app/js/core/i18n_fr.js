@@ -659,8 +659,6 @@ export const FR = {
   'shop.S015.desc': 'Pourpre profond, une couronne par point. Apparence uniquement.',
   'shop.S016.name': 'Dés spectraux',
   'shop.S016.desc': 'Marbre cyan spectral. Apparence uniquement.',
-  'shop.S017.name': 'Dés d’onyx',
-  'shop.S017.desc': 'Onyx noir poli. Apparence uniquement.',
 
   'shop.S010.desc': 'Améthyste taillée sur ivoire. Apparence seulement.',
 
@@ -725,6 +723,15 @@ export const FR = {
   'ladder.d': 'N',
 
   'rules.title': 'Les règles de la table',
+  'butin.titre': 'Butin du jour',
+  'butin.duJour': 'Récompense du jour',
+  'butin.jour': 'Jour {n}',
+  'butin.prendre': 'Récupérer',
+  'butin.revenir': 'Revenez demain',
+  'butin.parure': 'Parure',
+  'butin.gainOr': '+{n} or',
+  'butin.gainMaudit': '+{n} maudites',
+  'butin.gainParure': 'Parure de dés !',
   'rules.1': 'À votre tour, lancez le dé, puis posez-le dans une de vos quatre colonnes.',
   'rules.2': 'Une colonne vaut <b>valeur × occurrences²</b> : trois 4 dans une colonne valent 36, pas 12.',
   'rules.3': 'Poser un dé <b>détruit tous les dés adverses de cette valeur dans la même colonne</b> — '

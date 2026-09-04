@@ -30,7 +30,8 @@ import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
          envoyerCoup, etoileImg } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
-import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne } from './dice_panels.js';
+import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne,
+         ouvrirButin, rafraichirButin, montrerButinGagne } from './dice_panels.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
@@ -472,6 +473,9 @@ async function connect() {
       S.net.send({ t: 'succes' });
       envoyerLesParties();
       cale.rangerMoi(m.me);
+      /* L'etat du butin arrive avec le reste : la pastille du bandeau doit
+         etre juste DES l'ouverture, pas au premier clic. */
+      if (S.net && S.net.ready) S.net.send({ t: 'butin' });
       /* La derniere position connue peint la plaque tout de suite ; la vraie
          arrive une fraction de seconde plus tard et la remplace. */
       if (!S.rang) S.rang = cale.rangConnu();
@@ -571,6 +575,14 @@ async function connect() {
       if (S.panel === 'replay') refreshPanel();
     },
     rejouer: (m) => ouvrirRejeu(m.partie),
+    /* ⛔ L'ETAT DU BUTIN VIENT DU SERVEUR, TOUJOURS. Le telephone ne sait pas
+       quel jour on est — il demande, on lui repond. Voir game/butin.js. */
+    butin: (m) => {
+      S.butin = m;
+      majPastilleButin();
+      if (m.gagne) montrerButinGagne(m.gagne);
+      rafraichirButin(m);
+    },
     succes: (m) => {
       S.succes = Array.isArray(m.liste) ? m.liste : [];
       if (S.me && typeof m.premium === 'number') { S.me.premium = m.premium; renderWallet(); }
@@ -1177,6 +1189,15 @@ function basculerDeroulantCampagne(niveaux, ancre) {
   }, 0);
 }
 
+/* La pastille du butin : allumee seulement s'il reste quelque chose a prendre
+   aujourd'hui. C'est le serveur qui le dit (`reclamable`), jamais une horloge
+   locale — celle du telephone se change dans les reglages. */
+function majPastilleButin() {
+  const p = $('#dc-butin-pastille');
+  if (!p) return;
+  p.hidden = !(S.butin && S.butin.reclamable);
+}
+
 function renderWallet() {
   /* ⛔ SANS RESEAU, LA BARRE DU HAUT SE VIDAIT — OR ELLE SAIT. `S.me` n'arrive
      qu'avec le message d'accueil : tant qu'il n'est pas venu, cette fonction
@@ -1225,9 +1246,28 @@ function renderWallet() {
          faits. Et la barre ne change plus de forme au premier succes. -->
     <div class="dc-plaque dc-plaque-maudite ${tailleBourse(S.me.premium || 0)}"
          title="${esc(t('hdr.cursed'))}"><span>${nombre(S.me.premium || 0)}</span></div>
-    <div class="dc-plaque dc-plaque-rang" title="${esc(t('menu.rang'))}">
-      <span>${S.rang ? '#' + nombre(S.rang) : '—'}</span><em>${esc(t('menu.rangCourt'))}</em>
-    </div>`;
+    <!-- ⛔ LA PLAQUE « RANG » A CEDE LA PLACE A DEUX BOUTONS. Elle ne faisait
+         que REPETER un chiffre qu'on lit deja en entier dans la page Classement,
+         et elle occupait le seul emplacement libre du bandeau. A la demande :
+         « retirer le bandeau de rang et le remplacer par deux boutons, un pour
+         le butin du jour et un pour les regles. » Le haut ne perd rien — il
+         gagne deux gestes. -->
+    <button class="dc-plaque-act" id="dc-btn-butin"
+            title="${esc(t('butin.titre'))}" aria-label="${esc(t('butin.titre'))}">
+      <img src="${ASSETS}img/icon_butin.png" alt="">
+      <!-- La pastille ne s'allume que s'il y a VRAIMENT quelque chose a prendre :
+           un badge permanent cesse d'etre lu au bout de deux jours. -->
+      <i class="dc-plaque-pastille" id="dc-butin-pastille" hidden></i>
+    </button>
+    <button class="dc-plaque-act" id="dc-btn-regles"
+            title="${esc(t('rules.title'))}" aria-label="${esc(t('rules.title'))}">
+      <img src="${ASSETS}img/icon_rules.png" alt="">
+    </button>`;
+  const btnButin = $('#dc-btn-butin');
+  if (btnButin) btnButin.onclick = () => ouvrirButin();
+  const btnRegles = $('#dc-btn-regles');
+  if (btnRegles) btnRegles.onclick = () => ouvrirRegles();
+  majPastilleButin();
 }
 
 /* Le pont vit dans dice_lobby.js : choix du capitaine et salon prive y sont

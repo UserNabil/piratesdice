@@ -83,7 +83,7 @@ MOTIFS = [('M001', 'dragon', (0, 0), 1),
 # gravure achetee doit se porter sur N'IMPORTE quel de, sinon elle vaut moins
 # cher selon le de qu'on aime — ce que personne ne comprendrait.
 JEUX = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010',
-        'S011', 'S012', 'S013', 'S014', 'S015', 'S016', 'S017']
+        'S011', 'S012', 'S013', 'S014', 'S015', 'S016']
 
 MOTIFS_PAR_ID = {ident: nom for ident, nom, _, _ in MOTIFS}
 

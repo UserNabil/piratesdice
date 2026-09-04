@@ -972,3 +972,112 @@ export async function renderRanking(body) {
   ladderCache = { at: Date.now(), data: recu };
   peindreClassement(body, recu);
 }
+
+/* ── LE BUTIN DU JOUR ──────────────────────────────────────────────────────
+   Une recompense par jour, sept jours en boucle. Tout est tranche par le
+   serveur (src/game/butin.js) : cet ecran ne fait que MONTRER ce qu'on lui dit
+   et demander la prise. Il ne calcule aucune date — l'horloge d'un telephone se
+   change dans les reglages, et un butin qui la croirait serait infini. */
+
+/** Le dessin d'un lot : une piece d'or, une maudite, ou l'objet du gros lot. */
+function lotArt(lot) {
+  if (!lot) return '';
+  if (lot.objet) {
+    return `<img class="dc-butin-art" src="${ASSETS}img/skins/${esc(lot.objet)}/die_5.png" alt="">`;
+  }
+  const piece = lot.maudit > 0 && !lot.or ? 'icon_maudit.png' : 'icon_coin.png';
+  return `<img class="dc-butin-art" src="${ASSETS}img/${piece}" alt="">`;
+}
+
+/** Le montant d'un lot, en toutes lettres courtes : « 25 » + la piece. */
+function lotTexte(lot) {
+  if (!lot) return '';
+  const bouts = [];
+  if (lot.or > 0) bouts.push(`<span><img src="${ASSETS}img/icon_coin.png" alt="">${lot.or}</span>`);
+  if (lot.maudit > 0) bouts.push(`<span><img src="${ASSETS}img/icon_maudit.png" alt="">${lot.maudit}</span>`);
+  if (lot.objet) bouts.push(`<span>${esc(t('butin.parure'))}</span>`);
+  return bouts.join('');
+}
+
+function butinCorps(vu) {
+  const lot = vu.lot || {};
+  return `
+    <h3 class="dc-butin-titre">${esc(t('butin.titre'))}</h3>
+    <div class="dc-butin-jour">
+      ${lotArt(lot)}
+      <div class="dc-butin-jour-txt">
+        <b>${esc(t('butin.duJour'))}</b>
+        <div class="dc-butin-gains">${lotTexte(lot)}</div>
+      </div>
+    </div>
+    <div class="dc-butin-bande">
+      ${(vu.bande || []).map((c) => `
+        <div class="dc-butin-case${c.pris ? ' dc-butin-pris' : ''}${
+             c.jour === vu.jour ? ' dc-butin-courant' : ''}">
+          <b>${esc(t('butin.jour', { n: c.jour }))}</b>
+          ${lotArt(c)}
+          <i>${c.objet ? esc(t('butin.parure')) : (c.or > 0 ? c.or : c.maudit)}</i>
+        </div>`).join('')}
+    </div>
+    <button class="dc-btn dc-butin-prendre" data-prendre ${vu.reclamable ? '' : 'disabled'}>
+      ${esc(vu.reclamable ? t('butin.prendre') : t('butin.revenir'))}
+    </button>`;
+}
+
+/* La feuille reste ouverte apres la prise : on la repeint pour montrer la case
+   qui vient de se cocher. C'est le meme objet, pas une seconde fenetre. */
+export function rafraichirButin(vu) {
+  const carte = document.querySelector('.dc-butin-carte');
+  if (!carte || !vu) return;
+  carte.innerHTML = butinCorps(vu) + carte.querySelector('.dc-butin-fermer').outerHTML;
+  brancherButin(carte);
+}
+
+function brancherButin(carte) {
+  const prendre = carte.querySelector('[data-prendre]');
+  if (prendre) {
+    prendre.onclick = () => {
+      if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+      prendre.disabled = true;
+      S.net.send({ t: 'butin.reclamer' });
+    };
+  }
+  const fermer = carte.querySelector('.dc-butin-fermer');
+  if (fermer) fermer.onclick = () => {
+    const voile = carte.closest('.dc-butin-voile');
+    if (voile) voile.remove();
+  };
+}
+
+export function ouvrirButin() {
+  if (document.querySelector('.dc-butin-voile')) return;
+  if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+  /* On demande l'etat AVANT de peindre : sans lui on afficherait une bande vide
+     et un bouton qui ment sur ce qu'il donne. */
+  S.net.send({ t: 'butin' });
+
+  const voile = document.createElement('div');
+  voile.className = 'dc-butin-voile';
+  const vu = S.butin || { bande: [], jour: 1, reclamable: false, lot: null };
+  voile.innerHTML = `
+    <div class="dc-butin-carte pd-panel">
+      ${butinCorps(vu)}
+      <button class="pd-btn-icone dc-butin-fermer" title="${esc(t('set.close'))}"
+              aria-label="${esc(t('set.close'))}">
+        <img src="${ASSETS}img/icon_close.png" alt="">
+      </button>
+    </div>`;
+  ($('#dicewrap') || document.body).appendChild(voile);
+  voile.addEventListener('click', (ev) => { if (ev.target === voile) voile.remove(); });
+  brancherButin(voile.querySelector('.dc-butin-carte'));
+}
+
+/** Le gain qu'on vient de prendre, annonce une fois. */
+export function montrerButinGagne(gagne) {
+  if (!gagne) return;
+  const bouts = [];
+  if (gagne.or > 0) bouts.push(t('butin.gainOr', { n: gagne.or }));
+  if (gagne.maudit > 0) bouts.push(t('butin.gainMaudit', { n: gagne.maudit }));
+  if (gagne.objet) bouts.push(t('butin.gainParure'));
+  if (bouts.length) toast(bouts.join(' · '), 'ok');
+}

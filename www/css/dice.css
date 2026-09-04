@@ -1468,8 +1468,6 @@
 #dicewrap .dc-over-line { font-size: 15px; color: var(--txt); margin: 5px 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
 #dicewrap .dc-over-btns { display: flex; gap: 14px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
 /* Le bouton REJOUER porte son dessin (icon_replay.png), a gauche du mot. */
-#dicewrap .dc-again-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-#dicewrap .dc-again-icone { height: clamp(54px, 15vw, 82px); width: auto; flex: 0 0 auto; }
 #dicewrap .dc-over-win { box-shadow: inset 0 1px 0 rgba(255, 222, 170, .16), inset 0 0 30px rgba(0, 0, 0, .45), 0 0 60px rgba(201, 162, 39, .3), 0 12px 34px rgba(0, 0, 0, .6); }
 #dicewrap .dc-over-win h2 { color: var(--gold-hi); }
 #dicewrap .dc-over-loss h2 { color: #ff9a90; }
@@ -1615,15 +1613,21 @@
 #dicewrap .dc-regles-fermer {
   position: absolute;
   left: 50%;
-  /* Redescendue sur le rouleau du bas, a la demande (etait a 11 %). */
-  bottom: 6.5%;
+  /* Redescendue sur le rouleau du bas, deux fois a la demande (11 %, puis 6,5 %). */
+  bottom: 2.6%;
   transform: translateX(-50%);
   z-index: 3;
 }
-/* ⛔ IL SAUTAIT A DROITE AU CLIC. `.pd-btn-icone:active` posait
-   `transform: translateY(1px)` — qui EFFACAIT le `translateX(-50%)` de centrage,
-   d'ou le bond lateral. On garde les deux transformations ensemble. */
-#dicewrap .dc-regles-fermer:active { transform: translateX(-50%) translateY(1px); }
+/* ⛔ IL SAUTAIT ENCORE A DROITE AU CLIC, ET LA PREMIERE CORRECTION NE POUVAIT PAS
+   GAGNER. `.pd-btn-icone:active` pose `transform: translateY(3px)` — qui EFFACE
+   le `translateX(-50%)` de centrage, d'ou un bond d'une demi-largeur qu'on lit
+   comme un glissement. La regle ci-dessous existait deja, mais a SPECIFICITE
+   EGALE (un id, une classe, une pseudo-classe) : mobile.css etant charge APRES
+   dice.css, c'est lui qui l'emportait, et le bouton sautait toujours.
+   On monte donc d'un cran en nommant le parchemin — deux classes contre une —
+   pour que l'ordre des feuilles ne decide plus de rien. */
+#dicewrap .dc-parchemin .dc-regles-fermer:active,
+#dicewrap .dc-regles-fermer:active { transform: translateX(-50%) translateY(2px); }
 #dicewrap .dc-regles-fermer img { width: 52px; height: 52px; display: block; }
 
 #dicewrap .dc-shop { display: flex; flex-direction: column; gap: 11px; }
@@ -4217,3 +4221,160 @@
   text-decoration: line-through;
   text-decoration-color: rgba(255, 214, 90, .9);
 }
+
+/* ── LES DEUX BOUTONS DU BANDEAU : BUTIN ET REGLES ────────────────────────
+   Ils ont pris la place de la plaque « RANG », qui ne faisait que repeter un
+   chiffre lisible en entier dans la page Classement. Meme gabarit que la plaque
+   des reglages a l'autre bout : carres, hauts comme la barre, et ils s'enfoncent
+   au doigt comme tout le reste du jeu. */
+#dicewrap .dc-plaque-act {
+  position: relative;
+  width: var(--pd-bar-h, 44px);
+  height: var(--pd-bar-h, 44px);
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: none;
+  transition: transform .07s ease;
+}
+#dicewrap .dc-plaque-act > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .55));
+}
+#dicewrap .dc-plaque-act:active { transform: translateY(2px); }
+
+/* ⛔ LA PASTILLE NE S'ALLUME QUE S'IL Y A QUELQUE CHOSE A PRENDRE. Un badge
+   permanent cesse d'etre lu au bout de deux jours — il devient un ornement.
+   Celui-ci s'eteint des que le butin du jour est ramasse. */
+#dicewrap .dc-plaque-pastille {
+  position: absolute;
+  top: -2px;
+  inset-inline-end: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ff6a5e, #d92d20);
+  box-shadow: 0 0 0 2px rgba(20, 8, 40, .9), 0 0 8px rgba(255, 90, 70, .8);
+  animation: dc-pastille-bat 1.6s ease-in-out infinite;
+}
+@keyframes dc-pastille-bat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.18); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dicewrap .dc-plaque-pastille { animation: none; }
+}
+
+/* ── LA FEUILLE DU BUTIN DU JOUR ──────────────────────────────────────────── */
+#dicewrap .dc-butin-voile {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 4, 26, .68);
+  animation: dc-gel-vient .18s ease-out;
+}
+#dicewrap .dc-butin-carte {
+  position: relative;
+  width: min(440px, 94vw);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 18px 18px 62px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+#dicewrap .dc-butin-titre {
+  margin: 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(20px, 5.4vw, 27px);
+  color: var(--gold-hi, #ffe479);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .5);
+}
+/* La recompense du jour, en grand : c'est elle qu'on vient chercher. */
+#dicewrap .dc-butin-jour {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1.5px var(--gold-lo, #8a6a1f);
+}
+#dicewrap .dc-butin-jour .dc-butin-art { width: 62px; height: 62px; }
+#dicewrap .dc-butin-jour-txt { text-align: start; }
+#dicewrap .dc-butin-jour-txt b {
+  display: block;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  color: var(--gold-hi, #ffe479);
+  font-size: 15px;
+}
+#dicewrap .dc-butin-gains {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--txt, #efe9fb);
+}
+#dicewrap .dc-butin-gains span { display: inline-flex; align-items: center; gap: 5px; }
+#dicewrap .dc-butin-gains img { width: 22px; height: 22px; }
+
+/* La bande des sept jours. Elle DEFILE au lieu de se serrer : sept cases
+   ecrasees sur 320 px ne se lisent plus, et on veut voir venir le gros lot. */
+#dicewrap .dc-butin-bande {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(66px, 1fr);
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+#dicewrap .dc-butin-case {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 4px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .12);
+}
+#dicewrap .dc-butin-case b {
+  font-size: 10px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--txt-dim, #c9bcea);
+}
+#dicewrap .dc-butin-case .dc-butin-art { width: 34px; height: 34px; }
+#dicewrap .dc-butin-case i { font-style: normal; font-weight: 800; font-size: 13px; }
+/* Le jour qu'on peut prendre MAINTENANT : c'est le seul qui brille. */
+#dicewrap .dc-butin-courant {
+  background: linear-gradient(180deg, var(--gold-hi, #ffe479), var(--gold, #f4c64e));
+  box-shadow: inset 0 0 0 2px #fff, 0 0 14px rgba(244, 198, 78, .55);
+}
+#dicewrap .dc-butin-courant b,
+#dicewrap .dc-butin-courant i { color: #3a2a10; }
+/* Un jour deja pris s'efface : il a rendu ce qu'il devait. */
+#dicewrap .dc-butin-pris { opacity: .45; }
+#dicewrap .dc-butin-pris .dc-butin-art { filter: grayscale(1); }
+
+#dicewrap .dc-butin-prendre { align-self: center; min-width: 190px; }
+#dicewrap .dc-butin-prendre:disabled { opacity: .5; cursor: default; }
+#dicewrap .dc-butin-fermer {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+}
+#dicewrap .dc-butin-carte .dc-butin-fermer:active,
+#dicewrap .dc-butin-fermer:active { transform: translateX(-50%) translateY(2px); }
+#dicewrap .dc-butin-fermer img { width: 42px; height: 42px; display: block; }

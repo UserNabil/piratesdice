@@ -104,12 +104,5 @@
     "chaudes": true,
     "rayon": 28.4,
     "corps": 0.924
-  },
-  "S017": {
-    "dossier": "obsidienne",
-    "images": 12,
-    "chaudes": true,
-    "rayon": 22.2,
-    "corps": 0.922
   }
 }

@@ -176,15 +176,22 @@ export function onOver(m) {
         ? 'over.horsLigneLibre' : 'over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
-        <button class="dc-btn dc-again-btn" id="dc-again"><img class="dc-again-icone"
-             src="${ASSETS}img/icon_replay.png" alt="">${esc(S.salon
+        <!-- ⛔ « REJOUER » PORTE LE MEME BOUTON QUE LE PONT. Il avait son
+             dessin EN LIGNE, a gauche du mot : une icone de la hauteur du texte,
+             donc minuscule, quand les cartes du pont posent le leur en grand,
+             debordant par-dessus le bouton. « Je veux un bouton rejouer comme
+             celui de l'accueil. » On reprend donc `.dc-carte-mode` tel quel —
+             meme reserve en haut, meme dessin absolu, meme enfoncement au doigt. -->
+        <button class="dc-btn dc-carte-mode dc-again-btn" id="dc-again">
+          <img src="${ASSETS}img/icon_replay.png" alt="">
+          <span>${esc(S.salon
           ? t('over.againFriend', { name: m.opponent || t('game.opponent') })
           /* ⛔ EN MODE PIRATERIE, ON AVANCE. Une victoire propose d'abord le
              NIVEAU SUIVANT ; une defaite propose de rejouer le niveau. Le
              second bouton ramene a la carte de l'aventure, pas au pont. */
           : (S.campagneEnCours && m.outcome === 'win'
               ? t('camp.suivant')
-              : t('over.again')))}</button>
+              : t('over.again')))}</span></button>
         <button class="dc-btn dc-btn-ghost" id="dc-back">${esc(
           S.campagneEnCours ? t('camp.retourAventure') : t('over.back'))}</button>
       </div>

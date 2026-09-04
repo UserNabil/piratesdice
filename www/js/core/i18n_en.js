@@ -678,6 +678,15 @@ export const EN = {
   'ladder.d': 'D',
 
   'rules.title': 'The rules of the table',
+  'butin.titre': 'Daily loot',
+  'butin.duJour': 'Today’s reward',
+  'butin.jour': 'Day {n}',
+  'butin.prendre': 'Claim',
+  'butin.revenir': 'Come back tomorrow',
+  'butin.parure': 'Dice set',
+  'butin.gainOr': '+{n} gold',
+  'butin.gainMaudit': '+{n} cursed',
+  'butin.gainParure': 'Dice set!',
   'rules.1': 'On your turn, roll the die, then drop it into one of your four columns.',
   'rules.2': 'A column scores <b>value × count²</b>: three 4s in one column are worth 36, not 12.',
   'rules.3': 'Dropping a die <b>destroys every enemy die of that value in the same column</b> — '
