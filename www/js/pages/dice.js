@@ -27,7 +27,7 @@ import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
 import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
-         envoyerCoup } from './dice_state.js';
+         envoyerCoup, etoileImg } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne } from './dice_panels.js';
@@ -1100,7 +1100,7 @@ function renderWalletMissions() {
   w.innerHTML = '<div class="dc-missions-jeu">'
     + '<b>' + esc(t('camp.missions')) + '</b>'
     + objs.map((o) => '<span class="' + (o.pris ? 'dc-mission-pris' : '') + '">'
-        + (o.pris ? '\u2b50' : '\u2606') + ' ' + esc(o.txt) + '</span>').join('')
+        + etoileImg(o.pris) + ' <span class="dc-m-txt">' + esc(o.txt) + '</span></span>').join('')
     + '</div>';
 }
 
@@ -1128,7 +1128,7 @@ function renderWalletCampagne() {
         <b>${esc(t('camp.palier', { n: p }))}</b>
         <em>${esc(nom)}</em>
       </span>
-      <span class="dc-camp-hud-etoiles">\u2b50 ${etoiles}/15</span>
+      <span class="dc-camp-hud-etoiles">${etoileImg(true)} ${etoiles}/15</span>
     </div>
     <div class="dc-camp-minis">
       <span class="dc-camp-mini" title="${esc(t('hdr.coins'))}">
@@ -1158,7 +1158,7 @@ function basculerDeroulantCampagne(niveaux, ancre) {
     <div class="dc-camp-drop-l${x.etoiles >= 15 ? ' dc-camp-drop-plein' : ''}">
       <img src="${ASSETS}img/cap_${esc(x.cap)}.png" alt="" class="${x.gagne ? '' : 'dc-camp-gris'}">
       <span><b>${esc(t('camp.palier', { n: x.p }))}</b><em>${esc(t('cap.' + x.cap + '.name'))}</em></span>
-      <i>\u2b50 ${x.etoiles}/15</i>
+      <i>${etoileImg(true)} ${x.etoiles}/15</i>
     </div>`).join('');
   ($('#dicewrap') || document.body).appendChild(d);
   const r = ancre.getBoundingClientRect();

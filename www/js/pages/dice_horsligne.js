@@ -226,6 +226,11 @@ export class PartieHorsLigne {
       players: [0, 1].map((i) => ({
         name: this.noms[i] || (i === this.moi ? '' : 'IA'),
         rating: 0, ai: i !== this.moi, connected: true,
+        /* ⛔ LA MACHINE MONTRE SA FORCE, PAS UN ELO NUL. En ligne le serveur
+           donne ce champ selon le niveau ; hors ligne l'IA de poche est unique
+           (un coup d'avance, ~matelot), on lui pose donc une force fixe de 2/4
+           pour que l'ecran affiche des puces, jamais un « 0 » de classement. */
+        etoiles: i !== this.moi ? 2 : null,
         skin: this.parures[i] && this.parures[i].skin,
         motif: this.parures[i] && this.parures[i].motif,
       })),

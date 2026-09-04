@@ -14,6 +14,31 @@ import { $ } from '../core/dom.js';
 
 export const ASSETS = '/dice/';
 
+/* ── Les puces de force de l'IA et les etoiles des missions ────────────────
+   Deux petits pictogrammes qui ont remplace les caracteres ★/☆ : une micro-
+   puce doree (pleine) ou grise (vide) pour la force d'une machine — quatre
+   crans, pas cinq —, et une etoile doree ou grise pour une mission de la
+   piraterie prise ou non. On les dessine ICI, en un seul endroit, pour que les
+   quatre ecrans qui les affichent ne divergent jamais. Le suffixe `_unlocked`
+   est la version DECROCHEE (doree) ; le nom nu, la version eteinte (grise). */
+export function puceImg(pleine) {
+  return `<img class="dc-puce" src="${ASSETS}img/puce${pleine ? '_unlocked' : ''}.png" alt="">`;
+}
+export function pucesForce(n, total = 4) {
+  const pleines = Math.max(0, Math.min(total, n | 0));
+  let out = '';
+  for (let i = 0; i < total; i++) out += puceImg(i < pleines);
+  return out;
+}
+export function etoileImg(prise) {
+  return `<img class="dc-etoile-img" src="${ASSETS}img/star${prise ? '_unlocked' : ''}.png" alt="">`;
+}
+export function etoilesMission(prises, total = 3) {
+  let out = '';
+  for (let i = 0; i < total; i++) out += etoileImg(i < prises);
+  return out;
+}
+
 /* Le catalogue en base nomme encore ses icones `bonus1.png` (l'ancien jeu). On
    traduit ICI plutot que de reecrire la base : le nom d'un objet de gameplay et
    le fichier qui le dessine n'ont pas a etre la meme chose. */
@@ -251,6 +276,7 @@ const STILL_FILES = [
   'bonus_clear_own.png', 'bonus_blast_enemy.png',
   'bonus_freeze.png', 'icon_loader.png',
   'icon_bag.png', 'icon_versus.png', 'icon_leave.png',
+  'puce.png', 'puce_unlocked.png', 'star.png', 'star_unlocked.png',
   'menu_ai.png', 'menu_versus.png', 'menu_friend.png',
   'icon_back.png', 'icon_table.png', 'icon_join.png',
   'rank_1.png', 'rank_2.png', 'rank_3.png',

@@ -9,7 +9,7 @@
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, bonusArt } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, bonusArt, etoileImg, etoilesMission } from './dice_state.js';
 import { renderBonusRack } from './dice_match.js';
 import { messageServeur } from './dice_refus.js';
 
@@ -128,9 +128,9 @@ function ficheNiveau(n) {
            src="${trogne}" alt="" onerror="this.remove()">` : ''}
       <h3>${esc(n.boss ? t('camp.boss', { nom: nomBoss || '' }) : t('camp.niveau', { n: n.ordre }))}</h3>
       <ul class="dc-camp-objectifs">
-        <li>${(n.etoiles & 1) ? '\u2b50' : '\u2606'} ${esc(t('camp.obj1'))}</li>
-        <li>${(n.etoiles & 2) ? '\u2b50' : '\u2606'} ${esc(objectifDe(n.contrainte2, n.seuil2))}</li>
-        <li>${(n.etoiles & 4) ? '\u2b50' : '\u2606'} ${esc(objectifDe(n.contrainte3, n.seuil3))}</li>
+        <li>${etoileImg(n.etoiles & 1)} ${esc(t('camp.obj1'))}</li>
+        <li>${etoileImg(n.etoiles & 2)} ${esc(objectifDe(n.contrainte2, n.seuil2))}</li>
+        <li>${etoileImg(n.etoiles & 4)} ${esc(objectifDe(n.contrainte3, n.seuil3))}</li>
       </ul>
       <div class="pd-ask-row">
         <button class="dc-btn dc-btn-sm" data-jouer>${esc(t('camp.jouer'))}</button>
@@ -177,14 +177,14 @@ export function renderCampagne(body) {
         ${cap ? `<img src="${ASSETS}img/cap_${esc(cap)}.png" alt="" class="${gagne ? '' : 'dc-camp-gris'}">` : ''}
         <div><b>${esc(t('camp.palier', { n: p }))}</b>
           <span>${cap ? esc(t('cap.' + cap + '.name')) : ''}</span></div>
-        <em>\u2b50 ${prises}/15</em>
+        <em>${etoileImg(true)} ${prises}/15</em>
       </header>
       <div class="dc-camp-niveaux">
         ${liste.map((n) => `
           <button class="dc-camp-niv${n.ouvert ? '' : ' dc-camp-verrou'}${n.boss ? ' dc-camp-bossniv' : ''}"
                   data-niveau="${esc(n.identify)}">
             <b>${n.boss ? '\u2620' : n.ordre}</b>
-            <span>${'\u2b50'.repeat(etoilesDuMasque(n.etoiles))}${'\u2606'.repeat(3 - etoilesDuMasque(n.etoiles))}</span>
+            <span>${etoilesMission(etoilesDuMasque(n.etoiles))}</span>
           </button>`).join('')}
       </div>
     </section>`;

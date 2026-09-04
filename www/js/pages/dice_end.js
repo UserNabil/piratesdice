@@ -8,7 +8,7 @@
 
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, fxUrl } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE, fxUrl, etoileImg } from './dice_state.js';
 import { captainArt, captainTrait } from './dice_lobby.js';
 import { ouvrirFicheSucces } from './dice_panels.js';
 
@@ -84,7 +84,7 @@ function etoilesCampagne(m) {
         const pris = (c.masquePartie & l.bit) !== 0;
         const neuve = (c.neuves & l.bit) !== 0;
         return `<li class="${pris ? 'dc-obj-pris' : 'dc-obj-rate'}${neuve ? ' dc-obj-neuve' : ''}">${
-          pris ? '\u2b50' : '\u2606'} ${esc(l.txt)}</li>`;
+          etoileImg(pris)} ${esc(l.txt)}</li>`;
       }).join('')}</ul>
     </div>`;
 }

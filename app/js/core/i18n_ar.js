@@ -727,7 +727,7 @@ export const AR = {
 
   'camp.etoilesGagnees': '{n} نجمة في هذه المباراة',
 
-  'game.aiForce': 'القوة: {n}/5',
+  'game.aiForce': 'القوة: {n}/4',
 
   'tour.passer': 'تخطٍّ',
 

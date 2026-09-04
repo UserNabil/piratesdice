@@ -15,7 +15,7 @@
 import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase,
-         envoyerCoup } from './dice_state.js';
+         envoyerCoup, pucesForce } from './dice_state.js';
 import { t } from '../core/i18n.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
          tumble, showLanding, clearLanding, freeCellOf } from './dice_board.js';
@@ -1044,11 +1044,11 @@ function renderPlayerCard(sel, st, seat, isMe) {
     <div class="dc-pc-name">${esc(p.name || '?')}${p.ai ? ` <em>${esc(t('game.ai'))}</em>` : ''}</div>
     <div class="dc-pc-id">
       ${(p.ai && p.etoiles)
-        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Cinq crans
-           d'etoiles selon son niveau d'IA — un Elo sur un adversaire qui ne
+        /* ⛔ UNE MACHINE MONTRE SA FORCE, PAS UN CLASSEMENT. Quatre micro-puces
+           allumees selon son niveau d'IA — un Elo sur un adversaire qui ne
            monte ni ne descend n'apprend rien. */
         ? `<div class="dc-pc-force" title="${esc(t('game.aiForce', { n: p.etoiles }))}">${
-            '\u2b50'.repeat(p.etoiles) + '\u2606'.repeat(Math.max(0, 5 - p.etoiles))}</div>`
+            pucesForce(p.etoiles)}</div>`
         : `<div class="dc-pc-elo">${p.rating} <img class="dc-insigne" src="${ASSETS}img/icon_elo.png"
            alt="${esc(t('menu.rang'))}" title="${esc(t('menu.rang'))}"></div>`}
       ${stockMarkup(st, seat)}

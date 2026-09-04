@@ -725,7 +725,7 @@ export const ES = {
 
   'camp.etoilesGagnees': '{n} estrella(s) esta partida',
 
-  'game.aiForce': 'Fuerza: {n}/5',
+  'game.aiForce': 'Fuerza: {n}/4',
 
   'tour.passer': 'Saltar',
 

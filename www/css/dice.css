@@ -786,12 +786,32 @@
 }
 #dicewrap .dc-pc-force {
   font-size: 13px;
-  letter-spacing: 1px;
   line-height: 1;
-  color: #ffe479;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
+/* ── LES MICRO-PUCES DE FORCE DE L'IA ET LES ETOILES DES MISSIONS ──────────
+   Deux pictogrammes qui ont remplace les caracteres ★/☆. Tailles en `em`
+   pour suivre le corps de texte de leur contexte (bandeau, fiche, carte de
+   fin), donc pour grossir tout seuls sur tablette. Voir dice_state.js. */
+#dicewrap .dc-puce {
+  height: 1.4em;
+  width: auto;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .55));
+}
+#dicewrap .dc-etoile-img {
+  height: 1.25em;
+  width: auto;
+  vertical-align: -.2em;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .45));
+}
+/* Le petit triplet des missions, sous chaque niveau de la carte, tient dans
+   un bouton etroit : on serre les trois etoiles pour qu'elles ne debordent
+   pas de la case. */
+#dicewrap .dc-camp-niv span .dc-etoile-img { height: 1.5em; vertical-align: middle; }
 
 /* Le score est LE chiffre du jeu : blanc, cerne, et gros. En or sur violet il
    se noyait dans le panneau — vu a l'ecran. */
@@ -1166,7 +1186,16 @@
 
 /* Elle FLOTTE : posee dans le flux, elle prendrait une bande de hauteur en
    permanence pour une phrase qui ne parait que deux secondes. */
-#dicewrap .dc-versus-wrap { position: relative; width: 100%; justify-self: stretch; }
+/* ⛔ LA BARRE CENTRALE NE S'ETIRE PLUS SUR GRAND ECRAN. Elle occupait TOUTE la
+   largeur de l'arene (`justify-self: stretch`) : sur telephone c'est la largeur
+   d'un plateau, mais des qu'on la depasse — tablette de 1024 pt (iPad 12,9" en
+   portrait, seul a franchir le palier de 1000 px de la regle des cartes) ou
+   version web sur ecran large — les deux pistes `minmax(0,1fr)` gonflaient a
+   ~660 px chacune : cartes etirees, grand vide au milieu, « combat completement
+   baise sur tablette ». On la borne a la largeur d'un plateau et on la centre par
+   le MEME mecanisme que les plateaux (`justify-items: center` du parent), le seul
+   qui centre ici de facon fiable — des marges `auto` s'y resolvaient a zero. */
+#dicewrap .dc-versus-wrap { position: relative; width: 100%; max-width: 620px; justify-self: center; }
 
 /* ⚠️ DEUX MESSAGES SE DISPUTAIENT LA MEME BANDE. L'alerte de tour et la bulle
    de l'adversaire pendaient toutes deux a 6 et 10 px au-dessus de la carte :
@@ -4135,8 +4164,11 @@
 }
 /* Un objectif en passe d'etre decroche : barre, et dore. */
 #dicewrap .dc-mission-pris {
-  text-decoration: line-through;
-  text-decoration-color: rgba(255, 214, 90, .9);
   color: var(--gold-hi, #ffe479);
   opacity: .95;
+}
+/* La rature ne barre QUE le texte : l'etoile doree reste entiere a cote. */
+#dicewrap .dc-mission-pris .dc-m-txt {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 214, 90, .9);
 }
