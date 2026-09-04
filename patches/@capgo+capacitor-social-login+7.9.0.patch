@@ -1,0 +1,16 @@
+diff --git a/node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java b/node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java
+index 7617f90..4e13167 100644
+--- a/node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java
++++ b/node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java
+@@ -550,6 +550,11 @@ public class GoogleProvider implements SocialProvider {
+                                         if (result.getServerAuthCode() != null) {
+                                             resultObj.put("responseType", "offline");
+                                             resultObj.put("serverAuthCode", result.getServerAuthCode());
++                                            // PATCH pirates-dice : on renvoie AUSSI l'idToken du compte
++                                            // choisi (le serverAuthCode peut pointer un compte precedent
++                                            // cache par AuthorizationClient). Le serveur verifie cet
++                                            // idToken pour identifier le bon compte.
++                                            resultObj.put("idToken", googleIdTokenCredential.getIdToken());
+                                             response.put("result", resultObj);
+                                             call.resolve(response);
+                                         } else {

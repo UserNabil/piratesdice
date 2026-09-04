@@ -6,7 +6,8 @@
   "scripts": {
     "build": "python build.py",
     "sync": "python build.py && cap sync android",
-    "open": "cap open android"
+    "open": "cap open android",
+    "postinstall": "patch-package || true"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^7.0.0"
+    "@capacitor/cli": "^7.0.0",
+    "patch-package": "^8.0.1"
   }
 }

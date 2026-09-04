@@ -239,7 +239,7 @@ export async function signIn(opts) {
       }
       const out = fournisseur() === 'apple' ? null : await codeGoogle(games, interactive);
       if (out && out.serverAuthCode) {
-        return garderSession(await claimGoogle(out.serverAuthCode), 'google');
+        return garderSession(await claimGoogle(out.serverAuthCode, out.idToken), 'google');
       }
     } catch (e) {
       if (interactive) throw new Error(e && e.message ? e.message : 'Google sign-in failed');
@@ -340,8 +340,11 @@ async function codeGoogle(games, interactive) {
   return rep && rep.result ? rep.result : null;
 }
 
-async function claimGoogle(code) {
-  const body = await post('/api/google', { authCode: code, deviceId: deviceId() });
+async function claimGoogle(code, idToken) {
+  /* ⛔ ON ENVOIE L'idToken AVEC LE CODE. Le serveur s'en sert pour identifier le
+     compte REELLEMENT choisi : le code d'autorisation, lui, peut pointer un
+     compte precedent (cache de l'AuthorizationClient). Voir google.js. */
+  const body = await post('/api/google', { authCode: code, idToken, deviceId: deviceId() });
   return {
     url: serverBase(), ws: wsFrom(serverBase()),
     token: body.token, expires: body.expires, player: body.player, google: true,
