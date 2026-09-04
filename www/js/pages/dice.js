@@ -26,7 +26,7 @@ import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, screen, bonusArt, preloadAssets,
+import { S, UI, ASSETS , screen , preloadAssets,
          envoyerCoup, etoileImg } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
@@ -513,9 +513,7 @@ async function connect() {
          peut avoir change. */
       rafraichirRang();
     },
-    /* Le serveur peut renvoyer la liste en cours de session (seuils modifies,
-       nouveau capitaine) : on la prend, l'ecran suivant la lira. */
-    captains: (m) => { if (Array.isArray(m.captains) && m.captains.length) S.captains = m.captains; },
+
     jetons: (m) => {
       cale.rangerJetons(m.jetons, m.regles);
       if (UI.showMenu && S.open && !S.state) showMenu();
@@ -1015,10 +1013,6 @@ function capitaineDuPalier(niveaux, p) {
   return boss ? boss.capitaine : null;
 }
 
-let deroulantCampagne = null;
-function fermerDeroulantCampagne() {
-  if (deroulantCampagne) { deroulantCampagne.remove(); deroulantCampagne = null; }
-}
 
 function objectifCampagne(code, seuil) {
   const dit = t('camp.obj.' + code, { n: seuil });
@@ -1155,40 +1149,6 @@ function renderWalletCampagne() {
 /* Le menu deroulant : les quinze paliers, leur capitaine (grise tant qu'il
    n'est pas gagne) et leur compte d'etoiles. C'est la carte des deblocages, en
    petit, depuis le bandeau. */
-function basculerDeroulantCampagne(niveaux, ancre) {
-  if (deroulantCampagne) { fermerDeroulantCampagne(); return; }
-  const dejaGagnes = S.campCaps || [];
-  const paliers = [];
-  for (let p = 1; p <= 15; p++) {
-    const cap = capitaineDuPalier(niveaux, p);
-    if (!cap) continue;
-    paliers.push({ p, cap, etoiles: etoilesPalier(niveaux, p), gagne: dejaGagnes.includes(cap) });
-  }
-  const d = document.createElement('div');
-  d.className = 'dc-camp-drop';
-  d.innerHTML = paliers.map((x) => `
-    <div class="dc-camp-drop-l${x.etoiles >= 15 ? ' dc-camp-drop-plein' : ''}">
-      <img src="${ASSETS}img/cap_${esc(x.cap)}.png" alt="" class="${x.gagne ? '' : 'dc-camp-gris'}">
-      <span><b>${esc(t('camp.palier', { n: x.p }))}</b><em>${esc(t('cap.' + x.cap + '.name'))}</em></span>
-      <i>${etoileImg(true)} ${x.etoiles}/15</i>
-    </div>`).join('');
-  ($('#dicewrap') || document.body).appendChild(d);
-  const r = ancre.getBoundingClientRect();
-  d.style.left = Math.max(8, Math.min(window.innerWidth - d.offsetWidth - 8, r.left)) + 'px';
-  d.style.top = (r.bottom + 6) + 'px';
-  deroulantCampagne = d;
-  /* Un clic ailleurs referme. En capture, pour passer avant le reste. */
-  setTimeout(() => {
-    const fermer = (ev) => {
-      if (deroulantCampagne && !deroulantCampagne.contains(ev.target)) {
-        fermerDeroulantCampagne();
-        document.removeEventListener('pointerdown', fermer, true);
-      }
-    };
-    document.addEventListener('pointerdown', fermer, true);
-  }, 0);
-}
-
 /* La pastille du butin : allumee seulement s'il reste quelque chose a prendre
    aujourd'hui. C'est le serveur qui le dit (`reclamable`), jamais une horloge
    locale — celle du telephone se change dans les reglages. */

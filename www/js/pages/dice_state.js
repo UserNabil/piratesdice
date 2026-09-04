@@ -75,7 +75,9 @@ const BONUS_ART = {
   /* Le gel de COLONNE est le trait de Barbe-Noire. Le dessin d'origine — des
      chaines et de la glace — vaut toujours : ce qui a change, c'est ce qu'il
      gele, pas la maniere dont il le gele. */
-  B006: 'bonus_freeze.png',
+  /* Meme fichier, pas une copie : bonus_freeze.png etait l'octet pour octet
+     identique a trait_teach.png (meme md5), embarque deux fois. */
+  B006: 'trait_teach.png',
   B007: 'trait_morgan.png',
   B008: 'trait_bonny.png',
   B009: 'trait_bart.png',
@@ -265,10 +267,7 @@ const STILL_FILES = [
      le 2026-08-30 avec cinq autres images ; le code de cinq d'entre elles a ete
      nettoye, celui-ci non. Plus aucune feuille ni aucun `img` ne l'affiche : il
      ne restait qu'une requete 404 a chaque ouverture. */
-  'die_unknown.png', 'cup.png', 'cup_active.png', 'brand_mark.png',
-  'icon_coin.png', 'icon_anchor.png', 'icon_bell.png', 'icon_settings.png',
-  'icon_shop.png', 'icon_ranking.png', 'icon_rules.png', 'icon_duel.png',
-  /* ⚠️ LES CINQ DESSINS DE LA BARRE DU BAS SONT A L'ECRAN DES LA PREMIERE
+  'cup.png', 'cup_active.png',   'icon_coin.png',   'icon_rules.png',   /* ⚠️ LES CINQ DESSINS DE LA BARRE DU BAS SONT A L'ECRAN DES LA PREMIERE
      SECONDE : ils doivent etre en memoire avant, sinon la barre se peint vide
      puis se remplit sous les yeux du joueur. Seules les versions AU REPOS sont
      prechargees — les animations ne servent qu'a l'appui, et charger 686 Ko
@@ -276,12 +275,11 @@ const STILL_FILES = [
      rien. */
   'bas_shop.png', 'bas_rank.png', 'bas_succes.png', 'bas_replay.png',
   'slot_bas_home.png',
-  'seal_victory.png', 'seal_defeat.png', 'seal_draw.png', 'ornament_stake.png',
-  /* `bonus_reroll.png` n'est plus le dessin de B001 (voir BONUS_ART) : il ne
+  'seal_victory.png', 'seal_defeat.png', 'seal_draw.png',   /* `bonus_reroll.png` n'est plus le dessin de B001 (voir BONUS_ART) : il ne
      sert que de dernier recours pour un identifiant inconnu. On ne prend plus
      40 Ko au demarrage pour une image que personne n'affiche. */
   'bonus_clear_own.png', 'bonus_blast_enemy.png',
-  'bonus_freeze.png', 'icon_loader.png',
+  'icon_loader.png',
   'icon_bag.png', 'icon_versus.png', 'icon_leave.png',
   'puce.png', 'puce_unlocked.png', 'star.png', 'star_unlocked.png',
   'menu_ai.png', 'menu_versus.png', 'menu_friend.png',

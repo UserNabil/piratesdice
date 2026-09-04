@@ -14,7 +14,7 @@
 
 import { $, esc } from '../core/dom.js';
 import { toast } from '../ui/toast.js';
-import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt, fxUrl , skinOf, arrondiDeCase,
+import { S, UI, ASSETS, screen, boardOf, myTurn, bonusArt  , skinOf, arrondiDeCase,
          envoyerCoup, pucesForce } from './dice_state.js';
 import { t } from '../core/i18n.js';
 import { buildBoard, renderBoard, markPlaced, blastCells, cupArt, dieFace,
@@ -52,6 +52,8 @@ export function onMatch(m) {
      vient de se passer, sinon le joueur croit avoir relance au hasard. */
   if (m.resumed) toast(t('resume.done'), 'ok');
 }
+
+let ecouteursDocumentPoses = false;
 
 function buildGame() {
   const el = $('#dc-screen-game');
@@ -240,7 +242,11 @@ function buildGame() {
      Le jeton a son propre `onclick` : il suffit de le laisser faire, et de
      fermer la cale DEDANS, une fois le clic recu. */
 
-  document.addEventListener('pointercancel', () => { if (caleOuverte()) fermerCale(); });
+  /* ⛔ POSES UNE FOIS POUR TOUTE LA VIE DE LA PAGE. buildGame() repart a
+     CHAQUE message `match` (nouvelle partie, reprise) : ces ecouteurs document
+     s'empilaient sans jamais etre retires — dix parties, dix copies, chaque
+     geste traite dix fois. */
+  if (!ecouteursDocumentPoses) document.addEventListener('pointercancel', () => { if (caleOuverte()) fermerCale(); });
 
   /* ⚠️ CLIQUER AILLEURS FERME LA CALE **ET** DESARME L'EFFET. Un jeton joue
      attend une cible : tant qu'elle n'est pas choisie, le joueur est en visee,
@@ -251,7 +257,7 @@ function buildGame() {
   /* ⚠️ EN CAPTURE, ET C'EST TOUT LE POINT. Ce gestionnaire doit passer AVANT
      ceux du plateau : c'est lui qui decide si le geste ferme la cale ou joue un
      coup, et il ne peut pas decider apres coup. */
-  document.addEventListener('pointerdown', (ev) => {
+  if (!ecouteursDocumentPoses) document.addEventListener('pointerdown', (ev) => {
     const dans = (sel) => !!ev.target.closest(sel);
     if (dans('#dc-bonus') || dans('#dc-bag')) return;
 
@@ -279,6 +285,7 @@ function buildGame() {
     const vise = S.state && S.state.pending && S.state.pending.seat === S.seat;
     if (vise && S.net) S.net.send({ t: 'unbonus' });
   }, true);
+  ecouteursDocumentPoses = true;
   wireMoodFan();
 }
 

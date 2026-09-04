@@ -123,7 +123,7 @@ function apply() {
      une place qui n'en permettait que 31, et le plateau du joueur passait sous
      la barre du bas.
 
-     Et depuis que le jeu est verrouille en paysage sur telephone, cette branche
+     Et depuis que le jeu est verrouille en PORTRAIT sur telephone, cette branche
      n'etait plus un cas particulier : c'etait le cas NORMAL. */
   const etroit = window.matchMedia('(max-width: 1100px)').matches;
   if (!etroit) { wrap.style.removeProperty('--dc-cell'); return; }

@@ -8,7 +8,7 @@
 
 import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
-import { S, UI, ASSETS, PIECE_MAUDITE, fxUrl, etoileImg } from './dice_state.js';
+import { S, UI, ASSETS, PIECE_MAUDITE , etoileImg } from './dice_state.js';
 import { captainArt, captainTrait } from './dice_lobby.js';
 import { ouvrirFicheSucces } from './dice_panels.js';
 
@@ -176,12 +176,14 @@ export function onOver(m) {
         ? 'over.horsLigneLibre' : 'over.horsLigne'))}</div>` : ''}
       ${hautsFaits(m)}
       <div class="dc-over-btns">
-        <!-- ⛔ « REJOUER » PORTE LE MEME BOUTON QUE LE PONT. Il avait son
-             dessin EN LIGNE, a gauche du mot : une icone de la hauteur du texte,
-             donc minuscule, quand les cartes du pont posent le leur en grand,
-             debordant par-dessus le bouton. « Je veux un bouton rejouer comme
-             celui de l'accueil. » On reprend donc `.dc-carte-mode` tel quel —
-             meme reserve en haut, meme dessin absolu, meme enfoncement au doigt. -->
+        <!-- REJOUER PORTE LE MEME BOUTON QUE LE PONT (dc-carte-mode) : meme
+             reserve en haut, meme dessin absolu, meme enfoncement au doigt.
+             ATTENTION, CE COMMENTAIRE VIT DANS UN GABARIT JS : un accent grave
+             ici FERME la chaine — la premiere version de ce commentaire en
+             portait deux, la suite se parsait « moins carte », et CHAQUE fin de
+             partie levait « carte is not defined », avalee par le routeur :
+             plus aucune carte de fin, tous modes confondus. Pas d'accent grave
+             dans les gabarits, jamais. -->
         <button class="dc-btn dc-carte-mode dc-again-btn" id="dc-again">
           <img src="${ASSETS}img/icon_replay.png" alt="">
           <span>${esc(S.salon
@@ -242,7 +244,13 @@ export function onOver(m) {
        deux se retrouvaient alors soumis a l'evitement de la file — donc a
        s'attendre pour rien — alors que leur salon est encore ouvert. On y
        retourne directement : c'est le sens du bouton quand il porte un nom. */
-    if (S.salon) { S.net.send({ t: 'relancer' }); return; }
+    if (S.salon) {
+      /* ⛔ MEME GARDE QUE LES AUTRES BRANCHES. Apres un duel entre amis, si la
+         socket est morte, `S.net.send` plantait — carte figee. Sans reseau, le
+         salon n'existe plus : on retombe sur la partie de poche. */
+      if (S.net && S.net.ready) { S.net.send({ t: 'relancer' }); return; }
+      S.salon = null;
+    }
     /* ⛔ EN PIRATERIE, LE BOUTON PRINCIPAL AVANCE OU RETENTE. Victoire : le
        niveau suivant (C01N2 apres C01N1, C02N1 apres un boss) ; si le serveur
        le juge encore ferme, son refus traduit s'affiche et on n'a rien perdu.

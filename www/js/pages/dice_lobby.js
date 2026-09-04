@@ -661,7 +661,13 @@ export function renderMenu(el) {
         ${trop ? `<button class="dc-btn" id="dc-requeue">${esc(t('menu.retry'))}</button>` : ''}
         <button class="dc-btn dc-btn-ghost" id="dc-unqueue">${esc(t('menu.cancel'))}</button>
       </div></div>`;
-    $('#dc-unqueue').onclick = () => { arreterAttente(); S.net.send({ t: 'cancel' }); };
+    $('#dc-unqueue').onclick = () => {
+      arreterAttente();
+      /* ⛔ CET ECRAN SURVIT A LA COUPURE : S.net peut etre null. Un clic sur
+         Annuler plantait alors en silence et l'ecran restait fige. */
+      if (S.net && S.net.ready) S.net.send({ t: 'cancel' });
+      else if (UI.showMenu) UI.showMenu();
+    };
     const relancer = $('#dc-requeue');
     if (relancer) {
       relancer.onclick = () => {
@@ -843,13 +849,17 @@ function renderRoom(el) {
   const go = () => {
     const code = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (code.length !== 5) { toast(t('room.badCode'), 'warn'); return; }
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
     S.net.send({ t: 'room', action: 'join', code });
   };
   /* Le code se dicte en majuscules : on ne demande pas au joueur d'y penser. */
   input.oninput = () => { input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
   input.onkeydown = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); go(); } };
   $('#dc-room-go').onclick = go;
-  $('#dc-room-create').onclick = () => S.net.send({ t: 'room', action: 'create' });
+  $('#dc-room-create').onclick = () => {
+    if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
+    S.net.send({ t: 'room', action: 'create' });
+  };
   setTimeout(() => { try { input.focus(); } catch (_) { /* pas de clavier */ } }, 60);
 }
 

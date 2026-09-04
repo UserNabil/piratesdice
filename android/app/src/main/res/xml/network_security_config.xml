@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Le trafic en clair est INTERDIT partout, sauf vers le serveur du bureau : une
-  application publiee parle en HTTPS. Cette exception n'existe que pour tester
-  sur le reseau local sans certificat, et se retire sans rien casser.
+  Le trafic en clair est INTERDIT, partout, point. Les exceptions LAN
+  (192.168.1.19, 10.0.2.2, localhost) vivaient ici « pour tester sans
+  certificat » — mais ce fichier part DANS LE BUILD RELEASE, et le jeu ne parle
+  qu'a https://dice.my-officeapps.com depuis que l'environnement unique est la
+  prod. Un besoin de test en clair se rebranche le temps du test, jamais dans
+  ce qui est livre.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">192.168.1.19</domain>
-        <domain includeSubdomains="false">10.0.2.2</domain>
-        <domain includeSubdomains="false">localhost</domain>
-    </domain-config>
 </network-security-config>

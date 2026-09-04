@@ -20,7 +20,6 @@
 
 import { esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
-import { toast } from '../ui/toast.js';
 import { S, ASSETS } from './dice_state.js';
 import { buildBoard, renderBoard, blastCells } from './dice_board.js';
 

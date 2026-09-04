@@ -30,12 +30,8 @@
 	<array>
 		<string>armv7</string>
 	</array>
-	<!-- ⛔ SUR TELEPHONE, LE JEU NE SE JOUE QU'EN PAYSAGE. Deux plateaux de
-	     quatre colonnes cote a cote demandent de la LARGEUR : en portrait, les
-	     cases retrecissent jusqu'a rendre les des illisibles, la carte du
-	     capitaine se coupe et la barre du bas mange le reste. On perdait du
-	     contenu sans le dire. L'iPad, lui, garde toutes ses orientations : il a
-	     la place dans les deux sens. -->
+	<!-- Portrait partout, iPhone comme iPad (UIRequiresFullScreen pose plus bas
+	     autorise l'iPad a se verrouiller). Le jeu est dessine en portrait. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

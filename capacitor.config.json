@@ -3,7 +3,7 @@
   "appName": "The Pirate's Dice",
   "webDir": "www",
   "android": {
-    "allowMixedContent": true,
+    "allowMixedContent": false,
     "backgroundColor": "#241C33"
   },
   "plugins": {
