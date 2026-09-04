@@ -389,6 +389,39 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .pd-row:last-of-type { border-bottom: 0; }
 .pd-row-btns { justify-content: stretch; flex-wrap: wrap; }
 .pd-row-btns .dc-btn { flex: 1; min-width: 130px; }
+
+/* ⛔ « SE CONNECTER AVEC APPLE » — conforme aux regles d'Apple (Guideline 4 /
+   Human Interface Guidelines). Fond noir, logo Apple officiel et texte blancs,
+   coin arrondi, cible tactile de 44 px. Il partage la rangee avec « Effacer »,
+   d'ou le meme comportement flex que `.pd-row-btns .dc-btn`. */
+.pd-row-btns .dc-signin-apple { flex: 1; min-width: 130px; }
+.dc-signin-apple {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #000;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-appearance: none;
+          appearance: none;
+}
+.dc-signin-apple:disabled { opacity: .5; }
+.dc-signin-apple .dc-apple-mark {
+  height: 1.05em;           /* le logo a la hauteur de capitale du texte */
+  width: auto;
+  margin-top: -0.12em;      /* le glyphe Apple porte haut : on le recentre */
+  flex: 0 0 auto;
+}
 .pd-row-lbl { font-size: 14px; color: var(--txt-dim, #C9BCEA); }
 .pd-row-val { font-size: 14px; color: var(--txt, #FFFFFF); text-align: end; overflow-wrap: anywhere; }
 
@@ -1726,7 +1759,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .pd-first {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  /* ⛔ AU-DESSUS DU VOILE DU TUTORIEL. A 40, une modale (reglages comprise)
+     passait SOUS le voile du tuto (`.pd-tour`, z-index 95) : au premier
+     lancement, la carte des reglages s'ouvrait assombrie et la bulle du tuto
+     interceptait les touches — l'app a ete rejetee par Apple pour ca. Une
+     modale doit coiffer le tuto ; seuls les toasts (9000) la coiffent. */
+  z-index: 200;
   display: none;
   place-items: center;
   background: rgba(14, 8, 28, .74);
