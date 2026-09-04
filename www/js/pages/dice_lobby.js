@@ -256,6 +256,11 @@ function ficheCapitaine(id) {
      La phrase seule suffit — la jauge ne s'affiche qu'a partir du moment ou il
      y a quelque chose a parcourir. */
   const part = seuil > 0 ? Math.min(1, jouees / seuil) : 1;
+  /* Le meme texte, deux fois : couche claire (toute la barre) et couche sombre
+     (dans le remplissage, decoupee). La largeur de la couche sombre vaut TOUTE
+     la barre — 100/part % du remplissage — pour que son centre coincide. */
+  const txtJauge = esc(Math.min(jouees, seuil) + ' / ' + seuil);
+  const largeurTexte = part > 0 ? Math.round(100 / part) : 100;
 
   /* ⚠️ LE NOM DE L'EFFET EST EN OR ET SA PHRASE EN BLANC, comme sur la maquette.
      Sans serveur, `offreDe` retombe sur sa table de secours : le panneau garde
@@ -329,8 +334,8 @@ function ficheCapitaine(id) {
         ${seuil > 0 ? `
         <div class="dc-capf-jauge" role="progressbar"
              aria-valuenow="${Math.min(jouees, seuil)}" aria-valuemin="0" aria-valuemax="${seuil}">
-          <i style="width:${Math.round(part * 100)}%"></i>
-          <b>${esc(Math.min(jouees, seuil) + ' / ' + seuil)}</b>
+          <b>${txtJauge}</b>
+          <i style="width:${Math.round(part * 100)}%"><span style="width:${largeurTexte}%">${txtJauge}</span></i>
         </div>` : ''}
       </div>
 
@@ -522,8 +527,12 @@ function wireCaptains(el) {
       if (!enCharge) return;                  // relache hors du medaillon : rien
       /* Clic court : on choisit tout de suite si le capitaine est debloque ;
          sinon on ouvre sa fiche, la seule chose qu'il puisse offrir. */
-      if (ferme) { apercu(); ouvrirFiche(id); }
-      else { adopter(id); apercu(); }
+      /* ⛔ UN CLIC COURT N'OUVRE PLUS LA FICHE — MEME VERROUILLE. « On est cense
+         rester appuye longtemps pour ouvrir les details. » Le clic court met le
+         capitaine en avant (apercu) et, s'il est debloque, l'adopte. La fiche ne
+         s'ouvre qu'au maintien (CAP_HOLD_MS), jamais au tap. */
+      apercu();
+      if (!ferme) adopter(id);
     };
 
     b.onpointerdown = demarrer;

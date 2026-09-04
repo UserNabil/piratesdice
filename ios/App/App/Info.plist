@@ -63,6 +63,13 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<!-- ⛔ SANS CECI, APPLE REFUSE LE PORTRAIT SEUL SUR IPAD (erreur 90474). Un jeu
+	     qui NE se resize pas (pas de Split View ni Stage Manager) a le droit de se
+	     verrouiller en portrait ; mais tant qu'il « supporte le multitache », Apple
+	     exige les QUATRE orientations sur iPad. On declare donc l'app plein ecran :
+	     c'est ce qu'elle est, et c'est ce qui autorise le verrou portrait. -->
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
