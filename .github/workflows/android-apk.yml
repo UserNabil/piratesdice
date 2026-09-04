@@ -27,6 +27,12 @@ on:
         default: "-essai"
         type: string
 
+# Pour reserver le versionCode bati dans store/version-code.txt (le plancher que
+# lit play_api.prochain) : sans ce droit, un APK ne laisse aucune trace et le
+# compteur regresse sous lui a l'envoi suivant.
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -130,3 +136,23 @@ jobs:
           name: piratesdice-apk-${{ env.VERSION_CODE }}
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
+
+      # ⛔ RESERVER LE NUMERO, sinon le prochain envoi regresse sous cet APK. On
+      # ne monte le plancher que s'il grandit, et un echec de push ne tue pas la
+      # chaine (l'APK est deja construit et attache).
+      - name: Reserver le versionCode
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "${VERSION_CODE}" > store/version-code.txt
+          git add store/version-code.txt
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(apk): versionCode ${VERSION_CODE} reserve (plancher)"
+          for essai in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "plancher : le depot a bouge, nouvelle tentative ($essai/3)"
+            sleep 5
+          done
+          echo "::warning::plancher de version non commite — a surveiller"

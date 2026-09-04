@@ -303,7 +303,23 @@ def prochain(token):
         sys.exit("impossible de lire les versions : " + why(out))
     call(token, API + "/edits/%s" % edit, method="DELETE")
     codes = [int(b["versionCode"]) for b in out.get("bundles", [])]
-    return (max(codes) + 1) if codes else 1
+    play_max = max(codes) if codes else 0
+    # ⛔ PLAY NE CONNAIT QUE LES AAB. Un APK de test (envoye a la main a un
+    # testeur) ne monte JAMAIS dans les "bundles" : son versionCode manquait au
+    # calcul, et le compteur REGRESSAIT sous un APK deja installe — « ma derniere
+    # version etait 81, elle est redevenue 78 ». On garde donc un plancher
+    # COMMITE, `store/version-code.txt`, tenu par les chaines : le prochain est le
+    # plus haut des deux (Play et plancher), plus un.
+    return max(play_max, plancher_version()) + 1
+
+
+def plancher_version():
+    """Le plus haut versionCode deja bati (AAB ou APK), memorise dans le depot."""
+    try:
+        with open(os.path.join(STORE_DIR, "version-code.txt"), encoding="utf-8") as f:
+            return int((f.read().strip() or "0"))
+    except (OSError, ValueError):
+        return 0
 
 
 JOURNAL = os.path.join(STORE_DIR, "dernier-envoi.json")
