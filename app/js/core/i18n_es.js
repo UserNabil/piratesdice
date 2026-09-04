@@ -660,6 +660,14 @@ export const ES = {
   'shop.M001.name': 'Grabado del dragón',
 
   'shop.M001.desc': 'Un dragón marino enroscado en la cara. Solo apariencia.',
+  'shop.M013.name': 'Grabado de las olas',
+  'shop.M013.desc': 'Oleaje enroscado en la cara. Solo apariencia.',
+  'shop.M014.name': 'Grabado de la brújula',
+  'shop.M014.desc': 'Rosa de los vientos y estrellas. Solo apariencia.',
+  'shop.M015.name': 'Grabado de cadenas',
+  'shop.M015.desc': 'Cadenas pesadas y grilletes. Solo apariencia.',
+  'shop.M016.name': 'Grabado de la corona',
+  'shop.M016.desc': 'Corona y flores de lis. Solo apariencia.',
 
   'shop.M002.name': 'Grabado del kraken',
 

@@ -667,6 +667,14 @@ export const FR = {
   'shop.M001.name': 'Gravure du dragon',
 
   'shop.M001.desc': 'Un dragon des mers enroulé autour de la face. Apparence seulement.',
+  'shop.M013.name': 'Gravure des vagues',
+  'shop.M013.desc': 'La houle roulée autour de la face. Apparence uniquement.',
+  'shop.M014.name': 'Gravure de la boussole',
+  'shop.M014.desc': 'Rose des vents et étoiles. Apparence uniquement.',
+  'shop.M015.name': 'Gravure des chaînes',
+  'shop.M015.desc': 'Chaînes lourdes et manilles. Apparence uniquement.',
+  'shop.M016.name': 'Gravure de la couronne',
+  'shop.M016.desc': 'Couronne et fleurs de lys. Apparence uniquement.',
 
   'shop.M002.name': 'Gravure du kraken',
 

@@ -43,6 +43,7 @@ RACINE = os.path.dirname(ICI)
 PLANCHE = os.path.join(RACINE, 'assets', 'motifs_source.png')
 PLANCHE_2 = os.path.join(RACINE, 'assets', 'motifs_source_2.png')
 PLANCHE_3 = os.path.join(RACINE, 'assets', 'motifs_source_3.png')
+PLANCHE_4 = os.path.join(RACINE, 'assets', 'motifs_source_4.png')
 SKINS = os.path.join(RACINE, 'www', 'dice', 'img', 'skins')
 BASE = os.path.join(RACINE, 'www', 'dice', 'img')
 
@@ -67,13 +68,22 @@ MOTIFS = [('M001', 'dragon', (0, 0), 1),
           ('M009', 'sakura', (0, 0), 3),
           ('M010', 'azteque', (0, 1), 3),
           ('M011', 'gothique', (1, 0), 3),
-          ('M012', 'rouages', (1, 1), 3)]
+          ('M012', 'rouages', (1, 1), 3),
+          # Une quatrieme planche : les quatre gravures du Butin du Jour.
+          ('M013', 'vagues', (0, 0), 4),
+          ('M014', 'boussole', (0, 1), 4),
+          ('M015', 'chaines', (1, 0), 4),
+          ('M016', 'couronne', (1, 1), 4)]
 
 # ⚠️ ON NE GRAVE QUE LES JEUX EN VENTE. Les quatre jeux retires (S003 a S005,
-# S007) ajouteraient huit megaoctets pour des combinaisons que personne ne peut
+# S007) ajouteraient seize megaoctets pour des combinaisons que personne ne peut
 # acheter. Le client sait retomber sur le jeu nu quand la combinaison n'existe
 # pas ; le jour ou l'un d'eux revient au catalogue, il suffit de l'ajouter ici.
-JEUX = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010']
+# Les sept parures de 034_des_nouveaux.sql sont gravees comme les autres : une
+# gravure achetee doit se porter sur N'IMPORTE quel de, sinon elle vaut moins
+# cher selon le de qu'on aime — ce que personne ne comprendrait.
+JEUX = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010',
+        'S011', 'S012', 'S013', 'S014', 'S015', 'S016', 'S017']
 
 MOTIFS_PAR_ID = {ident: nom for ident, nom, _, _ in MOTIFS}
 
@@ -93,7 +103,25 @@ def dossier_du_jeu(jeu):
     return BASE if jeu == 'D000' else os.path.join(SKINS, jeu)
 
 
-def anatomie(a):
+MINI_PIP = 250     # px : en dessous, c'est la trame du de, pas un point
+FACE_BAS, FACE_HAUT = 0.35, 0.65   # part du de qu'une VRAIE face occupe
+
+
+def compte_pips(pleine, visage, mini=MINI_PIP):
+    """Combien de POINTS porte cette face — la trame du de ne compte pas.
+
+    Les des sont tramas de petits points ; `binary_fill_holes` en fait des
+    dizaines de trous minuscules. Seuls les trous larges sont des pips.
+    """
+    trous = pleine & ~visage
+    lab, n = ndimage.label(trous)
+    if not n:
+        return 0
+    tailles = ndimage.sum(trous, lab, range(1, n + 1))
+    return int((tailles >= mini).sum())
+
+
+def anatomie(a, attendu=None):
     """La face, et les pips — lus dans l'image, jamais supposes.
 
     ⛔ LA PREMIERE VERSION PRENAIT LA ZONE CLAIRE QUI CONTIENT LE CENTRE, et
@@ -101,27 +129,77 @@ def anatomie(a):
     point du milieu est en BRAISE. Un pip allume est clair lui aussi — le
     centre tombait donc dedans, la « face » mesurait neuf cent cinquante pixels
     au lieu de trente-quatre mille, et le motif se gravait a l'interieur du
-    point. A l'ecran : un plateau ou les des chauds n'avaient pas de gravure,
-    et eux seuls.
+    point. On prend donc la PLUS GRANDE zone claire.
 
-    On prend donc la PLUS GRANDE zone claire. Le lisere blanc du de en est une
-    autre (six mille pixels contre trente-quatre mille) et ne peut pas gagner ;
-    un pip, allume ou non, encore moins. Aucun cas particulier a prevoir, et
-    `--verifier` le prouve face par face.
+    ⛔ ET UN SEUIL FIXE NE VOIT QUE LES DES CLAIRS. `L > 100` trouve la face des
+    six premiers jeux (luminance mediane 139 a 196) mais rend le LISERE BLANC
+    sur les jeux sombres arrives depuis — lave (mediane 81), royale (82), onyx
+    (44) : treize pour cent du de au lieu de quarante-cinq, donc une gravure
+    posee sur le contour. Mesure du 2026-09-04 sur les treize jeux.
+
+    On ne suppose donc plus le seuil, on le CHERCHE — mais seulement quand il le
+    faut : la methode d'origine passe en premier et, si elle rend une face
+    plausible avec le bon nombre de points, c'est elle qui gagne. Les soixante-
+    douze combinaisons deja livrees ne bougent pas. Sinon on balaie les seuils
+    et on retient la face qui porte EXACTEMENT les points attendus (le nom du
+    fichier les annonce), en ecartant tout ce qui touche le bord du de — le
+    lisere le touche par definition, la face jamais.
     """
-    L = a[..., :3].mean(2)
     de = a[..., 3] > 128
+    aire = de.sum()
+    if not aire:
+        raise ValueError('image vide : ce n est pas un de')
+    L = a[..., :3].mean(2)
+
+    def juger(visage):
+        """Une face plausible, et ses points."""
+        if not (FACE_BAS * aire <= visage.sum() <= FACE_HAUT * aire):
+            return None
+        pleine = ndimage.binary_fill_holes(visage)
+        return pleine, compte_pips(pleine, visage)
+
+    # 1. LA METHODE D'ORIGINE. Elle a fait ses preuves sur les jeux clairs.
     clair = de & (L > 100)
     lab, n = ndimage.label(clair)
-    if not n:
-        raise ValueError('aucune zone claire : ce n est pas un de')
-    tailles = ndimage.sum(clair, lab, range(1, n + 1))
-    ident = int(np.argmax(tailles)) + 1
-    visage = lab == ident
-    if visage.sum() < de.sum() * 0.25:
-        raise ValueError('face suspecte : %d px pour un de de %d px'
-                         % (visage.sum(), de.sum()))
-    pleine = ndimage.binary_fill_holes(visage)
+    if n:
+        tailles = ndimage.sum(clair, lab, range(1, n + 1))
+        visage = lab == (int(np.argmax(tailles)) + 1)
+        verdict = juger(visage)
+        if verdict and (attendu is None or verdict[1] == attendu):
+            pleine = verdict[0]
+            return pleine, visage, pleine & ~visage
+
+    # 2. SINON, ON CHERCHE LE SEUIL.
+    bord = de & ~ndimage.binary_erosion(de, iterations=3)
+    candidats, vus = [], set()
+    for seuil in range(15, 210, 5):
+        marque = de & (L > seuil)
+        lab, n = ndimage.label(marque)
+        if not n:
+            continue
+        interdits = set(np.unique(lab[bord])) - {0}
+        tailles = ndimage.sum(marque, lab, range(1, n + 1))
+        for ident in range(1, n + 1):
+            if ident in interdits:
+                continue
+            taille = int(tailles[ident - 1])
+            if taille in vus or not (FACE_BAS * aire <= taille <= FACE_HAUT * aire):
+                continue
+            vus.add(taille)
+            visage = lab == ident
+            verdict = juger(visage)
+            if verdict:
+                candidats.append((visage, verdict[0], verdict[1], taille))
+    if not candidats:
+        raise ValueError('aucune face lisible : ce n est pas un de')
+    justes = [c for c in candidats if attendu is not None and c[2] == attendu]
+    if justes:
+        visage, pleine, _, _ = max(justes, key=lambda c: c[3])
+    else:
+        # Aucun seuil ne rend le compte juste (un pip dessine en plusieurs
+        # morceaux, comme la couronne de la parure royale) : on prend la face
+        # qui montre le plus de points, la plus large a egalite.
+        visage, pleine, _, _ = max(candidats, key=lambda c: (c[2], c[3]))
     return pleine, visage, pleine & ~visage
 
 
@@ -148,7 +226,11 @@ def couleur_du_motif(a, visage):
 def graver(chemin_de, motif):
     im = Image.open(chemin_de).convert('RGBA')
     a = np.array(im).astype(int)
-    pleine, visage, pips = anatomie(a)
+    # `die_4_hot.png` annonce quatre points : c'est ce qui permet a `anatomie`
+    # de choisir le bon seuil sur les jeux sombres au lieu de le supposer.
+    nom = os.path.basename(chemin_de)
+    attendu = int(nom[4]) if nom.startswith('die_') and nom[4].isdigit() else None
+    pleine, visage, pips = anatomie(a, attendu)
     # La couleur se lit LOIN des pips : leur halo clair fausserait la teinte.
     propre = visage & ~ndimage.binary_dilation(pips, iterations=3)
     coul = couleur_du_motif(a, propre if propre.any() else visage)
@@ -171,7 +253,8 @@ def graver(chemin_de, motif):
 def morceaux():
     planches = {1: Image.open(PLANCHE).convert('RGBA'),
                 2: Image.open(PLANCHE_2).convert('RGBA'),
-                3: Image.open(PLANCHE_3).convert('RGBA')}
+                3: Image.open(PLANCHE_3).convert('RGBA'),
+                4: Image.open(PLANCHE_4).convert('RGBA')}
     out = {}
     for ident, nom, (i, j), num in MOTIFS:
         planche = planches[num]
@@ -190,10 +273,10 @@ def faces(jeu):
                 yield nom, chemin
 
 
-def tout(ecrire=True):
+def tout(ecrire=True, jeux=None):
     pieces = morceaux()
     total = 0
-    for jeu in JEUX:
+    for jeu in (jeux or JEUX):
         for ident, (nom, motif) in pieces.items():
             cible = os.path.join(SKINS, '%s_%s' % (jeu, ident))
             if ecrire:
@@ -230,7 +313,7 @@ def source(jeu, fichier):
     return os.path.join(dossier_du_jeu(jeu), fichier)
 
 
-def verifier():
+def verifier(jeux=None):
     """Chaque face gravee porte-t-elle VRAIMENT sa gravure ?
 
     ⛔ CE CONTROLE NAIT D'UNE LIVRAISON RATEE. Le script annoncait « 144 faces
@@ -240,7 +323,7 @@ def verifier():
     Moins de 3 % de pixels changes, c'est qu'il ne s'est rien passe.
     """
     fautes = []
-    for jeu in JEUX:
+    for jeu in (jeux or JEUX):
         for ident, _ in MOTIFS_PAR_ID.items():
             combo = os.path.join(SKINS, '%s_%s' % (jeu, ident))
             for fichier, chemin in faces(jeu):
@@ -266,21 +349,31 @@ def main():
                     help='ecrit une planche de controle et ne touche a rien')
     ap.add_argument('--verifier', action='store_true',
                     help='compare les gravures a leurs sources, sans rien ecrire')
+    # ⚠️ POUR GRAVER EN PARALLELE. Deux cent huit combinaisons a la file
+    # prennent des minutes ; chaque jeu ecrit dans SON dossier, donc rien ne se
+    # marche dessus. `--jeux S011,S012` limite le travail a ces jeux-la.
+    ap.add_argument('--jeux', default=None,
+                    help='ne graver que ces jeux (separes par des virgules)')
     args = ap.parse_args()
+    choisis = [j.strip() for j in args.jeux.split(',')] if args.jeux else None
+    if choisis:
+        inconnus = [j for j in choisis if j not in JEUX]
+        if inconnus:
+            raise SystemExit('jeux inconnus : ' + ', '.join(inconnus))
     if args.planche:
         return planche_de_controle()
     if args.verifier:
-        fautes = verifier()
+        fautes = verifier(choisis)
         for f in fautes:
             print('  ✖ ' + f)
         print('%d face(s) sans gravure' % len(fautes) if fautes
               else 'toutes les faces portent leur gravure')
         return 1 if fautes else 0
-    n = tout()
+    n = tout(jeux=choisis)
     print('%d faces gravees dans www/dice/img/skins/' % n)
     # ⚠️ ON NE SE CROIT PAS SUR PAROLE : le compte de fichiers ecrits ne dit pas
     # que la gravure y est. On relit ce qu'on vient d'ecrire.
-    fautes = verifier()
+    fautes = verifier(choisis)
     for f in fautes:
         print('  ✖ ' + f)
     if fautes:

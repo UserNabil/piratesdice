@@ -162,7 +162,8 @@ export function arrondiDeCase(skin) {
 /* Les jeux de des dont les motifs ont ete GRAVES (outils/motifs.py). C'est le
    client qui porte les images, c'est donc lui qui sait quelles combinaisons
    existent : un jeu retire du catalogue garde sa parure, sans gravure. */
-const GRAVES = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010'];
+const GRAVES = ['D000', 'S002', 'S006', 'S008', 'S009', 'S010',
+                'S011', 'S012', 'S013', 'S014', 'S015', 'S016', 'S017'];
 const JEU_NU = 'D000';
 
 const identifiant = (s) => (typeof s === 'string' && /^[A-Z0-9]{1,8}$/.test(s) ? s : null);
