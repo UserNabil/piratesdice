@@ -193,7 +193,6 @@ function captainStrip() {
         </button>`;
       }).join('')}
       </div>
-      <div class="dc-cap-card" id="dc-cap-card">${captainCard(chosen)}</div>
     </div>`;
 }
 
@@ -744,6 +743,13 @@ export function renderMenu(el) {
         : ''}
       ${captainStrip()}
       </div>
+
+      <!-- ⛔ LE BONUS DU CAPITAINE NE DEFILE PAS. Range dans la zone qui
+           defile, il se coupait en pleine phrase sous le pli — « agrandis la
+           zone capitaine pour VOIR le bonus ». C'est la reponse a la question
+           que pose chaque medaillon : elle reste sous les yeux, comme les
+           quatre cartes de mode. -->
+      <div class="dc-cap-card" id="dc-cap-card">${captainCard(mine())}</div>
 
       <!-- ⛔ TROIS BARRES EMPILEES SONT DEVENUES TROIS CARTES COTE A COTE.
            C'est la disposition demandee, maquette a l'appui (home_btn_need.png).

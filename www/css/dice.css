@@ -3128,10 +3128,14 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin: 14px auto 0;
+  /* Epinglee HORS de la zone qui defile : elle ne bouge pas, elle ne se coupe
+     pas. flex none, sinon la carte du pont (flex column) l'ecraserait. */
+  flex: none;
+  margin: 10px auto 0;
   padding: 10px 14px;
-  max-width: 420px;
-  min-height: 62px;
+  width: 100%;
+  max-width: 460px;
+  min-height: 78px;
   border-radius: 10px;
   background: rgba(0, 0, 0, .32);
   box-shadow: inset 0 0 0 1px rgba(201, 162, 39, .28);
@@ -3793,8 +3797,9 @@
      qui debordent par le HAUT de chaque bouton. */
   flex: 0 0 auto;
   padding-top: calc(var(--pd-mode-art, 76px) * .52);
-  /* Descendues a la demande : l'air est au-dessus, avec les capitaines. */
-  margin-top: clamp(20px, 5vh, 48px);
+  /* L'air mort a ete rendu a la carte-bonus, epinglee au-dessus : elle ne
+     defile plus, donc plus d'ecart a compenser ici. */
+  margin-top: 10px;
 }
 
 /* ⛔ LA CARTE DU PONT SE COUPE EN DEUX. Tout tenait dans une seule boite qui
