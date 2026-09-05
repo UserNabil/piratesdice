@@ -1011,8 +1011,9 @@ function heuresAvantDemain() {
 function butinCorps(vu) {
   const serie = Math.max(0, Number(vu.serie) || 0);
   return `
-    <button class="dc-butin-fermer" title="${esc(t('set.close'))}" aria-label="${esc(t('set.close'))}">
-      <img src="${ASSETS}img/butin_fermer.png" alt=""></button>
+    <button class="pd-btn-icone dc-butin-fermer" title="${esc(t('set.close'))}"
+            aria-label="${esc(t('set.close'))}">
+      <img src="${ASSETS}img/icon_close.png" alt=""></button>
     <h3 class="dc-butin-titre">${esc(t('butin.titre'))}</h3>
     <img class="dc-butin-heros" src="${ASSETS}img/butin_coffre.png" alt="">
     <p class="dc-butin-sous">${esc(t('butin.sousTitre'))}</p>
@@ -1022,13 +1023,14 @@ function butinCorps(vu) {
     </div>
     <div class="dc-butin-bande">
       ${(vu.bande || []).map((c) => `
-        <div class="dc-butin-case${c.pris ? ' dc-butin-pris' : ''}${
+        <div class="dc-butin-case${c.pris ? ' dc-butin-pris' : ''}${c.rate ? ' dc-butin-rate' : ''}${
              c.jour === vu.jour ? ' dc-butin-courant' : ''}">
           <b>${esc(t('butin.jour', { n: c.jour }))}</b>
           ${lotArt(c)}
           <div class="dc-butin-gains">${lotTexte(c)}</div>
           ${c.pris ? `<img class="dc-butin-coche" src="${ASSETS}img/butin_check.png" alt="">` : ''}
-          ${c.jour === vu.jour && vu.reclamable
+          ${c.rate ? `<img class="dc-butin-coche" src="${ASSETS}img/butin_rate.png" alt="">` : ''}
+          ${c.jour === vu.jour && vu.reclamable && !vu.rompue
             ? `<i class="dc-butin-ruban">${esc(t('butin.aujourdhui'))}</i>` : ''}
         </div>`).join('')}
     </div>
