@@ -154,7 +154,10 @@ function buildGame() {
       if (die === null) return;
       const quelle = parseInt(col.dataset.col, 10);
       if (S.state.geleCol && S.state.geleCol[S.seat] === quelle) return;
-      const cell = freeCellOf(S.state.grids[S.seat], quelle);
+      let cell = freeCellOf(S.state.grids[S.seat], quelle);
+      /* PASSAGE SECRET (B019) arme : une colonne pleine accueille quand meme —
+         le de superieur cede sa place. L'apercu le montre, au sommet. */
+      if (cell < 0 && S.state.passage && S.state.passage[S.seat]) cell = quelle * 3 + 2;
       if (cell >= 0) showLanding(mine, cell, die);
     };
     col.onmouseleave = () => clearLanding(mine);
@@ -793,6 +796,12 @@ const COUCHES = [
     image: (seat) => (seat === S.seat ? 'fx_brume_moi.png' : 'fx_brume_adverse.png') },
   { classe: 'dc-coque', marque: 'dc-cell-coque', cases: casesSousCoque,
     image: () => 'fx_bouclier_case.png' },
+  /* La case gelee par la VENDETTA (B017) : le meme givre que le gel de
+     colonne, sur une seule case — celle qu'occupait le de riposte. */
+  { classe: 'dc-gelcase', marque: 'dc-cell-gelcase',
+    cases: (st, seat) => new Set(
+      st.geleCase && st.geleCase[seat] >= 0 ? [st.geleCase[seat]] : []),
+    image: () => 'fx_gel_case.png' },
 ];
 
 function renderGel(st) {

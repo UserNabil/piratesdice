@@ -91,6 +91,11 @@ const BONUS_ART = {
   B014: 'trait_levent.png',
   B015: 'trait_caesar.png',
   B016: 'trait_sayyida.png',
+  B017: 'trait_clisson.png',
+  B018: 'trait_vane.png',
+  B019: 'trait_lafitte.png',
+  B020: 'trait_bellamy.png',
+  B021: 'trait_sparrow.png',
 };
 
 /**
@@ -293,11 +298,13 @@ const STILL_FILES = [
   'cap_read.png', 'cap_teach.png', 'cap_ching.png', 'cap_omalley.png', 'cap_jack.png',
   'cap_bonny.png', 'cap_bart.png', 'cap_lionne.png', 'cap_morgan.png', 'cap_levasseur.png',
   'cap_kidd.png', 'cap_wangzhi.png', 'cap_levent.png', 'cap_caesar.png', 'cap_sayyida.png',
+  'cap_clisson.png', 'cap_vane.png', 'cap_lafitte.png', 'cap_bellamy.png', 'cap_sparrow.png',
   'trait_read.png', 'trait_teach.png', 'trait_ching.png', 'trait_omalley.png', 'trait_jack.png',
   'trait_bonny.png', 'trait_bart.png', 'trait_lionne.png', 'trait_morgan.png',
   'trait_levasseur.png',
   'trait_kidd.png', 'trait_wangzhi.png', 'trait_levent.png', 'trait_caesar.png',
   'trait_sayyida.png',
+  'trait_clisson.png', 'trait_vane.png', 'trait_lafitte.png', 'trait_bellamy.png', 'trait_sparrow.png',
   /* Le givre des cases. Il se pose au milieu d'un tour, sur un geste de
      l'adversaire : arrive en retard, on verrait la case rester nue une demi-
      seconde apres l'annonce — l'effet paraitrait rate. */

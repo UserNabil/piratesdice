@@ -2129,6 +2129,17 @@
   animation: dc-gel-vient .22s ease-out;
 }
 
+/* La case gelee par la vendetta : meme givre que le gel, une seule case. */
+#dicewrap .dc-gelcase {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+  z-index: 3;
+  animation: dc-gel-vient .25s ease-out;
+}
+
 /* ⚠️ LA BRUME LAISSE LIRE LE DE, ET C'EST UNE REGLE DE JEU. Elle couvre le
    plateau ENTIER de son proprietaire pendant plusieurs tours : a l'opacite du
    givre (0,88) le joueur perdrait de vue ses douze des — donc tout ce sur quoi

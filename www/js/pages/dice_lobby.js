@@ -30,7 +30,9 @@ const CAPTAIN_IDS = ['read', 'jack', 'ching', 'teach', 'omalley',
                         leurs effets, leurs seuils et leurs portraits, et ne
                         seraient apparus nulle part — `known()` les aurait
                         ecartes en silence. */
-                     'kidd', 'wangzhi', 'levent', 'caesar', 'sayyida'];
+                     'kidd', 'wangzhi', 'levent', 'caesar', 'sayyida',
+                     /* Le troisieme lot. Meme lecon, troisieme application. */
+                     'clisson', 'vane', 'lafitte', 'bellamy', 'sparrow'];
 
 /* ⛔ LA LISTE DE SECOURS DONNAIT UN SEUIL DE ZERO A TOUT LE MONDE. Sans reseau,
    `listeCapitaines()` retombe dessus — et dix medaillons s'affichaient alors
@@ -41,7 +43,12 @@ const CAPTAIN_IDS = ['read', 'jack', 'ching', 'teach', 'omalley',
    `ouvert()` cote serveur qui tranche de toute facon. */
 const SEUILS_DE_SECOURS = { read: 0, jack: 25, ching: 100, teach: 150, omalley: 250,
                             bonny: 350, bart: 400, lionne: 450, morgan: 500, levasseur: 550,
-                            kidd: 600, wangzhi: 650, levent: 700, caesar: 750, sayyida: 800 };
+                            kidd: 600, wangzhi: 650, levent: 700, caesar: 750, sayyida: 800,
+                            /* sparrow N'EST PAS ici : pas de seuil de parties.
+                               Son verrou est le succes legendaire (cap.succes
+                               dans la liste du serveur) — voir capitaineOuvert
+                               et la fiche. */
+                            clisson: 850, vane: 900, lafitte: 950, bellamy: 1000 };
 const DEFAULT_CAPTAIN = 'read';
 
 /* L'ecran du salon est un etat LOCAL : le serveur ne connait qu'un code et deux
@@ -77,12 +84,24 @@ function seuilDe(id) {
   return c ? (Number(c.seuil) || 0) : 0;
 }
 
+/* ⛔ UN CAPITAINE SANS SEUIL N'EST PAS UN CAPITAINE GRATUIT. Sparrow n'a pas
+   de seuil de parties : son entree serveur porte `succes` (le haut fait
+   legendaire qui le livre). Sans ce garde, `seuilDe` rendait 0 et le medaillon
+   s'affichait OUVERT a tous — le serveur refusait ensuite, sans un mot. */
+function estParSucces(id) {
+  const c = listeCapitaines().find((x) => x.id === id);
+  if (c && c.succes) return true;
+  return id === 'sparrow' && !(c && Number.isFinite(Number(c.seuil)) && Number(c.seuil) > 0);
+}
+
 /** Ce capitaine est-il gagne ? Le serveur retranchera de toute facon. */
 export function capitaineOuvert(id) {
   /* Deux chemins, comme au serveur : les parties jouees OU le palier de
      campagne complet. `S.campCaps` arrive avec le welcome et se rafraichit a
      chaque resultat de campagne. */
   if (Array.isArray(S.campCaps) && S.campCaps.includes(id)) return true;
+  /* Le chemin des parties n'existe pas pour un capitaine a succes. */
+  if (estParSucces(id)) return false;
   return parties() >= seuilDe(id);
 }
 
@@ -169,7 +188,8 @@ function captainStrip() {
                 title="${esc(ferme ? t('cap.locked', { n: reste }) : captainName(id))}"
                 aria-pressed="${id === chosen}">
           <img class="dc-cap-face" src="${captainArt(id)}" alt="${esc(captainName(id))}">
-          ${ferme ? `<span class="dc-cap-verrou">${CADENAS}<b>${jouees}/${seuil}</b></span>` : ''}
+          ${ferme ? `<span class="dc-cap-verrou">${CADENAS}<b>${
+            estParSucces(id) ? '\u2605' : jouees + '/' + seuil}</b></span>` : ''}
         </button>`;
       }).join('')}
       </div>
@@ -337,7 +357,8 @@ function ficheCapitaine(id) {
 
       <div class="dc-capf-titre">${esc(t('fiche.progression'))}</div>
       <div class="dc-capf-progres">
-        <span>${esc(ouvert ? t('fiche.acquis') : t('fiche.condition'))}</span>
+        <span>${esc(ouvert ? t('fiche.acquis')
+          : (estParSucces(id) ? t('cap.parSucces') : t('fiche.condition')))}</span>
         ${!ouvert && seuil > 0 ? `
         <div class="dc-capf-jauge" role="progressbar"
              aria-valuenow="${Math.min(jouees, seuil)}" aria-valuemin="0" aria-valuemax="${seuil}">
