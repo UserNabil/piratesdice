@@ -150,7 +150,13 @@ function captainStrip() {
       <div class="dc-caps-row">${listeCapitaines().map((c) => {
         const id = c.id;
         const seuil = Number(c.seuil) || 0;
-        const ferme = jouees < seuil;
+        /* ⛔ LE CADENAS PASSE PAR LA PORTE COMMUNE. Il ne comptait que les
+           parties (`jouees < seuil`) : un capitaine gagne PAR LA CAMPAGNE
+           (palier a 15/15) restait affiche verrouille a « 2/25 » alors que le
+           serveur l'acceptait deja — « j'ai debloque le palier et je ne peux
+           toujours pas utiliser le capitaine ». capitaineOuvert connait les
+           deux chemins ; tout le monde le lit, personne ne recalcule. */
+        const ferme = !capitaineOuvert(id);
         /* ⚠️ LE CADENAS DIT COMBIEN IL RESTE, PAS SEULEMENT « FERME ». Un
            medaillon grise sans chiffre est une porte sans serrure : on ne sait
            ni pourquoi elle resiste, ni si elle s'ouvrira un jour. Le compte
@@ -331,7 +337,7 @@ function ficheCapitaine(id) {
       <div class="dc-capf-titre">${esc(t('fiche.progression'))}</div>
       <div class="dc-capf-progres">
         <span>${esc(ouvert ? t('fiche.acquis') : t('fiche.condition'))}</span>
-        ${seuil > 0 ? `
+        ${!ouvert && seuil > 0 ? `
         <div class="dc-capf-jauge" role="progressbar"
              aria-valuenow="${Math.min(jouees, seuil)}" aria-valuemin="0" aria-valuemax="${seuil}">
           <b>${txtJauge}</b>

@@ -834,7 +834,8 @@
 /* Le petit triplet des missions, sous chaque niveau de la carte, tient dans
    un bouton etroit : on serre les trois etoiles pour qu'elles ne debordent
    pas de la case. */
-#dicewrap .dc-camp-niv span .dc-etoile-img { height: 1.9em; vertical-align: middle; }
+/* Reduites a la demande : trois etoiles a 1.9em debordaient de leur case. */
+#dicewrap .dc-camp-niv span .dc-etoile-img { height: 1.25em; vertical-align: middle; }
 
 /* Le score est LE chiffre du jeu : blanc, cerne, et gros. En or sur violet il
    se noyait dans le panneau — vu a l'ecran. */
