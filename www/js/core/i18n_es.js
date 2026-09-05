@@ -11,7 +11,7 @@ export const ES = {
   'err.boutiqueFermee': 'La tienda está cerrada durante una partida.',
   'err.articleInconnu': 'Este artículo ya no existe.',
   'err.captainSeuil': 'Este capitán aún no es tuyo.',
-  'cap.locked': 'Bloqueado — faltan {n} partidas',
+  'cap.locked': 'Bloqueado, faltan {n} partidas',
   'cap.lockedLong': 'Se une a ti tras {n} partidas terminadas.',
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Una tirada repetida gratis por partida.',
@@ -33,7 +33,7 @@ export const ES = {
   'shop.B005.name': 'Columna bendecida',
   'shop.B005.desc': 'Una de tus columnas puntuúa un 15 % más hasta el final.',
   'fx.boost': 'Columna bendecida: +15 % hasta el final',
-  'resume.done': 'Partida reanudada — te esperábamos.',
+  'resume.done': 'Partida reanudada, te esperábamos.',
   'game.paused': 'Esperando al otro jugador…',
 
   'mood.hint': 'Mantén pulsado tu retrato para hablar',
@@ -66,7 +66,7 @@ export const ES = {
   'room.or': 'o',
   'room.create': 'Abrir una mesa',
   'room.waiting': 'Esperando a tu amigo',
-  'room.share': 'Dale este código a tu amigo — la partida empieza en cuanto lo escriba.',
+  'room.share': 'Dale este código a tu amigo, la partida empieza en cuanto lo escriba.',
   'room.expires': 'El código caduca a los quince minutos.',
   'room.copied': 'Código copiado',
   'room.publier': 'Publicar',
@@ -513,8 +513,8 @@ export const ES = {
   'rep.pose': 'coloca un {v} en la columna {col}.',
   'rep.emporte': '¡se lleva {n} dados rivales!',
   'rep.effet': 'juega {quoi}.',
-  'rep.gele': 'pierde el turno — congelado.',
-  'rep.absent': 'pierde el turno — ausente.',
+  'rep.gele': 'pierde el turno, congelado.',
+  'rep.absent': 'pierde el turno, ausente.',
   'over.objet': '+{n} objeto',
   'over.succes': 'Hazañas desbloqueadas',
   'over.succesPlus': 'y {n} más',
@@ -582,9 +582,9 @@ export const ES = {
   'game.rollFirst': 'tira primero el dado',
   'game.waitTurn': 'espera tu turno',
   'game.waitingTable': 'Preparando la mesa…',
-  'game.pausedThem': '{name} perdió la conexión — la mesa cierra en {n} s',
-  'game.pausedYou': 'Conexión perdida — te guardamos el sitio',
-  'game.alreadyRolled': 'ya has tirado — elige una columna',
+  'game.pausedThem': '{name} perdió la conexión, la mesa cierra en {n} s',
+  'game.pausedYou': 'Conexión perdida, te guardamos el sitio',
+  'game.alreadyRolled': 'ya has tirado, elige una columna',
   'game.yourScore': 'tu puntuación',
   'game.theirScore': 'su puntuación',
   'game.stake': 'apuesta {n}',
@@ -593,7 +593,7 @@ export const ES = {
   'bonus.head': 'Bonus',
   'bonus.left': 'quedan {n} esta partida',
   'bonus.spent': 'ya jugado esta partida',
-  'bonus.empty': 'No hay bonus en la bodega — cómpralos en la tienda.',
+  'bonus.empty': 'No hay bonus en la bodega, cómpralos en la tienda.',
 
   'bet.title': 'Fija tu apuesta',
   'bet.hint': 'Ganar devuelve la apuesta y una bolsa más. Perder se la lleva.',
@@ -608,10 +608,10 @@ export const ES = {
   'over.draw': 'Empate',
   'over.against': 'contra {name}',
   'over.notRated': 'Las partidas en solitario no puntúan',
-  'over.notRatedNew': 'Rival sin clasificar — Elo sin cambios',
-  'over.notRatedGap': 'Diferencia de nivel demasiado grande — Elo sin cambios',
-  'over.notRatedPair': 'Demasiadas partidas con el mismo rival — Elo sin cambios',
-  'over.notRatedShort': 'Partida demasiado corta — Elo sin cambios',
+  'over.notRatedNew': 'Rival sin clasificar, Elo sin cambios',
+  'over.notRatedGap': 'Diferencia de nivel demasiado grande, Elo sin cambios',
+  'over.notRatedPair': 'Demasiadas partidas con el mismo rival, Elo sin cambios',
+  'over.notRatedShort': 'Partida demasiado corta, Elo sin cambios',
   'over.rang': '{before} → {after} ({delta})',
   'over.coins': 'Monedas {delta}',
   'over.oppDropped': 'Tu rival se ha desconectado',
@@ -702,7 +702,7 @@ export const ES = {
   'shop.owned': 'en bodega: {n}',
   'shop.legendaire': 'Legendario',
   'shop.legendaireAide': 'No está a la venta: se gana con una hazaña legendaria.',
-  'shop.bought': 'comprado — está en tu bodega',
+  'shop.bought': 'comprado, está en tu bodega',
   'shop.B001.name': 'Repetir la tirada',
 
   /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
@@ -712,7 +712,7 @@ export const ES = {
      Et elles s'adressent a l'AUTRE, pas a soi : « je bénis ma colonne » est une
      note de service, « cette colonne est tenue, essaie de la prendre » est du
      jeu. Meme les effets qu'on se lance a soi-meme se disent a la figure d'en
-     face — c'est ce qui fait un duel plutot qu'un tableur.
+     face, c'est ce qui fait un duel plutot qu'un tableur.
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
@@ -905,7 +905,7 @@ export const ES = {
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les
      infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
-     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+     l'anglais, le joueur ne voit pas un defaut, il voit une autre langue. */
   'hdr.close': 'Cerrar (Esc)',
   'hdr.full': 'Pantalla completa',
   'hdr.exitFull': 'Salir de pantalla completa',
@@ -945,7 +945,7 @@ export const ES = {
      Ching Shih ya no mira el dado siguiente: el catalejo pasó a la Leona
      Sangrienta, que lo lleva en su retrato. Barbanegra ya no roba un turno: eso
      es cosa de Henry Morgan. Ambas líneas `trait` se reescriben aquí, después de
-     las originales — en un objeto JavaScript gana la última. */
+     las originales, en un objeto JavaScript gana la última. */
   'cap.ching.trait': 'Una vez por partida, su andanada se lleva dos columnas enfrentadas: la suya y la del rival.',
   'cap.teach.trait': 'Una vez por partida congela una columna rival durante su próximo turno.',
 
@@ -988,7 +988,7 @@ export const ES = {
   'fx.swap': '¡Dados intercambiados!',
   'fx.wipe': '¡Columna arrasada!',
 
-  /* ══ EL SEGUNDO GRUPO DE CAPITANES — B012 a B016 ══ */
+  /* ══ EL SEGUNDO GRUPO DE CAPITANES, B012 a B016 ══ */
   'cap.kidd.name': 'Captain Kidd',
   'cap.kidd.title': 'El corsario ahorcado',
   'cap.kidd.lore': 'Lo enviaron a cazar piratas y volvió convertido en uno. Kidd '

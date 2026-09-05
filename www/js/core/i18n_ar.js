@@ -13,7 +13,7 @@ export const AR = {
   'err.boutiqueFermee': 'المتجر مغلق أثناء المباراة.',
   'err.articleInconnu': 'لم يعد هذا العنصر موجودًا.',
   'err.captainSeuil': 'هذا القبطان ليس لك بعد.',
-  'cap.locked': 'مقفل — تبقّى {n} مباراة',
+  'cap.locked': 'مقفل، تبقّى {n} مباراة',
   'cap.lockedLong': 'ينضم إليك بعد {n} مباراة منتهية.',
   'cap.read.name': 'ماري ريد',
   'cap.read.trait': 'إعادة رمي مجانية واحدة في كل مباراة.',
@@ -35,7 +35,7 @@ export const AR = {
   'shop.B005.name': 'عمود مبارَك',
   'shop.B005.desc': 'أحد أعمدتك يسجّل 15٪ أكثر حتّى النهاية.',
   'fx.boost': 'عمود مبارَك: ٪15+ حتّى النهاية',
-  'resume.done': 'استُئنفت المباراة — كنّا ننتظرك.',
+  'resume.done': 'استُئنفت المباراة، كنّا ننتظرك.',
   'game.paused': 'بانتظار اللاعب الآخر…',
 
   'mood.hint': 'اضغط مطوّلًا على صورتك لتتكلّم',
@@ -68,7 +68,7 @@ export const AR = {
   'room.or': 'أو',
   'room.create': 'افتح طاولة',
   'room.waiting': 'في انتظار صديقك',
-  'room.share': 'أعطِ هذا الرمز لصديقك — تبدأ المباراة فور إدخاله.',
+  'room.share': 'أعطِ هذا الرمز لصديقك، تبدأ المباراة فور إدخاله.',
   'room.expires': 'ينتهي الرمز بعد خمس عشرة دقيقة.',
   'room.copied': 'نُسخ الرمز',
   'room.publier': 'نشر',
@@ -515,20 +515,20 @@ export const AR = {
   'rep.pose': 'يضع {v} في العمود {col}.',
   'rep.emporte': 'يُسقط {n} من نرد الخصم!',
   'rep.effet': 'يلعب {quoi}.',
-  'rep.gele': 'يفقد دوره — مُجمَّد.',
-  'rep.absent': 'يفقد دوره — غائب.',
+  'rep.gele': 'يفقد دوره، مُجمَّد.',
+  'rep.absent': 'يفقد دوره، غائب.',
   'over.objet': '+{n} غرض',
   'over.succes': 'إنجازات مفتوحة',
   'over.succesPlus': 'و{n} أخرى',
   'nav.replay': 'الدفتر',
   'offline.entrer': 'اللعب دون اتصال ({n} مباريات)',
   'offline.entrerSeul': 'ادخل بدون شبكة',
-  'offline.bandeau': 'بلا اتصال — تبقّى {n} مباراة دون اتصال في العنبر.',
+  'offline.bandeau': 'بلا اتصال، تبقّى {n} مباراة دون اتصال في العنبر.',
   'offline.plusDeJetons': 'لم تعد هناك مباريات دون اتصال. اتصل مرة لتجديدها.',
   'offline.besoinReseau': 'هذا يحتاج اتصالًا.',
   'offline.credite': 'تم التحقق من {n} مباراة دون اتصال ودفعها.',
   'offline.refuse': 'رُفضت {n} مباراة دون اتصال.',
-  'over.horsLigne': 'لُعبت دون اتصال — تصل المكافأة بعد تحقق الخادم منها.',
+  'over.horsLigne': 'لُعبت دون اتصال، تصل المكافأة بعد تحقق الخادم منها.',
   'tab.replay': 'دفتر الرحلات',
   'tab.succes': 'الإنجازات',
   'nav.accueil': 'الرئيسية',
@@ -584,9 +584,9 @@ export const AR = {
   'game.rollFirst': 'ارمِ نردك أولًا',
   'game.waitTurn': 'انتظر دورك',
   'game.waitingTable': 'نُجهّز الطاولة…',
-  'game.pausedThem': 'انقطع اتصال {name} — تُغلق الطاولة خلال {n} ثانية',
-  'game.pausedYou': 'انقطع الاتصال — مقعدك محفوظ',
-  'game.alreadyRolled': 'رميت النرد — اختر عمودًا',
+  'game.pausedThem': 'انقطع اتصال {name}، تُغلق الطاولة خلال {n} ثانية',
+  'game.pausedYou': 'انقطع الاتصال، مقعدك محفوظ',
+  'game.alreadyRolled': 'رميت النرد، اختر عمودًا',
   'game.yourScore': 'نتيجتك',
   'game.theirScore': 'نتيجته',
   'game.stake': 'الرهان {n}',
@@ -595,7 +595,7 @@ export const AR = {
   'bonus.head': 'الإضافات',
   'bonus.left': 'بقيت {n} في هذه المباراة',
   'bonus.spent': 'استُخدم في هذه المباراة',
-  'bonus.empty': 'لا إضافات في العنبر — اشترِ من المتجر.',
+  'bonus.empty': 'لا إضافات في العنبر، اشترِ من المتجر.',
 
   'bet.title': 'حدّد رهانك',
   'bet.hint': 'الفوز يعيد الرهان وزيادة. الخسارة تأخذه.',
@@ -610,10 +610,10 @@ export const AR = {
   'over.draw': 'تعادل',
   'over.against': 'أمام {name}',
   'over.notRated': 'مباريات الفرد لا تُحتسب في الترتيب',
-  'over.notRatedNew': 'الخصم غير مصنف — التصنيف دون تغيير',
-  'over.notRatedGap': 'الفارق في المستوى كبير جدا — التصنيف دون تغيير',
-  'over.notRatedPair': 'مباريات كثيرة مع الخصم نفسه — التصنيف دون تغيير',
-  'over.notRatedShort': 'المباراة قصيرة جدا — التصنيف دون تغيير',
+  'over.notRatedNew': 'الخصم غير مصنف، التصنيف دون تغيير',
+  'over.notRatedGap': 'الفارق في المستوى كبير جدا، التصنيف دون تغيير',
+  'over.notRatedPair': 'مباريات كثيرة مع الخصم نفسه، التصنيف دون تغيير',
+  'over.notRatedShort': 'المباراة قصيرة جدا، التصنيف دون تغيير',
   'over.rang': '{before} ← {after} ({delta})',
   'over.coins': 'العملات {delta}',
   'over.oppDropped': 'انقطع خصمك',
@@ -703,8 +703,8 @@ export const AR = {
   'shop.opening': 'جارٍ فتح الصناديق…',
   'shop.owned': 'لديك: {n}',
   'shop.legendaire': 'أسطوري',
-  'shop.legendaireAide': 'لا يُباع — يُنال بإنجاز أسطوري.',
-  'shop.bought': 'تم الشراء — صار في عنبرك',
+  'shop.legendaireAide': 'لا يُباع، يُنال بإنجاز أسطوري.',
+  'shop.bought': 'تم الشراء، صار في عنبرك',
   'shop.B001.name': 'إعادة رمي النرد',
 
   /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
@@ -714,7 +714,7 @@ export const AR = {
      Et elles s'adressent a l'AUTRE, pas a soi : « je bénis ma colonne » est une
      note de service, « cette colonne est tenue, essaie de la prendre » est du
      jeu. Meme les effets qu'on se lance a soi-meme se disent a la figure d'en
-     face — c'est ce qui fait un duel plutot qu'un tableur.
+     face، c'est ce qui fait un duel plutot qu'un tableur.
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
@@ -907,7 +907,7 @@ export const AR = {
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les
      infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
-     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+     l'anglais، le joueur ne voit pas un defaut, il voit une autre langue. */
   'hdr.close': 'إغلاق (Esc)',
   'hdr.full': 'ملء الشاشة',
   'hdr.exitFull': 'إنهاء ملء الشاشة',
@@ -946,7 +946,7 @@ export const AR = {
   /* == القادة الخمسة الجدد، والسمتان اللتان انتقلتا ==
      تشينغ شيه لم تعد ترى النردة التالية: المنظار انتقل إلى اللبؤة الدامية،
      وهي تحمله في صورتها. واللحية السوداء لم يعد يسرق دورًا: هذا من شأن هنري
-     مورغان. السطران القديمان يُعاد كتابتهما هنا بعد الأصليّين — والأخير هو
+     مورغان. السطران القديمان يُعاد كتابتهما هنا بعد الأصليّين، والأخير هو
      الذي يسود في كائن جافاسكريبت. */
   'cap.ching.trait': 'مرّة في المباراة، يمسح وابلها عمودين متقابلين: عمودها وعمود الخصم.',
   'cap.teach.trait': 'مرّة في المباراة يُجمّد عمودًا لدى الخصم طوال دوره التالي.',
@@ -990,7 +990,7 @@ export const AR = {
   'fx.swap': 'تبادلت النردتان!',
   'fx.wipe': 'مُسِح العمود!',
 
-  /* ══ الدفعة الثانية من القباطنة — B012 إلى B016 ══ */
+  /* ══ الدفعة الثانية من القباطنة، B012 إلى B016 ══ */
   'cap.kidd.name': 'الكابتن كِيد',
   'cap.kidd.title': 'القرصان المشنوق',
   'cap.kidd.lore': 'أُرسل لمطاردة القراصنة فعاد واحدًا منهم. أقسم كِيد حتى آخر '
@@ -2374,7 +2374,7 @@ export const AR = {
   'say.clisson.B017.2': 'ثلاثة عشر عامًا من الانتقام. دور آخر، نرد أقل…',
   'say.vane.B018.0': 'الراية السوداء مرفوعة! لن يُستثنى شيء.',
   'say.vane.B018.1': 'لا هوادة، في أي عمود.',
-  'say.vane.B018.2': 'أحرقوا كل شيء — هكذا تُحيّا ناساو.',
+  'say.vane.B018.2': 'أحرقوا كل شيء، هكذا تُحيّا ناساو.',
   'say.lafitte.B019.0': 'هناك دائمًا ممر لا تعرفه الجمارك.',
   'say.lafitte.B019.1': 'عمود ممتلئ؟ ليس بالنسبة لمهرّب.',
   'say.lafitte.B019.2': 'علّمني المستنقع: هناك دائمًا مدخل.',
@@ -2404,10 +2404,10 @@ export const AR = {
   'fx.alreadySlowed': 'دوره التالي مُقتضَب بالفعل',
   'fx.notYourTurnYet': 'هذا الأثر يُلعب في دورك أنت',
   'boot.failed': 'تعذّر بدء اللعبة',
-  'offline.bandeauSeul': 'بلا شبكة — الذكاء الاصطناعي ما زال قابلًا للعب. اتّصل مرّة واحدة كي تُحتسب مبارياتك.',
+  'offline.bandeauSeul': 'بلا شبكة، الذكاء الاصطناعي ما زال قابلًا للعب. اتّصل مرّة واحدة كي تُحتسب مبارياتك.',
   'over.horsLigneLibre': 'لُعبت دون اتصال وبلا بطاقة: لا تعطي شيئًا. اتّصل مرّة واحدة لتأخذ بطاقات.',
   'offline.pasIci': 'هذا لا يُلعب دون اتصال.',
-  'shop.effetFerme': 'بقيت {n} مباريات — يُفتح مع قائده.',
+  'shop.effetFerme': 'بقيت {n} مباريات، يُفتح مع قائده.',
   /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur
      francophone lisait « no bonus left for this match » en travers de son
      plateau. Ce sont les plus courants : on les rencontre plusieurs fois par

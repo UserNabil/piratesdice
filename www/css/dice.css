@@ -3073,6 +3073,9 @@
   align-content: stretch;
   grid-auto-rows: minmax(0, 1fr);
   overflow: hidden;
+  /* Mesure : sans largeur explicite, la grille se repliait sur son contenu
+     (269 px sur 372 disponibles) et les pistes 1fr tombaient a 49.7 px. */
+  width: 100%;
   gap: clamp(4px, 1.2vw, 12px);
   /* ⚠️ MOINS D'AIR ENTRE LES DEUX RANGEES QU'ENTRE LES COLONNES. L'ecart
      horizontal separe des voisins ; le vertical, lui, ne separe rien — les deux
@@ -3086,12 +3089,15 @@
 }
 
 #dicewrap .dc-cap {
-  /* Pilote par la HAUTEUR de sa rangee : sur un grand ecran il monte a 96 px,
-     sur un petit il retrecit — mais la 4e rangee ne se coupe jamais. */
-  height: min(100%, 96px);
-  width: auto;
+  /* ⛔ JAMAIS LES DEUX AXES A LA FOIS. Hauteur imposee + largeur plafonnee =
+     l'aspect-ratio perd et le portrait s'etire (mesure : 47x76). UNE seule
+     dimension pilote (la largeur de colonne, plafond 96 px), l'autre suit par
+     aspect-ratio ; la hauteur de rangee ne fait que BORNER (max-height), et
+     l'image en object-fit contain ne se deforme alors jamais. */
+  width: min(100%, 96px);
+  height: auto;
+  max-height: 100%;
   min-width: 0;
-  max-width: 100%;
   aspect-ratio: 1;
   padding: 0;
   border: 0;
@@ -3143,7 +3149,7 @@
   filter: drop-shadow(0 0 9px rgba(232, 200, 106, .75));
 }
 
-#dicewrap .dc-cap-face { width: 100%; height: 100%; display: block; }
+#dicewrap .dc-cap-face { width: 100%; height: 100%; display: block; object-fit: contain; }
 
 #dicewrap .dc-cap-card {
   display: flex;

@@ -42,7 +42,7 @@ export const EN = {
   'fx.broadside': 'Broadside! {n} dice',
   'fx.foeTrait': '{name}: {trait}',
   'fx.bonusYou': 'You play',
-  'resume.done': 'Match resumed — you were expected back.',
+  'resume.done': 'Match resumed, you were expected back.',
   'game.paused': 'Waiting for the other player…',
   'fx.next': 'next',
 
@@ -77,7 +77,7 @@ export const EN = {
   'room.or': 'or',
   'room.create': 'Open a table',
   'room.waiting': 'Waiting for your friend',
-  'room.share': 'Give this code to your friend — the match starts as soon as they enter it.',
+  'room.share': 'Give this code to your friend, the match starts as soon as they enter it.',
   'room.expires': 'The code expires after fifteen minutes.',
   'room.copied': 'Code copied',
   'room.publier': 'Share',
@@ -527,8 +527,8 @@ export const EN = {
   'rep.pose': 'drops a {v} in column {col}.',
   'rep.emporte': 'takes {n} enemy dice!',
   'rep.effet': 'plays {quoi}.',
-  'rep.gele': 'loses the turn — frozen.',
-  'rep.absent': 'loses the turn — away.',
+  'rep.gele': 'loses the turn, frozen.',
+  'rep.absent': 'loses the turn, away.',
   'over.objet': '+{n} item',
   'over.succes': 'Deeds unlocked',
   'over.succesPlus': 'and {n} more',
@@ -536,12 +536,12 @@ export const EN = {
   'nav.accueil': 'Home',
   'offline.entrer': 'Play offline ({n} games left)',
   'offline.entrerSeul': 'Enter without network',
-  'offline.bandeau': 'No connection — {n} offline games left in the hold.',
+  'offline.bandeau': 'No connection, {n} offline games left in the hold.',
   'offline.plusDeJetons': 'No offline game left. Connect once to get more.',
   'offline.besoinReseau': 'This one needs a connection.',
   'offline.credite': '{n} offline game(s) checked and paid.',
   'offline.refuse': '{n} offline game(s) were refused.',
-  'over.horsLigne': 'Played offline — the reward lands once the server has checked it.',
+  'over.horsLigne': 'Played offline, the reward lands once the server has checked it.',
   'tab.replay': 'Logbook',
   'tab.succes': 'Deeds',
   'suc.f.tous': 'All',
@@ -563,7 +563,7 @@ export const EN = {
   'connect.dropped': 'The link to the game server dropped.',
   'connect.tried': 'Tried {url}',
   'connect.viaSsh': ' (through the tool’s SSH tunnel)',
-  'connect.noSsh': ' — and the SSH tunnel could not be opened either',
+  'connect.noSsh': ', and the SSH tunnel could not be opened either',
   'connect.fixTool': 'Deploy or restart it with {cmd} ({logs} reads its journal).',
   'connect.fixSsh': 'Off the office network the game rides the tool’s SSH connection: check Settings → server SSH.',
   'connect.retryingIn': 'Trying again in {n} s…',
@@ -647,8 +647,8 @@ export const EN = {
   'shop.opening': 'Opening the crates…',
   'shop.owned': 'owned: {n}',
   'shop.legendaire': 'Legendary',
-  'shop.legendaireAide': 'Not for sale — won with a legendary deed.',
-  'shop.bought': 'bought — it is in your hold',
+  'shop.legendaireAide': 'Not for sale, won with a legendary deed.',
+  'shop.bought': 'bought, it is in your hold',
   'shop.B001.name': 'Reroll the die',
 
   /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
@@ -658,7 +658,7 @@ export const EN = {
      Et elles s'adressent a l'AUTRE, pas a soi : « je bénis ma colonne » est une
      note de service, « cette colonne est tenue, essaie de la prendre » est du
      jeu. Meme les effets qu'on se lance a soi-meme se disent a la figure d'en
-     face — c'est ce qui fait un duel plutot qu'un tableur.
+     face, c'est ce qui fait un duel plutot qu'un tableur.
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
@@ -700,7 +700,7 @@ export const EN = {
   'butin.gainParure': 'Dice set!',
   'rules.1': 'On your turn, roll the die, then drop it into one of your four columns.',
   'rules.2': 'A column scores <b>value × count²</b>: three 4s in one column are worth 36, not 12.',
-  'rules.3': 'Dropping a die <b>destroys every enemy die of that value in the same column</b> — '
+  'rules.3': 'Dropping a die <b>destroys every enemy die of that value in the same column</b>, '
     + 'denying your opponent matters more than building.',
   'rules.4': 'The match ends the moment one board is full. Highest total wins.',
   'rules.5': 'Bonuses are bought in the Shop and you may use <b>{n}</b> per match: reroll the die, '
@@ -710,14 +710,14 @@ export const EN = {
   'rules.7': 'Your <b>captain</b> changes the way you play: each one grants one effect per match - a reroll, a die already placed, a column blessed, frozen, cursed or wiped, a stolen turn, a turn twice as long, a dice trade, or a look at the next enemy die. There are <b>ten</b>, and they open up as you finish matches.',
   'rules.shortcuts': 'Shortcuts: {space} rolls, {one} {two} {three} drop into a column, {esc} closes.',
 
-  'away.taken': '{name} ran out of time — their turn was skipped',
-  'away.you': 'Too slow — your turn was skipped',
-  'skin.appearance': 'Appearance only — no effect on play',
+  'away.taken': '{name} ran out of time, their turn was skipped',
+  'away.you': 'Too slow, your turn was skipped',
+  'skin.appearance': 'Appearance only, no effect on play',
   'skin.owned': 'Owned',
   'skin.wear': 'Equip',
   'skin.remove': 'Unequip',
 
-  /* ⚠️ CES SEIZE CLES MANQUAIENT A L'ANGLAIS — LA LANGUE SOURCE. Le francais,
+  /* ⚠️ CES SEIZE CLES MANQUAIENT A L'ANGLAIS, LA LANGUE SOURCE. Le francais,
      l'espagnol et l'arabe les avaient toutes ; l'anglais, aucune. Or `t()` rend
      LA CLE quand elle manque : un joueur anglophone lisait « set.signIn » et
      « set.erase » a l'ecran, dans le panneau meme ou le testeur d'Apple va
@@ -735,12 +735,12 @@ export const EN = {
   'tour.suivant': 'Next',
   'tour.fini': 'Let’s go!',
   'tour.revoir': 'Replay the tutorial',
-  'tour.solo': 'Face the machine to learn the ropes — playable even offline.',
+  'tour.solo': 'Face the machine to learn the ropes, playable even offline.',
   'tour.piraterie': 'Piracy: climb the tiers, earn stars and unlock captains.',
   'tour.multi': 'Challenge a real player online: this is where your ranking is made.',
   'tour.capitaines': 'Pick your captain: each grants a unique effect once per match.',
   'tour.bourse': 'Your coins: earned by playing, spent in the shop on cosmetics.',
-  'tour.reglages': 'Settings: sound, nickname, language — and this tutorial, anytime.',
+  'tour.reglages': 'Settings: sound, nickname, language, and this tutorial, anytime.',
   'camp.suivant': 'Next level',
   'camp.retourAventure': 'Back to Piracy',
   'err.bonusDuCapitaine': 'That effect belongs to another captain.',
@@ -750,10 +750,10 @@ export const EN = {
   'camp.titre': 'Piracy',
   'camp.palier': 'Tier {n}',
   'camp.niveau': 'Level {n}',
-  'camp.boss': 'Boss — {nom}',
+  'camp.boss': 'Boss, {nom}',
   'camp.jouer': 'Play',
   'camp.obj1': 'Win the match',
-  'camp.resultat': '{n} star(s) earned — +{or} coins!',
+  'camp.resultat': '{n} star(s) earned, +{or} coins!',
   'camp.capitaine': 'Tier complete: captain unlocked!',
   'camp.obj.sum.detruits': 'Win while destroying {n} enemy dice',
   'camp.obj.sum.triples': 'Win with a triple',
@@ -817,7 +817,7 @@ export const EN = {
   'fx.freeze': 'Turn frozen!',
   'fx.frozenWait': 'Their turn is frozen',
   'fx.frozenYou': 'Your turn is frozen',
-  'fx.frozenThem': '{name} skips a turn — frozen',
+  'fx.frozenThem': '{name} skips a turn, frozen',
   'cap.trait.freeze': 'One turn frozen',
   'foot.bag': 'Hold',
   'foot.roll': 'Roll',
@@ -879,13 +879,13 @@ export const EN = {
   'cap.kidd.name': 'Captain Kidd',
   'cap.kidd.title': 'The Hanged Privateer',
   'cap.kidd.lore': 'Sent out to hunt pirates, he came back as one. Kidd swore to '
-    + 'his last breath that his ledgers were honest — and buried the rest where '
+    + 'his last breath that his ledgers were honest, and buried the rest where '
     + 'no ledger would find it.',
   'cap.kidd.trait': 'Once per match, the die he just rolled shifts one pip up or down.',
   'cap.wangzhi.name': 'Wang Zhi',
   'cap.wangzhi.title': 'The Merchant of Smoke',
   'cap.wangzhi.lore': 'He held the sea lanes without ever giving battle. When the '
-    + 'guns finally spoke, Wang Zhi had already sailed out of the smoke — and out '
+    + 'guns finally spoke, Wang Zhi had already sailed out of the smoke, and out '
     + 'of the empire that hunted him.',
   'cap.wangzhi.trait': 'Once per match, the next enemy die destroys nothing of yours.',
   'cap.levent.name': 'Anne Levent',
@@ -896,7 +896,7 @@ export const EN = {
   'cap.caesar.name': 'Black Caesar',
   'cap.caesar.title': 'The Unbreakable Hull',
   'cap.caesar.lore': 'A chief before he was a captive, a captain before he was '
-    + 'free. Caesar sank the ship that carried him and kept the chains — they '
+    + 'free. Caesar sank the ship that carried him and kept the chains, they '
     + 'have held his hull together ever since.',
   'cap.caesar.trait': 'Once per match, one of your dice survives the next enemy turn.',
   'cap.sayyida.name': 'Sayyida al-Hurra',
@@ -914,16 +914,16 @@ export const EN = {
   'cap.vane.trait': 'Once per match, his next placement destroys that value in all four enemy columns, not just across.',
   'cap.lafitte.name': 'Jean Lafitte',
   'cap.lafitte.title': 'The gentleman smuggler',
-  'cap.lafitte.lore': 'Privateer, smuggler, and reluctant hero of New Orleans — not all of his secret bayou passes were ever found.',
+  'cap.lafitte.lore': 'Privateer, smuggler, and reluctant hero of New Orleans, not all of his secret bayou passes were ever found.',
   'cap.lafitte.trait': 'Once per match, his next die may land in a full column: the top die steps aside, with no destruction.',
   'cap.bellamy.name': 'Samuel Bellamy',
   'cap.bellamy.title': 'The prince of pirates',
-  'cap.bellamy.lore': 'The richest pirate in history, and the best dressed: the Whydah sank with four and a half tons of gold — the legend floated.',
-  'cap.bellamy.trait': 'Once per match, his next placement fills the column with the same value — if the opponent holds none of it anywhere.',
+  'cap.bellamy.lore': 'The richest pirate in history, and the best dressed: the Whydah sank with four and a half tons of gold, the legend floated.',
+  'cap.bellamy.trait': 'Once per match, his next placement fills the column with the same value, if the opponent holds none of it anywhere.',
   'cap.sparrow.name': 'Jack Sparrow',
   'cap.sparrow.title': 'The elusive legend',
-  'cap.sparrow.lore': 'No one knows if he ever existed, which is exactly how he wanted it. This sheet is not bought — it is earned.',
-  'cap.sparrow.trait': 'Once per match, his compass re-rolls every die in one column and the one facing it — with no destruction.',
+  'cap.sparrow.lore': 'No one knows if he ever existed, which is exactly how he wanted it. This sheet is not bought, it is earned.',
+  'cap.sparrow.trait': 'Once per match, his compass re-rolls every die in one column and the one facing it, with no destruction.',
 
   'cap.trait.loaded': 'A loaded die',
   'cap.trait.fog': 'A screen of powder smoke',
@@ -949,7 +949,7 @@ export const EN = {
   'game.pickCompas': 'Pick one of your columns: the compass re-rolls both sides.',
   'shop.B021.desc': 'Every die in one of your columns and the one facing it is re-rolled, with no destruction.',
   'shop.B021.name': 'Fickle compass',
-  'shop.B020.desc': 'Your next placement fills the column with the same value — if the opponent holds none of it anywhere.',
+  'shop.B020.desc': 'Your next placement fills the column with the same value, if the opponent holds none of it anywhere.',
   'shop.B020.name': 'Whydah plunder',
   'shop.B019.desc': 'Your next die may land in a full column: the top die steps aside, with no destruction.',
   'shop.B019.name': 'Secret passage',
@@ -958,17 +958,17 @@ export const EN = {
   'shop.B017.desc': 'The next enemy die that destroys one of yours is destroyed in turn, and its cell freezes for a turn.',
   'shop.B017.name': 'Vendetta',
 
-  'fx.brumeYou': 'Powder fog — your board is covered',
+  'fx.brumeYou': 'Powder fog, your board is covered',
   'fx.brumeThem': '{name} disappears into the powder fog',
-  'fx.brumeSaved': 'The fog holds — {n} of your dice survive',
-  'fx.brumeBlocked': 'The fog swallows your shot — nothing destroyed',
-  'fx.coqueYou': 'Reinforced hull — one die is shielded',
+  'fx.brumeSaved': 'The fog holds, {n} of your dice survive',
+  'fx.brumeBlocked': 'The fog swallows your shot, nothing destroyed',
+  'fx.coqueYou': 'Reinforced hull, one die is shielded',
   'fx.coqueThem': '{name} armours one of their dice',
   'fx.coqueSaved': 'The hull holds! Your die survives',
-  'fx.coqueBlocked': 'Their hull holds — that die survives',
-  'fx.manoeuvreYou': 'Gangway manoeuvre — your die moves across',
+  'fx.coqueBlocked': 'Their hull holds, that die survives',
+  'fx.manoeuvreYou': 'Gangway manoeuvre, your die moves across',
   'fx.manoeuvreThem': '{name} shifts a die across the deck',
-  'fx.quart': 'Change of watch — two multipliers swapped',
+  'fx.quart': 'Change of watch, two multipliers swapped',
 
   /* What the screen asks for during a two-step aim, and for the loaded die.
      ⚠️ A PROMPT THAT DOES NOT SAY WHICH STEP IS A PROMPT THAT TEACHES NOTHING.
@@ -996,12 +996,12 @@ export const EN = {
     + 'every rule to become one of the most feared pirates in the Caribbean. No '
     + 'one knew whether she was a man… until it was far too late.',
   'cap.jack.title': 'The Flag Everyone Knows',
-  'cap.jack.lore': 'His flag — two crossed cutlasses beneath a skull — is '
+  'cap.jack.lore': 'His flag, two crossed cutlasses beneath a skull, is '
     + 'remembered better than his prizes. Calico Jack understood before anyone '
     + 'else that a pirate fights first with his reputation.',
   'cap.ching.title': 'Admiral of Six Hundred Junks',
   'cap.ching.lore': 'No pirate ever commanded more men. Ching Shih held the China '
-    + 'Sea with a written code, a tax and a fleet — and negotiated her retirement '
+    + 'Sea with a written code, a tax and a fleet, and negotiated her retirement '
     + 'with the guns still loaded.',
   'cap.teach.title': 'The Beard That Smoked',
   'cap.teach.lore': 'He wove lit fuses into his beard before boarding: his enemies '
@@ -1010,7 +1010,7 @@ export const EN = {
   'cap.omalley.title': 'Queen of the Irish Seas',
   'cap.omalley.lore': 'She gave birth at sea and was back in the fight the next '
     + 'day. Grace O’Malley held the west coast of Ireland against a queen of '
-    + 'England — and spoke to her standing, without a translator.',
+    + 'England, and spoke to her standing, without a translator.',
   'cap.bonny.title': 'The One They Never Hanged',
   'cap.bonny.lore': 'Tried, condemned, and yet never executed: Anne Bonny vanishes '
     + 'from the records on the day of her sentence. No one ever learned where she '
@@ -1025,7 +1025,7 @@ export const EN = {
     + 'hunted at random.',
   'cap.morgan.title': 'The Pirate They Knighted',
   'cap.morgan.lore': 'He sacked Panama and ended up governor of Jamaica. Henry '
-    + 'Morgan is the only one who turned a pirate career into a title — and died '
+    + 'Morgan is the only one who turned a pirate career into a title, and died '
     + 'in his own bed.',
   'cap.levasseur.title': 'The Buzzard, and His Riddle',
   'cap.levasseur.lore': 'On the scaffold he threw a cryptogram into the crowd: '
@@ -2280,7 +2280,7 @@ export const EN = {
   'say.clisson.B017.2': 'Thirteen years of vengeance. One more turn, one less die…',
   'say.vane.B018.0': 'Black flag up! Nothing will be spared.',
   'say.vane.B018.1': 'No quarter, in any column.',
-  'say.vane.B018.2': 'Burn it all — that is how you salute Nassau.',
+  'say.vane.B018.2': 'Burn it all, that is how you salute Nassau.',
   'say.lafitte.B019.0': 'There is always a pass the customs never found.',
   'say.lafitte.B019.1': 'Full column? Not for a smuggler.',
   'say.lafitte.B019.2': 'The bayou taught me: there is always a way in.',

@@ -2176,8 +2176,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
        la HAUTEUR de sa rangee (dice.css) : elle ne peut plus pousser les
        boutons hors de l'ecran, la peur qui avait motive ces bornes. On laisse
        la regle commune decider. */
-    width: auto;
-    height: min(100%, 96px);
+    width: min(100%, 96px);
+    height: auto;
+    max-height: 100%;
     /* ⛔ QUINZE MEDAILLONS FONT TROIS RANGEES, ET LA TROISIEME POUSSAIT LES
        TROIS BOUTONS DE MODE HORS DE L'ECRAN. Mesure sur iPhone 17 Pro Max, la
        plus grande dalle du parc : les libelles « Defier un joueur » et « Jouer

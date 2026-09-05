@@ -514,20 +514,20 @@ export const FR = {
   'rep.pose': 'pose un {v} en colonne {col}.',
   'rep.emporte': 'emporte {n} dés adverses !',
   'rep.effet': 'joue {quoi}.',
-  'rep.gele': 'saute son tour — gelé.',
-  'rep.absent': 'saute son tour — absent.',
+  'rep.gele': 'saute son tour, gelé.',
+  'rep.absent': 'saute son tour, absent.',
   'over.objet': '+{n} objet',
   'over.succes': 'Hauts faits débloqués',
   'over.succesPlus': 'et {n} de plus',
   'nav.replay': 'Journal',
   'offline.entrer': 'Jouer sans réseau ({n} parties)',
   'offline.entrerSeul': 'Entrer sans réseau',
-  'offline.bandeau': 'Sans réseau — il reste {n} parties hors ligne en cale.',
+  'offline.bandeau': 'Sans réseau, il reste {n} parties hors ligne en cale.',
   'offline.plusDeJetons': 'Plus de partie hors ligne. Reconnectez-vous une fois pour en reprendre.',
   'offline.besoinReseau': 'Celui-là demande une connexion.',
   'offline.credite': '{n} partie(s) hors ligne vérifiée(s) et payée(s).',
   'offline.refuse': '{n} partie(s) hors ligne refusée(s).',
-  'over.horsLigne': 'Jouée hors ligne — la récompense arrive quand le serveur l’aura vérifiée.',
+  'over.horsLigne': 'Jouée hors ligne, la récompense arrive quand le serveur l’aura vérifiée.',
   'tab.replay': 'Journal de bord',
   'tab.succes': 'Hauts faits',
   'nav.accueil': 'Accueil',
@@ -589,9 +589,9 @@ export const FR = {
   'game.rollFirst': 'lancez d’abord votre dé',
   'game.waitTurn': 'attendez votre tour',
   'game.waitingTable': 'On installe la table…',
-  'game.pausedThem': '{name} a perdu la liaison — la table ferme dans {n} s',
-  'game.pausedYou': 'Liaison perdue — on vous garde votre place',
-  'game.alreadyRolled': 'dé déjà lancé — choisissez une colonne',
+  'game.pausedThem': '{name} a perdu la liaison, la table ferme dans {n} s',
+  'game.pausedYou': 'Liaison perdue, on vous garde votre place',
+  'game.alreadyRolled': 'dé déjà lancé, choisissez une colonne',
   'game.yourScore': 'votre score',
   'game.theirScore': 'son score',
   'game.stake': 'mise {n}',
@@ -600,7 +600,7 @@ export const FR = {
   'bonus.head': 'Bonus',
   'bonus.left': 'encore {n} cette partie',
   'bonus.spent': 'déjà joué cette partie',
-  'bonus.empty': 'Aucun bonus en cale — il y en a à la boutique.',
+  'bonus.empty': 'Aucun bonus en cale, il y en a à la boutique.',
 
   'bet.title': 'Fixez votre mise',
   'bet.hint': 'Gagner rend la mise et une bourse en plus. Perdre la fait disparaître.',
@@ -615,10 +615,10 @@ export const FR = {
   'over.draw': 'Match nul',
   'over.against': 'contre {name}',
   'over.notRated': 'Les parties solo ne comptent pas au classement',
-  'over.notRatedNew': 'Adversaire non classé — Elo inchangé',
-  'over.notRatedGap': 'Écart de niveau trop grand — Elo inchangé',
-  'over.notRatedPair': 'Trop de parties avec le même adversaire — Elo inchangé',
-  'over.notRatedShort': 'Partie trop courte — Elo inchangé',
+  'over.notRatedNew': 'Adversaire non classé, Elo inchangé',
+  'over.notRatedGap': 'Écart de niveau trop grand, Elo inchangé',
+  'over.notRatedPair': 'Trop de parties avec le même adversaire, Elo inchangé',
+  'over.notRatedShort': 'Partie trop courte, Elo inchangé',
   'over.rang': '{before} → {after} ({delta})',
   'over.coins': 'Pièces {delta}',
   'over.oppDropped': 'Votre adversaire a quitté',
@@ -708,8 +708,8 @@ export const FR = {
   'shop.opening': 'On ouvre les caisses…',
   'shop.owned': 'en cale : {n}',
   'shop.legendaire': 'Légendaire',
-  'shop.legendaireAide': 'Ne s’achète pas — se gagne sur un haut fait légendaire.',
-  'shop.bought': 'acheté — c’est dans votre cale',
+  'shop.legendaireAide': 'Ne s’achète pas, se gagne sur un haut fait légendaire.',
+  'shop.bought': 'acheté, c’est dans votre cale',
   'shop.B001.name': 'Relancer le dé',
 
   /* ── CE QUE CHAQUE CAPITAINE DIT EN JOUANT UN EFFET ──────────────────────
@@ -719,7 +719,7 @@ export const FR = {
      Et elles s'adressent a l'AUTRE, pas a soi : « je bénis ma colonne » est une
      note de service, « cette colonne est tenue, essaie de la prendre » est du
      jeu. Meme les effets qu'on se lance a soi-meme se disent a la figure d'en
-     face — c'est ce qui fait un duel plutot qu'un tableur.
+     face, c'est ce qui fait un duel plutot qu'un tableur.
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
@@ -900,7 +900,7 @@ export const FR = {
   'set.signedInAs': 'Connecté en tant que {name}',
   /* ⚠️ LE LIBELLE COMPLET TIENT DANS `title`, PAS SUR LE BOUTON. « Se
      connecter avec Google » et « Effacer mes donnees et mon compte » se
-     repliaient sur trois lignes dans deux boutons cote a cote — retour de
+     repliaient sur trois lignes dans deux boutons cote a cote, retour de
      l'admin. Le logo dit deja de qui il s'agit, et la corbeille ce qu'elle
      fait : le mot n'a plus qu'a confirmer. */
   'set.signInApple': 'Se connecter avec Apple',
@@ -926,10 +926,10 @@ export const FR = {
   'hdr.full': 'Plein écran',
   'hdr.exitFull': 'Quitter le plein écran',
   'connect.viaSsh': ' (par le tunnel SSH du tool)',
-  'connect.noSsh': ' — et le tunnel SSH n’a pas pu s’ouvrir non plus',
+  'connect.noSsh': ', et le tunnel SSH n’a pas pu s’ouvrir non plus',
   'connect.fixTool': 'Relancez-le avec {cmd} ({logs} lit son journal).',
   'connect.fixSsh': 'Hors du réseau du bureau, le jeu emprunte le tunnel SSH du tool : vérifiez que la machine répond.',
-  'skin.appearance': 'Apparence seulement — aucun effet sur le jeu',
+  'skin.appearance': 'Apparence seulement, aucun effet sur le jeu',
   'skin.owned': 'En cale',
   'skin.wear': 'Équiper',
   'skin.remove': 'Déséquiper',
@@ -962,10 +962,10 @@ export const FR = {
   /* ══ LES CINQ NOUVEAUX CAPITAINES, ET LES DEUX TRAITS QUI ONT CHANGE DE MAIN ══
      ⚠️ CHING SHIH ET BARBE-NOIRE NE FONT PLUS CE QU'ILS FAISAIENT. La longue-vue
      est passee a la Lionne Sanglante — qui la tient sur son portrait, ce que
-     Ching Shih n'a jamais fait — et le vol de tour a Henry Morgan. Leurs deux
+     Ching Shih n'a jamais fait, et le vol de tour a Henry Morgan. Leurs deux
      lignes `trait` sont donc reecrites ici, apres les anciennes : c'est la
      derniere qui gagne dans un objet JavaScript, et c'est ce qu'on veut. */
-  'cap.ching.trait': 'Une fois par partie, sa bordée emporte deux colonnes face à face — la sienne et celle d’en face.',
+  'cap.ching.trait': 'Une fois par partie, sa bordée emporte deux colonnes face à face, la sienne et celle d’en face.',
   'cap.teach.trait': 'Une fois par partie, il gèle une colonne adverse pendant son prochain tour.',
 
   'cap.bonny.name': 'Anne Bonny',
@@ -1020,14 +1020,14 @@ export const FR = {
   'cap.kidd.name': 'Captain Kidd',
   'cap.kidd.title': 'Le corsaire pendu',
   'cap.kidd.lore': 'Envoyé chasser les pirates, il est revenu en pirate. Kidd a '
-    + 'juré jusqu’au dernier souffle que ses registres étaient honnêtes — et '
+    + 'juré jusqu’au dernier souffle que ses registres étaient honnêtes, et '
     + 'enterré le reste là où aucun registre ne le trouverait.',
   'cap.kidd.trait': 'Une fois par partie, le dé qu’il vient de lancer monte ou descend d’un cran.',
   'cap.wangzhi.name': 'Wang Zhi',
   'cap.wangzhi.title': 'Le marchand de fumée',
   'cap.wangzhi.lore': 'Il a tenu les routes maritimes sans jamais livrer bataille. '
     + 'Quand les canons ont fini par parler, Wang Zhi était déjà sorti de la '
-    + 'fumée — et de l’empire qui le traquait.',
+    + 'fumée, et de l’empire qui le traquait.',
   'cap.wangzhi.trait': 'Une fois par partie, le prochain dé adverse ne détruit aucun de vos dés.',
   'cap.levent.name': 'Anne Levent',
   'cap.levent.title': 'La danseuse de pont',
@@ -1038,7 +1038,7 @@ export const FR = {
   'cap.caesar.name': 'Black Caesar',
   'cap.caesar.title': 'La coque inbrisable',
   'cap.caesar.lore': 'Chef avant d’être captif, capitaine avant d’être libre. '
-    + 'Caesar a coulé le navire qui le transportait et gardé les chaînes — elles '
+    + 'Caesar a coulé le navire qui le transportait et gardé les chaînes, elles '
     + 'tiennent sa coque depuis.',
   'cap.caesar.trait': 'Une fois par partie, un de vos dés survit au prochain tour adverse.',
   'cap.sayyida.name': 'Sayyida al-Hurra',
@@ -1056,16 +1056,16 @@ export const FR = {
   'cap.vane.trait': 'Une fois par partie, sa prochaine pose détruit la valeur dans les quatre colonnes adverses, pas seulement en face.',
   'cap.lafitte.name': 'Jean Lafitte',
   'cap.lafitte.title': 'Le gentleman contrebandier',
-  'cap.lafitte.lore': 'Corsaire, contrebandier et héros malgré lui de La Nouvelle-Orléans — ses passes secrètes du bayou n\'ont jamais été toutes retrouvées.',
+  'cap.lafitte.lore': 'Corsaire, contrebandier et héros malgré lui de La Nouvelle-Orléans, ses passes secrètes du bayou n\'ont jamais été toutes retrouvées.',
   'cap.lafitte.trait': 'Une fois par partie, son prochain dé peut se poser dans une colonne pleine : le dé supérieur cède la place, sans destruction.',
   'cap.bellamy.name': 'Samuel Bellamy',
   'cap.bellamy.title': 'Le prince des pirates',
-  'cap.bellamy.lore': 'Le plus riche pirate de l\'histoire, et le plus élégant : le Whydah a coulé avec quatre tonnes et demie d\'or — et sa légende a flotté.',
-  'cap.bellamy.trait': 'Une fois par partie, sa prochaine pose remplit la colonne de la même valeur — si l\'adversaire ne la possède nulle part.',
+  'cap.bellamy.lore': 'Le plus riche pirate de l\'histoire, et le plus élégant : le Whydah a coulé avec quatre tonnes et demie d\'or, et sa légende a flotté.',
+  'cap.bellamy.trait': 'Une fois par partie, sa prochaine pose remplit la colonne de la même valeur, si l\'adversaire ne la possède nulle part.',
   'cap.sparrow.name': 'Jack Sparrow',
   'cap.sparrow.title': 'La légende insaisissable',
   'cap.sparrow.lore': 'Personne ne sait s\'il a existé, et c\'est exactement ce qu\'il voulait. On ne gagne pas cette fiche : on la mérite.',
-  'cap.sparrow.trait': 'Une fois par partie, son compas re-tire tous les dés d\'une colonne et de celle d\'en face — sans destruction.',
+  'cap.sparrow.trait': 'Une fois par partie, son compas re-tire tous les dés d\'une colonne et de celle d\'en face, sans destruction.',
 
   'cap.trait.loaded': 'Un dé pipé',
   'cap.trait.fog': 'Un rideau de poudre',
@@ -1091,7 +1091,7 @@ export const FR = {
   'game.pickCompas': 'Choisissez une de vos colonnes : le compas re-tire les deux bords.',
   'shop.B021.desc': 'Tous les dés d\'une de vos colonnes et de celle d\'en face sont re-tirés, sans destruction.',
   'shop.B021.name': 'Compas capricieux',
-  'shop.B020.desc': 'Votre prochaine pose remplit la colonne de la même valeur — si l\'adversaire ne la possède nulle part.',
+  'shop.B020.desc': 'Votre prochaine pose remplit la colonne de la même valeur, si l\'adversaire ne la possède nulle part.',
   'shop.B020.name': 'Butin du Whydah',
   'shop.B019.desc': 'Votre prochain dé peut se poser dans une colonne pleine : le dé supérieur cède la place, sans destruction.',
   'shop.B019.name': 'Passage secret',
@@ -1100,17 +1100,17 @@ export const FR = {
   'shop.B017.desc': 'Le prochain dé adverse qui détruit un de vos dés est détruit à son tour, et sa case gèle un tour.',
   'shop.B017.name': 'Vendetta',
 
-  'fx.brumeYou': 'Brouillard de poudre — votre plateau est couvert',
+  'fx.brumeYou': 'Brouillard de poudre, votre plateau est couvert',
   'fx.brumeThem': '{name} disparaît dans le brouillard de poudre',
-  'fx.brumeSaved': 'Le brouillard tient — {n} de vos dés survivent',
-  'fx.brumeBlocked': 'Le brouillard avale votre tir — rien de détruit',
-  'fx.coqueYou': 'Coque renforcée — un dé est protégé',
+  'fx.brumeSaved': 'Le brouillard tient, {n} de vos dés survivent',
+  'fx.brumeBlocked': 'Le brouillard avale votre tir, rien de détruit',
+  'fx.coqueYou': 'Coque renforcée, un dé est protégé',
   'fx.coqueThem': '{name} blinde un de ses dés',
   'fx.coqueSaved': 'La coque tient ! Votre dé survit',
-  'fx.coqueBlocked': 'Sa coque tient — ce dé survit',
-  'fx.manoeuvreYou': 'Manœuvre de pont — votre dé change de colonne',
+  'fx.coqueBlocked': 'Sa coque tient, ce dé survit',
+  'fx.manoeuvreYou': 'Manœuvre de pont, votre dé change de colonne',
   'fx.manoeuvreThem': '{name} déplace un dé sur le pont',
-  'fx.quart': 'Changement de quart — deux multiplicateurs échangés',
+  'fx.quart': 'Changement de quart, deux multiplicateurs échangés',
 
   /* Ce que l’écran demande pendant une visée en deux temps, et pour le dé pipé.
      ⚠️ UNE CONSIGNE QUI NE DIT PAS QUEL TEMPS N’APPREND RIEN. Deux effets
@@ -1133,7 +1133,7 @@ export const FR = {
   /* ══ LES DIX PREMIERS CAPITAINES : SURNOM ET LORE ══
      ⛔ LA FICHE LES MONTRAIT SANS RIEN. Je n'avais ecrit `title` et `lore` que
      pour les cinq nouveaux : les dix autres ouvraient une fiche au surnom vide,
-     et le lore retombait sur la phrase de leur trait — deja affichee trois
+     et le lore retombait sur la phrase de leur trait, deja affichee trois
      lignes plus bas dans le panneau du bonus. La maquette montre exactement le
      contraire : un surnom, puis un recit qui ne parle PAS de l'effet.
      Le texte de Mary Read est celui de la maquette, mot pour mot. */
@@ -1143,13 +1143,13 @@ export const FR = {
     + 'des Caraïbes. Personne ne savait si elle était un homme… jusqu’à ce qu’il '
     + 'soit trop tard.',
   'cap.jack.title': 'Le pavillon qu’on reconnaît',
-  'cap.jack.lore': 'On retient son drapeau — deux sabres croisés sous une tête de '
-    + 'mort — mieux que ses prises. Calico Jack avait compris avant les autres '
+  'cap.jack.lore': 'On retient son drapeau, deux sabres croisés sous une tête de '
+    + 'mort, mieux que ses prises. Calico Jack avait compris avant les autres '
     + 'qu’un pirate se bat d’abord avec sa réputation.',
   'cap.ching.title': 'L’amirale aux six cents jonques',
   'cap.ching.lore': 'Aucun pirate n’a jamais commandé autant d’hommes qu’elle. '
     + 'Ching Shih tenait la mer de Chine avec un code écrit, un impôt et une '
-    + 'flotte — et elle a négocié sa retraite les armes encore chargées.',
+    + 'flotte, et elle a négocié sa retraite les armes encore chargées.',
   'cap.teach.title': 'La barbe qui fume',
   'cap.teach.lore': 'Il tressait des mèches allumées dans sa barbe avant '
     + 'l’abordage : ses ennemis se rendaient avant le premier coup de feu. '
@@ -1157,7 +1157,7 @@ export const FR = {
   'cap.omalley.title': 'La reine des mers d’Irlande',
   'cap.omalley.lore': 'Elle a accouché en mer et repris le combat le lendemain. '
     + 'Grace O’Malley a tenu la côte ouest de l’Irlande contre une reine '
-    + 'd’Angleterre — et lui a parlé debout, sans traducteur.',
+    + 'd’Angleterre, et lui a parlé debout, sans traducteur.',
   'cap.bonny.title': 'Celle qu’on n’a jamais pendue',
   'cap.bonny.lore': 'Jugée, condamnée, et pourtant jamais exécutée : Anne Bonny '
     + 'disparaît des registres le jour de sa sentence. Personne n’a jamais su où '
@@ -1173,7 +1173,7 @@ export const FR = {
   'cap.morgan.title': 'Le pirate qu’on a anobli',
   'cap.morgan.lore': 'Il a pillé Panama et fini gouverneur de la Jamaïque. Henry '
     + 'Morgan est le seul à avoir changé une carrière de pirate en titre de '
-    + 'noblesse — et à mourir dans son lit.',
+    + 'noblesse, et à mourir dans son lit.',
   'cap.levasseur.title': 'La Buse, et son énigme',
   'cap.levasseur.lore': 'Sur l’échafaud, il jeta un cryptogramme dans la foule : '
     + '« Mon trésor à qui saura le prendre. » Trois siècles plus tard, personne '
@@ -2428,7 +2428,7 @@ export const FR = {
   'say.clisson.B017.2': 'Treize ans de vengeance. Un tour de plus, un de moins…',
   'say.vane.B018.0': 'Pavillon noir hissé ! Rien ne sera épargné.',
   'say.vane.B018.1': 'Aucun quartier, sur aucune colonne.',
-  'say.vane.B018.2': 'Brûlez tout — c\'est comme ça qu\'on salue Nassau.',
+  'say.vane.B018.2': 'Brûlez tout, c\'est comme ça qu\'on salue Nassau.',
   'say.lafitte.B019.0': 'Il y a toujours un passage que la douane ignore.',
   'say.lafitte.B019.1': 'Colonne pleine ? Pas pour un contrebandier.',
   'say.lafitte.B019.2': 'Le bayou m\'a appris : on entre toujours quelque part.',
@@ -2466,7 +2466,7 @@ export const FR = {
   'fx.colAlreadyCursed': 'Une de ses colonnes est déjà maudite',
   'fx.alreadySlowed': 'Son prochain tour est déjà pressé',
   'fx.notYourTurnYet': 'Cet effet se joue pendant votre tour',
-  /* Le seul echec que le joueur peut encore voir au demarrage — et il ne dit
+  /* Le seul echec que le joueur peut encore voir au demarrage, et il ne dit
      ni adresse, ni commande, ni message de moteur. Voir `direEchec` dans boot.js. */
   'boot.failed': 'Le jeu n’a pas pu démarrer',
   'offline.bandeauSeul': 'Sans réseau — l’IA reste jouable. Reconnectez-vous une fois pour que vos parties comptent.',
@@ -2509,7 +2509,7 @@ export const FR = {
   'err.derniereColonne': 'C’est sa dernière colonne jouable.',
   'err.colGeleeIci': 'Cette colonne est gelée.',
   'err.effetFerme': 'Cet effet n’est pas encore à vous.',
-  'bonus.plusDeTour': 'Vos trois effets sont joués — la partie continue sans.',
+  'bonus.plusDeTour': 'Vos trois effets sont joués, la partie continue sans.',
   'over.againFriend': 'Rejouer avec {name}',
   'room.amiParti': 'Votre ami a quitté la table.',
   'room.salonFerme': 'Ce salon n’existe plus.',
