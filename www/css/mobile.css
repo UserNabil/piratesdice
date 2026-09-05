@@ -3262,7 +3262,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #dicewrap .dc-menu-btns {
   --pd-menu-debord: max(0px, calc((var(--pd-menu-art) - 52px) / 2));
   padding-top: var(--pd-menu-debord);
-  padding-bottom: var(--pd-menu-debord);
+  /* ⛔ LA RESERVE DU BAS ETAIT UN FANTOME. Les dessins ne debordent que par le
+     HAUT des boutons : la meme reserve en bas retenait les cartes de mode a
+     28 px du bord de la carte — « descends encore les boutons ». */
+  padding-bottom: 4px;
   gap: clamp(4px, 1vh, 12px);
 }
 

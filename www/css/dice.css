@@ -3144,12 +3144,16 @@
   justify-content: center;
   gap: 12px;
   /* Epinglee HORS de la zone qui defile : elle ne bouge pas, elle ne se coupe
-     pas. flex none, sinon la carte du pont (flex column) l'ecraserait. */
+     pas. flex none, sinon la carte du pont (flex column) l'ecraserait.
+     ⛔ BORDER-BOX, SINON ELLE DEBORDE. width:100% + padding en content-box la
+     faisait depasser de 22 px a droite : marges bancales, « tu trouves ca
+     normal niveau margin ? ». Meme gabarit que le reste du contenu. */
+  box-sizing: border-box;
   flex: none;
   margin: 10px auto 0;
   padding: 10px 14px;
   width: 100%;
-  max-width: 460px;
+  max-width: 100%;
   min-height: 78px;
   border-radius: 10px;
   background: rgba(0, 0, 0, .32);
@@ -3815,6 +3819,8 @@
   /* L'air mort a ete rendu a la carte-bonus, epinglee au-dessus : elle ne
      defile plus, donc plus d'ecart a compenser ici. */
   margin-top: 10px;
+  /* Le rembourrage interne retenait les boutons a 28 px du bord. */
+  padding-bottom: 4px;
 }
 
 /* ⛔ LA CARTE DU PONT SE COUPE EN DEUX. Tout tenait dans une seule boite qui
