@@ -32,7 +32,7 @@ import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js'
 import { onOver } from './dice_end.js';
 import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne,
          ouvrirButin, rafraichirButin, montrerButinGagne } from './dice_panels.js';
-import { ouvrirContexte } from '../core/contexte.js';
+import { ouvrirContexte, retourContexte } from '../core/contexte.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
@@ -889,12 +889,28 @@ function closeDice() {
 
 function onKey(ev) {
   if (!S.open) return;
-  const dialogOpen = !!document.querySelector('.modal.open');
+  /* ⛔ LA GARDE CHERCHAIT `.modal.open`, UNE CLASSE QUI N'EXISTE PLUS. Les
+     questions s'appellent `.pd-ask` : la garde ne voyait donc jamais rien, et
+     chaque Echap EMPILAIT une nouvelle question « quitter la partie ? » par-
+     dessus la precedente — a l'infini. */
+  const dialogOpen = !!document.querySelector('.pd-ask, .modal.open');
 
   if (ev.key === 'Escape') {
-    if (dialogOpen) return;                        // a confirm sits on top: it owns Escape
     ev.preventDefault(); ev.stopPropagation();
+    /* ⛔ ECHAP EST LE MEME GESTE QUE LE RETOUR NATIF : il ferme LE DESSUS de la
+       pile des contextes — une question ouverte y repond « non », une modale
+       s'y referme — et rien d'autre. Voir core/contexte.js. */
+    if (retourContexte()) return;
+    if (dialogOpen) return;                        // un reste hors pile : il garde Echap
     if (S.panel) { togglePanel(S.panel); return; }
+    /* En partie : contre l'IA on PAUSE (le menu, la pendule gelee) ; contre un
+       joueur on demande UNE fois si l'on part — l'Echap suivant tombera sur la
+       question via la pile, et y repondra non. */
+    if (S.state && S.state.phase === 'playing') {
+      if (enPartieContreIA()) { ouvrirPause(); return; }
+      requestClose();
+      return;
+    }
     requestClose();
     return;
   }
