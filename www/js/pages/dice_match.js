@@ -599,9 +599,20 @@ export function onState(msg) {
      et ceux que J'AI perdus s'accumulent ici, le temps de la partie : c'est ce
      que l'evaluateur des missions (dice.js) lit pour barrer un objectif atteint.
      Purement visuel — le serveur tranche les vraies etoiles au solde. */
+  /* ⛔ ON COMPTE LES CASES, PAS LES EVENEMENTS. Un coup qui emporte deux 5 de
+     la meme colonne arrive en UNE salve destroy avec cells = [deux cases] : le
+     compteur ajoutait 1 — « j'ai detruit 2 des et ca en a compte 1 » — et le
+     bandeau des missions mentait pendant que le serveur, lui, comptait juste
+     (game/bilan.js, cells.length). Meme regle d'auteur que lui : `par` quand la
+     salve le dit (la bordee touche les deux camps), sinon l'auteur est l'autre.
+     Mes propres menages (B002, ma colonne de bordee) ne creditent personne. */
   for (const d of destroyed) {
-    if (d.seat === S.seat) S.partiePerdus = (S.partiePerdus || 0) + 1;
-    else S.partieDetruits = (S.partieDetruits || 0) + 1;
+    const n = Array.isArray(d.cells) ? d.cells.length : 1;
+    const auteur = typeof d.par === 'number' ? d.par : 1 - d.seat;
+    if (d.seat === S.seat) S.partiePerdus = (S.partiePerdus || 0) + n;
+    if (auteur === S.seat && d.seat !== S.seat) {
+      S.partieDetruits = (S.partieDetruits || 0) + n;
+    }
   }
   const placed = fx.find((f) => f.kind === 'place');
 
