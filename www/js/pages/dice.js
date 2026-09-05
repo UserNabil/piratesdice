@@ -26,8 +26,8 @@ import { Sfx } from './dice_board.js';
 import { Musique } from '../ui/musique.js';
 import { facteur, surVolume, volumes, reglerVolume, DEFAUT } from '../ui/volumes.js';
 import { niveauCanal } from '../ui/bus_audio.js';
-import { S, UI, ASSETS , screen , preloadAssets,
-         envoyerCoup, etoileImg } from './dice_state.js';
+import { S, UI, ASSETS, screen, preloadAssets,
+         envoyerCoup, etoileImg, pucesForce } from './dice_state.js';
 import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js';
 import { onOver } from './dice_end.js';
 import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne,
@@ -632,8 +632,8 @@ async function connect() {
          Piraterie ; sinon il garde les plaques. */
       renderWallet();
     },
-    state: onState,
-    over: (m) => { onOver(m); renderWallet(); },
+    state: (m) => { onState(m); majBoutonPause(); },
+    over: (m) => { onOver(m); renderWallet(); majBoutonPause(); },
     /* ⚠️ UN REFUS DU SERVEUR DOIT RENDRE LA MAIN, PAS SEULEMENT PARLER.
        L'ecran de mise se desactivait a l'envoi ; un refus affichait bien son
        toast, mais aucun etat ne suivait, donc rien ne rallumait le bouton et
@@ -1120,6 +1120,19 @@ function compteurMission(code, seuil, st) {
   }
 }
 
+/* Les trois objectifs du niveau en cours, avec leur etat vivant : le bandeau
+   ET la modale de pause lisent la meme liste — deux affichages, une verite. */
+function missionsDuNiveau(def, st) {
+  const enTete = ((st.totals && st.totals[S.seat]) || 0) > ((st.totals && st.totals[1 - S.seat]) || 0);
+  return [
+    { txt: t('camp.obj1'), pris: enTete },
+    { txt: objectifCampagne(def.contrainte2, def.seuil2), pris: missionAtteinte(def.contrainte2, def.seuil2, st),
+      compte: compteurMission(def.contrainte2, def.seuil2, st) },
+    { txt: objectifCampagne(def.contrainte3, def.seuil3), pris: missionAtteinte(def.contrainte3, def.seuil3, st),
+      compte: compteurMission(def.contrainte3, def.seuil3, st) },
+  ];
+}
+
 function renderWalletMissions() {
   const w = $('#dc-wallet');
   const niveaux = (S.campagne && S.campagne.niveaux) || [];
@@ -1130,14 +1143,8 @@ function renderWalletMissions() {
     return;
   }
   const st = S.state || {};
-  const enTete = ((st.totals && st.totals[S.seat]) || 0) > ((st.totals && st.totals[1 - S.seat]) || 0);
-  const objs = [
-    { txt: t('camp.obj1'), pris: enTete },
-    { txt: objectifCampagne(def.contrainte2, def.seuil2), pris: missionAtteinte(def.contrainte2, def.seuil2, st),
-      compte: compteurMission(def.contrainte2, def.seuil2, st) },
-    { txt: objectifCampagne(def.contrainte3, def.seuil3), pris: missionAtteinte(def.contrainte3, def.seuil3, st),
-      compte: compteurMission(def.contrainte3, def.seuil3, st) },
-  ];
+  const objs = missionsDuNiveau(def, st);
+
   w.innerHTML = '<div class="dc-missions-jeu">'
     + '<b>' + esc(t('camp.missions')) + '</b>'
     + objs.map((o) => '<span class="' + (o.pris ? 'dc-mission-pris' : '') + '">'
@@ -1186,6 +1193,104 @@ function renderWalletCampagne() {
 /* Le menu deroulant : les quinze paliers, leur capitaine (grise tant qu'il
    n'est pas gagne) et leur compte d'etoiles. C'est la carte des deblocages, en
    petit, depuis le bandeau. */
+/* ── LA PAUSE CONTRE L'IA ─────────────────────────────────────────────────
+   Face a une machine, on doit pouvoir poser le telephone : le bouton pause
+   remplace l'engrenage du bandeau pendant la partie, et la modale — la maquette
+   de l'admin, dans notre habillage — donne le niveau de l'IA, le score, les
+   missions du niveau s'il y en a, puis Reprendre / Recommencer / Regles /
+   Parametres / Quitter. La pendule est VRAIMENT gelee (UI.pauseTimer : le
+   serveur en ligne, le moteur de poche hors ligne) ; le serveur refuse la pause
+   contre un humain. */
+function enPartieContreIA() {
+  const st = S.state;
+  return !!(st && st.phase === 'playing' && Array.isArray(st.players)
+            && st.players.some((p) => p && p.ai));
+}
+
+function majBoutonPause() {
+  const acts = document.querySelector('#dicewrap .dc-acts');
+  if (!acts) return;
+  const gear = document.getElementById('pd-settings-btn');
+  let bouton = document.getElementById('dc-btn-pause');
+  const contreIA = enPartieContreIA();
+  if (gear) gear.hidden = contreIA;
+  if (!contreIA) { if (bouton) bouton.remove(); return; }
+  if (bouton) return;
+  bouton = document.createElement('button');
+  bouton.id = 'dc-btn-pause';
+  bouton.className = 'dc-plaque-pause';
+  bouton.title = t('pause.titre');
+  bouton.setAttribute('aria-label', t('pause.titre'));
+  bouton.innerHTML = '<img src="' + ASSETS + 'img/icon_pause_partie.png" alt="">';
+  bouton.onclick = ouvrirPause;
+  acts.appendChild(bouton);
+}
+
+function ouvrirPause() {
+  if (document.querySelector('.dc-pause-voile')) return;
+  const st = S.state || {};
+  const ia = (st.players || []).find((p) => p && p.ai) || {};
+  const etoiles = Math.max(1, Math.min(3, Number(ia.etoiles) || 2));
+  const scores = st.totals || [0, 0];
+  const niveaux = (S.campagne && S.campagne.niveaux) || [];
+  const def = S.campagneEnCours ? niveaux.find((n) => n.identify === S.campagneEnCours) : null;
+  const missions = def ? missionsDuNiveau(def, st) : null;
+
+  UI.pauseTimer && UI.pauseTimer(true);
+  const voile = document.createElement('div');
+  voile.className = 'dc-pause-voile';
+  voile.innerHTML = `
+    <div class="dc-pause-carte pd-panel">
+      <button class="pd-btn-icone dc-pause-fermer" title="${esc(t('set.close'))}"
+              aria-label="${esc(t('set.close'))}">
+        <img src="${ASSETS}img/icon_close.png" alt=""></button>
+      <h3 class="dc-pause-titre">${esc(t('pause.titre'))}</h3>
+      <p class="dc-pause-sous">${esc(t('pause.sousTitre'))}</p>
+      <div class="dc-pause-infos">
+        <div class="dc-pause-ligne">
+          <span>${esc(t('pause.niveau'))}</span>
+          <span class="dc-pause-puces">${pucesForce(etoiles)}</span>
+        </div>
+        <div class="dc-pause-ligne">
+          <span>${esc(t('pause.score'))}</span>
+          <b>${scores[S.seat] || 0} — ${scores[1 - S.seat] || 0}</b>
+        </div>
+      </div>
+      ${missions ? `<div class="dc-pause-missions">
+        ${missions.map((o) => `<span class="${o.pris ? 'dc-mission-pris' : ''}">${
+          etoileImg(o.pris)} <span class="dc-m-txt">${esc(o.txt)}</span>${
+          o.compte ? ' <i class="dc-m-compte">' + esc(o.compte) + '</i>' : ''}</span>`).join('')}
+      </div>` : ''}
+      <div class="dc-pause-btns">
+        <button class="dc-btn" data-reprendre>${esc(t('pause.reprendre'))}</button>
+        <button class="dc-btn dc-btn-ghost" data-recommencer>${esc(t('pause.recommencer'))}</button>
+        <button class="dc-btn dc-btn-ghost" data-regles>${esc(t('rules.title'))}</button>
+        <button class="dc-btn dc-btn-ghost" data-parametres>${esc(t('set.title'))}</button>
+        <button class="dc-btn dc-btn-ghost pd-danger" data-quitter>${esc(t('pause.quitter'))}</button>
+      </div>
+    </div>`;
+  ($('#dicewrap') || document.body).appendChild(voile);
+
+  const fermer = () => { voile.remove(); UI.pauseTimer && UI.pauseTimer(false); };
+  voile.querySelector('.dc-pause-fermer').onclick = fermer;
+  voile.querySelector('[data-reprendre]').onclick = fermer;
+  voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
+  voile.querySelector('[data-recommencer]').onclick = () => {
+    fermer();
+    if (S.campagneEnCours && S.net && S.net.ready) {
+      S.net.send({ t: 'campagne.jouer', identify: S.campagneEnCours });
+    } else if (S.net && S.net.ready) {
+      S.net.send({ t: 'leave' });
+      S.net.send({ t: 'play', mode: 'solo' });
+    } else if (UI.jouerHorsLigne) {
+      UI.jouerHorsLigne();
+    }
+  };
+  voile.querySelector('[data-regles]').onclick = () => ouvrirRegles();
+  voile.querySelector('[data-parametres]').onclick = () => { if (UI.openSettings) UI.openSettings(); };
+  voile.querySelector('[data-quitter]').onclick = () => { fermer(); UI.requestClose && UI.requestClose(); };
+}
+
 /* La pastille du butin : allumee seulement s'il reste quelque chose a prendre
    aujourd'hui. C'est le serveur qui le dit (`reclamable`), jamais une horloge
    locale — celle du telephone se change dans les reglages. */
@@ -1282,6 +1387,7 @@ function renderWallet() {
 /* Le pont vit dans dice_lobby.js : choix du capitaine et salon prive y sont
    deux ecrans a part entiere, et ce fichier n'a pas a les porter. */
 function showMenu() {
+  majBoutonPause();
   /* Le pont a sa boucle ; l'arene aura la sienne. */
   if (S.musique) S.musique.jouer('menu');
   /* ⛔ ET LA BARRE DU HAUT SE PEINT ICI, PAS SEULEMENT SUR REPONSE DU SERVEUR.
@@ -1568,8 +1674,8 @@ export function jouerHorsLigne() {
     noms: [(S.me && S.me.name) || '', 'IA'],
     regles: cale.reglesHorsLigne(),
   }, {
-    match: (m) => { resetLobby(); onMatch(m); },
-    state: onState,
+    match: (m) => { resetLobby(); onMatch(m); majBoutonPause(); },
+    state: (m) => { onState(m); majBoutonPause(); },
     over: (m) => {
       /* La partie est finie : on la range pour le retour du reseau, PUIS on
          rend la main au vrai serveur.

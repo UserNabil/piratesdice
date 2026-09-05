@@ -4260,6 +4260,88 @@
 }
 #dicewrap .dc-plaque-act:active { transform: translateY(2px); }
 
+/* ── LA PAUSE CONTRE L'IA ──────────────────────────────────────────────────
+   Le bouton du bandeau (la plaque or et pourpre fournie) et la feuille de
+   pause : niveau de l'IA en puces, score, missions du niveau, cinq gestes. */
+#dicewrap .dc-plaque-pause {
+  width: var(--pd-bar-h, 44px);
+  height: var(--pd-bar-h, 44px);
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: none;
+  transition: transform .07s ease;
+}
+#dicewrap .dc-plaque-pause img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#dicewrap .dc-plaque-pause:active { transform: translateY(2px); }
+
+#dicewrap .dc-pause-voile {
+  position: fixed;
+  inset: 0;
+  z-index: 93;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: rgba(10, 4, 26, .72);
+  animation: dc-gel-vient .18s ease-out;
+}
+#dicewrap .dc-pause-carte {
+  position: relative;
+  width: min(400px, 94vw);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  text-align: center;
+}
+#dicewrap .dc-pause-fermer { position: absolute; top: 8px; inset-inline-end: 8px; z-index: 2; }
+#dicewrap .dc-pause-titre {
+  margin: 0;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: clamp(21px, 5.6vw, 27px);
+  color: var(--gold-hi, #ffe479);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .5);
+}
+#dicewrap .dc-pause-sous { margin: -8px 0 0; font-size: 13px; color: var(--txt-dim, #c9bcea); }
+#dicewrap .dc-pause-infos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .14);
+}
+#dicewrap .dc-pause-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--txt, #efe9fb);
+}
+#dicewrap .dc-pause-ligne b { font-size: 17px; font-variant-numeric: tabular-nums; color: var(--gold-hi, #ffe479); }
+#dicewrap .dc-pause-puces { display: inline-flex; gap: 3px; width: 84px; }
+#dicewrap .dc-pause-puces .dc-puce { flex: 1 1 0; min-width: 0; width: 100%; height: auto; }
+#dicewrap .dc-pause-missions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  text-align: start;
+  font-size: 12.5px;
+  color: var(--txt, #efe9fb);
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .14);
+}
+#dicewrap .dc-pause-btns { display: flex; flex-direction: column; gap: 9px; }
+#dicewrap .dc-pause-btns .dc-btn { width: 100%; }
+
 /* ── LA RECOMPENSE QUOTIDIENNE — la maquette de l'admin ──────────────────────
    Coffre en heros, serie de jours avec sa flamme, grille 4+3 des sept jours
    (aujourd'hui en or avec son ruban, les jours pris coches), bouton Reclamer,

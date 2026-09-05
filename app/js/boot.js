@@ -542,6 +542,9 @@ function addHeaderButtons() {
   gear.title = t('set.title');
   gear.setAttribute('aria-label', t('set.title'));
   gear.onclick = openSettings;
+  /* La modale de pause (dice.js) offre un bouton Parametres : elle passe par
+     ici plutot que de simuler un clic sur un engrenage cache. */
+  UI.openSettings = openSettings;
   acts.appendChild(gear);
 }
 

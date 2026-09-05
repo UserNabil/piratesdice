@@ -735,6 +735,13 @@ export const AR = {
 
   'rules.title': 'قواعد الطاولة',
   'butin.titre': 'المكافأة اليومية',
+  'pause.titre': 'اللعبة متوقفة',
+  'pause.sousTitre': 'مباراة ضد الآلة',
+  'pause.niveau': 'مستوى الآلة',
+  'pause.score': 'النتيجة الحالية',
+  'pause.reprendre': 'استئناف',
+  'pause.recommencer': 'إعادة البدء',
+  'pause.quitter': 'مغادرة المباراة',
   'butin.duJour': 'مكافأة اليوم',
   'butin.jour': 'اليوم {n}',
   'butin.aujourdhui': 'اليوم',

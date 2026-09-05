@@ -733,6 +733,13 @@ export const ES = {
 
   'rules.title': 'Las reglas de la mesa',
   'butin.titre': 'Recompensa diaria',
+  'pause.titre': 'Partida en pausa',
+  'pause.sousTitre': 'Partida contra la IA',
+  'pause.niveau': 'Nivel de la IA',
+  'pause.score': 'Marcador actual',
+  'pause.reprendre': 'Reanudar',
+  'pause.recommencer': 'Reiniciar',
+  'pause.quitter': 'Abandonar la partida',
   'butin.duJour': 'Recompensa de hoy',
   'butin.jour': 'Día {n}',
   'butin.aujourdhui': 'Hoy',

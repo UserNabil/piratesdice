@@ -679,6 +679,13 @@ export const EN = {
 
   'rules.title': 'The rules of the table',
   'butin.titre': 'Daily reward',
+  'pause.titre': 'Game paused',
+  'pause.sousTitre': 'Match against the AI',
+  'pause.niveau': 'AI level',
+  'pause.score': 'Current score',
+  'pause.reprendre': 'Resume',
+  'pause.recommencer': 'Restart',
+  'pause.quitter': 'Quit the match',
   'butin.duJour': 'Today’s reward',
   'butin.jour': 'Day {n}',
   'butin.aujourdhui': 'Today',

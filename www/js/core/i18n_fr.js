@@ -740,6 +740,13 @@ export const FR = {
 
   'rules.title': 'Les règles de la table',
   'butin.titre': 'Récompense quotidienne',
+  'pause.titre': 'Partie en pause',
+  'pause.sousTitre': 'Match contre l’IA',
+  'pause.niveau': 'Niveau de l’IA',
+  'pause.score': 'Score actuel',
+  'pause.reprendre': 'Reprendre',
+  'pause.recommencer': 'Recommencer',
+  'pause.quitter': 'Quitter la partie',
   'butin.duJour': 'Récompense du jour',
   'butin.jour': 'Jour {n}',
   'butin.aujourdhui': 'Aujourd’hui',
