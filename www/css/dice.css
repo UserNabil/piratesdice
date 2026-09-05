@@ -3066,7 +3066,9 @@
 #dicewrap .dc-cap {
   width: 100%;
   min-width: 0;
-  max-width: 84px;
+  /* Agrandie a la demande : avec vingt capitaines sur quatre rangees, la zone
+     des choix gagne sa hauteur par la taille des medaillons eux-memes. */
+  max-width: 96px;
   aspect-ratio: 1;
   height: auto;
   padding: 0;
@@ -3791,6 +3793,8 @@
      qui debordent par le HAUT de chaque bouton. */
   flex: 0 0 auto;
   padding-top: calc(var(--pd-mode-art, 76px) * .52);
+  /* Descendues a la demande : l'air est au-dessus, avec les capitaines. */
+  margin-top: clamp(20px, 5vh, 48px);
 }
 
 /* ⛔ LA CARTE DU PONT SE COUPE EN DEUX. Tout tenait dans une seule boite qui
