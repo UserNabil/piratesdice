@@ -12,7 +12,7 @@ export const FR = {
   'err.boutiqueFermee': 'La boutique est fermée pendant une partie.',
   'err.articleInconnu': 'Cet article n’existe plus.',
   'err.captainSeuil': 'Ce capitaine n’est pas encore à vous.',
-  'cap.locked': 'Verrouillé — encore {n} parties',
+  'cap.locked': 'Verrouillé, encore {n} parties',
   'cap.lockedLong': 'Embarque avec toi après {n} parties terminées.',
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'Une relance gratuite par partie.',
@@ -34,7 +34,7 @@ export const FR = {
   'shop.B005.name': 'Colonne bénie',
   'shop.B005.desc': 'Une de vos colonnes rapporte 15 % de plus jusqu’à la fin.',
   'fx.boost': 'Colonne bénie : +15 % jusqu’à la fin',
-  'resume.done': 'Partie reprise — on vous attendait.',
+  'resume.done': 'Partie reprise, on vous attendait.',
   'game.paused': 'En attente de l’autre joueur…',
 
   'mood.hint': 'Reste appuyé sur ton portrait pour parler',
@@ -67,7 +67,7 @@ export const FR = {
   'room.or': 'ou',
   'room.create': 'Ouvrir une table',
   'room.waiting': 'On attend votre ami',
-  'room.share': 'Donnez ce code à votre ami — la partie démarre dès qu’il l’entre.',
+  'room.share': 'Donnez ce code à votre ami, la partie démarre dès qu’il l’entre.',
   'room.expires': 'Le code expire au bout de quinze minutes.',
   'room.copied': 'Code copié',
   'room.publier': 'Publier',
@@ -554,7 +554,7 @@ export const FR = {
 
   /* ⚠️ CE TITRE PROMETTAIT LA MISE, RETIREE DU JEU. « Jouez la bourse du
      capitaine » sur l'ecran d'accueil, c'etait annoncer un pari qui n'existe
-     plus — et c'est exactement la formulation qu'Apple lit comme du jeu
+     plus, et c'est exactement la formulation qu'Apple lit comme du jeu
      d'argent. Le titre dit maintenant ce qu'on fait vraiment : un duel. */
   'menu.title': 'Le duel des capitaines',
   'menu.pitch': 'Quatre colonnes, douze dés. Un dé que vous posez détruit tous les dés '
@@ -723,7 +723,7 @@ export const FR = {
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
-  'shop.B001.desc': 'Relancez votre dé — la valeur dont vous ne vouliez pas disparaît.',
+  'shop.B001.desc': 'Relancez votre dé, la valeur dont vous ne vouliez pas disparaît.',
   'shop.B002.name': 'Vider une de mes cases',
   'shop.B002.desc': 'Retirez un de vos dés pour refaire une colonne.',
   'shop.B003.name': 'Détruire un dé adverse',
@@ -761,22 +761,22 @@ export const FR = {
   'butin.gainParure': 'Parure de dés !',
   'rules.1': 'À votre tour, lancez le dé, puis posez-le dans une de vos quatre colonnes.',
   'rules.2': 'Une colonne vaut <b>valeur × occurrences²</b> : trois 4 dans une colonne valent 36, pas 12.',
-  'rules.3': 'Poser un dé <b>détruit tous les dés adverses de cette valeur dans la même colonne</b> — '
+  'rules.3': 'Poser un dé <b>détruit tous les dés adverses de cette valeur dans la même colonne</b>, '
     + 'gêner l’autre rapporte plus que construire.',
   'rules.4': 'La partie s’arrête dès qu’un plateau est plein. Le plus haut total gagne.',
   'rules.5': 'Les bonus s’achètent à la boutique et vous en avez droit à <b>{n}</b> par partie : '
     + 'relancer le dé, vider une de vos cases, ou détruire un dé adverse.',
   'rules.6': 'Une partie contre la machine rapporte {ia} pièces ; une partie qui vous fait MONTER au classement en rapporte {rang}. '
     + 'Seules les parties entre joueurs bougent votre Elo, et seulement face à un adversaire classé, de niveau proche.',
-  'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer : chacun offre un effet par partie — une relance, un dé déjà posé, une colonne bénie, gelée, maudite ou rasée, un tour volé, un tour deux fois plus long, un échange de dés, ou un œil sur le prochain dé d’en face. Ils sont <b>dix</b>, et ils s’ouvrent au fil des parties terminées.',
+  'rules.7': 'Votre <b>capitaine</b> change votre façon de jouer : chacun offre un effet par partie, une relance, un dé déjà posé, une colonne bénie, gelée, maudite ou rasée, un tour volé, un tour deux fois plus long, un échange de dés, ou un œil sur le prochain dé d’en face. Ils sont <b>dix</b>, et ils s’ouvrent au fil des parties terminées.',
   'rules.shortcuts': 'Raccourcis : {space} lance, {one} {two} {three} posent dans une colonne, {esc} ferme.',
 
   /* ⚠️ CES DEUX PHRASES DECRIVAIENT L'ANCIENNE REGLE. L'IA jouait le tour de
-     l'absent — et lui offrait donc le meilleur coup. Le tour SAUTE desormais :
+     l'absent, et lui offrait donc le meilleur coup. Le tour SAUTE desormais :
      dire le contraire a l'ecran serait pire que de ne rien dire, puisqu'on
      chercherait un dé qui n'a jamais ete pose. */
-  'away.taken': '{name} n’a pas joué à temps — son tour a sauté',
-  'away.you': 'Trop tard — votre tour a sauté',
+  'away.taken': '{name} n’a pas joué à temps, son tour a sauté',
+  'away.you': 'Trop tard, votre tour a sauté',
 
   'set.title': 'Réglages',
 
@@ -802,7 +802,7 @@ export const FR = {
 
   'tour.revoir': 'Revoir le tutoriel',
 
-  'tour.solo': 'Affrontez la machine pour vous faire la main — jouable même sans réseau.',
+  'tour.solo': 'Affrontez la machine pour vous faire la main, jouable même sans réseau.',
 
   'tour.piraterie': 'La Piraterie : gravissez les paliers, gagnez des étoiles et débloquez les capitaines.',
 
@@ -812,7 +812,7 @@ export const FR = {
 
   'tour.bourse': 'Vos pièces : gagnées en jouant, dépensées à la boutique pour des parures.',
 
-  'tour.reglages': 'Les réglages : son, pseudo, langue — et ce tutoriel, à revoir quand vous voulez.',
+  'tour.reglages': 'Les réglages : son, pseudo, langue, et ce tutoriel, à revoir quand vous voulez.',
 
   'camp.suivant': 'Niveau suivant',
 
@@ -832,13 +832,13 @@ export const FR = {
 
   'camp.niveau': 'Niveau {n}',
 
-  'camp.boss': 'Boss — {nom}',
+  'camp.boss': 'Boss : {nom}',
 
   'camp.jouer': 'Jouer',
 
   'camp.obj1': 'Gagner la partie',
 
-  'camp.resultat': '{n} étoile(s) gagnée(s) — +{or} pièces !',
+  'camp.resultat': '{n} étoile(s) gagnée(s), +{or} pièces !',
 
   'camp.capitaine': 'Palier complet : capitaine débloqué !',
 
@@ -921,7 +921,7 @@ export const FR = {
 
   /* Ces sept-la manquaient : la fiche du serveur injoignable et les
      infobulles de l'entete. Une cle absente retombe SILENCIEUSEMENT sur
-     l'anglais — le joueur ne voit pas un defaut, il voit une autre langue. */
+     l'anglais, le joueur ne voit pas un defaut, il voit une autre langue. */
   'hdr.close': 'Fermer (Échap)',
   'hdr.full': 'Plein écran',
   'hdr.exitFull': 'Quitter le plein écran',
@@ -952,7 +952,7 @@ export const FR = {
      de sa phrase, celle qui subit et celle qui l'a jetee. */
   'fx.frozenWait': 'Son tour est gelé',
   'fx.frozenYou': 'Votre tour est gelé',
-  'fx.frozenThem': '{name} passe son tour — gelé',
+  'fx.frozenThem': '{name} passe son tour, gelé',
   'cap.trait.freeze': 'Un tour gelé',
   'foot.bag': 'Inventaire',
   'foot.roll': 'Lancer',
@@ -961,7 +961,7 @@ export const FR = {
 
   /* ══ LES CINQ NOUVEAUX CAPITAINES, ET LES DEUX TRAITS QUI ONT CHANGE DE MAIN ══
      ⚠️ CHING SHIH ET BARBE-NOIRE NE FONT PLUS CE QU'ILS FAISAIENT. La longue-vue
-     est passee a la Lionne Sanglante — qui la tient sur son portrait, ce que
+     est passee a la Lionne Sanglante, qui la tient sur son portrait, ce que
      Ching Shih n'a jamais fait, et le vol de tour a Henry Morgan. Leurs deux
      lignes `trait` sont donc reecrites ici, apres les anciennes : c'est la
      derniere qui gagne dans un objet JavaScript, et c'est ce qu'on veut. */
@@ -991,7 +991,7 @@ export const FR = {
 
   /* ══ LES SIX EFFETS EN BOUTIQUE ══
      B006 change de sens : il gèle une COLONNE et ne vole plus un tour. Le vol de
-     tour existe toujours — c’est B007. */
+     tour existe toujours, c’est B007. */
   'shop.B006.name': 'Colonne gelée',
   'shop.B006.desc': 'Une colonne adverse est prise dans les glaces pendant son prochain tour.',
   'shop.B007.name': 'Tour volé',
@@ -1013,7 +1013,7 @@ export const FR = {
   'fx.wipe': 'Colonne rasée !',
   'game.colFrozen': 'Cette colonne est gelée.',
 
-  /* ══ LE SECOND LOT DE CAPITAINES — B012 à B016 ══
+  /* ══ LE SECOND LOT DE CAPITAINES, B012 à B016 ══
      Cinq capitaines, cinq effets que rien d’autre ne fait dans le jeu. Chacun a
      un nom, un surnom et un lore court : la fiche capitaine montre les trois, et
      une fiche qui ne fait que répéter l’effet n’apprend rien. */
@@ -1179,7 +1179,7 @@ export const FR = {
     + '« Mon trésor à qui saura le prendre. » Trois siècles plus tard, personne '
     + 'ne l’a pris.',
   /* Pourquoi un jeton ne peut pas partir, dit AVANT le geste. Même règle que
-     celle du serveur — l’écran ne fait que la rendre lisible un geste plus tôt. */
+     celle du serveur, l’écran ne fait que la rendre lisible un geste plus tôt. */
   'fx.brumeAlready': 'Votre plateau est déjà dans le brouillard.',
   'fx.coqueAlready': 'Un de vos dés est déjà sous coque.',
   'err.pasDeManoeuvre': 'Aucun de vos dés ne peut bouger : il faut une colonne d’où partir et une autre non pleine.',
@@ -2469,10 +2469,10 @@ export const FR = {
   /* Le seul echec que le joueur peut encore voir au demarrage, et il ne dit
      ni adresse, ni commande, ni message de moteur. Voir `direEchec` dans boot.js. */
   'boot.failed': 'Le jeu n’a pas pu démarrer',
-  'offline.bandeauSeul': 'Sans réseau — l’IA reste jouable. Reconnectez-vous une fois pour que vos parties comptent.',
+  'offline.bandeauSeul': 'Sans réseau, l’IA reste jouable. Reconnectez-vous une fois pour que vos parties comptent.',
   'over.horsLigneLibre': 'Jouée hors ligne, sans jeton : elle ne rapporte rien. Reconnectez-vous une fois pour en reprendre.',
   'offline.pasIci': 'Celui-là ne se joue pas hors ligne.',
-  'shop.effetFerme': 'Encore {n} parties — il s’ouvre avec son capitaine.',
+  'shop.effetFerme': 'Encore {n} parties, il s’ouvre avec son capitaine.',
   /* Les refus que le serveur formule pour les six effets neufs. Sans eux, ils
      sortaient en anglais brut au milieu d'une interface francaise. */
   /* ⛔ SEIZE REFUS DU MOTEUR D'EFFETS SORTAIENT EN ANGLAIS BRUT. Un joueur

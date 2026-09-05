@@ -1,5 +1,5 @@
 /* ============================================================================
-   core/i18n_en.js — le catalogue ANGLAIS du jeu de des, source unique.
+   core/i18n_en.js, le catalogue ANGLAIS du jeu de des, source unique.
 
    Le tool ne parle qu'anglais ; l'application Android parle quatre langues. Pour
    qu'il n'existe pas deux jeux, les fichiers de `pages/dice*.js` appellent tous
@@ -21,7 +21,7 @@ export const EN = {
   'err.boutiqueFermee': 'The shop is closed during a match.',
   'err.articleInconnu': 'This item no longer exists.',
   'err.captainSeuil': 'This captain has not sailed with you yet.',
-  'cap.locked': 'Locked — {n} more games',
+  'cap.locked': 'Locked : {n} more games',
   'cap.lockedLong': 'Sails with you after {n} finished games.',
   'cap.read.name': 'Mary Read',
   'cap.read.trait': 'One free reroll per match.',
@@ -595,14 +595,14 @@ export const EN = {
   'fx.alreadyFrozen': 'Their turn is already frozen',
   'game.leave': 'Leave the match',
   'game.leaveTitle': 'Abandon the match',
-  'game.leaveConfirm': 'Leaving now forfeits the match — your stake is lost. Leave anyway?',
+  'game.leaveConfirm': 'Leaving now forfeits the match, your stake is lost. Leave anyway?',
   'game.leaveOk': 'Leave',
   'game.rollFirst': 'roll your die first',
   'game.waitTurn': 'wait for your turn',
   'game.waitingTable': 'Setting the table…',
-  'game.pausedThem': '{name} lost the connection — the table closes in {n}s',
-  'game.pausedYou': 'Connection lost — your seat is being held',
-  'game.alreadyRolled': 'you already rolled — pick a column',
+  'game.pausedThem': '{name} lost the connection, the table closes in {n}s',
+  'game.pausedYou': 'Connection lost, your seat is being held',
+  'game.alreadyRolled': 'you already rolled, pick a column',
   'game.yourScore': 'your score',
   'game.theirScore': 'their score',
   'game.stake': 'stake {n}',
@@ -611,7 +611,7 @@ export const EN = {
   'bonus.head': 'Bonus',
   'bonus.left': '{n} left this match',
   'bonus.spent': 'already played this match',
-  'bonus.empty': 'No bonus in the hold — buy some in the Shop.',
+  'bonus.empty': 'No bonus in the hold, buy some in the Shop.',
 
   'bet.title': 'Set your stake',
   'bet.hint': 'Win and you take the stake back plus a purse. Lose and it is gone.',
@@ -626,10 +626,10 @@ export const EN = {
   'over.draw': 'Draw',
   'over.against': 'against {name}',
   'over.notRated': 'Solo matches are not rated',
-  'over.notRatedNew': 'Unranked opponent — rating unchanged',
-  'over.notRatedGap': 'Rating gap too wide — rating unchanged',
-  'over.notRatedPair': 'Too many matches with the same opponent — rating unchanged',
-  'over.notRatedShort': 'Match too short — rating unchanged',
+  'over.notRatedNew': 'Unranked opponent, rating unchanged',
+  'over.notRatedGap': 'Rating gap too wide, rating unchanged',
+  'over.notRatedPair': 'Too many matches with the same opponent, rating unchanged',
+  'over.notRatedShort': 'Match too short, rating unchanged',
   'over.rang': '{before} → {after} ({delta})',
   'over.coins': 'Coins {delta}',
   'over.oppDropped': 'Your opponent dropped',
@@ -662,7 +662,7 @@ export const EN = {
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
-  'shop.B001.desc': 'Roll your die again — the value you did not want is gone.',
+  'shop.B001.desc': 'Roll your die again, the value you did not want is gone.',
   'shop.B002.name': 'Clear one of my dice',
   'shop.B002.desc': 'Remove a die from your own board to reshape a column.',
   'shop.B003.name': 'Blast an enemy die',
@@ -772,11 +772,11 @@ export const EN = {
   'camp.obj.sum.victoires.boucher': 'Win destroying eight dice or more',
   'camp.obj.max.triples.partie': 'Win with {n} triples in the match',
   'set.pseudo': 'Nickname',
-  'set.pseudoAide': '2–10 characters, unique',
+  'set.pseudoAide': '2, 10 characters, unique',
   'set.pseudoOk': 'Nickname changed',
   'set.save': 'Save',
   'set.captainDefault': 'Default captain',
-  'err.nomTaille': 'Your nickname must be 2–10 characters.',
+  'err.nomTaille': 'Your nickname must be 2, 10 characters.',
   'err.nomCaracteres': 'Letters, digits, spaces and dashes only.',
   'err.nomInsulte': 'That nickname isn’t allowed aboard.',
   'err.nomPris': 'That nickname is already taken.',
@@ -872,7 +872,7 @@ export const EN = {
   'fx.wipe': 'Column wiped!',
   'game.colFrozen': 'That column is frozen.',
 
-  /* ══ THE SECOND WAVE OF CAPTAINS — B012 to B016 ══
+  /* ══ THE SECOND WAVE OF CAPTAINS, B012 to B016 ══
      Five captains, five effects nothing else in the game does. Each one needs a
      name, a nickname and a short piece of lore: the captain sheet shows all
      three, and a sheet that only repeats the effect teaches nothing. */
@@ -989,7 +989,7 @@ export const EN = {
   'fiche.porte': 'Currently selected',
   /* == THE FIRST TEN CAPTAINS: NICKNAME AND LORE ==
      The sheet showed neither: only the five newcomers had them, so the other ten
-     opened with an empty subtitle and a lore that fell back to their trait — the
+     opened with an empty subtitle and a lore that fell back to their trait, the
      very line already printed in the bonus panel below. */
   'cap.read.title': 'The Elusive Corsair',
   'cap.read.lore': 'Raised as a boy so she could sail freely, Mary Read broke '
@@ -1031,7 +1031,7 @@ export const EN = {
   'cap.levasseur.lore': 'On the scaffold he threw a cryptogram into the crowd: '
     + '“My treasure to whoever can take it.” Three centuries on, no one has.',
   /* Why a token cannot be played, said BEFORE the tap. Same rule the server
-     applies — the screen only makes it visible one gesture earlier. */
+     applies, the screen only makes it visible one gesture earlier. */
   'fx.brumeAlready': 'Your board is already in the fog.',
   'fx.coqueAlready': 'One of your dice is already shielded.',
   'err.pasDeManoeuvre': 'No die of yours can move: you need a column to leave and another that is not full.',

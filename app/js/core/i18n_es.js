@@ -716,7 +716,7 @@ export const ES = {
      La variante est choisie par un compte partage entre les deux ecrans (voir
      `annonceBonus` dans pages/dice_fx.js) : les deux joueurs lisent la meme. */
 
-  'shop.B001.desc': 'Vuelve a tirar tu dado — el valor que no querías desaparece.',
+  'shop.B001.desc': 'Vuelve a tirar tu dado, el valor que no querías desaparece.',
   'shop.B002.name': 'Vaciar una casilla mía',
   'shop.B002.desc': 'Quita un dado tuyo para rehacer una columna.',
   'shop.B003.name': 'Destruir un dado rival',
@@ -754,18 +754,18 @@ export const ES = {
   'butin.gainParure': '¡Dados nuevos!',
   'rules.1': 'En tu turno, tira el dado y colócalo en una de tus cuatro columnas.',
   'rules.2': 'Una columna vale <b>valor × repeticiones²</b>: tres 4 valen 36, no 12.',
-  'rules.3': 'Colocar un dado <b>destruye todos los dados rivales de ese valor en la misma columna</b> — '
+  'rules.3': 'Colocar un dado <b>destruye todos los dados rivales de ese valor en la misma columna</b>, '
     + 'estorbar al rival da más que construir.',
   'rules.4': 'La partida acaba en cuanto un tablero se llena. Gana el total más alto.',
   'rules.5': 'Los bonus se compran en la tienda y puedes usar <b>{n}</b> por partida: repetir la tirada, '
     + 'vaciar una casilla propia o destruir un dado rival.',
   'rules.6': 'Una partida contra la máquina da {ia} monedas; una partida que SUBE tu clasificación da {rang}. '
     + 'Solo las partidas entre jugadores mueven tu Elo, y solo ante un rival clasificado de nivel cercano.',
-  'rules.7': 'Tu <b>capitán</b> cambia tu forma de jugar: cada uno concede un efecto por partida — una tirada extra, un dado ya colocado, una columna bendecida, congelada, maldita o arrasada, un turno robado, un turno que dura el doble, un trueque de dados o un vistazo al próximo dado rival. Son <b>diez</b>, y se van abriendo según terminas partidas.',
+  'rules.7': 'Tu <b>capitán</b> cambia tu forma de jugar: cada uno concede un efecto por partida, una tirada extra, un dado ya colocado, una columna bendecida, congelada, maldita o arrasada, un turno robado, un turno que dura el doble, un trueque de dados o un vistazo al próximo dado rival. Son <b>diez</b>, y se van abriendo según terminas partidas.',
   'rules.shortcuts': 'Atajos: {space} tira, {one} {two} {three} colocan en una columna, {esc} cierra.',
 
-  'away.taken': '{name} no jugó a tiempo — se saltó su turno',
-  'away.you': 'Demasiado tarde — se saltó tu turno',
+  'away.taken': '{name} no jugó a tiempo, se saltó su turno',
+  'away.you': 'Demasiado tarde, se saltó tu turno',
 
   'set.title': 'Ajustes',
 
@@ -791,7 +791,7 @@ export const ES = {
 
   'tour.revoir': 'Ver el tutorial de nuevo',
 
-  'tour.solo': 'Enfréntate a la máquina para practicar — jugable incluso sin conexión.',
+  'tour.solo': 'Enfréntate a la máquina para practicar, jugable incluso sin conexión.',
 
   'tour.piraterie': 'La Piratería: sube niveles, gana estrellas y desbloquea capitanes.',
 
@@ -801,7 +801,7 @@ export const ES = {
 
   'tour.bourse': 'Tus monedas: se ganan jugando y se gastan en la tienda.',
 
-  'tour.reglages': 'Ajustes: sonido, apodo, idioma — y este tutorial, cuando quieras.',
+  'tour.reglages': 'Ajustes: sonido, apodo, idioma, y este tutorial, cuando quieras.',
 
   'camp.suivant': 'Siguiente etapa',
 
@@ -821,13 +821,13 @@ export const ES = {
 
   'camp.niveau': 'Etapa {n}',
 
-  'camp.boss': 'Jefe — {nom}',
+  'camp.boss': 'Jefe : {nom}',
 
   'camp.jouer': 'Jugar',
 
   'camp.obj1': 'Ganar la partida',
 
-  'camp.resultat': '¡{n} estrella(s) ganada(s) — +{or} monedas!',
+  'camp.resultat': '¡{n} estrella(s) ganada(s), +{or} monedas!',
 
   'camp.capitaine': '¡Nivel completo: capitán desbloqueado!',
 
@@ -910,10 +910,10 @@ export const ES = {
   'hdr.full': 'Pantalla completa',
   'hdr.exitFull': 'Salir de pantalla completa',
   'connect.viaSsh': ' (por el túnel SSH de la herramienta)',
-  'connect.noSsh': ' — y el túnel SSH tampoco pudo abrirse',
+  'connect.noSsh': ', y el túnel SSH tampoco pudo abrirse',
   'connect.fixTool': 'Reinicialo con {cmd} ({logs} lee su registro).',
   'connect.fixSsh': 'Fuera de la red de la oficina, el juego usa el túnel SSH de la herramienta: comprueba que la máquina responde.',
-  'skin.appearance': 'Solo apariencia — sin efecto en el juego',
+  'skin.appearance': 'Solo apariencia, sin efecto en el juego',
   'skin.owned': 'En bodega',
   'skin.wear': 'Equipar',
   'skin.remove': 'Quitar',
@@ -934,7 +934,7 @@ export const ES = {
   'fx.freeze': '¡Turno congelado!',
   'fx.frozenWait': 'Su turno está congelado',
   'fx.frozenYou': 'Tu turno está congelado',
-  'fx.frozenThem': '{name} se salta el turno — congelado',
+  'fx.frozenThem': '{name} se salta el turno, congelado',
   'cap.trait.freeze': 'Un turno congelado',
   'foot.bag': 'Bodega',
   'foot.roll': 'Lanzar',
@@ -992,13 +992,13 @@ export const ES = {
   'cap.kidd.name': 'Captain Kidd',
   'cap.kidd.title': 'El corsario ahorcado',
   'cap.kidd.lore': 'Lo enviaron a cazar piratas y volvió convertido en uno. Kidd '
-    + 'juró hasta el último aliento que sus libros eran honrados — y enterró el '
+    + 'juró hasta el último aliento que sus libros eran honrados, y enterró el '
     + 'resto donde ningún libro lo encontraría.',
   'cap.kidd.trait': 'Una vez por partida, el dado recién lanzado sube o baja un punto.',
   'cap.wangzhi.name': 'Wang Zhi',
   'cap.wangzhi.title': 'El mercader de humo',
   'cap.wangzhi.lore': 'Dominó las rutas marítimas sin librar una sola batalla. '
-    + 'Cuando por fin hablaron los cañones, Wang Zhi ya había salido del humo — y '
+    + 'Cuando por fin hablaron los cañones, Wang Zhi ya había salido del humo, y '
     + 'del imperio que lo perseguía.',
   'cap.wangzhi.trait': 'Una vez por partida, el próximo dado rival no destruye ninguno de los tuyos.',
   'cap.levent.name': 'Anne Levent',
@@ -1010,7 +1010,7 @@ export const ES = {
   'cap.caesar.name': 'Black Caesar',
   'cap.caesar.title': 'El casco irrompible',
   'cap.caesar.lore': 'Jefe antes que cautivo, capitán antes que libre. Caesar '
-    + 'hundió el barco que lo transportaba y se quedó con las cadenas — desde '
+    + 'hundió el barco que lo transportaba y se quedó con las cadenas, desde '
     + 'entonces sostienen su casco.',
   'cap.caesar.trait': 'Una vez por partida, uno de tus dados sobrevive al próximo turno rival.',
   'cap.sayyida.name': 'Sayyida al-Hurra',
@@ -1032,12 +1032,12 @@ export const ES = {
   'cap.lafitte.trait': 'Una vez por partida, su próximo dado puede caer en una columna llena: el dado superior cede el sitio, sin destrucción.',
   'cap.bellamy.name': 'Samuel Bellamy',
   'cap.bellamy.title': 'El príncipe de los piratas',
-  'cap.bellamy.lore': 'El pirata más rico de la historia, y el más elegante: el Whydah se hundió con cuatro toneladas y media de oro — la leyenda flotó.',
-  'cap.bellamy.trait': 'Una vez por partida, su próxima colocación llena la columna con el mismo valor — si el rival no lo tiene en ningún sitio.',
+  'cap.bellamy.lore': 'El pirata más rico de la historia, y el más elegante: el Whydah se hundió con cuatro toneladas y media de oro, la leyenda flotó.',
+  'cap.bellamy.trait': 'Una vez por partida, su próxima colocación llena la columna con el mismo valor, si el rival no lo tiene en ningún sitio.',
   'cap.sparrow.name': 'Jack Sparrow',
   'cap.sparrow.title': 'La leyenda inasible',
   'cap.sparrow.lore': 'Nadie sabe si existió, y eso es exactamente lo que él quería. Esta ficha no se compra: se merece.',
-  'cap.sparrow.trait': 'Una vez por partida, su brújula vuelve a tirar todos los dados de una columna y de la de enfrente — sin destrucción.',
+  'cap.sparrow.trait': 'Una vez por partida, su brújula vuelve a tirar todos los dados de una columna y de la de enfrente, sin destrucción.',
 
   'cap.trait.loaded': 'Un dado cargado',
   'cap.trait.fog': 'Una cortina de pólvora',
@@ -1063,7 +1063,7 @@ export const ES = {
   'game.pickCompas': 'Elige una de tus columnas: la brújula vuelve a tirar ambos lados.',
   'shop.B021.desc': 'Todos los dados de una de tus columnas y de la de enfrente se vuelven a tirar, sin destrucción.',
   'shop.B021.name': 'Brújula caprichosa',
-  'shop.B020.desc': 'Tu próxima colocación llena la columna con el mismo valor — si el rival no lo tiene en ningún sitio.',
+  'shop.B020.desc': 'Tu próxima colocación llena la columna con el mismo valor, si el rival no lo tiene en ningún sitio.',
   'shop.B020.name': 'Botín del Whydah',
   'shop.B019.desc': 'Tu próximo dado puede caer en una columna llena: el dado superior cede el sitio, sin destrucción.',
   'shop.B019.name': 'Pasaje secreto',
@@ -1072,17 +1072,17 @@ export const ES = {
   'shop.B017.desc': 'El próximo dado enemigo que destruya uno de los tuyos es destruido a su vez, y su casilla se congela un turno.',
   'shop.B017.name': 'Vendetta',
 
-  'fx.brumeYou': 'Niebla de pólvora — tu tablero queda cubierto',
+  'fx.brumeYou': 'Niebla de pólvora, tu tablero queda cubierto',
   'fx.brumeThem': '{name} desaparece en la niebla de pólvora',
-  'fx.brumeSaved': 'La niebla aguanta — {n} de tus dados sobreviven',
-  'fx.brumeBlocked': 'La niebla se traga tu disparo — nada destruido',
-  'fx.coqueYou': 'Casco reforzado — un dado queda protegido',
+  'fx.brumeSaved': 'La niebla aguanta : {n} de tus dados sobreviven',
+  'fx.brumeBlocked': 'La niebla se traga tu disparo, nada destruido',
+  'fx.coqueYou': 'Casco reforzado, un dado queda protegido',
   'fx.coqueThem': '{name} blinda uno de sus dados',
   'fx.coqueSaved': '¡El casco aguanta! Tu dado sobrevive',
-  'fx.coqueBlocked': 'Su casco aguanta — ese dado sobrevive',
-  'fx.manoeuvreYou': 'Maniobra de cubierta — tu dado cambia de columna',
+  'fx.coqueBlocked': 'Su casco aguanta, ese dado sobrevive',
+  'fx.manoeuvreYou': 'Maniobra de cubierta, tu dado cambia de columna',
   'fx.manoeuvreThem': '{name} desplaza un dado por la cubierta',
-  'fx.quart': 'Cambio de guardia — dos multiplicadores intercambiados',
+  'fx.quart': 'Cambio de guardia, dos multiplicadores intercambiados',
 
   'game.pickFrom': 'Elige la columna de donde sale el dado',
   'game.pickTo': 'Ahora, adónde va',
@@ -1101,12 +1101,12 @@ export const ES = {
     + 'rompió todas las reglas hasta ser una de las piratas más temidas del '
     + 'Caribe. Nadie sabía si era un hombre… hasta que fue demasiado tarde.',
   'cap.jack.title': 'La bandera que todos conocen',
-  'cap.jack.lore': 'Se recuerda su bandera — dos sables cruzados bajo una '
-    + 'calavera — mejor que sus presas. Calico Jack entendió antes que nadie que '
+  'cap.jack.lore': 'Se recuerda su bandera, dos sables cruzados bajo una '
+    + 'calavera, mejor que sus presas. Calico Jack entendió antes que nadie que '
     + 'un pirata pelea primero con su fama.',
   'cap.ching.title': 'La almiranta de seiscientos juncos',
   'cap.ching.lore': 'Ningún pirata mandó jamás a tantos hombres. Ching Shih '
-    + 'dominó el mar de China con un código escrito, un impuesto y una flota — y '
+    + 'dominó el mar de China con un código escrito, un impuesto y una flota, y '
     + 'negoció su retiro con los cañones aún cargados.',
   'cap.teach.title': 'La barba que humeaba',
   'cap.teach.lore': 'Trenzaba mechas encendidas en su barba antes del abordaje: '
@@ -1115,7 +1115,7 @@ export const ES = {
   'cap.omalley.title': 'La reina de los mares de Irlanda',
   'cap.omalley.lore': 'Dio a luz en el mar y volvió a la lucha al día siguiente. '
     + 'Grace O’Malley defendió la costa oeste de Irlanda frente a una reina de '
-    + 'Inglaterra — y le habló de pie, sin traductor.',
+    + 'Inglaterra, y le habló de pie, sin traductor.',
   'cap.bonny.title': 'A la que nunca ahorcaron',
   'cap.bonny.lore': 'Juzgada, condenada y jamás ejecutada: Anne Bonny desaparece '
     + 'de los registros el día de su sentencia. Nadie supo nunca adónde fue.',
@@ -1128,7 +1128,7 @@ export const ES = {
     + 'azar.',
   'cap.morgan.title': 'El pirata al que hicieron caballero',
   'cap.morgan.lore': 'Saqueó Panamá y acabó gobernador de Jamaica. Henry Morgan '
-    + 'es el único que convirtió una carrera pirata en un título — y murió en su '
+    + 'es el único que convirtió una carrera pirata en un título, y murió en su '
     + 'cama.',
   'cap.levasseur.title': 'El Buitre y su enigma',
   'cap.levasseur.lore': 'En el cadalso lanzó un criptograma a la multitud: «Mi '
