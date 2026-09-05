@@ -184,9 +184,9 @@ export const FR = {
   'suc.A048.name': 'Le bâtisseur',
   'suc.A048.txt': 'Gagnez une partie complète sans détruire le moindre dé adverse.',
   'suc.A049.name': 'Le charpentier',
-  'suc.A049.txt': 'Gagnez une partie complète en perdant au plus six dés.',
+  'suc.A049.txt': 'Gagnez une partie complète en perdant au plus dix dés.',
   'suc.A050.name': 'Pas une égratignure',
-  'suc.A050.txt': 'Gagnez une partie complète en perdant au plus cinq dés.',
+  'suc.A050.txt': 'Gagnez une partie complète en perdant au plus dix dés.',
   'suc.A051.name': 'Debout dans l\'épave',
   'suc.A051.txt': 'Gagnez une partie après avoir perdu six dés.',
   'suc.A052.name': 'La paix des braves',
@@ -370,9 +370,9 @@ export const FR = {
   'suc.A141.name': 'Le boucher des sept mers',
   'suc.A141.txt': 'Gagnez 100 parties en détruisant au moins 8 dés à chaque fois.',
   'suc.A142.name': 'Le charpentier en chef',
-  'suc.A142.txt': 'Gagnez 100 parties en perdant au plus six dés.',
+  'suc.A142.txt': 'Gagnez 100 parties en perdant au plus dix dés.',
   'suc.A143.name': 'Cinquante fois intact',
-  'suc.A143.txt': 'Gagnez 50 parties en perdant au plus cinq dés.',
+  'suc.A143.txt': 'Gagnez 50 parties en perdant au plus dix dés.',
   'suc.A144.name': 'Le pacifiste convaincu',
   'suc.A144.txt': 'Gagnez 25 parties sans détruire un seul dé adverse.',
   'suc.A145.name': 'Cinquante paix des braves',
@@ -837,7 +837,7 @@ export const FR = {
 
   'camp.obj.sum.rangement': 'Gagner avec une colonne triée du plus grand au plus petit',
 
-  'camp.obj.sum.victoires.charpentier': 'Gagner en perdant au plus six dés',
+  'camp.obj.sum.victoires.charpentier': 'Gagner en perdant au plus dix dés',
 
   'camp.obj.sum.escalier': 'Gagner avec un escalier 1-2-3',
 
@@ -857,7 +857,7 @@ export const FR = {
 
   'camp.obj.sum.pont.refait': 'Gagner en remplissant tout votre plateau',
 
-  'camp.obj.sum.victoires.intact': 'Gagner en perdant au plus cinq dés',
+  'camp.obj.sum.victoires.intact': 'Gagner en perdant au plus dix dés',
 
   'camp.obj.sum.victoires.boucher': 'Gagner en détruisant huit dés ou plus',
 

@@ -1070,10 +1070,13 @@ function missionAtteinte(code, seuil, st) {
       }
       return true;
     case 'sum.victoires.sanssix': return enTete && compte(6) === 0;
-    case 'sum.victoires.charpentier': return enTete && (S.partiePerdus || 0) <= 2;
+    /* ⛔ ACCORDES AU SERVEUR (succes.js) : dix pertes tolerees. Le
+       client etait reste a 2 et 0 — le bandeau barrait ou non la mission sur
+       d'anciens seuils, et l'etoile du solde disait autre chose. */
+    case 'sum.victoires.charpentier': return enTete && (S.partiePerdus || 0) <= 10;
     case 'sum.victoires.mainsnues': return enTete && joues.length === 0;
     case 'sum.victoires.sansdetruire': return enTete && (S.partieDetruits || 0) === 0;
-    case 'sum.victoires.intact': return enTete && (S.partiePerdus || 0) === 0;
+    case 'sum.victoires.intact': return enTete && (S.partiePerdus || 0) <= 10;
     case 'sum.victoires.boucher': return enTete && (S.partieDetruits || 0) >= 8;
     case 'sum.victoires.double': {
       const q = st.quarters || [];
@@ -1084,6 +1087,36 @@ function missionAtteinte(code, seuil, st) {
       return enTete && best > 0 && cs[idx] === best;
     }
     default: return false;
+  }
+}
+
+/* Le COMPTE d'une mission chiffrable — « combien il en reste » se lit sans
+   calculer. Rend « x/n » (progres/objectif) ou '' pour les missions en tout ou
+   rien (escalier, rangement...). Pour les plafonds de pertes, x/n se lit
+   « pertes deja subies / tolerees » : a 7/6, c'est rate, et ca se voit. */
+function compteurMission(code, seuil, st) {
+  const me = S.seat;
+  const g = (st.grids && st.grids[me]) || [];
+  const total = (st.totals && st.totals[me]) || 0;
+  const compte = (v) => g.filter((x) => x === v).length;
+  const triples = () => {
+    let n = 0;
+    for (let c = 0; c < 4; c++) {
+      const col = [g[c * 3], g[c * 3 + 1], g[c * 3 + 2]];
+      if (col.every((x) => x !== null && x !== undefined && x === col[0])) n += 1;
+    }
+    return n;
+  };
+  switch (code) {
+    case 'max.score': return total + '/' + seuil;
+    case 'sum.detruits': return (S.partieDetruits || 0) + '/' + seuil;
+    case 'max.six.plateau': return compte(6) + '/' + seuil;
+    case 'sum.triples':
+    case 'max.triples.partie': return triples() + '/' + seuil;
+    case 'sum.victoires.boucher': return (S.partieDetruits || 0) + '/8';
+    case 'sum.victoires.charpentier': return (S.partiePerdus || 0) + '/10';
+    case 'sum.victoires.intact': return (S.partiePerdus || 0) + '/10';
+    default: return '';
   }
 }
 
@@ -1100,13 +1133,17 @@ function renderWalletMissions() {
   const enTete = ((st.totals && st.totals[S.seat]) || 0) > ((st.totals && st.totals[1 - S.seat]) || 0);
   const objs = [
     { txt: t('camp.obj1'), pris: enTete },
-    { txt: objectifCampagne(def.contrainte2, def.seuil2), pris: missionAtteinte(def.contrainte2, def.seuil2, st) },
-    { txt: objectifCampagne(def.contrainte3, def.seuil3), pris: missionAtteinte(def.contrainte3, def.seuil3, st) },
+    { txt: objectifCampagne(def.contrainte2, def.seuil2), pris: missionAtteinte(def.contrainte2, def.seuil2, st),
+      compte: compteurMission(def.contrainte2, def.seuil2, st) },
+    { txt: objectifCampagne(def.contrainte3, def.seuil3), pris: missionAtteinte(def.contrainte3, def.seuil3, st),
+      compte: compteurMission(def.contrainte3, def.seuil3, st) },
   ];
   w.innerHTML = '<div class="dc-missions-jeu">'
     + '<b>' + esc(t('camp.missions')) + '</b>'
     + objs.map((o) => '<span class="' + (o.pris ? 'dc-mission-pris' : '') + '">'
-        + etoileImg(o.pris) + ' <span class="dc-m-txt">' + esc(o.txt) + '</span></span>').join('')
+        + etoileImg(o.pris) + ' <span class="dc-m-txt">' + esc(o.txt) + '</span>'
+        + (o.compte ? ' <i class="dc-m-compte">' + esc(o.compte) + '</i>' : '')
+        + '</span>').join('')
     + '</div>';
 }
 

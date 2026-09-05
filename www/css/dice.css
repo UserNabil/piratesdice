@@ -1468,7 +1468,14 @@
 
 #dicewrap .dc-over-score span { color: #8d7f66; font-size: .55em; }
 #dicewrap .dc-over-line { font-size: 15px; color: var(--txt); margin: 5px 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
-#dicewrap .dc-over-btns { display: flex; gap: 14px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+/* ⚠️ `align-items` PAR DEFAUT ETIRAIT LE BOUTON SECOND. « Rejouer » est une
+   carte haute (reserve du dessin comprise) : « La Piraterie », simple bouton
+   fantome, s'etirait a sa hauteur et paraissait enorme — « reduis la taille du
+   bouton la piraterie ». Centre, chacun garde la sienne. */
+#dicewrap .dc-over-btns { display: flex; gap: 14px; justify-content: center;
+  align-items: center; margin-top: 22px; flex-wrap: wrap; }
+#dicewrap .dc-over-btns .dc-carte-mode { flex: 0 1 170px; min-width: 140px; }
+#dicewrap .dc-over-btns .dc-btn-ghost { font-size: 14px; padding: 12px 20px 10px; }
 /* Le bouton REJOUER porte son dessin (icon_replay.png), a gauche du mot. */
 #dicewrap .dc-over-win { box-shadow: inset 0 1px 0 rgba(255, 222, 170, .16), inset 0 0 30px rgba(0, 0, 0, .45), 0 0 60px rgba(201, 162, 39, .3), 0 12px 34px rgba(0, 0, 0, .6); }
 #dicewrap .dc-over-win h2 { color: var(--gold-hi); }
@@ -3828,6 +3835,11 @@
   left: 50%;
   width: var(--pd-mode-art);
   height: var(--pd-mode-art);
+  /* ⛔ LE DESSIN N'EST PAS TOUJOURS CARRE, ET LA BOITE L'EST. `icon_replay`
+     (368x191 depuis son recadrage) arrivait ECRASE dans la case carree de la
+     carte — « il ne faut jamais que l'image des boutons soit ecrasee ». Le
+     rapport est garde, la boite reste carree. */
+  object-fit: contain;
   transform: translateX(-50%);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
   pointer-events: none;
@@ -4195,6 +4207,16 @@
   color: var(--gold-hi, #ffe479);
   opacity: .95;
 }
+/* Le compte d'une mission chiffrable : « 2/6 », en or et chiffres tabulaires,
+   jamais barre — c'est un instrument, pas une phrase. */
+#dicewrap .dc-m-compte {
+  font-style: normal;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-hi, #ffe479);
+}
+#dicewrap .dc-mission-pris .dc-m-compte { text-decoration: none; }
+
 /* La rature ne barre QUE le texte : l'etoile doree reste entiere a cote. */
 #dicewrap .dc-mission-pris .dc-m-txt {
   text-decoration: line-through;
@@ -4236,8 +4258,6 @@
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5));
 }
 #dicewrap .dc-plaque-act:active { transform: translateY(2px); }
-
-}
 
 /* ── LA FEUILLE DU BUTIN DU JOUR ──────────────────────────────────────────── */
 #dicewrap .dc-butin-voile {

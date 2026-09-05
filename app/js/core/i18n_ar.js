@@ -185,9 +185,9 @@ export const AR = {
   'suc.A048.name': 'البنّاء',
   'suc.A048.txt': 'فُز بمباراة كاملة دون تدمير أي نرد للخصم.',
   'suc.A049.name': 'النجّار',
-  'suc.A049.txt': 'فُز بمباراة كاملة مع خسارة ستة نرد على الأكثر.',
+  'suc.A049.txt': 'فُز بمباراة كاملة مع خسارة عشرة نرد على الأكثر.',
   'suc.A050.name': 'بلا خدش واحد',
-  'suc.A050.txt': 'فُز بمباراة كاملة مع خسارة خمسة نرد على الأكثر.',
+  'suc.A050.txt': 'فُز بمباراة كاملة مع خسارة عشرة نرد على الأكثر.',
   'suc.A051.name': 'صامدٌ فوق الحطام',
   'suc.A051.txt': 'اربح مباراة بعد أن تخسر ستة أحجار نرد.',
   'suc.A052.name': 'سلامُ الشجعان',
@@ -828,7 +828,7 @@ export const AR = {
 
   'camp.obj.sum.rangement': 'اربح بعمود مرتب من الأكبر إلى الأصغر',
 
-  'camp.obj.sum.victoires.charpentier': 'اربح مع خسارة ستة نرد على الأكثر',
+  'camp.obj.sum.victoires.charpentier': 'اربح مع خسارة عشرة نرد على الأكثر',
 
   'camp.obj.sum.escalier': 'اربح بسلم 1-2-3',
 
@@ -848,7 +848,7 @@ export const AR = {
 
   'camp.obj.sum.pont.refait': 'اربح ولوحك ممتلئ بالكامل',
 
-  'camp.obj.sum.victoires.intact': 'اربح مع خسارة خمسة نرد على الأكثر',
+  'camp.obj.sum.victoires.intact': 'اربح مع خسارة عشرة نرد على الأكثر',
 
   'camp.obj.sum.victoires.boucher': 'اربح مع تدمير ثمانية نردات أو أكثر',
 
