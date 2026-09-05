@@ -3047,10 +3047,25 @@
    la seconde rangee s'aligne sur la premiere. En flex, quatre elements sur la
    derniere ligne se centreraient entre les colonnes de la premiere, et les
    medaillons ne seraient plus en face les uns des autres. */
+/* Le maillon entre la zone defilante (colonne flexible) et la grille : sans
+   lui, la grille avait beau demander flex 1, son PARENT ne grandissait pas —
+   quatre rangees tassees en haut d'un vide. Chaque etage de la chaine doit
+   s'etirer. */
+#dicewrap .dc-caps {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 #dicewrap .dc-caps-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   justify-items: center;
+  align-items: center;
+  /* La grille prend toute la hauteur que la zone lui laisse, et repartit ses
+     rangees dedans : plus la carte est haute, plus les capitaines respirent. */
+  flex: 1 1 auto;
+  align-content: space-evenly;
   gap: clamp(4px, 1.2vw, 12px);
   /* ⚠️ MOINS D'AIR ENTRE LES DEUX RANGEES QU'ENTRE LES COLONNES. L'ecart
      horizontal separe des voisins ; le vertical, lui, ne separe rien — les deux
@@ -3821,6 +3836,13 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* ⛔ LA GRILLE FLOTTAIT EN HAUT D'UN GRAND VIDE. Sur un ecran haut, la zone
+     defilante grandit (flex 1) mais son contenu restait tasse en tete :
+     quatre rangees compressees, puis du violet mort — « augmente la zone des
+     choix capitaines en hauteur ». En colonne flexible, la grille (flex 1
+     ci-dessous) se deploie sur TOUTE la place. */
+  display: flex;
+  flex-direction: column;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
