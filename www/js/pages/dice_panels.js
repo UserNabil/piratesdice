@@ -979,36 +979,46 @@ export async function renderRanking(body) {
    et demander la prise. Il ne calcule aucune date — l'horloge d'un telephone se
    change dans les reglages, et un butin qui la croirait serait infini. */
 
-/** Le dessin d'un lot : une piece d'or, une maudite, ou l'objet du gros lot. */
+/** Le dessin d'un lot : tas d'or, tas de maudites, ou le coffre quand il y a
+   plus d'une chose dedans (le septieme jour : or + maudites + parure). */
 function lotArt(lot) {
   if (!lot) return '';
-  if (lot.objet) {
-    return `<img class="dc-butin-art" src="${ASSETS}img/skins/${esc(lot.objet)}/die_5.png" alt="">`;
-  }
-  const piece = lot.maudit > 0 && !lot.or ? 'icon_maudit.png' : 'icon_coin.png';
-  return `<img class="dc-butin-art" src="${ASSETS}img/${piece}" alt="">`;
+  const riche = (lot.objet ? 1 : 0) + (lot.or > 0 ? 1 : 0) + (lot.maudit > 0 ? 1 : 0) > 1;
+  const img = riche || lot.objet ? 'butin_coffre.png'
+    : (lot.maudit > 0 ? 'butin_maudit.png' : 'butin_or.png');
+  return `<img class="dc-butin-art" src="${ASSETS}img/${img}" alt="">`;
 }
 
-/** Le montant d'un lot, en toutes lettres courtes : « 25 » + la piece. */
+/** Le contenu d'un lot, en petites lignes chiffrees. */
 function lotTexte(lot) {
   if (!lot) return '';
   const bouts = [];
   if (lot.or > 0) bouts.push(`<span><img src="${ASSETS}img/icon_coin.png" alt="">${lot.or}</span>`);
   if (lot.maudit > 0) bouts.push(`<span><img src="${ASSETS}img/icon_maudit.png" alt="">${lot.maudit}</span>`);
-  if (lot.objet) bouts.push(`<span>${esc(t('butin.parure'))}</span>`);
+  if (lot.objet) bouts.push(`<span><img src="${ASSETS}img/skins/${esc(lot.objet)}/die_5.png" alt=""></span>`);
   return bouts.join('');
 }
 
+/* Le compte a rebours jusqu'au prochain butin : la journee est TRANCHEE en UTC
+   par le serveur (game/butin.js) — on affiche donc les heures jusqu'au minuit
+   UTC, pas jusqu'au minuit du telephone. */
+function heuresAvantDemain() {
+  const now = new Date();
+  const demain = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+  return Math.max(1, Math.ceil((demain - now.getTime()) / 3600000));
+}
+
 function butinCorps(vu) {
-  const lot = vu.lot || {};
+  const serie = Math.max(0, Number(vu.serie) || 0);
   return `
+    <button class="dc-butin-fermer" title="${esc(t('set.close'))}" aria-label="${esc(t('set.close'))}">
+      <img src="${ASSETS}img/butin_fermer.png" alt=""></button>
     <h3 class="dc-butin-titre">${esc(t('butin.titre'))}</h3>
-    <div class="dc-butin-jour">
-      ${lotArt(lot)}
-      <div class="dc-butin-jour-txt">
-        <b>${esc(t('butin.duJour'))}</b>
-        <div class="dc-butin-gains">${lotTexte(lot)}</div>
-      </div>
+    <img class="dc-butin-heros" src="${ASSETS}img/butin_coffre.png" alt="">
+    <p class="dc-butin-sous">${esc(t('butin.sousTitre'))}</p>
+    <div class="dc-butin-serie">
+      <img src="${ASSETS}img/butin_serie.png" alt="">
+      <span>${esc(t('butin.serie', { n: serie }))}</span>
     </div>
     <div class="dc-butin-bande">
       ${(vu.bande || []).map((c) => `
@@ -1016,12 +1026,17 @@ function butinCorps(vu) {
              c.jour === vu.jour ? ' dc-butin-courant' : ''}">
           <b>${esc(t('butin.jour', { n: c.jour }))}</b>
           ${lotArt(c)}
-          <i>${c.objet ? esc(t('butin.parure')) : (c.or > 0 ? c.or : c.maudit)}</i>
+          <div class="dc-butin-gains">${lotTexte(c)}</div>
+          ${c.pris ? `<img class="dc-butin-coche" src="${ASSETS}img/butin_check.png" alt="">` : ''}
+          ${c.jour === vu.jour && vu.reclamable
+            ? `<i class="dc-butin-ruban">${esc(t('butin.aujourdhui'))}</i>` : ''}
         </div>`).join('')}
     </div>
     <button class="dc-btn dc-butin-prendre" data-prendre ${vu.reclamable ? '' : 'disabled'}>
-      ${esc(vu.reclamable ? t('butin.prendre') : t('butin.revenir'))}
-    </button>`;
+      ${esc(t('butin.prendre'))}
+    </button>
+    ${vu.reclamable ? '' : `<div class="dc-butin-prochaine">\u23F1 ${
+      esc(t('butin.prochaine', { h: heuresAvantDemain() }))}</div>`}`;
 }
 
 /* La feuille reste ouverte apres la prise : on la repeint pour montrer la case
@@ -1029,7 +1044,7 @@ function butinCorps(vu) {
 export function rafraichirButin(vu) {
   const carte = document.querySelector('.dc-butin-carte');
   if (!carte || !vu) return;
-  carte.innerHTML = butinCorps(vu) + carte.querySelector('.dc-butin-fermer').outerHTML;
+  carte.innerHTML = butinCorps(vu);
   brancherButin(carte);
 }
 
@@ -1052,21 +1067,11 @@ function brancherButin(carte) {
 export function ouvrirButin() {
   if (document.querySelector('.dc-butin-voile')) return;
   if (!S.net || !S.net.ready) { toast(t('offline.besoinReseau'), 'warn'); return; }
-  /* On demande l'etat AVANT de peindre : sans lui on afficherait une bande vide
-     et un bouton qui ment sur ce qu'il donne. */
   S.net.send({ t: 'butin' });
-
   const voile = document.createElement('div');
   voile.className = 'dc-butin-voile';
-  const vu = S.butin || { bande: [], jour: 1, reclamable: false, lot: null };
-  voile.innerHTML = `
-    <div class="dc-butin-carte pd-panel">
-      ${butinCorps(vu)}
-      <button class="pd-btn-icone dc-butin-fermer" title="${esc(t('set.close'))}"
-              aria-label="${esc(t('set.close'))}">
-        <img src="${ASSETS}img/icon_close.png" alt="">
-      </button>
-    </div>`;
+  const vu = S.butin || { bande: [], jour: 1, reclamable: false, lot: null, serie: 0 };
+  voile.innerHTML = `<div class="dc-butin-carte pd-panel">${butinCorps(vu)}</div>`;
   ($('#dicewrap') || document.body).appendChild(voile);
   voile.addEventListener('click', (ev) => { if (ev.target === voile) voile.remove(); });
   brancherButin(voile.querySelector('.dc-butin-carte'));

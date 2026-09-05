@@ -4260,7 +4260,10 @@
 }
 #dicewrap .dc-plaque-act:active { transform: translateY(2px); }
 
-/* ── LA FEUILLE DU BUTIN DU JOUR ──────────────────────────────────────────── */
+/* ── LA RECOMPENSE QUOTIDIENNE — la maquette de l'admin ──────────────────────
+   Coffre en heros, serie de jours avec sa flamme, grille 4+3 des sept jours
+   (aujourd'hui en or avec son ruban, les jours pris coches), bouton Reclamer,
+   et le compte a rebours quand tout est pris. */
 #dicewrap .dc-butin-voile {
   position: fixed;
   inset: 0;
@@ -4268,104 +4271,150 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 14px;
   background: rgba(10, 4, 26, .68);
   animation: dc-gel-vient .18s ease-out;
 }
 #dicewrap .dc-butin-carte {
   position: relative;
-  width: min(440px, 94vw);
-  max-height: 88vh;
+  width: min(430px, 96vw);
+  max-height: 92vh;
   overflow: auto;
-  padding: 18px 18px 62px;
+  padding: 16px 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 10px;
   text-align: center;
 }
+#dicewrap .dc-butin-fermer {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  z-index: 2;
+}
+#dicewrap .dc-butin-fermer img { width: 40px; height: 40px; display: block; }
+#dicewrap .dc-butin-fermer:active { transform: translateY(2px); }
 #dicewrap .dc-butin-titre {
   margin: 0;
   font-family: "Luckiest Guy", "Baloo 2", cursive;
-  font-size: clamp(20px, 5.4vw, 27px);
+  font-size: clamp(21px, 5.6vw, 27px);
+  line-height: 1.05;
   color: var(--gold-hi, #ffe479);
   text-shadow: 0 2px 0 rgba(0, 0, 0, .5);
 }
-/* La recompense du jour, en grand : c'est elle qu'on vient chercher. */
-#dicewrap .dc-butin-jour {
-  display: flex;
+#dicewrap .dc-butin-heros {
+  width: clamp(130px, 40vw, 180px);
+  height: auto;
+  margin: -4px 0 -6px;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .45));
+}
+#dicewrap .dc-butin-sous {
+  margin: 0;
+  font-size: 13px;
+  color: var(--txt-dim, #c9bcea);
+  max-width: 34ch;
+}
+/* La serie, avec sa flamme : la pilule de la maquette. */
+#dicewrap .dc-butin-serie {
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, .3);
-  box-shadow: inset 0 0 0 1.5px var(--gold-lo, #8a6a1f);
-}
-#dicewrap .dc-butin-jour .dc-butin-art { width: 62px; height: 62px; }
-#dicewrap .dc-butin-jour-txt { text-align: start; }
-#dicewrap .dc-butin-jour-txt b {
-  display: block;
-  font-family: "Luckiest Guy", "Baloo 2", cursive;
-  color: var(--gold-hi, #ffe479);
-  font-size: 15px;
-}
-#dicewrap .dc-butin-gains {
-  display: flex;
-  gap: 12px;
-  margin-top: 4px;
-  font-weight: 800;
-  font-size: 17px;
-  color: var(--txt, #efe9fb);
-}
-#dicewrap .dc-butin-gains span { display: inline-flex; align-items: center; gap: 5px; }
-#dicewrap .dc-butin-gains img { width: 22px; height: 22px; }
-
-/* La bande des sept jours. Elle DEFILE au lieu de se serrer : sept cases
-   ecrasees sur 320 px ne se lisent plus, et on veut voir venir le gros lot. */
-#dicewrap .dc-butin-bande {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(66px, 1fr);
   gap: 7px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .32);
+  box-shadow: inset 0 0 0 1.5px var(--gold-lo, #8a6a1f);
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--gold-hi, #ffe479);
+}
+#dicewrap .dc-butin-serie img { width: 22px; height: 22px; }
+/* La grille des sept jours : quatre puis trois, centres. */
+#dicewrap .dc-butin-bande {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 #dicewrap .dc-butin-case {
+  position: relative;
+  /* Quatre par rangee puis trois, comme la maquette : la case peut RETRECIR
+     (min-width 0) — c'est la ligne des gains du jour 7 qui, incompressible,
+     cassait la grille en 3+3+1. */
+  flex: 1 1 calc(25% - 8px);
+  max-width: calc(25% - 6px);
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 7px 4px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, .06);
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .12);
+  padding: 8px 4px 7px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .28);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .14);
 }
 #dicewrap .dc-butin-case b {
   font-size: 10px;
-  letter-spacing: .4px;
+  letter-spacing: .5px;
   text-transform: uppercase;
   color: var(--txt-dim, #c9bcea);
 }
-#dicewrap .dc-butin-case .dc-butin-art { width: 34px; height: 34px; }
-#dicewrap .dc-butin-case i { font-style: normal; font-weight: 800; font-size: 13px; }
-/* Le jour qu'on peut prendre MAINTENANT : c'est le seul qui brille. */
+#dicewrap .dc-butin-case .dc-butin-art { width: 44px; height: 44px; object-fit: contain; }
+#dicewrap .dc-butin-gains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--txt, #efe9fb);
+}
+#dicewrap .dc-butin-gains span { display: inline-flex; align-items: center; gap: 2px; }
+#dicewrap .dc-butin-gains img { width: 14px; height: 14px; }
+/* Aujourd'hui : la case d'or et son ruban. */
 #dicewrap .dc-butin-courant {
   background: linear-gradient(180deg, var(--gold-hi, #ffe479), var(--gold, #f4c64e));
-  box-shadow: inset 0 0 0 2px #fff, 0 0 14px rgba(244, 198, 78, .55);
+  box-shadow: inset 0 0 0 2px #fff, 0 0 14px rgba(244, 198, 78, .5);
 }
 #dicewrap .dc-butin-courant b,
-#dicewrap .dc-butin-courant i { color: #3a2a10; }
-/* Un jour deja pris s'efface : il a rendu ce qu'il devait. */
-#dicewrap .dc-butin-pris { opacity: .45; }
-#dicewrap .dc-butin-pris .dc-butin-art { filter: grayscale(1); }
-
-#dicewrap .dc-butin-prendre { align-self: center; min-width: 190px; }
-#dicewrap .dc-butin-prendre:disabled { opacity: .5; cursor: default; }
-#dicewrap .dc-butin-fermer {
+#dicewrap .dc-butin-courant .dc-butin-gains { color: #3a2a10; }
+#dicewrap .dc-butin-ruban {
   position: absolute;
+  bottom: -8px;
   left: 50%;
-  bottom: 10px;
   transform: translateX(-50%);
+  font-style: normal;
+  font-family: "Luckiest Guy", "Baloo 2", cursive;
+  font-size: 9px;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: #3a2a10;
+  background: linear-gradient(180deg, #ffe479, #d9a52c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .55);
 }
-#dicewrap .dc-butin-carte .dc-butin-fermer:active,
-#dicewrap .dc-butin-fermer:active { transform: translateX(-50%) translateY(2px); }
-#dicewrap .dc-butin-fermer img { width: 42px; height: 42px; display: block; }
+/* Un jour pris s'efface et porte sa coche. */
+#dicewrap .dc-butin-pris { opacity: .5; }
+#dicewrap .dc-butin-pris .dc-butin-art { filter: grayscale(.9); }
+#dicewrap .dc-butin-coche {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  width: 20px;
+  height: 20px;
+}
+#dicewrap .dc-butin-prendre { min-width: 220px; margin-top: 6px; }
+#dicewrap .dc-butin-prendre:disabled { opacity: .5; cursor: default; }
+#dicewrap .dc-butin-prochaine {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--txt-dim, #c9bcea);
+}
