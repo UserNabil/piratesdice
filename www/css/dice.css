@@ -3831,6 +3831,9 @@
   flex-direction: column;
   overflow: hidden;
   justify-content: flex-start;
+  /* Les cartes de mode a la TOUTE fin de la carte (demande, trois fois) : le
+     rembourrage bas fond a presque rien. */
+  padding-bottom: 10px;
 }
 #dicewrap .dc-menu-defile {
   flex: 1 1 auto;
