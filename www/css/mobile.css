@@ -2171,8 +2171,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      c'est la COLONNE de la grille qui donne la largeur, et le medaillon n'a plus
      qu'a ne pas la depasser. On plafonne, on n'impose plus. */
   #dicewrap .dc-cap {
-    width: 100%;
-    height: auto;
+    /* ⛔ CES PLAFONDS DATENT D'AVANT LES RANGEES ADAPTATIVES. La grille
+       distribue desormais sa hauteur en quatre fractions et le medaillon suit
+       la HAUTEUR de sa rangee (dice.css) : elle ne peut plus pousser les
+       boutons hors de l'ecran, la peur qui avait motive ces bornes. On laisse
+       la regle commune decider. */
+    width: auto;
+    height: min(100%, 96px);
     /* ⛔ QUINZE MEDAILLONS FONT TROIS RANGEES, ET LA TROISIEME POUSSAIT LES
        TROIS BOUTONS DE MODE HORS DE L'ECRAN. Mesure sur iPhone 17 Pro Max, la
        plus grande dalle du parc : les libelles « Defier un joueur » et « Jouer
@@ -3332,7 +3337,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
      (`max-width`) ; imposer ici une HAUTEUR fixe donnait 42 px de large pour
      45 de haut, donc un portrait etire. `aspect-ratio: 1` tient la forme, il
      suffit de dire jusqu'ou l'on peut grandir. */
-  #dicewrap .dc-cap { max-width: clamp(40px, 12.5vw, 50px); }
+  /* Le plafond 40-50px etait l'ancien garde-fou anti-debordement : les
+     rangees adaptatives (dice.css) l'ont remplace. */
+  #dicewrap .dc-cap { max-width: 100%; }
   #dicewrap .dc-caps-head { margin-bottom: clamp(2px, .6vh, 6px); }
   #dicewrap .dc-menu-card h2 { margin-bottom: clamp(3px, .8vh, 9px); }
 }
