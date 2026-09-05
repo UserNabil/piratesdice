@@ -8,6 +8,7 @@
    ============================================================================ */
 
 import { t } from '../core/i18n.js';
+import { ouvrirContexte } from '../core/contexte.js';
 
 export function uiConfirm(msg, title = 'Confirm', okLabel = 'OK') {
   return new Promise((resolve) => {
@@ -24,18 +25,19 @@ export function uiConfirm(msg, title = 'Confirm', okLabel = 'OK') {
       </div>`;
     (document.getElementById('dicewrap') || document.body).appendChild(back);
 
+    /* La question vit dans la pile des contextes : le RETOUR repond « non » a
+       LA question du dessus, jamais a autre chose. */
+    let ctx = null;
     const close = (answer) => {
+      if (ctx) { ctx.retirer(); ctx = null; }
       back.remove();
-      document.removeEventListener('pd-back', onBack);
       resolve(answer);
     };
-    const onBack = (ev) => { ev.preventDefault(); close(false); };
+    ctx = ouvrirContexte('question', () => close(false));
 
     back.querySelector('[data-yes]').onclick = () => close(true);
     back.querySelector('[data-no]').onclick = () => close(false);
     back.onclick = (ev) => { if (ev.target === back) close(false); };
-    /* Le bouton RETOUR d'Android ferme la question, il ne quitte pas le jeu. */
-    document.addEventListener('pd-back', onBack);
     requestAnimationFrame(() => back.classList.add('on'));
   });
 }

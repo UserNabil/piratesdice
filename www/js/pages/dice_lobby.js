@@ -14,6 +14,7 @@ import { $, esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, screen } from './dice_state.js';
+import { ouvrirContexte } from '../core/contexte.js';
 import { jetons } from './dice_cale.js';
 
 /* ⛔ CETTE LISTE FILTRE CELLE DU SERVEUR (voir `known`), ET C'EST LE PIEGE.
@@ -366,11 +367,14 @@ export function ouvrirFiche(id) {
      de refermer quinze fois. */
   let courant = captainOf(id);
 
+  /* La fiche vit dans la pile des contextes (core/contexte.js) : le bouton
+     RETOUR ferme la fiche, et seulement elle. L'ecouteur pd-back maison part. */
+  let ctx = null;
   const fermer = () => {
+    if (ctx) { ctx.retirer(); ctx = null; }
     back.remove();
-    document.removeEventListener('pd-back', surRetour);
   };
-  const surRetour = (ev) => { ev.preventDefault(); fermer(); };
+  ctx = ouvrirContexte('fiche-capitaine', fermer);
 
   /**
    * Peindre la fiche d'un capitaine et rebrancher ses boutons.
@@ -452,7 +456,6 @@ export function ouvrirFiche(id) {
 
   peindre(courant, 0);
   back.onclick = (ev) => { if (ev.target === back) fermer(); };
-  document.addEventListener('pd-back', surRetour);
   requestAnimationFrame(() => { back.classList.add('on'); back.focus(); });
   if (S.sfx) S.sfx.play('open', 0.16);
 }

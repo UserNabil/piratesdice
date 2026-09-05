@@ -10,6 +10,7 @@
 import { initDice, openDice, ouvrirPanneau } from './pages/dice.js';
 import { rejoindreParLien } from './pages/dice_lobby.js';
 import { S, UI, ASSETS, myTurn } from './pages/dice_state.js';
+import { retourContexte, ouvrirContexte } from './core/contexte.js';
 import { signIn, signOut, account, eraseAccount, fournisseur } from './identity.js';
 import { startFitting } from './fit.js';
 import { t, LANGS, lang, setLang } from './core/i18n.js';
@@ -126,6 +127,10 @@ function brancherLiens() {
 
 function wireBackButton() {
   const fire = () => {
+    /* ⛔ LA PILE DES CONTEXTES PASSE EN PREMIER. Une modale ouverte se ferme,
+       et RIEN d'autre ne bouge — quel que soit l'ordre dans lequel les
+       ecouteurs historiques se sont inscrits. Voir core/contexte.js. */
+    if (retourContexte()) return true;
     const ev = new CustomEvent('pd-back', { cancelable: true });
     document.dispatchEvent(ev);
     return ev.defaultPrevented;
@@ -363,9 +368,15 @@ function openSettings() {
      apres, au clic. Le desabonnement n'est pas une politesse : sans lui, chaque
      ouverture de reglages laisserait derriere elle un abonne qui peint des
      lignes retirees du document. */
-  const close = () => { if (oublier) oublier(); wrap.remove(); };
-  const back = (ev) => { ev.preventDefault(); close(); };
-  document.addEventListener('pd-back', back, { once: true });
+  /* Les reglages vivent dans la pile des contextes : plus d'ecouteur pd-back
+     en `{once:true}` qu'un retour etranger pouvait consommer. */
+  let ctx = null;
+  const close = () => {
+    if (ctx) { ctx.retirer(); ctx = null; }
+    if (oublier) oublier();
+    wrap.remove();
+  };
+  ctx = ouvrirContexte('reglages', close);
   wrap.onclick = (ev) => { if (ev.target === wrap) close(); };
   wrap.querySelector('[data-close]').onclick = close;
 

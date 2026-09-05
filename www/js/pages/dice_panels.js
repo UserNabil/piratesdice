@@ -12,6 +12,7 @@ import { toast } from '../ui/toast.js';
 import { S, UI, ASSETS, PIECE_MAUDITE, bonusArt, etoileImg, etoilesMission } from './dice_state.js';
 import { renderBonusRack } from './dice_match.js';
 import { messageServeur } from './dice_refus.js';
+import { ouvrirContexte } from '../core/contexte.js';
 
 /**
  * Un appel a l'API du jeu, qui ne plante pas quand la socket est tombee.
@@ -81,10 +82,13 @@ export function ouvrirRegles() {
     </div>`;
   const hote = $('#dicewrap') || document.body;
   hote.appendChild(voile);
+  let ctx = null;
   const fermer = () => {
+    if (ctx) { ctx.retirer(); ctx = null; }
     document.removeEventListener('keydown', surTouche, true);
     voile.remove();
   };
+  ctx = ouvrirContexte('regles', fermer);
   const surTouche = (ev) => {
     if (ev.key !== 'Escape') return;
     ev.stopPropagation();
@@ -139,7 +143,9 @@ function ficheNiveau(n) {
       </div>
     </div>`;
   ($('#dicewrap') || document.body).appendChild(voile);
-  const fermer = () => voile.remove();
+  let ctx = null;
+  const fermer = () => { if (ctx) { ctx.retirer(); ctx = null; } voile.remove(); };
+  ctx = ouvrirContexte('fiche-niveau', fermer);
   voile.querySelector('[data-fermer]').onclick = fermer;
   voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
   voile.querySelector('[data-jouer]').onclick = () => {
@@ -1062,7 +1068,9 @@ function brancherButin(carte) {
   const fermer = carte.querySelector('.dc-butin-fermer');
   if (fermer) fermer.onclick = () => {
     const voile = carte.closest('.dc-butin-voile');
-    if (voile) voile.remove();
+    /* La croix retire aussi l'entree de la pile : l'evenement bulle jusqu'au
+       voile qui porte le vrai fermeur. */
+    if (voile) { voile.dispatchEvent(new Event('click')); if (voile.isConnected) voile.remove(); }
   };
 }
 
@@ -1075,7 +1083,10 @@ export function ouvrirButin() {
   const vu = S.butin || { bande: [], jour: 1, reclamable: false, lot: null, serie: 0 };
   voile.innerHTML = `<div class="dc-butin-carte pd-panel">${butinCorps(vu)}</div>`;
   ($('#dicewrap') || document.body).appendChild(voile);
-  voile.addEventListener('click', (ev) => { if (ev.target === voile) voile.remove(); });
+  const ctx = ouvrirContexte('butin', () => voile.remove());
+  const fermerButin = () => { ctx.retirer(); voile.remove(); };
+  voile.addEventListener('click', (ev) => { if (ev.target === voile) fermerButin(); });
+  voile.dataset.fermer = '1';
   brancherButin(voile.querySelector('.dc-butin-carte'));
 }
 

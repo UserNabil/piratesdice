@@ -32,6 +32,7 @@ import { onMatch, onState, renderBonusRack, oublierEtat } from './dice_match.js'
 import { onOver } from './dice_end.js';
 import { ouvrirRegles, renderShop, renderRanking, renderSucces, renderCampagne,
          ouvrirButin, rafraichirButin, montrerButinGagne } from './dice_panels.js';
+import { ouvrirContexte } from '../core/contexte.js';
 import { renderReplays, ouvrirRejeu, fermerLecteur } from './dice_replay.js';
 import { ouvrirPartieHorsLigne } from './dice_solo.js';
 import * as cale from './dice_cale.js';
@@ -1263,27 +1264,41 @@ function ouvrirPause() {
       </div>` : ''}
       <div class="dc-pause-btns">
         <button class="dc-btn" data-reprendre>${esc(t('pause.reprendre'))}</button>
-        <button class="dc-btn dc-btn-ghost" data-recommencer>${esc(t('pause.recommencer'))}</button>
-        <button class="dc-btn dc-btn-ghost" data-regles>${esc(t('rules.title'))}</button>
-        <button class="dc-btn dc-btn-ghost" data-parametres>${esc(t('set.title'))}</button>
-        <button class="dc-btn dc-btn-ghost pd-danger" data-quitter>${esc(t('pause.quitter'))}</button>
+        <button class="dc-btn" data-recommencer>${esc(t('pause.recommencer'))}</button>
+        <button class="dc-btn" data-regles>${esc(t('rules.title'))}</button>
+        <button class="dc-btn" data-parametres>${esc(t('set.title'))}</button>
+        <button class="dc-btn" data-quitter>${esc(t('pause.quitter'))}</button>
       </div>
     </div>`;
   ($('#dicewrap') || document.body).appendChild(voile);
 
-  const fermer = () => { voile.remove(); UI.pauseTimer && UI.pauseTimer(false); };
+  /* La pause s'inscrit dans la pile des contextes : le bouton RETOUR la ferme,
+     elle, et rien d'autre. */
+  let ctx = null;
+  const fermer = () => {
+    if (ctx) { ctx.retirer(); ctx = null; }
+    voile.remove();
+    UI.pauseTimer && UI.pauseTimer(false);
+  };
+  ctx = ouvrirContexte('pause', fermer);
   voile.querySelector('.dc-pause-fermer').onclick = fermer;
   voile.querySelector('[data-reprendre]').onclick = fermer;
   voile.addEventListener('click', (ev) => { if (ev.target === voile) fermer(); });
   voile.querySelector('[data-recommencer]').onclick = () => {
     fermer();
+    /* ⛔ RECOMMENCER NE MONTRE PAS LA CARTE DE FIN. Le leave regle la partie et
+       le serveur envoie 'over' — la carte venait se poser PAR-DESSUS la partie
+       neuve. Le drapeau de « celui qui part a deja choisi » (le meme que
+       requestClose) l'avale une fois. */
+    S.quitting = true;
     if (S.campagneEnCours && S.net && S.net.ready) {
       S.net.send({ t: 'campagne.jouer', identify: S.campagneEnCours });
     } else if (S.net && S.net.ready) {
       S.net.send({ t: 'leave' });
       S.net.send({ t: 'play', mode: 'solo' });
     } else if (UI.jouerHorsLigne) {
-      UI.jouerHorsLigne();
+      S.quitting = false;
+      if (UI.jouerHorsLigne) UI.jouerHorsLigne();
     }
   };
   voile.querySelector('[data-regles]').onclick = () => ouvrirRegles();
@@ -1411,7 +1426,18 @@ export function ouvrirPanneau(nom) {
      ce que le joueur regarde — voir `ouvrirRegles` — et laissent la navigation
      des pages tranquille. */
   if (nom === 'rules') { ouvrirRegles(); return; }
-  if (S.panel !== nom) togglePanel(nom);
+  if (S.panel !== nom) { togglePanel(nom); return; }
+  /* ⛔ RE-CLIQUER L'ONGLET OU L'ON EST NE RENVOIE PLUS A L'ACCUEIL. « Pourquoi
+     faire ? Si je reclique sur la meme icone, ca doit recharger le contenu et
+     m'assurer que les donnees sont a jour. » On jette le cache de la page et on
+     redemande au serveur, puis on repeint. */
+  if (nom === 'succes') { S.succes = null; if (S.net && S.net.ready) S.net.send({ t: 'succes' }); }
+  else if (nom === 'replay') { S.historique = null; if (S.net && S.net.ready) S.net.send({ t: 'historique' }); }
+  else if (nom === 'campagne') { S.campagne = null; if (S.net && S.net.ready) S.net.send({ t: 'campagne' }); }
+  else if (nom === 'shop') { if (S.net && S.net.ready) S.net.send({ t: 'refresh' }); }
+  /* Le classement va chercher lui-meme sa route HTTP a chaque rendu : le
+     repeindre suffit a le rafraichir. */
+  refreshPanel();
 }
 
 function togglePanel(name) {
@@ -1423,6 +1449,7 @@ function togglePanel(name) {
      n'accueille rien. Il RAMENE, toujours, et ne fait rien quand on y est
      deja. */
   if (name === 'accueil') {
+    majBoutonPause();
     if (S.panel) {
       S.panel = null;
       panel.classList.remove('on');

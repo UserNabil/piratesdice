@@ -696,6 +696,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
    lieu du rectangle qui la contient. */
 #dicewrap .dc-plaque,
 #dicewrap .dc-plaque-act,
+#dicewrap .dc-plaque-pause,
 #dicewrap .dc-plaque-reglages {
   filter:
     drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff)
